@@ -7,6 +7,86 @@ validated on smooth spheres before any POLLEN number is used.
 
 Labels follow HANDOFF section 5: CONFIRMED, user, ASSUMED, derived, PREDICTED.
 
+## Update 2026-10-31: local grid refinement (`lv=`)
+
+Everything away from the ball is still room-temperature air in uniform flow, so the solver now puts fine cells only
+around the ball. Own code in `cfd/lbm/`, following the published method of Rohde et al. (2006).
+`lv=1` (the default) is the old uniform grid.
+
+**Method.**
+- Nested boxes, refinement factor 2 per level, cell-centred (a coarse cell holds 2x2x2 fine cells). `D` is the
+  finest level's cells per diameter; level l has D / 2^(L-1-l).
+- Acoustic scaling: the same lattice u on every level, nu_l = u D_l / Re, so tau differs per level. The Smagorinsky
+  model runs on each level with its own tau.
+- Sub-cycling: a level takes two steps per parent step (recursive: child step, coalescence, child step, own step).
+- Coupling: the volumetric, mass-conserving scheme of Rohde et al. (2006). Populations that a fine interface cell
+  pulls from outside its box come from the parent cell they lie in (uniform explosion); after its first sub-step the
+  fine level is summed back into the covered parent cells (coalescence). No non-equilibrium rescaling.
+- The body, the moving-wall term, the STL re-voxelisation of a spinning ball and the momentum-exchange force all live
+  on the finest level only. The finest box must hold the whole shell and the hollow inside (default margin
+  0.7 D upstream, 1.5 D downstream, 0.7 D sideways; each coarser refined level adds 0.5 / 1.0 / 0.4 D).
+
+**Options.** `lv=1` (uniform, the old behaviour) to 4; `fb=up,down,side` finest box; `gb=up,down,side` growth per
+coarser level; `plan=1` prints per-level cells and memory, cells across a hole and across the wall, and
+`need_mib=` for a queue, then exits without the GPU; `body=none` (uniform-flow check) and `body=masstest` (closed box,
+total mass) are checks. `lv=3 D=192` (box 6x4x4 D) needs about 4.3 GB in FP16 (derived, solver plan):
+
+| Level | D | Cells | Memory (FP16) |
+|---|---|---|---|
+| L0 | 48 | 288x192x192 = 10.6 M | 780 MiB |
+| L1 | 96 | 356x212x212 = 16.0 M | 1175 MiB |
+| L2 | 192 | 424x272x272 = 31.4 M | 2304 MiB |
+
+The finest D 192 gives 27.5-30.2 cells across a hole and 4.8 across the wall (derived; D 94 uniform gave 13-15 and
+2.35). A uniform D 192 grid would need about 680 M cells, which does not fit. `lv=3 D=96` uses 0.54 GB.
+
+**Hole and cavity diagnostics** (`holes=<file from stl_holes.py>`, sphere or STL). New `# dg ...` lines after every
+CSV row and a `# dg_avg ...` footer (t* >= 15); the existing keys are unchanged.
+- Through-hole flow: for each of the 26 holes, the mass flux through a disc at mid-wall, normal to the hole axis,
+  radius = hole radius (`hole_mm=11.2`, `wall_mm=1.778`), axes rotated by the current spin angle. Positive = out of
+  the cavity; normalised by rho u pi r_h^2. Keys: `dg_hole_net_out`, `dg_hole_abs` (sum of |flux|), `dg_hole_top3`,
+  `dg_avg_hole_mean` (26 values).
+- Cavity (fluid cells with r < R_inner - 1 cell): `dg_cav_umean` (mean |u|/U), `dg_cav_vortD` (mean |curl u| D/U),
+  `dg_cav_Lratio` (air angular momentum about the spin axis / solid-body value, rho omega r_perp^2 summed over the
+  same cells).
+- Force split over the wall links, by the fluid cell p of each link (cells; a fluid cell is never inside the wall):
+  hole walls = R_inner - 1 < |p| < R + 1 and within r_hole + 1 cell of a hole axis (axes at the current spin angle);
+  the other links are outer surface (|p| >= mid-wall radius) or inner surface. Keys `dg_Cd_out`, `dg_Cy_out`,
+  `dg_Cl_out`, `dg_CM_out`, then `_in` and `_hole`; the three parts add up to the total. A smooth sphere has no hole
+  walls. A split by link radius alone (outer r >= R - 1.5, inner r <= R_inner + 1.5) was tried first and left the
+  hole walls empty: the wall is only 2.4 cells thick at D 96, so the two bands overlap. The hole-wall part includes a
+  rim of about 1 cell on the outer and inner surface around each hole.
+
+**Checks of the refinement** (derived, own solver, RTX 3060 shared with other runs):
+
+| Check | Result | Target |
+|---|---|---|
+| Total mass, closed box, lv 2 D 32 and lv 3 D 64, FP32 | relative change 2.2e-9 and -1.5e-9 (largest 3.5e-9) | round-off |
+| Uniform flow, no body, lv 3 D 64, BGK | FP16 noise max \|u - U\|/U 4.5e-4 = same as the uniform grid (4.6-5.2e-4); FP32, no noise: max \|u - U\|/U 9.2e-6 and \|rho - 1\| 1.5e-6 at t* 12 on every level | no growth at the interfaces |
+| Uniform flow, no body, regularized collision, Re 3e4 | lv 3 FP32 grows: 8.6e-4 (t* 3), 3.3e-2 (t* 6), 3.9e-2 (t* 12), first at the upstream face of the finest box. The **uniform** grid does the same (D 16: 3.9e-3 at t* 12, 3.95e-2 at t* 24; D 32: 3.9e-2 at t* 12; also with Cs 0); stable at u 0.02 (6e-7) and at Re 3000 (7.6e-6) | **fails**; see below |
+| Old uniform runs (`lv=1`) with the new code | 192 CSV rows: forces and Cd, Cy, Cl bit-identical; torques differ by at most 1.2e-7 (lattice units; summation order of the force split) | same as before |
+| V0 rotating sphere, Stokes torque, lv 2 D 32 FP32 | 1.0286 x analytic; uniform grid 1.0264 (+0.2 %) | 0.97-1.10 |
+| Sphere Re 100, lv 2 D 32 FP32 | Cd 1.2013; uniform grid 1.1890 (+1.0 %) | within a few % of the uniform grid |
+| Diagnostics unit check: closed smooth sphere, S 0.5, lv 2 D 32, `holes=` given | hole flux 0, cavity 0 cells, inner and hole-wall force 0, outer part = total (Cd 0.654) | exactly that |
+| Diagnostics, spinning POLLEN STL (hole facing the flow), S 0.5, lv 2 D 96, t* 3 (smoke test) | STL volume ratio 1.0005, odd rays 0; 371,848 cavity cells; hole fluxes non-zero; at t* 3 Cd split outer / inner / hole walls 0.567 / 0.067 / 0.065, sum = total to 1e-6 | runs; not a result |
+| **V1** smooth sphere Re 33057, S 0, lv 3 D 96, BGK FP16, box 6x4x4, T 55, mean t* 15-55 | Cd 0.553 (se 0.004, half-window drift -0.011); Cl -0.004, Cy -0.023 | Cd 0.317-0.589 (0.4532 +- 30 %): **inside**, settled. Uniform BGK D 80 same box: Cd 0.539, Cl 0.104 |
+| **V2** smooth sphere Re 33057, S 0.5, same grid | Cl 0.220 (se 0.007, drift +0.012), Cd 0.510, CM -0.014; S 0 twin above: Cl -0.004, Cd 0.553 | Cl 0.22-0.33: **at the lower edge** (0.2197), not a clear pass |
+
+All numbers in this table are derived from our own solver (smooth sphere: validation only, not POLLEN). The V1 and V2
+grid study continues at finest D 192 (lv 3, queued); D 384 does not fit in 12 GB (lv 4: 31 GiB with these boxes,
+15 GiB even with tight boxes).
+
+**Collision: BGK for production.** The regularized collision (`coll=reg`) is unstable in plain uniform flow at
+tau close to 0.5 with u 0.05 (table above), on the uniform grid as well as the refined one, with or without the
+Smagorinsky term. That fits its high sphere Cd (0.67-0.70 against 0.54-0.56 for BGK). All refined and production runs
+use `coll=bgk`.
+
+No POLLEN number from the refined solver exists yet. Queued after V1 and V2 at D 192 (same configuration, refined
+lv 3 D 192 BGK): POLLEN hole facing the flow and between holes at S 0 and S 0.5; 8 random orientations at S 0 and 4
+of them at S 1.0 (7 m/s); between holes at S 0 and S 1.0 at 4 and 10 m/s. Every spin case has its no-spin twin and a
+smooth-sphere twin on the same grid. Estimated cost (derived): about 3 h per case at D 192 on the RTX 3060, more
+for spinning POLLEN (re-voxelisation).
+
 ## Update 2026-10-31: route (b), own solver
 
 FluidX3D stays unbuilt (the permission check refused it). The runs use **route (b)**, an LBM-LES solver written
@@ -191,7 +271,7 @@ Use this band on every POLLEN result.
 
 Kim et al. 2014 covers Re 6e4-2.6e5 (inverse Magnus). That is above this Re range, so it is context only, not an anchor.
 
-## Rerun (Git Bash, from `ftc-pollen-magnus/`)
+## Rerun (Git Bash, from the repo root)
 
 ```bash
 bash cfd/run_cases.sh build        # prepare_fluidx3d.py (pins the commit, sets defines, applies the patch, copies setup.cpp), then MSBuild
@@ -295,6 +375,12 @@ estimates assume 70-100% of that speed with the extensions enabled.
 - Ladd A.J.C. (1994) Numerical simulations of particulate suspensions via a discretized Boltzmann equation, Part 1.
   *J. Fluid Mech.* 271:285-309.
 - Krueger T. et al. (2017) *The Lattice Boltzmann Method: Principles and Practice.* Springer.
+- Rohde M., Kandhai D., Derksen J.J., Van den Akker H.E.A. (2006) A generic, mass conservative local grid refinement
+  technique for lattice-Boltzmann schemes. *Int. J. Numer. Meth. Fluids* 51:439-468, doi 10.1002/fld.1140.
+- Latt J., Chopard B. (2006) Lattice Boltzmann method with regularized pre-collision distribution functions.
+  *Math. Comput. Simul.* 72:165-168.
+- Hou S., Sterling J., Chen S., Doolen G.D. (1996) A lattice Boltzmann subgrid model for high Reynolds number flows.
+  *Fields Inst. Commun.* 6:151-166.
 - Smagorinsky J. (1963) *Mon. Weather Rev.* 91:99-164.
 - Celik I.B. et al. (2008) *J. Fluids Eng.* 130:078001 (GCI).
 - Lehmann M. (2022) *Computation* 10:92.
