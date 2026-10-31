@@ -2,24 +2,41 @@
  "_about": "PM-012 CFD release status for the flight model. Labels: docs/08_shooter_spec.md lines 5-6. Every CFD output in this file is PREDICTED (own solver, not validated); earlier text and commit ca68597 called such numbers derived, which was wrong. See cfd/README.md, sections Acceptance and Validation results.",
  "status": "not released",
  "model_use": "none: keep the ASSUMED values in data/aero_params.json",
- "updated": "2026-10-31 12:55",
+ "updated": "2026-10-31 13:47",
  "solver": "route (b): own LBM-LES, cfd/lbm/ (D3Q19, FP16, BGK, Smagorinsky Cs 0.1); FluidX3D not used",
  "acceptance": {
   "binding": true,
-  "source": "bands pre-registered 2026-10-31 09:32 (commit 208142e) before any run; averaging, lateral-force, run-length and STL conditions added after the review",
+  "source": "bands pre-registered 2026-10-31 09:32 (commit 208142e) before any run; averaging, lateral-force, run-length and STL conditions added after the review; the torque gate, the S 0 STL rule and the V2 twin-stationarity condition were added at 2026-10-31 13:47 after the second review, before their evaluation",
   "V1": "smooth sphere, Re 33057, S 0: box-corrected Cd in 0.43-0.50, Cd stationary, u_win(Cd) <= 0.035, T >= 150",
-  "V2": "smooth sphere, Re 33057, S 0.5: Cl in 0.22-0.33, Cl stationary, S 0 twin over the same window, u_win(Cl) + L_twin <= 0.055, T >= 150",
+  "V2": "smooth sphere, Re 33057, S 0.5: Cl in 0.22-0.33, Cl stationary, S 0 twin over the same window with a stationary Cl window, u_win(Cl) + L_twin <= 0.055, T >= 150; with twins of several noise seeds every twin meets this and L_twin is the largest",
   "same_configuration": "V1 and V2 pass with one collision model, Cs, precision, grid and box; POLLEN runs use it",
   "stl_path": "an STL sphere at S 0.5 matches the analytic sphere in Cd, Cl and CM at the release grid",
   "revox": "one POLLEN spin case matches in Cd, Cl and CM at two revox values",
   "match_rule": "both runs stationary and |diff| <= max(t95 sqrt(se_a^2 + se_b^2), floor); floors Cd 0.01, Cl 0.01, CM 0.001",
-  "band_on_pollen_values": "X +- (b |X| + u_win), plus L_twin for Cl; b = max(|V1 error|, |V2 error vs 0.275|, |change between the two finest grids|), so never below the V1 error",
+  "band_on_pollen_values": "Cd: X +- (b |X| + u_win); Cl: X +- (b |X| + u_win + L_twin); b = max(|V1 error|, |V2 error vs 0.275|, |change between the two finest grids|), so never below the V1 error",
   "withdrawn": {
    "rule": "30 % gate (Cd within 30 % of the reference, 0.317-0.589) and the phrase 'inside the gate'",
    "when_who": "written into cfd/README.md in commit 28f95b1 (2026-10-31 10:18) by the AI coding agent that built the solver, 11 minutes after the first D 48 run (Cd 0.699, +54 %) failed the pre-registered band; commit ca68597 (10:32) then called the BGK run (+24 %) inside the gate",
    "why": "no reason was recorded: a post-hoc relaxation after a failing result, about as wide as the ASSUMED model range Cd 0.35-0.65, so passing it would add nothing"
   },
-  "torque_note": "the CM part of the STL-path and revox matches is suspended: not usable: torque check pending"
+  "torque_note": "the CM part of the STL-path and revox matches waits for the torque gate",
+  "stl_path_S0": "STL sphere vs analytic sphere at S 0, same grid and settings, T >= 150: both Cd windows stationary and |Cd difference| <= max(t95 sqrt(se_a^2 + se_b^2), 0.01); CM, Cy, Cl and L reported, not gated; |CM| of the STL run is the static torque floor F_STL. Written after the run had finished (13:17) and after its Cd and CM had appeared in notes and the review (not blind); replaces the 12:55 text 'match in Cd and Cl'",
+  "torque": {
+   "case": "smooth analytic sphere, Re 33057, S 0.5, BGK, FP16, Cs 0.1, u 0.05 (tau 0.50022 at D 48, 0.50029 at D 64, 0.50044 at D 96), T >= 150, release grid and box",
+   "CM_ref": 0.0063,
+   "CM_ref_label": "derived: Ito & Kamijima 2025 Table 5 (LES), Cm 3.17e-3 at SP 0.5 interpolated to Re 33057; CM = 2 Cm with their T = -Cm pi a^3 rho v^2 (Ito & Kamijima 2022 eq. 4, ASSUMED to hold in 2025)",
+   "band": [
+    0.0047,
+    0.0079
+   ],
+   "band_label": "ASSUMED: +-25 %, the spread to Ito & Kamijima 2022 Table 4 (k-epsilon, CM 0.0047 at Re 33057)",
+   "pass": "the case, CM in the band, CM stationary, u_win(CM) <= 0.0016",
+   "e_M": "max(|CM_gate / 0.0063 - 1|, 0.25)",
+   "if_fail": "no CM or k is released, quoted or matched",
+   "pre_registered": "2026-10-31 13:47, before any evaluation under it; the review's D 48 and D 64 CM values were known (not blind)",
+   "V0_note": "V0 (Stokes Re, FP32, regularized, tau 1.1) is not a production check"
+  },
+  "band_on_CM_and_k": "X +- (e_M |X| + u_win) with e_M from the torque gate (not from b); the half-width is never below F_STL for CM and F_STL x kf for k (kf = 0.5 rho v pi R_cfd^4 / (I S))"
  },
  "averaging": {
   "window": "t* 15 to the end of the run",
@@ -46,7 +63,8 @@
    "case": "sphere spinning in still fluid, Stokes regime",
    "body_over_stokes": 1.026,
    "verdict": "pass",
-   "label": "PREDICTED"
+   "label": "PREDICTED",
+   "note": "not a production check: Stokes Re (Re_rot 0.4), FP32, regularized collision, tau 1.1"
   },
   "V1": {
    "verdict": "fail",
@@ -368,7 +386,7 @@
    "Cd": 0.5472,
    "Cd_u_win": 0.0128,
    "Cd_stationary": false,
-   "CM": "not usable: torque check pending",
+   "CM": "not usable: torque gate not passed",
    "Cy": 0.0078,
    "twin_Cd": 0.5587,
    "twin_Cd_u_win": 0.0103,
@@ -418,20 +436,26 @@
     "stl": 0.3537,
     "analytic": 0.2522
    },
-   "CM": "not usable: torque check pending",
+   "CM": "not usable: torque gate not passed",
    "deviation": "run at D 48, not at the release grid; the release condition (match at the release grid) still stands"
   },
   "revox": {
-   "verdict": "PENDING (torque fix)",
+   "verdict": "PENDING (torque gate)",
    "a": "g64_p_S1.0_between_revox1_T150",
    "b": "g64_p_S1.0_between_revox2_T150",
-   "note": "dropped from this round: every spinning case waits for the spin-torque fix"
+   "note": "dropped from this round: every spinning case waits for the torque gate"
   },
   "stl_sphere_S0": {
-   "verdict": "pending",
+   "verdict": "not yet evaluated",
    "a": "g48_v1stl_S0_T150",
    "b": "g48_v1_S0_T150",
-   "note": "queued 12:30: STL sphere vs analytic sphere at S 0 (no spin), match in Cd and Cl"
+   "rule": "acceptance.stl_path_S0",
+   "note": "finished 13:17:48 (exit 0)"
+  },
+  "torque": {
+   "verdict": "not yet evaluated",
+   "rule": "acceptance.torque",
+   "note": "no run on the release grid: the release grid is not chosen while V1 fails"
   }
  },
  "grid_bgk": [
@@ -469,10 +493,15 @@
  "pollen": {
   "Cd": null,
   "Cl": null,
-  "CM": "not usable: torque check pending",
-  "k_per_s": "not usable: torque check pending",
+  "CM": "not usable: torque gate not passed",
+  "k_per_s": "not usable: torque gate not passed",
   "note": "no POLLEN value is released until V1, V2, the STL-sphere and the revox checks pass in one configuration"
  },
- "CM_and_k": "not usable: torque check pending",
- "spinning_results": "solver diagnostics until the torque check is done (V2, STL path, revox, POLLEN)"
+ "CM_and_k": "not usable: torque gate not passed",
+ "spinning_results": "solver diagnostics until the torque gate passes (V2, STL path, revox, POLLEN)",
+ "noise_seed": {
+  "key": "seed= (default 0) shifts the start-noise hash (solver since commit 44ce149)",
+  "runs": "every run used seed 0 (no queue line sets seed=), except g48_v1_S0_T150_seed104729 (seed 104729)",
+  "header": "the CSV header does not record the seed; a .cmd.txt next to the CSV keeps the command line"
+ }
 }

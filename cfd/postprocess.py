@@ -4,7 +4,12 @@ Standard-library Python only; run it isolated, paths as arguments:
   python -I cfd/postprocess.py summary <run.csv> [<run.csv> ...] [--t0 15] [--json]
   python -I cfd/postprocess.py grid <coarse.csv> <fine.csv> [--t0 15]
   python -I cfd/postprocess.py v1 <run.csv> [--box F] [--t0 15]        V1 verdict (binding acceptance, cfd/README.md)
-  python -I cfd/postprocess.py v2 <spin.csv> <twin_S0.csv> [--t0 15]   V2 verdict (twin lateral force carried as a +- term)
+  python -I cfd/postprocess.py v2 <spin.csv> <twin_S0.csv> [<twin_S0_seed2.csv>] [--t0 15]
+                                                                      V2 verdict (twin lateral force carried as a +- term;
+                                                                      every twin's Cl window must be stationary)
+  python -I cfd/postprocess.py torque <sphere_S0.5.csv> [--t0 15]     torque gate (CM at the production configuration)
+  python -I cfd/postprocess.py stl0 <stl_S0.csv> <sphere_S0.csv> [--t0 15]
+                                                                      STL path at S 0: Cd match; CM, Cy, Cl and L reported
   python -I cfd/postprocess.py match <a.csv> <b.csv> [--t0 15]         Cd/Cl/CM agreement (STL sphere vs analytic, revox pair)
   python -I cfd/postprocess.py --selftest
 
@@ -61,6 +66,16 @@ V1_HALF = 0.035          # u_win(Cd) must not exceed half the band width
 V2_BAND = (0.22, 0.33)   # Cl, smooth sphere, Re 33057, S 0.5
 V2_HALF = 0.055          # u_win(Cl) + twin lateral magnitude must not exceed half the band width
 T_MIN = 150.0            # t*, every V1 and V2 run is at least this long (window t* 15 to the end)
+
+# Torque gate (cfd/README.md "Torque gate"), pre-registered 2026-10-31 after the second review, before any evaluation
+# under it. Reference (derived): Ito & Kamijima 2025, Table 5 (LES), Cm at SP 0.5 interpolated to Re 33057 = 3.17e-3,
+# with T = -Cm pi a^3 rho v^2 (Ito & Kamijima 2022, eq. 4; ASSUMED to hold in 2025). Our CM = -Ty/(q R) with
+# q = 0.5 u^2 pi R^2, so CM = 2 Cm. Band +-25 % (ASSUMED): the spread to the same group's k-epsilon value (CM 0.0047).
+CM_REF = 0.0063
+CM_BAND = (0.0047, 0.0079)
+CM_HALF = 0.0016         # u_win(CM) must not exceed half the band width
+CM_ERR_MIN = 0.25        # e_M = max(|CM_gate / CM_REF - 1|, CM_ERR_MIN) sets the band on CM and k
+TORQUE_CASE = {"Re": 33057.0, "S": 0.5, "u": 0.05, "Cs": 0.1}   # plus body=sphere, coll=bgk, prec=fp16, T >= 150
 
 
 T95 = ((30, 2.04), (20, 2.09), (15, 2.13), (12, 2.18), (10, 2.23), (8, 2.31), (6, 2.45), (5, 2.57), (4, 2.78),
@@ -229,7 +244,8 @@ def summarise(path, t0, t1=None):
     meta, rows = read_run(path)
     out = {"file": os.path.basename(path), "body": meta.get("body"), "D": fnum(meta, "D"), "Re": fnum(meta, "Re"),
            "S": fnum(meta, "S", 0.0), "u": fnum(meta, "u"), "N": meta.get("N"), "tau": fnum(meta, "tau"),
-           "coll": meta.get("coll"), "prec": meta.get("prec"), "revox": fnum(meta, "revox"),
+           "coll": meta.get("coll"), "prec": meta.get("prec"), "Cs": fnum(meta, "Cs"), "lv": fnum(meta, "lv", 1.0),
+           "fb": meta.get("fb"), "revox": fnum(meta, "revox"),
            "solid_over_ref": fnum(meta, "solid_over_reference_volume"), "runtime_s": fnum(meta, "runtime_s"),
            "MLUPs": fnum(meta, "MLUPs"), "finished": "runtime_s" in meta,
            "t_end": rows[-1]["tstar"] if rows else None, "t0": t0}
@@ -293,18 +309,74 @@ def v1_verdict(s, box=1.0):
             "lateral_L": s["lateral"]["L"], "checks": checks, "pass": all(checks.values())}
 
 
-def v2_verdict(spin, twin_rows, t0):
-    """V2: Cl in 0.22-0.33 (pre-registered), stationary, u_win(Cl) + |lateral of the S 0 twin, same window| <= 0.055,
-    finished run of T >= 150."""
+def v2_verdict(spin, twins, t0):
+    """V2: Cl in 0.22-0.33 (pre-registered), stationary, u_win(Cl) + L_twin <= 0.055, finished run of T >= 150.
+    `twins` holds the rows of one S 0 twin, or a list of such row lists (twins with different noise seeds). Every twin
+    must cover the spin window and have a stationary Cl window over it; L_twin is the largest twin |lateral|."""
+    if twins and isinstance(twins[0], dict):
+        twins = [twins]
     c = spin["Cl"]
-    lat = lateral(twin_rows, t0, spin["t_end"])
-    u_tot = c["u_win"] + lat["L"]
+    lats = [lateral(tr, t0, spin["t_end"]) for tr in twins]
+    tws = [window_stats(tr, "Cl", t0, spin["t_end"]) for tr in twins]
+    ls = [la["L"] for la in lats]
+    big = NAN if not ls or any(v != v for v in ls) else max(ls)
+    u_tot = c["u_win"] + big
     checks = {"Cl_in_0.22_0.33": V2_BAND[0] <= c["mean"] <= V2_BAND[1], "stationary": bool(c["trend_pass"]),
-              "twin_covers_window": lat["t1"] >= spin["t_end"] - 1.0, "u_total_le_0.055": u_tot <= V2_HALF,
-              "T_ge_150": gate_length(spin)}
-    return {"file": spin["file"], "Cl": c["mean"], "u_win": c["u_win"], "twin_lateral_L": lat["L"],
-            "twin_window": [lat["t0"], lat["t1"]], "u_total": u_tot, "nb": c["nb"], "trend": c["trend"],
-            "Cd": spin["Cd"]["mean"], "CM": spin["CM"]["mean"], "checks": checks, "pass": all(checks.values())}
+              "twin_covers_window": bool(lats) and all(la["t1"] >= spin["t_end"] - 1.0 for la in lats),
+              "twin_Cl_stationary": bool(tws) and all(bool(w["trend_pass"]) for w in tws),
+              "u_total_le_0.055": u_tot <= V2_HALF, "T_ge_150": gate_length(spin)}
+    return {"file": spin["file"], "Cl": c["mean"], "u_win": c["u_win"], "twin_lateral_L": big,
+            "twins": [{"L": la["L"], "window": [la["t0"], la["t1"]], "Cl": w["mean"], "Cl_u_win": w["u_win"],
+                       "Cl_nb": w["nb"], "Cl_tint": w["tint"], "Cl_trend": w["trend"], "Cl_stationary": bool(w["trend_pass"])}
+                      for la, w in zip(lats, tws)],
+            "u_total": u_tot, "nb": c["nb"], "trend": c["trend"], "Cd": spin["Cd"]["mean"], "CM": spin["CM"]["mean"],
+            "checks": checks, "pass": all(checks.values())}
+
+
+def torque_verdict(s):
+    """Torque gate: smooth analytic sphere at the production configuration (Re 33057, S 0.5, BGK, FP16, Cs 0.1,
+    u 0.05), finished run of T >= 150; CM in 0.0047-0.0079, CM stationary, u_win(CM) <= 0.0016. That the run is on
+    the release grid and box is the "One configuration" rule (cfd/README.md), not checked here."""
+    c = s["CM"]
+    cm, u = c["mean"], c["u_win"]
+
+    def near(key, tol):
+        v = s.get(key)
+        return v is not None and abs(v - TORQUE_CASE[key]) <= tol
+
+    checks = {"body_sphere": s.get("body") == "sphere", "coll_bgk": s.get("coll") == "bgk",
+              "prec_fp16": s.get("prec") == "fp16", "Re_33057": near("Re", 1.0), "S_0.5": near("S", 1e-6),
+              "u_0.05": near("u", 1e-9), "Cs_0.1": near("Cs", 1e-9),
+              "CM_in_0.0047_0.0079": CM_BAND[0] <= cm <= CM_BAND[1], "stationary": bool(c["trend_pass"]),
+              "u_win_le_0.0016": u <= CM_HALF, "T_ge_150": gate_length(s)}
+    ok = all(checks.values())
+    err = cm / CM_REF - 1.0
+    return {"file": s["file"], "D": s.get("D"), "lv": s.get("lv"), "fb": s.get("fb"), "tau": s.get("tau"), "CM": cm,
+            "u_win": u, "nb": c["nb"], "tint": c["tint"], "trend": c["trend"], "CM_ref": CM_REF, "band": list(CM_BAND),
+            "error_rel": err, "e_M": max(abs(err), CM_ERR_MIN) if ok else NAN, "checks": checks, "pass": ok}
+
+
+def stl0_verdict(stl, sph):
+    """STL path at S 0: same grid and settings, finished T >= 150 runs, both Cd windows stationary and
+    |Cd difference| <= max(t95 sqrt(se_a^2 + se_b^2), 0.01). CM, Cy, Cl and the lateral force are reported, not gated;
+    |CM| of the STL run is the static torque floor F_STL on every STL-path CM (F_STL x kf on k)."""
+    x, y = stl["Cd"], sph["Cd"]
+    us = t95(min(x["nb"], y["nb"]) - 1) * math.sqrt(x["se"] ** 2 + y["se"] ** 2)
+    tol = NAN if us != us else max(us, MATCH_FLOOR["Cd"])
+    d = x["mean"] - y["mean"]
+    same = all(stl.get(k) == sph.get(k) for k in ("D", "Re", "u", "coll", "prec", "Cs", "lv"))
+    checks = {"bodies_stl_and_sphere": stl.get("body") == "stl" and sph.get("body") == "sphere",
+              "both_S_0": stl.get("S") == 0.0 and sph.get("S") == 0.0, "same_grid_and_settings": same,
+              "T_ge_150_both": gate_length(stl) and gate_length(sph),
+              "Cd_stationary_both": bool(x["trend_pass"]) and bool(y["trend_pass"]), "Cd_diff_le_tol": abs(d) <= tol}
+    rep = {k: {"stl": stl[k]["mean"], "sphere": sph[k]["mean"], "diff": stl[k]["mean"] - sph[k]["mean"],
+               "u_win": [stl[k]["u_win"], sph[k]["u_win"]], "trend": [stl[k]["trend"], sph[k]["trend"]],
+               "stationary": [bool(stl[k]["trend_pass"]), bool(sph[k]["trend_pass"])]} for k in ("CM", "Cy", "Cl")}
+    rep["L"] = {"stl": stl["lateral"]["L"], "sphere": sph["lateral"]["L"]}
+    return {"stl": stl["file"], "sphere": sph["file"],
+            "Cd": {"stl": x["mean"], "sphere": y["mean"], "diff": d, "tol": tol, "u_win": [x["u_win"], y["u_win"]],
+                   "nb": [x["nb"], y["nb"]]},
+            "reported_not_gated": rep, "F_STL": abs(stl["CM"]["mean"]), "checks": checks, "pass": all(checks.values())}
 
 
 def match(a, b):
@@ -479,6 +551,53 @@ def selftest():
         short = os.path.join(td, "short_twin.csv")
         series(short, hdr % 0, 55.0, [0.46] * n55, [0.0] * n55)
         truth("V2 fails when the twin does not cover the window", not v2_verdict(ss, read_run(short)[1], 15.0)["checks"]["twin_covers_window"])
+        # V2: a twin whose Cl drifts by +0.06 across the window (mean 0, so |L| is small) is not stationary: V2 fails
+        dtw = os.path.join(td, "drift_twin.csv")
+        series(dtw, hdr % 0, 150.0, [0.46] * n150,
+               [0.06 * max(0.0, i * 0.02 - 15.0) / 135.0 - 0.03 + a for i, a in enumerate(ar1(10, n150, 0.02, 2.0, 0.003))])
+        vd = v2_verdict(ss, read_run(dtw)[1], 15.0)
+        truth("V2 fails when the twin Cl window is not stationary", not vd["pass"] and not vd["checks"]["twin_Cl_stationary"]
+              and vd["checks"]["u_total_le_0.055"])
+        # two twins (two noise seeds): L_twin is the larger |L|, and both twins must pass
+        v2q = v2_verdict(ss, [read_run(quiet)[1], read_run(tw)[1]], 15.0)
+        check("V2 two twins: L_twin is the larger", v2q["twin_lateral_L"], 0.13, 0.005)
+        truth("V2 two twins: fails on the twin with |L| 0.13", not v2q["pass"])
+        truth("V2 two quiet twins pass", v2_verdict(ss, [read_run(quiet)[1], read_run(quiet)[1]], 15.0)["pass"])
+        # torque gate: CM 0.0063 at the production configuration passes (e_M at its floor 0.25); CM 0 fails; a
+        # regularized FP32 run with CM 0.0063 fails on the configuration
+        thdr = ("# PM-012 pm012_lbm run; body=sphere stl= D=64 Re=33057 u=0.05 S=0.5 tau=0.50029 prec=%s coll=%s Cs=0.1 lv=3\n"
+                "# runtime_s=1 MLUPs=1\n")
+        tq = os.path.join(td, "torque.csv")
+        series(tq, thdr % ("fp16", "bgk"), 150.0, [0.49] * n150, [0.27] * n150,
+               cm=[0.0063 + a for a in ar1(11, n150, 0.02, 2.0, 0.001)])
+        tv = torque_verdict(summarise(tq, 15.0))
+        truth("torque gate passes at CM 0.0063, BGK FP16", tv["pass"])
+        check("torque gate e_M at its floor", tv["e_M"], 0.25, 1e-12)
+        tz = os.path.join(td, "torque0.csv")
+        series(tz, thdr % ("fp16", "bgk"), 150.0, [0.49] * n150, [0.27] * n150,
+               cm=[a for a in ar1(12, n150, 0.02, 2.0, 0.001)])
+        tzv = torque_verdict(summarise(tz, 15.0))
+        truth("torque gate fails at CM 0", not tzv["pass"] and not tzv["checks"]["CM_in_0.0047_0.0079"])
+        check("torque gate error at CM 0", tzv["error_rel"], -1.0, 0.1)
+        trg = os.path.join(td, "torque_reg.csv")
+        series(trg, thdr % ("fp32", "reg"), 150.0, [0.49] * n150, [0.27] * n150, cm=[0.0063] * n150)
+        trv = torque_verdict(summarise(trg, 15.0))
+        truth("torque gate fails off the production configuration", not trv["pass"] and not trv["checks"]["coll_bgk"]
+              and not trv["checks"]["prec_fp16"] and trv["checks"]["CM_in_0.0047_0.0079"])
+        # STL path at S 0: equal Cd passes although CM (0.004) and Cl differ; Cd 0.46 vs 0.52 fails
+        h_stl = ("# PM-012 pm012_lbm run; body=stl stl=x.stl D=94 Re=33057 u=0.05 S=0 coll=bgk prec=fp16 Cs=0.1 Dmm=71.12\n"
+                 "# runtime_s=1 MLUPs=1\n")
+        h_sph = "# PM-012 pm012_lbm run; body=sphere stl= D=94 Re=33057 u=0.05 S=0 coll=bgk prec=fp16 Cs=0.1\n# runtime_s=1 MLUPs=1\n"
+        s0a = os.path.join(td, "stl0.csv")
+        s0b = os.path.join(td, "sph0.csv")
+        s0c = os.path.join(td, "sph0_hi.csv")
+        series(s0a, h_stl, 150.0, [0.46 + a for a in ar1(13, n150, 0.02, 2.0, 0.01)], [0.02] * n150, cm=[0.004] * n150)
+        series(s0b, h_sph, 150.0, [0.46 + a for a in ar1(14, n150, 0.02, 2.0, 0.01)], [-0.02] * n150, cm=[0.0] * n150)
+        series(s0c, h_sph, 150.0, [0.52 + a for a in ar1(15, n150, 0.02, 2.0, 0.01)], [0.0] * n150, cm=[0.0] * n150)
+        z = stl0_verdict(summarise(s0a, 15.0), summarise(s0b, 15.0))
+        truth("STL S 0: equal Cd passes although CM and Cl differ", z["pass"])
+        check("STL S 0: static torque floor F_STL", z["F_STL"], 0.004, 1e-9)
+        truth("STL S 0: Cd 0.46 vs 0.52 fails", not stl0_verdict(summarise(s0a, 15.0), summarise(s0c, 15.0))["pass"])
         # V1: binding band 0.43-0.50 on the box-corrected Cd
         v1 = v1_verdict(a)
         truth("V1 passes at Cd 0.46", v1["pass"])
@@ -506,7 +625,7 @@ def selftest():
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("cmd", nargs="?", choices=["summary", "grid", "v1", "v2", "match"])
+    ap.add_argument("cmd", nargs="?", choices=["summary", "grid", "v1", "v2", "torque", "stl0", "match"])
     ap.add_argument("files", nargs="*")
     ap.add_argument("--t0", type=float, default=15.0, help="start of the averaging window in t* (default 15)")
     ap.add_argument("--t1", type=float, default=None, help="end of the averaging window in t* (default: end of run)")
@@ -527,8 +646,15 @@ def main(argv=None):
     if a.cmd == "v1" and len(a.files) == 1:
         print(json.dumps(v1_verdict(summarise(a.files[0], a.t0, a.t1), a.box), indent=1))
         return 0
-    if a.cmd == "v2" and len(a.files) == 2:
-        print(json.dumps(v2_verdict(summarise(a.files[0], a.t0, a.t1), read_run(a.files[1])[1], a.t0), indent=1))
+    if a.cmd == "v2" and len(a.files) in (2, 3):
+        twins = [read_run(p)[1] for p in a.files[1:]]
+        print(json.dumps(v2_verdict(summarise(a.files[0], a.t0, a.t1), twins, a.t0), indent=1))
+        return 0
+    if a.cmd == "torque" and len(a.files) == 1:
+        print(json.dumps(torque_verdict(summarise(a.files[0], a.t0, a.t1)), indent=1))
+        return 0
+    if a.cmd == "stl0" and len(a.files) == 2:
+        print(json.dumps(stl0_verdict(summarise(a.files[0], a.t0, a.t1), summarise(a.files[1], a.t0, a.t1)), indent=1))
         return 0
     if a.cmd == "match" and len(a.files) == 2:
         print(json.dumps(match(summarise(a.files[0], a.t0, a.t1), summarise(a.files[1], a.t0, a.t1)), indent=1))
