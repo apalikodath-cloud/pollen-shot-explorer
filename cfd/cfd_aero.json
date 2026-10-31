@@ -2,7 +2,7 @@
  "_about": "PM-012 CFD release status for the flight model. Labels: docs/08_shooter_spec.md lines 5-6. Every CFD output in this file is PREDICTED (own solver, not validated); earlier text and commit ca68597 called such numbers derived, which was wrong. See cfd/README.md, sections Acceptance and Validation results.",
  "status": "not released",
  "model_use": "none: keep the ASSUMED values in data/aero_params.json",
- "updated": "2026-10-31 13:47",
+ "updated": "2026-10-31 14:09",
  "solver": "route (b): own LBM-LES, cfd/lbm/ (D3Q19, FP16, BGK, Smagorinsky Cs 0.1); FluidX3D not used",
  "acceptance": {
   "binding": true,
@@ -68,9 +68,10 @@
   },
   "V1": {
    "verdict": "fail",
-   "reason": "no finished run meets every condition. The only gate-length run (T 150) g48_v1_S0_T150 has box-corrected Cd 0.545, outside 0.43-0.50. The lowest box-corrected Cd, 0.497 (v1_bgk_d94, T 55), is inside the band but not gate length, and its box correction is ASSUMED for BGK",
+   "reason": "no finished run meets every condition. The two gate-length runs (T 150, noise seeds 0 and 104729) g48_v1_S0_T150 and g48_v1_S0_T150_seed104729 have box-corrected Cd 0.545 and 0.542, outside 0.43-0.50. The lowest box-corrected Cd, 0.497 (v1_bgk_d94, T 55), is inside the band but not gate length, and its box correction is ASSUMED for BGK",
    "gate_length_runs": [
-    "g48_v1_S0_T150"
+    "g48_v1_S0_T150",
+    "g48_v1_S0_T150_seed104729"
    ],
    "box_factor": {
     "value": 0.9762,
@@ -373,12 +374,42 @@
      },
      "verdict": "fail",
      "label": "PREDICTED"
+    },
+    {
+     "run": "g48_v1_S0_T150_seed104729",
+     "setting": "D 48, BGK, T 150, noise seed 104729",
+     "coll": "bgk",
+     "D": 48.0,
+     "T": 150,
+     "t_end": 149.9901,
+     "Cd": 0.5556,
+     "u_win": 0.0115,
+     "nb": 26,
+     "batch_t": 5.0,
+     "T_int": 2.4267,
+     "trend": -0.0134,
+     "stationary": true,
+     "box_factor": 0.9762,
+     "Cd_box": 0.5424,
+     "error_vs_ref": 0.1971,
+     "L_this_run": 0.0546,
+     "checks": {
+      "Cd_in_0.43_0.50": false,
+      "stationary": true,
+      "u_win_le_0.035": true,
+      "T_ge_150": true
+     },
+     "verdict": "fail",
+     "label": "PREDICTED",
+     "seed": 104729,
+     "finished": "14:05:44",
+     "build": "development build, not committed: its CSV header shows the default fb=1.2,2.5,1.2 gb=0.3,1,0.3 (fb and gb act only with lv >= 2). With seed 0 it gave the forces and Cd, Cy, Cl of g48_v1_S0_T150 bit for bit over the first 14 CSV rows (t* 0.28); the torques differed by at most 6e-8 (lattice units)"
     }
    ]
   },
   "V2": {
    "spin": "g48_v2_S0.5_T150",
-   "twin": "g48_v1_S0_T150",
+   "twin": "g48_v1_S0_T150 (seed 0); both seeds under 'twins'",
    "Cl": 0.2522,
    "Cl_u_win": 0.018,
    "Cl_trend": 0.0267,
@@ -397,17 +428,68 @@
     0.0328,
     0.2138
    ],
-   "u_total": 0.0465,
+   "u_total": 0.0727,
    "error_vs_0.275": -0.0827,
    "checks": {
     "Cl_in_0.22_0.33": true,
     "stationary": false,
     "twin_covers_window": true,
-    "u_total_le_0.055": true,
+    "twin_Cl_stationary": false,
+    "u_total_le_0.055": false,
     "T_ge_150": true
    },
    "verdict": "fail",
-   "label": "PREDICTED"
+   "label": "PREDICTED",
+   "twins": [
+    {
+     "run": "g48_v1_S0_T150",
+     "seed": 0,
+     "Cl": -0.0283,
+     "Cl_u_win": 0.0924,
+     "Cl_nb": 3,
+     "Cl_T_int": 18.7515,
+     "Cl_trend": 0.2553,
+     "Cl_stationary": false,
+     "Cy": -0.0027,
+     "L": 0.0285,
+     "L_blocks": [
+      0.0328,
+      0.2138
+     ],
+     "Cd": 0.5587,
+     "window": [
+      15.0,
+      149.99
+     ],
+     "label": "PREDICTED"
+    },
+    {
+     "run": "g48_v1_S0_T150_seed104729",
+     "seed": 104729,
+     "Cl": 0.0545,
+     "Cl_u_win": 0.0592,
+     "Cl_nb": 4,
+     "Cl_T_int": 14.8775,
+     "Cl_trend": -0.1431,
+     "Cl_stationary": true,
+     "Cy": 0.0027,
+     "L": 0.0546,
+     "L_blocks": [
+      0.0349,
+      0.1838
+     ],
+     "Cd": 0.5556,
+     "window": [
+      15.0,
+      149.99
+     ],
+     "label": "PREDICTED"
+    }
+   ],
+   "L_twin": 0.0546,
+   "L_twin_rule": "the largest twin |lateral| over the spin window (acceptance.V2)",
+   "reason": "Cl 0.252 is in 0.22-0.33, but the Cl window is not stationary; the twin Cl window is not stationary (g48_v1_S0_T150); u_win(Cl) + L_twin is above 0.055",
+   "evaluated": "2026-10-31 14:09 (postprocess.py v2 with both twins)"
   },
   "stl_sphere": {
    "a": "g48_v2stl_S0.5_T150",
@@ -446,16 +528,123 @@
    "note": "dropped from this round: every spinning case waits for the torque gate"
   },
   "stl_sphere_S0": {
-   "verdict": "not yet evaluated",
+   "verdict": "pass",
    "a": "g48_v1stl_S0_T150",
    "b": "g48_v1_S0_T150",
    "rule": "acceptance.stl_path_S0",
-   "note": "finished 13:17:48 (exit 0)"
+   "Cd": {
+    "stl": 0.5586,
+    "sphere": 0.5587,
+    "diff": -0.00014,
+    "tol": 0.01,
+    "u_win": [
+     0.0116,
+     0.0103
+    ],
+    "nb": [
+     16,
+     26
+    ]
+   },
+   "reported_not_gated": {
+    "CM": {
+     "stl": 0.00365,
+     "sphere": 0.00061,
+     "u_win": [
+      0.0009,
+      0.00195
+     ],
+     "trend": [
+      0.00216,
+      -0.00553
+     ],
+     "stationary": [
+      false,
+      true
+     ]
+    },
+    "Cy": {
+     "stl": -0.06255,
+     "sphere": -0.00274,
+     "u_win": [
+      0.05843,
+      0.06548
+     ],
+     "trend": [
+      -0.12374,
+      0.15536
+     ],
+     "stationary": [
+      true,
+      true
+     ]
+    },
+    "Cl": {
+     "stl": 0.02419,
+     "sphere": -0.02833,
+     "u_win": [
+      0.04996,
+      0.09244
+     ],
+     "trend": [
+      -0.12291,
+      0.25535
+     ],
+     "stationary": [
+      true,
+      false
+     ]
+    }
+   },
+   "L": {
+    "stl": 0.0671,
+    "sphere": 0.0285
+   },
+   "F_STL": 0.00365,
+   "F_STL_note": "|CM| of the STL run at S 0: the floor on every STL-path CM half-width (F_STL x kf on k); 58 % of the torque reference 0.0063; from a CM window that is not stationary",
+   "checks": {
+    "bodies_stl_and_sphere": true,
+    "both_S_0": true,
+    "same_grid_and_settings": true,
+    "T_ge_150_both": true,
+    "Cd_stationary_both": true,
+    "Cd_diff_le_tol": true
+   },
+   "label": "PREDICTED",
+   "note": "finished 13:17:48 (exit 0); rule written after the run had finished (not blind). Under the 12:55 text 'match in Cd and Cl' it would fail: the analytic Cl window is not stationary",
+   "evaluated": "2026-10-31 14:09"
   },
   "torque": {
-   "verdict": "not yet evaluated",
+   "verdict": "not run on the release grid",
    "rule": "acceptance.torque",
-   "note": "no run on the release grid: the release grid is not chosen while V1 fails"
+   "note": "no run on the release grid: the release grid is not chosen while V1 fails; no CM or k is released",
+   "diagnostic": {
+    "run": "g48_v2_S0.5_T150",
+    "grid": "uniform D 48 (not the release grid)",
+    "CM": 4.1e-05,
+    "u_win": 0.00118,
+    "nb": 26,
+    "T_int": 1.303,
+    "trend": -0.00207,
+    "error_rel": -0.9935,
+    "checks": {
+     "body_sphere": true,
+     "coll_bgk": true,
+     "prec_fp16": true,
+     "Re_33057": true,
+     "S_0.5": true,
+     "u_0.05": true,
+     "Cs_0.1": true,
+     "CM_in_0.0047_0.0079": false,
+     "stationary": false,
+     "u_win_le_0.0016": true,
+     "T_ge_150": true
+    },
+    "verdict": "fail",
+    "label": "PREDICTED",
+    "note": "a diagnostic, not the gate",
+    "evaluated": "2026-10-31 14:09"
+   }
   }
  },
  "grid_bgk": [
@@ -502,6 +691,8 @@
  "noise_seed": {
   "key": "seed= (default 0) shifts the start-noise hash (solver since commit 44ce149)",
   "runs": "every run used seed 0 (no queue line sets seed=), except g48_v1_S0_T150_seed104729 (seed 104729)",
-  "header": "the CSV header does not record the seed; a .cmd.txt next to the CSV keeps the command line"
+  "header": "the CSV header does not record the seed; a .cmd.txt next to the CSV keeps the command line",
+  "seed_run_build": "development build, not committed: its CSV header shows the default fb=1.2,2.5,1.2 gb=0.3,1,0.3 (fb and gb act only with lv >= 2). With seed 0 it gave the forces and Cd, Cy, Cl of g48_v1_S0_T150 bit for bit over the first 14 CSV rows (t* 0.28); the torques differed by at most 6e-8 (lattice units)",
+  "seed_run_finished": "14:05:44"
  }
 }

@@ -21,7 +21,7 @@ choice), USER (given by the team), CONFIRMED (from official CAD), derived (compu
   published; they are not in this repo's history.
 - Inputs keep their own labels (table "Inputs"). Run times and speeds are read from the run logs (derived).
 
-## Status (2026-10-31 13:47)
+## Status (2026-10-31 14:09)
 
 - **Not released.** No CFD number may replace an ASSUMED value in the model. `cfd_aero.json` records the same
   status and holds no POLLEN values.
@@ -30,19 +30,26 @@ choice), USER (given by the team), CONFIRMED (from official CAD), derived (compu
 - **V0** (sphere spinning in still fluid, Stokes torque) passes: 1.026 x analytic. V0 is **not a production check**:
   it runs at Stokes Re (Re_rot 0.4), FP32, regularized collision and tau 1.1, while the production runs use BGK,
   FP16, tau 0.5002-0.5004 and Re 33057. The torque gate (section "Torque gate") is the production check.
-- **V1** (smooth sphere, Re 33057, S 0) **fails** at every grid and setting tried so far. The only gate-length run
-  (BGK, D 48, T 150) gives a box-corrected Cd of 0.545 against the band 0.43-0.50. The lowest box-corrected Cd is
+- **V1** (smooth sphere, Re 33057, S 0) **fails** at every grid and setting tried so far. The two gate-length runs
+  (BGK, D 48, T 150, noise seeds 0 and 104729) give box-corrected Cd 0.545 and 0.542 against the band 0.43-0.50.
+  The lowest box-corrected Cd is
   0.497 (BGK, D 94, stationary): inside the band, but T 55 < 150, so it does not pass, and its box correction is
   ASSUMED for BGK. A gate-length run at D 94 or on the refined grid is needed before V1 can pass.
 - **CM and k (spin decay): not usable until the torque gate passes** (section "Torque gate", pre-registered
   2026-10-31 13:47). The spinning runs give CM near 0 (D 48) or a CM with the sign of a driving torque (D 96). The review
-  re-derived the moving-wall term, the torque Ty and the CM formula and found them correct. No CM or k from this
-  folder may be used, quoted or matched until the gate passes.
+  re-derived the moving-wall term, the torque Ty and the CM formula and found them correct. The gate rule applied to
+  the D 48 V2 run fails: CM +0.00004 against 0.0047-0.0079, and the CM window is not stationary (PREDICTED; a
+  diagnostic, because D 48 is not the release grid). No CM or k from this folder may be used, quoted or matched
+  until the gate passes.
 - **STL-sphere check** (D 48, S 0.5) **fails**: the STL sphere gives Cd +0.067 and Cl +0.101 above the analytic
-  sphere (PREDICTED). The **STL check at S 0** (no spin) has finished; its pass rule is in "Acceptance", written
-  before its evaluation. The **revox check** is PENDING (torque gate): every spinning case waits for the torque gate.
+  sphere (PREDICTED). The **STL check at S 0** (no spin, D 48) **passes** its rule: Cd 0.5586 (STL) against 0.5587
+  (analytic), PREDICTED. The rule was written after the run had finished, so it is not blind. The STL sphere's
+  static torque, F_STL = 0.00365 (PREDICTED; its CM window is not stationary), is the floor on every STL-path CM and
+  k. The **revox check** is PENDING (torque gate): every spinning case waits for the torque gate.
 - Every spinning result here (V2, STL path, revox, POLLEN) is a solver diagnostic until the torque gate passes. V2
-  cannot release anything while V1 fails.
+  cannot release anything while V1 fails. **V2** (D 48, S 0 twins with noise seeds 0 and 104729) **fails**: Cl 0.252
+  is in the band, but its Cl window and the seed-0 twin's Cl window are not stationary, and u_win(Cl) + L_twin is
+  0.073 > 0.055 (PREDICTED).
 - Runs with local grid refinement (option `lv=` 2 or more) are described in "Local grid refinement". The same
   binding rule applies to them, including T >= 150.
 
@@ -113,6 +120,11 @@ two published values), the CM window stationary, and u_win(CM) <= 0.0016 (half t
 above were known when this was written. With a wall layer under one cell at every grid that fits on the card, the
 gate may fail at all of them (PREDICTED); then CM and k stay unreleased.
 
+**Diagnostic, not the gate** (`postprocess.py torque` on g48_v2_S0.5_T150, evaluated 14:09). Uniform D 48 is not
+the release grid. CM +0.00004 +- 0.0012 (26 batches; trend -0.0021 over the window, above the 0.002 tolerance: not
+stationary), -99 % from the reference (PREDICTED). It meets the configuration, run-length and u_win conditions and
+fails the band and stationarity. The gate itself has not run: no release grid exists while V1 fails.
+
 ### Withdrawn: the "30 % gate"
 
 - **What:** "Cd within 30 % of 0.4532", printed as "30 % gate 0.317-0.589".
@@ -150,7 +162,10 @@ gate may fail at all of them (PREDICTED); then CM and k stay unreleased.
   that hash, so the start noise can be varied. Every run in this README used seed 0 (no queue line sets `seed=`),
   except the second S 0 twin g48_v1_S0_T150_seed104729 (seed 104729). The CSV header does not record the seed; a run
   with another seed keeps its command line in a `.cmd.txt` file next to its CSV. An earlier version of this README
-  said there was no seed key; the key was added to the solver in commit 44ce149.
+  said there was no seed key; the key was added to the solver in commit 44ce149. The seed-104729 run used a
+  development build, not a committed one (its CSV header shows the default fb=1.2,2.5,1.2, which acts only with `lv`
+  2 or more). With seed 0 that build gave the forces and Cd, Cy, Cl of g48_v1_S0_T150 bit for bit over the first 14
+  CSV rows (t* 0.28); the torques differed by at most 6e-8 (lattice units).
 - Box 6 x 4 x 4 D (8 x 6 x 6 D for the box check). Body centre 2 D from the inlet (`xc=2`).
 - Run length T in t* = D/U, with about 50 CSV rows per t*.
 
@@ -291,6 +306,9 @@ over t* 15-55 (PREDICTED; BGK: 0.130 at D 48, 0.080 at D 64, 0.120 at D 80). So:
 - L_twin = |(<Cl>, <Cy>)| of the S 0 twin over the same window as the spinning run. `postprocess.py` also prints it
   for each 5 t* block.
 - L_twin is a +- term on V2 (the gate condition above) and on every POLLEN Cl.
+- Two noise seeds of the D 48, T 150 twin, t* 15-150 (PREDICTED): L 0.0285 (seed 0) and 0.0546 (seed 104729);
+  Cl -0.028 (window not stationary) and +0.055 (window stationary). L_twin for V2 is the larger, 0.0546. One pair of
+  seeds is not a seed-to-seed spread.
 - A single-window twin Cl is never subtracted from a spinning Cl.
 - Every backspin result is shown next to its S 0 twin.
 
@@ -312,9 +330,12 @@ so no run in this table is gate length. "vs 0.453" is the box-corrected Cd again
 | v1_bgk_d80 | D 80, BGK | 0.539 +- 0.012 | +0.025 (yes: not significant) | 0.526 | +16 % | 0.120 | fail |
 | v1_bgk_d94 | D 94, BGK | 0.509 +- 0.010 | +0.002 (yes) | 0.497 | +10 % | 0.071 | fail: in band, but T 55 < 150 |
 | g48_v1_S0_T150 | D 48, BGK, **T 150** (window t* 15-150) | 0.559 +- 0.010 | -0.006 (yes; Cl not) | 0.545 | +20 % | 0.028 | fail |
+| g48_v1_S0_T150_seed104729 | the same, noise seed 104729 | 0.556 +- 0.012 | -0.013 (yes) | 0.542 | +20 % | 0.055 | fail |
 
 - Box factor 0.976 = Cd(8 x 6 x 6) / Cd(6 x 4 x 4) for the regularized D 48 pair (PREDICTED). Using it for BGK and
   for finer grids is ASSUMED. The pre-registered box study (8 x 5 x 5 and 10 x 7 x 7) was not run.
+- Noise seeds 0 and 104729 at D 48, T 150 give Cd 0.5587 and 0.5556 (PREDICTED). One pair of seeds is not a
+  seed-to-seed spread.
 - Grid series, BGK (T 55): D 48 0.563, D 64 0.533 (not stationary), D 80 0.539, D 94 0.509. The change between the
   two finest grids (D 80 to D 94) is -0.030 (-5.9 %); from D 48 to D 94 it is -0.054 (-9.6 %). Cd is not grid
   converged.
@@ -327,8 +348,8 @@ Other checks:
 |---|---|---|---|---|
 | V0 | sphere spinning in still fluid, Stokes regime (Re_rot 0.4), D 32, FP32, cube of side 4 D | torque 1.026 x Stokes | 0.97-1.10: Stokes torque 8 pi mu R^3 w, raised 1.003-1.016x by the box (derived) | pass (cube-flux check not run) |
 | Re 100 | sphere, regularized, T 30: D 24 (box 12 x 10 x 10, FP16) / D 32 (box 8 x 6 x 6, FP32) | Cd 1.171 / 1.189 | 1.073 (Brown & Lawler Eq. 19, derived) | +9 % / +11 %, no gate. Earlier text used 1.087, whose source was not recorded. |
-| V2 | sphere at S 0.5, D 48, BGK, T 150 (g48_v2_S0.5_T150), twin g48_v1_S0_T150 | Cl 0.252 +- 0.018 (trend +0.027: not stationary), Cd 0.547 +- 0.013 (not stationary). S 0 twin, same window t* 15-150: Cl -0.028, Cy -0.003, L_twin 0.0285 (5 t* blocks 0.033-0.214), Cd 0.559. u_win(Cl) + L_twin 0.047 <= 0.055. CM: not usable: torque gate not passed | Cl 0.22-0.33 (pre-registered). Cl about 0.29 at SP 0.55 (Sakai et al. 2016, Fig. 8, Re 3e4 bin, by eye); 0.26 at Re 3.6e4, Sp 0.5 (Conti et al. 2026, unreviewed preprint); Cd about 0.49 near SP 0.5 (Sakai, Fig. 7) | **fail**: Cl is in the band, but the Cl window is not stationary. A spinning run, so a solver diagnostic until the torque gate passes |
-| STL path, S 0 | STL sphere vs analytic sphere at S 0, D 48, BGK, T 150 (g48_v1stl_S0_T150 vs g48_v1_S0_T150): tests the STL path without spin | finished 13:17 (exit 0); entered under the rule in "Acceptance" | rule "STL path, S 0" (Cd match; CM, Cy, Cl and L reported). It replaces the 12:55 text "match in Cd and Cl". It was written after the run had finished and after its Cd and CM had appeared in the analysis notes and the review, so it is not blind | not yet evaluated |
+| V2 | sphere at S 0.5, D 48, BGK, T 150 (g48_v2_S0.5_T150); S 0 twins g48_v1_S0_T150 (seed 0) and g48_v1_S0_T150_seed104729 (seed 104729) | Cl 0.252 +- 0.018 (trend +0.027: not stationary), Cd 0.547 +- 0.013 (not stationary). S 0 twins over the same window t* 15-150. Seed 0: Cl -0.028 +- 0.092 (3 batches, trend +0.255: not stationary), Cy -0.003, L 0.0285 (5 t* blocks 0.033-0.214), Cd 0.559. Seed 104729: Cl +0.055 +- 0.059 (4 batches, trend -0.143, not significant at 95 %: stationary), Cy +0.003, L 0.0546 (5 t* blocks 0.035-0.184), Cd 0.556. L_twin 0.0546 (the larger). u_win(Cl) + L_twin 0.073 > 0.055. CM: not usable: torque gate not passed | Cl 0.22-0.33 (pre-registered). Cl about 0.29 at SP 0.55 (Sakai et al. 2016, Fig. 8, Re 3e4 bin, by eye); 0.26 at Re 3.6e4, Sp 0.5 (Conti et al. 2026, unreviewed preprint); Cd about 0.49 near SP 0.5 (Sakai, Fig. 7) | **fail**: Cl is in the band, but the Cl window is not stationary, the twin Cl window is not stationary (seed 0) and u_win(Cl) + L_twin is above 0.055. A spinning run, so a solver diagnostic until the torque gate passes |
+| STL path, S 0 | STL sphere vs analytic sphere at S 0, D 48, BGK, T 150 (g48_v1stl_S0_T150 vs g48_v1_S0_T150): tests the STL path without spin | Cd: STL 0.5586 +- 0.0116 (16 batches), analytic 0.5587 +- 0.0103 (26 batches), both stationary; difference -0.0001, tolerance 0.010. Reported, not gated (STL / analytic): CM +0.0037 +- 0.0009 (trend +0.0022: not stationary) / +0.0006 +- 0.0019 (stationary); Cy -0.063 / -0.003; Cl +0.024 (stationary) / -0.028 (not stationary); L 0.067 / 0.028. F_STL = 0.00365 | rule "STL path, S 0" (Cd match; CM, Cy, Cl and L reported). It replaces the 12:55 text "match in Cd and Cl". It was written after the run had finished and after its Cd and CM had appeared in the analysis notes and the review, so it is not blind | **pass** (Cd). Under the 12:55 text it would fail: the analytic Cl window is not stationary. F_STL 0.00365 is 58 % of the torque reference 0.0063 |
 | STL path | STL sphere vs analytic sphere, S 0.5, D 48, BGK, T 150 (g48_v2stl_S0.5_T150 vs g48_v2_S0.5_T150) | STL: Cd 0.614 +- 0.010, Cl 0.354 +- 0.017 (both stationary). Analytic: Cd 0.547 +- 0.013, Cl 0.252 +- 0.018 (neither stationary: trend +0.026 / +0.027). Difference: Cd +0.067, Cl +0.101. CM: not usable: torque gate not passed. S 0 twin: see the V2 row | match in Cd, Cl and CM (tolerance 0.01 here) | **fail**: both differences are far above the tolerance, and the analytic run is not stationary. Both runs spin, so this is a solver diagnostic until the torque gate passes |
 | revox | POLLEN "between holes", S 1.0, D 64, BGK, T 150, revox 1 vs 2 | not run in this round: every spinning case waits for the torque gate (revox 1 held since 12:10) | match in Cd, Cl and CM | **PENDING (torque gate)** |
 | V3 (optional) | spinning sphere, Re 1e4, Gamma 0 / 0.2 / 1.0, D 48, 8 x 5 x 5 | not run | Muto et al. 2012 LES, Table I: Cl 0.167 (s.d. 0.029) at Gamma 0.2, 0.301 (s.d. 0.096) at Gamma 1.0 | none |
@@ -348,11 +369,11 @@ sphere, so they share the POLLEN voxelization path.
 | Run | What | Started | Ends about |
 |---|---|---|---|
 | v1_bgk_d94_T150 | V1, uniform D 94, BGK, T 150 (the first gate-length D 94 run) | 13:15 | about 18:30 (scaled from v1_bgk_d94: 6808 s for T 55) |
-| g48_v1_S0_T150_seed104729 | second S 0 twin, seed 104729, D 48, BGK, T 150; started by hand, not through the queue | 13:34 | about 14:10 |
 | g64_p_S1.0_between_revox1_T150 | revox check, POLLEN, D 64, S 1.0, revox 1 | held until the torque gate passes | |
 
 Finished since 11:50: v1_bgk_d94, g48_v2_S0.5_T150, g48_v2stl_S0.5_T150, g48_v1_S0_T150,
-g64_p_S1.0_between_revox2_T150 (its revox 1 partner is held, so it is not reported) and g48_v1stl_S0_T150 (13:17).
+g64_p_S1.0_between_revox2_T150 (its revox 1 partner is held, so it is not reported), g48_v1stl_S0_T150 (13:17) and
+g48_v1_S0_T150_seed104729 (14:05; started by hand, not through the queue).
 
 ## GPU queue
 
@@ -441,7 +462,8 @@ R=$PM012_CFD_ROOT/pm012_lbm/runs
 $PM012_CFD_ROOT/pm012_lbm/bin/pm012_lbm.exe body=sphere D=48 Re=33057 S=0.5 T=150 coll=bgk out=$R/g48_v2_S0.5_T150.csv
 python -I cfd/postprocess.py summary $R/g48_v2_S0.5_T150.csv
 python -I cfd/postprocess.py v1 $R/g48_v1_S0_T150.csv --box 0.976
-python -I cfd/postprocess.py v2 $R/g48_v2_S0.5_T150.csv $R/g48_v1_S0_T150.csv
+$PM012_CFD_ROOT/pm012_lbm/bin/pm012_lbm.exe body=sphere D=48 Re=33057 S=0 T=150 coll=bgk seed=104729 out=$R/g48_v1_S0_T150_seed104729.csv
+python -I cfd/postprocess.py v2 $R/g48_v2_S0.5_T150.csv $R/g48_v1_S0_T150.csv $R/g48_v1_S0_T150_seed104729.csv
 python -I cfd/postprocess.py match $R/g48_v2stl_S0.5_T150.csv $R/g48_v2_S0.5_T150.csv
 python -I cfd/postprocess.py stl0 $R/g48_v1stl_S0_T150.csv $R/g48_v1_S0_T150.csv
 python -I cfd/postprocess.py torque $R/g48_v2_S0.5_T150.csv    # a diagnostic: D 48 is not the release grid
@@ -456,7 +478,8 @@ flow" and "between holes". To recreate the POLLEN STL:
 
 - V1 fails and the cause is not known. The collision model moves Cd far more than the grid does, and the wall layer
   is not resolved.
-- The S 0 sphere keeps a lateral force of up to 0.13 over 40 t* (PREDICTED). Through L_twin it may also make V2 fail.
+- The S 0 sphere keeps a lateral force of up to 0.13 over 40 t* (PREDICTED). Through L_twin it makes V2 fail
+  at D 48: with the seed-104729 twin (L 0.0546), u_win(Cl) + L_twin is 0.073 > 0.055 (PREDICTED).
 - The box factor comes from one regularized D 48 pair.
 - The STL sphere and the analytic sphere disagree at D 48, S 0.5 (Cd +0.067, Cl +0.101, PREDICTED). The cause is
   not known; the spin-torque check may bear on it. Until it is found, no STL-path result can be trusted.
@@ -468,7 +491,10 @@ flow" and "between holes". To recreate the POLLEN STL:
   study.
 - The wall layer is not resolved (D / sqrt(Re) is 0.26 cells at D 48 and 0.53 at D 96). The spin torque comes from
   the wall friction, so CM may fail the torque gate at every grid that fits on the card; then CM and k stay unreleased.
-- Only the S 0 twin has a second noise seed; no other number has a seed-to-seed spread.
+- Only the D 48 S 0 twin has a second noise seed (one pair); no other number has a seed-to-seed spread.
+- The STL sphere's static torque at S 0, F_STL = 0.00365 (PREDICTED, from a CM window that is not stationary), is
+  58 % of the torque reference 0.0063, so every STL-path CM and k (every POLLEN value) carries at least that
+  half-width.
 - The cost of re-voxelizing every step (S 1.5) is not measured.
 - The STEP download URL was not recorded. Its hash is recorded above.
 
