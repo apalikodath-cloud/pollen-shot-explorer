@@ -1,0 +1,478 @@
+{
+ "_about": "PM-012 CFD release status for the flight model. Labels: docs/08_shooter_spec.md lines 5-6. Every CFD output in this file is PREDICTED (own solver, not validated); earlier text and commit ca68597 called such numbers derived, which was wrong. See cfd/README.md, sections Acceptance and Validation results.",
+ "status": "not released",
+ "model_use": "none: keep the ASSUMED values in data/aero_params.json",
+ "updated": "2026-10-31 12:55",
+ "solver": "route (b): own LBM-LES, cfd/lbm/ (D3Q19, FP16, BGK, Smagorinsky Cs 0.1); FluidX3D not used",
+ "acceptance": {
+  "binding": true,
+  "source": "bands pre-registered 2026-10-31 09:32 (commit 208142e) before any run; averaging, lateral-force, run-length and STL conditions added after the review",
+  "V1": "smooth sphere, Re 33057, S 0: box-corrected Cd in 0.43-0.50, Cd stationary, u_win(Cd) <= 0.035, T >= 150",
+  "V2": "smooth sphere, Re 33057, S 0.5: Cl in 0.22-0.33, Cl stationary, S 0 twin over the same window, u_win(Cl) + L_twin <= 0.055, T >= 150",
+  "same_configuration": "V1 and V2 pass with one collision model, Cs, precision, grid and box; POLLEN runs use it",
+  "stl_path": "an STL sphere at S 0.5 matches the analytic sphere in Cd, Cl and CM at the release grid",
+  "revox": "one POLLEN spin case matches in Cd, Cl and CM at two revox values",
+  "match_rule": "both runs stationary and |diff| <= max(t95 sqrt(se_a^2 + se_b^2), floor); floors Cd 0.01, Cl 0.01, CM 0.001",
+  "band_on_pollen_values": "X +- (b |X| + u_win), plus L_twin for Cl; b = max(|V1 error|, |V2 error vs 0.275|, |change between the two finest grids|), so never below the V1 error",
+  "withdrawn": {
+   "rule": "30 % gate (Cd within 30 % of the reference, 0.317-0.589) and the phrase 'inside the gate'",
+   "when_who": "written into cfd/README.md in commit 28f95b1 (2026-10-31 10:18) by the AI coding agent that built the solver, 11 minutes after the first D 48 run (Cd 0.699, +54 %) failed the pre-registered band; commit ca68597 (10:32) then called the BGK run (+24 %) inside the gate",
+   "why": "no reason was recorded: a post-hoc relaxation after a failing result, about as wide as the ASSUMED model range Cd 0.35-0.65, so passing it would add nothing"
+  },
+  "torque_note": "the CM part of the STL-path and revox matches is suspended: not usable: torque check pending"
+ },
+ "averaging": {
+  "window": "t* 15 to the end of the run",
+  "bins_t": 0.1,
+  "batch": "max(2 T_int, 5 t*), T_int = max(autocorrelation to first zero, batch-means estimates at 5/10/20 t*)",
+  "min_batches": 4,
+  "uncertainty": "u_win = standard deviation of the batch means",
+  "trend": "least-squares slope over the whole window x window length",
+  "trend_tolerance": {
+   "Cd": 0.02,
+   "Cy": 0.02,
+   "Cl": 0.02,
+   "CM": 0.002
+  },
+  "label": "ASSUMED (modelling choices)"
+ },
+ "reference": {
+  "Cd_smooth_sphere_Re33057": 0.4531,
+  "label": "derived",
+  "source": "Brown & Lawler 2003, Eq. 19"
+ },
+ "gates": {
+  "V0": {
+   "case": "sphere spinning in still fluid, Stokes regime",
+   "body_over_stokes": 1.026,
+   "verdict": "pass",
+   "label": "PREDICTED"
+  },
+  "V1": {
+   "verdict": "fail",
+   "reason": "no finished run meets every condition. The only gate-length run (T 150) g48_v1_S0_T150 has box-corrected Cd 0.545, outside 0.43-0.50. The lowest box-corrected Cd, 0.497 (v1_bgk_d94, T 55), is inside the band but not gate length, and its box correction is ASSUMED for BGK",
+   "gate_length_runs": [
+    "g48_v1_S0_T150"
+   ],
+   "box_factor": {
+    "value": 0.9762,
+    "label": "PREDICTED (regularized D 48, box 8x6x6 / 6x4x4); ASSUMED to transfer to BGK and finer grids"
+   },
+   "runs": [
+    {
+     "run": "v1_d48",
+     "setting": "D 48, regularized, favg 0",
+     "coll": "reg",
+     "D": 48.0,
+     "T": 55,
+     "t_end": 55.0,
+     "Cd": 0.6986,
+     "u_win": 0.0102,
+     "nb": 8,
+     "batch_t": 5.0,
+     "T_int": 0.05,
+     "trend": 0.0028,
+     "stationary": true,
+     "box_factor": 0.9762,
+     "Cd_box": 0.682,
+     "error_vs_ref": 0.5052,
+     "L_this_run": 0.0324,
+     "checks": {
+      "Cd_in_0.43_0.50": false,
+      "stationary": true,
+      "u_win_le_0.035": true,
+      "T_ge_150": false
+     },
+     "verdict": "fail",
+     "label": "PREDICTED"
+    },
+    {
+     "run": "v1_d48_favg",
+     "setting": "D 48, regularized",
+     "coll": "reg",
+     "D": 48.0,
+     "T": 55,
+     "t_end": 54.9911,
+     "Cd": 0.6981,
+     "u_win": 0.0122,
+     "nb": 7,
+     "batch_t": 5.0,
+     "T_int": 1.4309,
+     "trend": 0.0015,
+     "stationary": true,
+     "box_factor": 0.9762,
+     "Cd_box": 0.6815,
+     "error_vs_ref": 0.5042,
+     "L_this_run": 0.0324,
+     "checks": {
+      "Cd_in_0.43_0.50": false,
+      "stationary": true,
+      "u_win_le_0.035": true,
+      "T_ge_150": false
+     },
+     "verdict": "fail",
+     "label": "PREDICTED"
+    },
+    {
+     "run": "v1d_box8",
+     "setting": "D 48, regularized, box 8 x 6 x 6",
+     "coll": "reg",
+     "D": 48.0,
+     "T": 55,
+     "t_end": 54.9911,
+     "Cd": 0.6815,
+     "u_win": 0.0063,
+     "nb": 7,
+     "batch_t": 5.0,
+     "T_int": 0.983,
+     "trend": -0.0163,
+     "stationary": true,
+     "box_factor": 1.0,
+     "Cd_box": 0.6815,
+     "error_vs_ref": 0.5042,
+     "L_this_run": 0.0327,
+     "checks": {
+      "Cd_in_0.43_0.50": false,
+      "stationary": true,
+      "u_win_le_0.035": true,
+      "T_ge_150": false
+     },
+     "verdict": "fail",
+     "label": "PREDICTED"
+    },
+    {
+     "run": "v1d_cs17",
+     "setting": "D 48, regularized, Cs 0.17",
+     "coll": "reg",
+     "D": 48.0,
+     "T": 55,
+     "t_end": 54.9911,
+     "Cd": 0.621,
+     "u_win": 0.0043,
+     "nb": 5,
+     "batch_t": 6.817,
+     "T_int": 3.4085,
+     "trend": -0.0113,
+     "stationary": true,
+     "box_factor": 0.9762,
+     "Cd_box": 0.6062,
+     "error_vs_ref": 0.3381,
+     "L_this_run": 0.0357,
+     "checks": {
+      "Cd_in_0.43_0.50": false,
+      "stationary": true,
+      "u_win_le_0.035": true,
+      "T_ge_150": false
+     },
+     "verdict": "fail",
+     "label": "PREDICTED"
+    },
+    {
+     "run": "v1d_fp32",
+     "setting": "D 48, regularized, FP32",
+     "coll": "reg",
+     "D": 48.0,
+     "T": 55,
+     "t_end": 54.9911,
+     "Cd": 0.7061,
+     "u_win": 0.015,
+     "nb": 7,
+     "batch_t": 5.4447,
+     "T_int": 2.7223,
+     "trend": -0.0417,
+     "stationary": false,
+     "box_factor": 0.9762,
+     "Cd_box": 0.6892,
+     "error_vs_ref": 0.5213,
+     "L_this_run": 0.0176,
+     "checks": {
+      "Cd_in_0.43_0.50": false,
+      "stationary": false,
+      "u_win_le_0.035": true,
+      "T_ge_150": false
+     },
+     "verdict": "fail",
+     "label": "PREDICTED"
+    },
+    {
+     "run": "v1d_bgk",
+     "setting": "D 48, BGK",
+     "coll": "bgk",
+     "D": 48.0,
+     "T": 55,
+     "t_end": 54.9911,
+     "Cd": 0.5627,
+     "u_win": 0.0072,
+     "nb": 7,
+     "batch_t": 5.0,
+     "T_int": 1.8302,
+     "trend": -0.0036,
+     "stationary": true,
+     "box_factor": 0.9762,
+     "Cd_box": 0.5493,
+     "error_vs_ref": 0.2124,
+     "L_this_run": 0.1295,
+     "checks": {
+      "Cd_in_0.43_0.50": false,
+      "stationary": true,
+      "u_win_le_0.035": true,
+      "T_ge_150": false
+     },
+     "verdict": "fail",
+     "label": "PREDICTED"
+    },
+    {
+     "run": "v1_reg_d64",
+     "setting": "D 64, regularized",
+     "coll": "reg",
+     "D": 64.0,
+     "T": 55,
+     "t_end": 54.9934,
+     "Cd": 0.6801,
+     "u_win": 0.0085,
+     "nb": 8,
+     "batch_t": 5.0,
+     "T_int": 1.9644,
+     "trend": 0.0159,
+     "stationary": true,
+     "box_factor": 0.9762,
+     "Cd_box": 0.6639,
+     "error_vs_ref": 0.4653,
+     "L_this_run": 0.0503,
+     "checks": {
+      "Cd_in_0.43_0.50": false,
+      "stationary": true,
+      "u_win_le_0.035": true,
+      "T_ge_150": false
+     },
+     "verdict": "fail",
+     "label": "PREDICTED"
+    },
+    {
+     "run": "v1_bgk_d64",
+     "setting": "D 64, BGK",
+     "coll": "bgk",
+     "D": 64.0,
+     "T": 55,
+     "t_end": 54.9934,
+     "Cd": 0.5332,
+     "u_win": 0.0148,
+     "nb": 3,
+     "batch_t": 10.224,
+     "T_int": 5.112,
+     "trend": 0.0428,
+     "stationary": false,
+     "box_factor": 0.9762,
+     "Cd_box": 0.5205,
+     "error_vs_ref": 0.1489,
+     "L_this_run": 0.0798,
+     "checks": {
+      "Cd_in_0.43_0.50": false,
+      "stationary": false,
+      "u_win_le_0.035": true,
+      "T_ge_150": false
+     },
+     "verdict": "fail",
+     "label": "PREDICTED"
+    },
+    {
+     "run": "v1_bgk_d80",
+     "setting": "D 80, BGK",
+     "coll": "bgk",
+     "D": 80.0,
+     "T": 55,
+     "t_end": 54.9903,
+     "Cd": 0.5388,
+     "u_win": 0.0121,
+     "nb": 7,
+     "batch_t": 5.6126,
+     "T_int": 2.8063,
+     "trend": 0.0246,
+     "stationary": true,
+     "box_factor": 0.9762,
+     "Cd_box": 0.526,
+     "error_vs_ref": 0.161,
+     "L_this_run": 0.1198,
+     "checks": {
+      "Cd_in_0.43_0.50": false,
+      "stationary": true,
+      "u_win_le_0.035": true,
+      "T_ge_150": false
+     },
+     "verdict": "fail",
+     "label": "PREDICTED"
+    },
+    {
+     "run": "v1_bgk_d94",
+     "setting": "D 94, BGK",
+     "coll": "bgk",
+     "D": 94.0,
+     "T": 55,
+     "t_end": 54.9997,
+     "Cd": 0.5087,
+     "u_win": 0.0096,
+     "nb": 7,
+     "batch_t": 5.3539,
+     "T_int": 2.6769,
+     "trend": 0.0019,
+     "stationary": true,
+     "box_factor": 0.9762,
+     "Cd_box": 0.4966,
+     "error_vs_ref": 0.096,
+     "L_this_run": 0.0709,
+     "checks": {
+      "Cd_in_0.43_0.50": true,
+      "stationary": true,
+      "u_win_le_0.035": true,
+      "T_ge_150": false
+     },
+     "verdict": "fail",
+     "label": "PREDICTED"
+    },
+    {
+     "run": "g48_v1_S0_T150",
+     "setting": "D 48, BGK, T 150",
+     "coll": "bgk",
+     "D": 48.0,
+     "T": 150,
+     "t_end": 149.9901,
+     "Cd": 0.5587,
+     "u_win": 0.0103,
+     "nb": 26,
+     "batch_t": 5.0,
+     "T_int": 1.9663,
+     "trend": -0.0064,
+     "stationary": true,
+     "box_factor": 0.9762,
+     "Cd_box": 0.5454,
+     "error_vs_ref": 0.2038,
+     "L_this_run": 0.0285,
+     "checks": {
+      "Cd_in_0.43_0.50": false,
+      "stationary": true,
+      "u_win_le_0.035": true,
+      "T_ge_150": true
+     },
+     "verdict": "fail",
+     "label": "PREDICTED"
+    }
+   ]
+  },
+  "V2": {
+   "spin": "g48_v2_S0.5_T150",
+   "twin": "g48_v1_S0_T150",
+   "Cl": 0.2522,
+   "Cl_u_win": 0.018,
+   "Cl_trend": 0.0267,
+   "Cl_stationary": false,
+   "Cd": 0.5472,
+   "Cd_u_win": 0.0128,
+   "Cd_stationary": false,
+   "CM": "not usable: torque check pending",
+   "Cy": 0.0078,
+   "twin_Cd": 0.5587,
+   "twin_Cd_u_win": 0.0103,
+   "twin_Cl": -0.0283,
+   "twin_Cy": -0.0027,
+   "twin_L": 0.0285,
+   "twin_L_blocks": [
+    0.0328,
+    0.2138
+   ],
+   "u_total": 0.0465,
+   "error_vs_0.275": -0.0827,
+   "checks": {
+    "Cl_in_0.22_0.33": true,
+    "stationary": false,
+    "twin_covers_window": true,
+    "u_total_le_0.055": true,
+    "T_ge_150": true
+   },
+   "verdict": "fail",
+   "label": "PREDICTED"
+  },
+  "stl_sphere": {
+   "a": "g48_v2stl_S0.5_T150",
+   "b": "g48_v2_S0.5_T150",
+   "verdict": "fail",
+   "label": "PREDICTED",
+   "Cd": {
+    "diff": 0.067,
+    "tol": 0.01,
+    "ok": false,
+    "stationary": [
+     true,
+     false
+    ],
+    "stl": 0.6142,
+    "analytic": 0.5472
+   },
+   "Cl": {
+    "diff": 0.1014,
+    "tol": 0.0101,
+    "ok": false,
+    "stationary": [
+     true,
+     false
+    ],
+    "stl": 0.3537,
+    "analytic": 0.2522
+   },
+   "CM": "not usable: torque check pending",
+   "deviation": "run at D 48, not at the release grid; the release condition (match at the release grid) still stands"
+  },
+  "revox": {
+   "verdict": "PENDING (torque fix)",
+   "a": "g64_p_S1.0_between_revox1_T150",
+   "b": "g64_p_S1.0_between_revox2_T150",
+   "note": "dropped from this round: every spinning case waits for the spin-torque fix"
+  },
+  "stl_sphere_S0": {
+   "verdict": "pending",
+   "a": "g48_v1stl_S0_T150",
+   "b": "g48_v1_S0_T150",
+   "note": "queued 12:30: STL sphere vs analytic sphere at S 0 (no spin), match in Cd and Cl"
+  }
+ },
+ "grid_bgk": [
+  {
+   "run": "v1d_bgk",
+   "D": 48,
+   "Cd": 0.5627,
+   "stationary": true
+  },
+  {
+   "run": "v1_bgk_d64",
+   "D": 64,
+   "Cd": 0.5332,
+   "stationary": false
+  },
+  {
+   "run": "v1_bgk_d80",
+   "D": 80,
+   "Cd": 0.5388,
+   "stationary": true
+  },
+  {
+   "run": "v1_bgk_d94",
+   "D": 94,
+   "Cd": 0.5087,
+   "stationary": true
+  }
+ ],
+ "grid_finest_pair": {
+  "coarse": "v1_bgk_d80",
+  "fine": "v1_bgk_d94",
+  "change": -0.0301,
+  "rel_change": -0.0592
+ },
+ "pollen": {
+  "Cd": null,
+  "Cl": null,
+  "CM": "not usable: torque check pending",
+  "k_per_s": "not usable: torque check pending",
+  "note": "no POLLEN value is released until V1, V2, the STL-sphere and the revox checks pass in one configuration"
+ },
+ "CM_and_k": "not usable: torque check pending",
+ "spinning_results": "solver diagnostics until the torque check is done (V2, STL path, revox, POLLEN)"
+}
