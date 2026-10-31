@@ -35,7 +35,10 @@ repeatability (HANDOFF 5). The no-spin twin is a reference: the one-wheel hood l
 
 Run (hours; background):  python -m src.spin_vs_twin run --work <dir> --workers 10
 Then:                      python -m src.spin_vs_twin csv --work <dir>      (writes data/spin_vs_twin.csv)
-                           python -m src.spin_vs_twin summary               (tables for research/SPIN_VS_TWIN.md)
+                           python -m src.spin_vs_twin summary               (plain-text overview of the CSV)
+                           python -m src.spin_vs_twin tables                (Markdown tables for research/SPIN_VS_TWIN.md)
+                           python -m src.spin_vs_twin fig                   (figures/spin_vs_twin.png for the paper)
+The last three read only data/spin_vs_twin.csv.
 """
 from __future__ import annotations
 
@@ -45,6 +48,7 @@ import json
 import math
 import os
 import shutil
+import statistics
 import subprocess
 import sys
 import tempfile
@@ -66,6 +70,7 @@ _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXPLORER = os.path.join(_ROOT, "viz", "explorer")
 FIELD_INDEX = os.path.join(EXPLORER, "data", "field", "index.json")
 CSV_OUT = os.path.join(_ROOT, "data", "spin_vs_twin.csv")
+FIG_OUT = os.path.join(_ROOT, "figures", "spin_vs_twin.png")
 
 #: coarse field grid (m, field frame of solver.js: x < 0 = unfavourable / far side, y along the pivot axis); ASSUMED
 X_UNFAV = (-0.65, -0.95, -1.25, -1.55)
@@ -460,16 +465,258 @@ def summary(rows: list) -> str:
                     c = {k: sum(1 for r in rr if r["verdict"] == k) for k in ("spin", "twin", "unclear", "neither")}
                     sp = sorted(r["spin_p"] for r in rr)
                     tw = sorted(r["twin_p"] for r in rr)
-                    med = lambda a: a[len(a) // 2]  # noqa: E731
+                    med = statistics.median
                     lines.append(f"{S:<4} {L:<8} {c['spin']:>9} {c['twin']:>9} {c['unclear']:>7} {c['neither']:>7} | "
                                  f"{100 * med(sp):5.1f}/{100 * sp[-1]:5.1f}  {100 * med(tw):5.1f}/{100 * tw[-1]:5.1f} | "
                                  f"{len(rr):>5} {sum(1 for x in sp if x >= 0.5):>9} {sum(1 for x in tw if x >= 0.5):>9}")
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------------------------------------- extra tables (CSV only)
+SPIN_COLS = ("spin_status", "spin_v", "spin_theta", "spin_k", "spin_n", "spin_p", "spin_lo", "spin_hi", "verdict")
+SIDE_NAME = {"unfav": "unfavourable", "fav": "favourable"}
+
+
+def _sel(rows: list, **k) -> list:
+    return [r for r in rows if all(r[a] == b for a, b in k.items())]
+
+
+def _pose(r: dict) -> tuple:
+    return r["side"], r["x"], r["y"], r["h"]
+
+
+def same_as(rows: list, s_a: float = 1.0, s_b: float = 1.5) -> tuple:
+    """(pairs, identical): every CSV row at spin ratio s_b against the row of the same pose, lift set and mode at
+    s_a; identical = same winning setting, counts, interval and verdict (SPIN_COLS)."""
+    A = {_pose(r) + (r["lift_set"], r["mode"]): r for r in rows if r["S"] == s_a}
+    n = same = 0
+    for r in rows:
+        a = A.get(_pose(r) + (r["lift_set"], r["mode"])) if r["S"] == s_b else None
+        if a is not None:
+            n += 1
+            same += int(all(r[c] == a[c] for c in SPIN_COLS))
+    return n, same
+
+
+def group_stats(rows: list) -> list:
+    """Per side, mode, S and lift set: the legal poses (x, y, h), the verdict counts, the median and best chance of
+    the backspin shot and of the twin, the paired difference dp = spin - twin (median, range, poses with dp > 0 and
+    dp < 0) and the poses at or above 50 %. Chances PREDICTED (LABEL); medians are true medians."""
+    out = []
+    for side in ("unfav", "fav"):
+        for mode in ("robust", "tuned"):
+            for S in SS:
+                for L in SETS:
+                    rr = _sel(rows, side=side, mode=mode, S=S, lift_set=L)
+                    if not rr:
+                        continue
+                    sp = [r["spin_p"] for r in rr]
+                    tw = [r["twin_p"] for r in rr]
+                    dp = [r["dp"] for r in rr]
+                    g = {"side": side, "mode": mode, "S": S, "lift_set": L, "poses": len(rr)}
+                    g.update({k: sum(1 for r in rr if r["verdict"] == k) for k in ("spin", "twin", "unclear", "neither")})
+                    g.update(spin_med=statistics.median(sp), spin_max=max(sp), twin_med=statistics.median(tw),
+                             twin_max=max(tw), dp_med=statistics.median(dp), dp_min=min(dp), dp_max=max(dp),
+                             dp_pos=sum(1 for d in dp if d > 0), dp_neg=sum(1 for d in dp if d < 0),
+                             spin50=sum(1 for p in sp if p >= 0.5), twin50=sum(1 for p in tw if p >= 0.5))
+                    out.append(g)
+    return out
+
+
+def lift_cost(rows: list) -> list:
+    """The cost of not knowing the lift: per side, S and true lift set, the tuned backspin chance (the setting for
+    that lift set) minus the robust one (one setting for the three sets pooled) at the same pose (x, y, h); 'clear'
+    counts the poses where the robust Wilson interval lies wholly below the tuned one. PREDICTED."""
+    out = []
+    for side in ("unfav", "fav"):
+        for S in SS:
+            for L in SETS:
+                rob = {_pose(r): r for r in _sel(rows, side=side, mode="robust", S=S, lift_set=L)}
+                tun = {_pose(r): r for r in _sel(rows, side=side, mode="tuned", S=S, lift_set=L)}
+                ks = sorted(set(rob) & set(tun))
+                if not ks:
+                    continue
+                gain = [tun[k]["spin_p"] - rob[k]["spin_p"] for k in ks]
+                out.append({"side": side, "S": S, "lift_set": L, "poses": len(ks),
+                            "robust_med": statistics.median(rob[k]["spin_p"] for k in ks),
+                            "tuned_med": statistics.median(tun[k]["spin_p"] for k in ks),
+                            "twin_med": statistics.median(tun[k]["twin_p"] for k in ks),
+                            "gain_med": statistics.median(gain), "gain_min": min(gain), "gain_max": max(gain),
+                            "clear": sum(1 for k in ks if tun[k]["spin_lo"] > rob[k]["spin_hi"])})
+    return out
+
+
+def split_stats(rows: list, by: str, side: str = "unfav", mode: str = "robust", S: float = 1.0,
+                lift_set: str = "nominal") -> list:
+    """Verdict counts and median chances (backspin, twin) split by one column (h, x or y) for one side, mode, S and
+    lift set. PREDICTED."""
+    rr = _sel(rows, side=side, mode=mode, S=S, lift_set=lift_set)
+    out = []
+    for val in sorted({r[by] for r in rr}):
+        g = _sel(rr, **{by: val})
+        e = {by: val, "poses": len(g)}
+        e.update({k: sum(1 for r in g if r["verdict"] == k) for k in ("spin", "twin", "unclear", "neither")})
+        e.update(spin_med=statistics.median(r["spin_p"] for r in g), twin_med=statistics.median(r["twin_p"] for r in g))
+        out.append(e)
+    return out
+
+
+def pose_table(rows: list, side: str = "unfav", S: float = 1.0, min_twin: float = 0.5) -> list:
+    """The poses (x, y, h) of one side whose twin chance is at least min_twin: the twin chance and its Wilson interval,
+    and beside it the backspin chance and verdict of every lift set, robust and tuned, at spin ratio S
+    (key "mode|lift_set" -> (p, verdict)). PREDICTED."""
+    P = {}
+    for r in _sel(rows, side=side, S=S):
+        e = P.setdefault((r["x"], r["y"], r["h"]),
+                         {k: r[k] for k in ("x", "y", "h", "d", "psi_deg", "twin_p", "twin_lo", "twin_hi")})
+        e[r["mode"] + "|" + r["lift_set"]] = (r["spin_p"], r["verdict"])
+    return [e for _, e in sorted(P.items()) if e["twin_p"] >= min_twin]
+
+
+def settings_stats(rows: list, side: str = "unfav", S: float = 1.0) -> list:
+    """Median winning setting (exit speed v, elevation theta, wheel rpm at the ASSUMED v/u) over the legal poses of
+    one side at spin ratio S: the robust backspin setting (one for all lift sets), the tuned one per lift set and the
+    twin's own. PREDICTED."""
+    def add(who, g, p):
+        if g:
+            out.append(dict(who=who, **{f: statistics.median(float(r[p + "_" + f]) for r in g)
+                                        for f in ("v", "theta", "rpm")}))
+    out = []
+    rr = [r for r in _sel(rows, side=side, S=S) if r["spin_n"]]
+    add("backspin, robust (one setting for all lift sets)", _sel(rr, mode="robust", lift_set=SETS[1]), "spin")
+    for L in SETS:
+        add(f"backspin, tuned for {L}", _sel(rr, mode="tuned", lift_set=L), "spin")
+    add("no-spin twin (its own best setting)",
+        [r for r in _sel(rows, side=side, S=S, mode="robust", lift_set=SETS[1]) if r["twin_n"]], "twin")
+    return out
+
+
+def _pc(p: float) -> str:
+    return f"{100 * p:.1f}"
+
+
+def tables(rows: list) -> str:
+    """Markdown tables for research/SPIN_VS_TWIN.md (PM-021) from the CSV rows: chances in %, differences in
+    percentage points (pp), every chance PREDICTED (LABEL), medians over the legal poses (x, y, h)."""
+    n, same = same_as(rows, 1.0, 1.5)
+    merge = n > 0 and same == n
+    out = [f"S 1.5 rows identical to the S 1.0 rows in {same}/{n} pairs (same setting, counts, interval, verdict)"
+           + ("; shown once as S 1.0 = 1.5." if merge else ".")]
+
+    def s_lab(S):
+        return "1.0 = 1.5" if merge and S == 1.0 else f"{S:.1f}"
+    for i, side in enumerate(("unfav", "fav")):
+        out += ["", f"Table 1{'ab'[i]}. {SIDE_NAME[side]} side: backspin vs the no-spin twin per mode, S and lift set "
+                "(PREDICTED; twin = S 0, no lift, its own best setting, same draws)", "",
+                "| mode | S | lift set | poses | spin > twin | twin > spin | unclear | backspin median (max) % | "
+                "twin median (max) % | dp median [min, max] pp | dp > 0 / < 0 | poses >= 50 %: backspin / twin |",
+                "|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+        neither = 0
+        for g in group_stats(rows):
+            if g["side"] != side or (merge and g["S"] == 1.5):
+                continue
+            neither += g["neither"]
+            out.append(f"| {g['mode']} | {s_lab(g['S'])} | {g['lift_set']} | {g['poses']} | {g['spin']} | {g['twin']} | "
+                       f"{g['unclear']} | {_pc(g['spin_med'])} ({_pc(g['spin_max'])}) | {_pc(g['twin_med'])} "
+                       f"({_pc(g['twin_max'])}) | {_pc(g['dp_med'])} [{_pc(g['dp_min'])}, {_pc(g['dp_max'])}] | "
+                       f"{g['dp_pos']} / {g['dp_neg']} | {g['spin50']} / {g['twin50']} |")
+        out += ["", f"Rows with verdict neither (no chance either way): {neither}."]
+    out += ["", "Table 2. Cost of not knowing the lift: tuned minus robust backspin chance at the same pose "
+            "(PREDICTED)", "",
+            "| side | S | true lift set | poses | robust median % | tuned median % | twin median % | "
+            "tuned - robust median [min, max] pp | poses with robust interval wholly below tuned |",
+            "|---|---|---|---:|---:|---:|---:|---:|---:|"]
+    for g in lift_cost(rows):
+        if merge and g["S"] == 1.5:
+            continue
+        out.append(f"| {SIDE_NAME[g['side']]} | {s_lab(g['S'])} | {g['lift_set']} | {g['poses']} | {_pc(g['robust_med'])} | "
+                   f"{_pc(g['tuned_med'])} | {_pc(g['twin_med'])} | {_pc(g['gain_med'])} [{_pc(g['gain_min'])}, "
+                   f"{_pc(g['gain_max'])}] | {g['clear']} |")
+    for j, by in enumerate(("h", "x")):
+        what = "release height h (m)" if by == "h" else "field x (m; distance d = |x|)"
+        out += ["", f"Table 3{'ab'[j]}. unfavourable side, robust, S 1.0, nominal lift set, by {what} (PREDICTED)", "",
+                f"| {by} | poses | twin > spin | unclear | spin > twin | backspin median % | twin median % |",
+                "|---:|---:|---:|---:|---:|---:|---:|"]
+        for g in split_stats(rows, by):
+            out.append(f"| {g[by]:g} | {g['poses']} | {g['twin']} | {g['unclear']} | {g['spin']} | "
+                       f"{_pc(g['spin_med'])} | {_pc(g['twin_med'])} |")
+    mark = {"twin": " (T)", "spin": " (B)"}
+    out += ["", "Table 4. unfavourable poses with a twin chance >= 50 %, S 1.0: backspin chance per lift set beside "
+            "the twin (PREDICTED). (T) = backspin interval wholly below the twin's (twin > spin), (B) = wholly above, "
+            "no mark = the intervals overlap (unclear)", "",
+            "| x | y | h | d | psi deg | twin % [Wilson 95 %] | robust Cl_low | robust nominal | robust Cl_high | "
+            "tuned Cl_low | tuned nominal | tuned Cl_high |",
+            "|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|"]
+    for e in pose_table(rows):
+        cells = []
+        for mode in ("robust", "tuned"):
+            for L in SETS:
+                p, v = e.get(mode + "|" + L, (None, ""))
+                cells.append("-" if p is None else _pc(p) + mark.get(v, ""))
+        out.append(f"| {e['x']:g} | {e['y']:g} | {e['h']:g} | {e['d']:.2f} | {e['psi_deg']:.1f} | {_pc(e['twin_p'])} "
+                   f"[{_pc(e['twin_lo'])}, {_pc(e['twin_hi'])}] | " + " | ".join(cells) + " |")
+    out += ["", "Table 5. unfavourable side, S 1.0: median winning setting over the legal poses (PREDICTED; rpm at "
+            "the ASSUMED grip v/u 0.42)", "",
+            "| shot | median v (m/s) | median elevation (deg) | median wheel rpm |", "|---|---:|---:|---:|"]
+    for g in settings_stats(rows):
+        out.append(f"| {g['who']} | {g['v']:.2f} | {g['theta']:.1f} | {g['rpm']:.0f} |")
+    return "\n".join(out)
+
+
+def figure(rows: list, path: str = FIG_OUT, side: str = "unfav", S: float = 1.0) -> str:
+    """The backspin hit chance against the no-spin twin's at every legal pose (x, y, h) of one side, one dot per pose
+    and lift set; left panel lift unknown (robust), right panel lift known (tuned). On the diagonal the two are
+    equal. PREDICTED (LABEL). Returns the path written."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    col = {"Cl_low": "#2a78d6", "nominal": "#eb6834", "Cl_high": "#1baf7a"}  # 3 categorical slots, CVD-checked
+    mk = {"Cl_low": "o", "nominal": "s", "Cl_high": "^"}                     # shape: second channel (CVD, print)
+    lab = {"Cl_low": "lift set Cl low", "nominal": "lift set nominal", "Cl_high": "lift set Cl high"}
+    ink, ink2, muted, grid, axis, surf = "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7", "#ffffff"
+    rr = _sel(rows, side=side, S=S)
+    if not rr:
+        raise ValueError(f"no rows for side {side}, S {S}")
+    top = min(100.0, 10.0 * math.ceil((100.0 * max(max(r["spin_p"], r["twin_p"]) for r in rr) + 2.0) / 10.0))
+    fig, axes = plt.subplots(1, 2, figsize=(9.0, 5.3), sharex=True, sharey=True)
+    fig.patch.set_facecolor(surf)
+    titles = {"robust": "lift unknown: one setting for the three lift sets",
+              "tuned": "lift known: the best setting for that lift set"}
+    for ax, mode in zip(axes, ("robust", "tuned")):
+        ax.set_facecolor(surf)
+        ax.plot([0, top], [0, top], color=muted, lw=1.0, zorder=2)
+        ax.annotate("backspin = twin", xy=(0.06 * top, 0.06 * top), xytext=(-3, 3), textcoords="offset points",
+                    rotation=45, rotation_mode="anchor", ha="left", va="bottom", fontsize=8, color=ink2)
+        for L in SETS:
+            g = _sel(rr, mode=mode, lift_set=L)
+            ax.scatter([100 * r["twin_p"] for r in g], [100 * r["spin_p"] for r in g], s=30, marker=mk[L], c=col[L],
+                       edgecolors=surf, linewidths=0.9, zorder=3, label=lab[L])
+        ax.set_xlim(0, top)
+        ax.set_ylim(0, top)
+        ax.set_aspect("equal")
+        ax.grid(True, color=grid, lw=0.6)
+        ax.set_axisbelow(True)
+        for s in ax.spines.values():
+            s.set_color(axis)
+        ax.tick_params(colors=ink2, labelsize=8)
+        ax.set_title(f"{titles[mode]} ({mode})", fontsize=9, color=ink)
+        ax.set_xlabel("no-spin twin hit chance (%)", fontsize=9, color=ink2)
+    axes[0].set_ylabel("backspin hit chance (%)", fontsize=9, color=ink2)
+    axes[0].legend(fontsize=8, frameon=False, loc="upper left", labelcolor=ink2)
+    n_pose = len({_pose(r) for r in rr})
+    fig.suptitle(f"Backspin vs the no-spin twin, {SIDE_NAME[side]} side, {n_pose} legal poses (x, y, h), S {S:.1f}: "
+                 "one dot per pose and lift set (PREDICTED)", fontsize=10, color=ink)
+    fig.text(0.5, 0.012, "Model probability under ASSUMED launch scatter (1.5 % / 0.40 deg / 0.50 deg, 1 sigma) and "
+             "ASSUMED aero; n = 1000 draws per dot; not a measured repeatability.", ha="center", fontsize=7.5, color=ink2)
+    fig.tight_layout(rect=(0, 0.06, 1, 0.95))
+    fig.savefig(path, dpi=140, facecolor=surf)
+    plt.close(fig)
+    return path
+
+
 def main(argv=None) -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("cmd", choices=["run", "csv", "summary"])
+    ap.add_argument("cmd", choices=["run", "csv", "summary", "tables", "fig"])
     ap.add_argument("--work", default=os.path.join(tempfile.gettempdir(), "spin_vs_twin_work"))
     ap.add_argument("--workers", type=int, default=10)
     a = ap.parse_args(argv)
@@ -481,8 +728,12 @@ def main(argv=None) -> None:
         write_csv(rows)
         n, same = saturation_check(R)
         print(f"{len(rows)} rows -> data/spin_vs_twin.csv; S 1.5 vs S 1.0 identical in {same}/{n} pairs run")
-    else:
+    elif a.cmd == "summary":
         print(summary(read_csv()))
+    elif a.cmd == "tables":
+        print(tables(read_csv()))
+    else:
+        print(figure(read_csv()))
 
 
 if __name__ == "__main__":

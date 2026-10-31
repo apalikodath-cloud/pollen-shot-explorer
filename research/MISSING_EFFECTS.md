@@ -81,7 +81,8 @@ offset. All four need POLLEN data (T1, T2); code alone cannot settle them.
 Status 2026-10-31 (after round 4): items 1, 2, 3, 4, 5, 6, 7 and 9 are in code (options, off by default). 10 is in:
 the hit chance at one setting (PM-016), a best-chance search that the page recommends, with the no-spin twin
 searched on its own grid (PM-017), and a field-map chance layer for backspin and twin, one value per 0.3 m block
-(PM-017). All are model probabilities under ASSUMED scatter, not a repeatability. 11 is in for robot velocity and
+(PM-017). PM-021 runs that search at 144 scored poses against the twin (`research/SPIN_VS_TWIN.md`): backspin is
+never clearly ahead. All are model probabilities under ASSUMED scatter, not a repeatability. 11 is in for robot velocity and
 d0, and the droop readout is in (PM-022, a readout only: the shot solve still uses the set rpm); 8 is not done.
 
 Each item is an option or input with the current behaviour as its default, so existing results do not change unless

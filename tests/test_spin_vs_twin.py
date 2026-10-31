@@ -105,5 +105,72 @@ class TestTables(unittest.TestCase):
             self.assertIn(r["mode"], ("robust", "tuned"))
 
 
+def _row(x, mode, sp, tw, S=1.0, L="nominal", h=0.5, half=0.03):
+    """A CSV row (as read_csv returns it) with a +-half Wilson stand-in interval."""
+    lo, hi, tlo, thi = sp - half, sp + half, tw - half, tw + half
+    r = {"side": "unfav", "x": x, "y": 0.4, "d": abs(x), "psi_deg": 10.0, "other_hive_line": 0, "h": h, "S": S,
+         "lift_set": L, "mode": mode, "spin_status": "ok", "spin_v": "7.5", "spin_theta": "75.0", "spin_rpm": "3480",
+         "spin_k": round(1000 * sp), "spin_n": 1000, "spin_p": sp, "spin_lo": lo, "spin_hi": hi,
+         "twin_status": "ok", "twin_v": "8.5", "twin_theta": "79.0", "twin_rpm": "3944", "twin_k": round(1000 * tw),
+         "twin_n": 1000, "twin_p": tw, "twin_lo": tlo, "twin_hi": thi, "dp": round(sp - tw, 4), "computed": "run"}
+    r["verdict"] = sv.verdict({"n": 1000, "lo": lo, "hi": hi}, {"n": 1000, "lo": tlo, "hi": thi})
+    return r
+
+
+class TestExtraTables(unittest.TestCase):
+    """The tables subcommand's logic on two made-up poses (not model output)."""
+    def setUp(self):
+        # pose A: robust far below the twin, tuned level with it; pose B: all three level
+        self.rows = [_row(-1.0, "robust", 0.20, 0.55), _row(-1.0, "tuned", 0.56, 0.55),
+                     _row(-1.5, "robust", 0.30, 0.30), _row(-1.5, "tuned", 0.31, 0.30)]
+
+    def test_group_stats(self):
+        g = {(s["mode"]): s for s in sv.group_stats(self.rows)}
+        self.assertEqual(set(g), {"robust", "tuned"})
+        rob = g["robust"]
+        self.assertEqual((rob["poses"], rob["spin"], rob["twin"], rob["unclear"]), (2, 0, 1, 1))
+        self.assertAlmostEqual(rob["spin_med"], 0.25)          # true median, not the upper one (0.30)
+        self.assertAlmostEqual(rob["dp_med"], -0.175)
+        self.assertEqual((rob["dp_pos"], rob["dp_neg"], rob["spin50"], rob["twin50"]), (0, 1, 0, 1))
+        self.assertEqual((g["tuned"]["unclear"], g["tuned"]["spin50"]), (2, 1))
+
+    def test_lift_cost(self):
+        (c,) = sv.lift_cost(self.rows)
+        self.assertEqual((c["side"], c["S"], c["lift_set"], c["poses"]), ("unfav", 1.0, "nominal", 2))
+        self.assertAlmostEqual(c["gain_med"], (0.36 + 0.01) / 2)
+        self.assertAlmostEqual(c["gain_min"], 0.01)
+        self.assertEqual(c["clear"], 1)                          # only pose A: tuned lo 0.53 > robust hi 0.23
+
+    def test_pose_table_and_split(self):
+        (e,) = sv.pose_table(self.rows, min_twin=0.5)
+        self.assertEqual((e["x"], e["twin_p"]), (-1.0, 0.55))
+        self.assertEqual(e["robust|nominal"], (0.20, "twin"))
+        self.assertEqual(e["tuned|nominal"], (0.56, "unclear"))
+        sp = sv.split_stats(self.rows, "x")
+        self.assertEqual([(s["x"], s["twin"], s["unclear"]) for s in sp], [(-1.5, 0, 1), (-1.0, 1, 0)])
+
+    def test_same_as_and_tables(self):
+        s15 = [dict(r, S=1.5) for r in self.rows]
+        self.assertEqual(sv.same_as(self.rows + s15), (4, 4))
+        s15[0]["spin_k"] += 1
+        self.assertEqual(sv.same_as(self.rows + s15), (4, 3))
+        md = sv.tables(self.rows + [dict(r, S=1.5) for r in self.rows])
+        self.assertIn("identical to the S 1.0 rows in 4/4 pairs", md)
+        self.assertIn("| robust | 1.0 = 1.5 | nominal | 2 | 0 | 1 | 1 |", md)
+        st = {g["who"]: g for g in sv.settings_stats(self.rows)}
+        self.assertAlmostEqual(st["backspin, robust (one setting for all lift sets)"]["v"], 7.5)
+        self.assertAlmostEqual(st["no-spin twin (its own best setting)"]["rpm"], 3944)
+
+    def test_figure(self):
+        try:
+            import matplotlib  # noqa: F401
+        except ImportError:
+            self.skipTest("matplotlib not installed")
+        import tempfile
+        with tempfile.TemporaryDirectory() as d:
+            path = sv.figure(self.rows, os.path.join(d, "f.png"))
+            self.assertGreater(os.path.getsize(path), 1000)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -70,7 +70,10 @@ Two physics points the model is careful about:
 **What it finds (PREDICTED).** Clean entry from the unfavourable side is possible, but only as a precision
 shot. The clean shots form a narrow diagonal band in exit speed and elevation. Backspin moves the band but is
 not required for it, and the unknown aero moves the band more than the band is wide. The shooter has to be
-tuned on the field and then hold that tune. Details are in `docs/08_shooter_spec.md` and `paper/main.pdf`.
+tuned on the field and then hold that tune. Over a whole-field grid, backspin never has a clearly higher model
+hit chance than the no-spin twin: tuned to the true lift it is level, and a setting picked without knowing the
+lift is lower (`research/SPIN_VS_TWIN.md`, paper section 8). Details are in `docs/08_shooter_spec.md` and
+`paper/main.pdf`.
 
 ## Repository map
 
