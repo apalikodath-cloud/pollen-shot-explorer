@@ -319,3 +319,66 @@ def classify_path3d(X, S, Z, cell, R):
     if inside3d(cell, X[-1], S[-1], Z[-1], R)[0]:
         return {"result": "clean", "i": n - 1, "hit": None, "min_clear": min_c, "s": None, "entry_angle": None}
     return {"result": "miss", "i": n - 1, "hit": None, "min_clear": min_c, "s": None, "entry_angle": None}
+
+
+def _face_boxes(cell):
+    """Per face (lo, hi) bounds in (x, s, z); an extruded section segment is unbounded in s."""
+    if getattr(cell, "_boxes", None) is None:
+        out = []
+        for f in cell.faces:
+            if f.V is None:
+                ax, az, bx, bz = f.ext[:4]
+                out.append((np.array([min(ax, bx), -np.inf, min(az, bz)]), np.array([max(ax, bx), np.inf, max(az, bz)])))
+            else:
+                out.append((f.V.min(axis=0), f.V.max(axis=0)))
+        cell._boxes = out
+    return cell._boxes
+
+
+def classify_paths3d(paths, cell, R):
+    """classify_path3d on many paths at once: the in-box steps of every path go through inside3d and step_dist
+    in one call (the same element-wise arithmetic, so the same results; tests/test_cell3d_batch.py), then each
+    path is decided as classify_path3d does. paths: list of (X, S, Z). Returns the result strings."""
+    m = R + 0.2
+    x0, x1, z0, z1 = cell.bb
+    segs, spans = [], []
+    n_rows = 0
+    for X, S, Z in paths:
+        X, S, Z = np.asarray(X, float), np.asarray(S, float), np.asarray(Z, float)
+        ax, az, bx, bz = X[:-1], Z[:-1], X[1:], Z[1:]
+        inbox = ~((np.maximum(ax, bx) < x0 - m) | (np.minimum(ax, bx) > x1 + m) |
+                  (np.maximum(az, bz) < z0 - m) | (np.minimum(az, bz) > z1 + m))
+        ii = np.nonzero(inbox)[0]
+        if len(ii):
+            segs.append((ii, X[ii], S[ii], Z[ii], X[ii + 1], S[ii + 1], Z[ii + 1]))
+        spans.append((n_rows, n_rows + len(ii)))
+        n_rows += len(ii)
+    if n_rows:
+        cat = [np.concatenate([g[k] for g in segs]) for k in range(7)]
+        ii_all, ax, ay, az, bx, by, bz = cat
+        ins_all = inside3d(cell, ax, ay, az, R) & (ii_all > 0)
+        A, B = np.column_stack([ax, ay, az]), np.column_stack([bx, by, bz])
+        lo, hi = np.minimum(A, B), np.maximum(A, B)
+        hit_all = np.zeros(n_rows, bool)
+        for f, (flo, fhi) in zip(cell.faces, _face_boxes(cell)):
+            # a face whose box is farther than R from the step's box cannot touch the ball (distance >= box gap)
+            # margin 1e-5 m: the side-wall rim faces are off-plane by up to ~1.2e-6 m, so their corners can sit
+            # just outside the vertex box; a wider margin only prunes less (results unchanged)
+            near = np.all((lo <= fhi + R + 1e-5) & (hi >= flo - R - 1e-5), axis=1) & ~hit_all
+            if near.any():
+                j = np.nonzero(near)[0]
+                hit_all[j] = seg_face(f, A[j], B[j]) - R < 0
+    out = []
+    for (X, S, Z), (a, b) in zip(paths, spans):
+        if b > a:
+            ins, hits = ins_all[a:b], hit_all[a:b]
+            k_in = int(np.argmax(ins)) if ins.any() else b - a
+            k_hit = int(np.argmax(hits)) if hits.any() else b - a
+            if k_in <= k_hit and k_in < b - a:
+                out.append("clean")
+                continue
+            if k_hit < b - a:
+                out.append("hit")
+                continue
+        out.append("clean" if inside3d(cell, X[-1], S[-1], Z[-1], R)[0] else "miss")
+    return out

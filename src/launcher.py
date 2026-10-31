@@ -474,6 +474,37 @@ def recovery_time(rpm_drop: float, wheel_rpm: float, wheel: Wheel, motor: Motor)
     return tau * math.log((w_f - w_start) / (w_f - w_target))
 
 
+def droop_readout(wheel_rpm: float, v_exit: float, S: float, ball: Ball = None, wheel: Wheel = None,
+                  contact: Contact = None, motor: Motor = None, wrap_deg: float = 90.0, v_in: float = 0.5) -> dict:
+    """Closed-form per-shot flywheel droop and recovery (PM-022 readout; JS twin droopReadout in viz/explorer/solver.js).
+    Coasting wheel during contact, fixed hood, ball leaves with v_exit and S = s R_b / v (any slip state):
+      impulse  (generalised Brettle, exact for the friction impulses): I_w dOm_1 = R_w m [(v - v_in) + kI S v R_b / r_c] / 2
+      rolling hysteresis (wheel-side lever arm, as simulate_shot): I_w dOm_2 = c_rr k_n delta rho T, rho = R_w + r_c,
+      contact time T ~ wrap rho / v (ball centre on the wrap arc at the exit speed; hood_model is 0-60 % longer above 1000 rpm).
+    No fitted factor; tests/test_launcher.py states the agreement with hood_model over RPM_GRID (within about 1.5 %, PREDICTED;
+    about 2 % at 2000-6000 rpm for I_w 5e-5..1e-3 and wrap 60-120 deg). Limit: below 2000 rpm a light wheel loses most of
+    its speed, the ball slows before exit and T is overestimated, so the drop reads high (+30 % at 5e-5 kg m^2, 1000 rpm, wrap 90;
+    larger at wider wrap). The wheel is assumed to coast during contact, so the drop is an upper bound if the motor drives.
+    Not modelled: motor drive during contact, current limit, controller lag, motor rotor inertia (wheel.inertia only).
+    recovery_s = recovery_time() (linear motor line at voltage_frac, inf when wheel_rpm >= the loaded free speed
+    free_rpm voltage_frac / gear); min_interval_s = contact estimate + recovery (feed time not included)."""
+    ball, wheel, contact, motor = ball or Ball(), wheel or Wheel(), contact or Contact(), motor or Motor()
+    r_c = effective_radius(ball, contact)
+    rho = wheel.radius + r_c
+    v = max(float(v_exit), 1e-9)
+    j_w = ball.mass * ((v - v_in) + ball.kI * S * v * ball.radius / r_c) / 2.0
+    d_imp = wheel.radius * max(j_w, 0.0) / wheel.inertia
+    t_c = math.radians(wrap_deg) * rho / v
+    d_hys = contact.c_rr * contact.k_n * contact.delta * rho * t_c / wheel.inertia
+    drop = (d_imp + d_hys) * RAD2RPM
+    t_rec = recovery_time(drop, wheel_rpm, wheel, motor)
+    return {"drop_rpm": drop, "drop_pct": 100.0 * drop / wheel_rpm if wheel_rpm > 0 else math.inf,
+            "impulse_rpm": d_imp * RAD2RPM, "hysteresis_rpm": d_hys * RAD2RPM, "contact_s": t_c,
+            "recovery_s": t_rec, "min_interval_s": t_c + t_rec,
+            "free_rpm_loaded": motor.free_rpm / motor.gear * motor.voltage_frac,
+            "above_free": wheel_rpm * RPM2RAD >= motor.free_rpm * RPM2RAD / motor.gear * motor.voltage_frac}
+
+
 # ---------------------------------------------------------------------------
 # Envelope generation
 # ---------------------------------------------------------------------------

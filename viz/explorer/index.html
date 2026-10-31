@@ -178,6 +178,7 @@ body[data-view=robot] .stage { min-height: 460px; }
 .rec .which { font-size: 12px; color: var(--muted); margin: 0; }
 .rec .hc { font-size: 14px; margin: 6px 0 0; } .rec .hc b { color: var(--fg); } .rec .hc small, .rec .sens small { color: var(--muted); font-size: 12px; }
 .rec .sens { font-size: 13px; margin: 4px 0 0; }
+.rec .droop { font-size: 13px; margin: 4px 0 0; } .rec .droop b { color: var(--fg); } .rec .droop small { color: var(--muted); font-size: 12px; } .rec .droop .dw { color: #f4a43c; }
 .rec .tw { color: var(--twin); } .hint[data-bad="1"]::before { content: "Could not read the lift table, so it is ignored. "; color: var(--hit); }
 .twinline { font-size: 14px; color: var(--twin); border-left: 2px dashed var(--twin); padding-left: 8px; margin: 4px 0 0; }
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
@@ -283,7 +284,7 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
       </section>
 
       <details class="card adv" id="radv">
-        <summary><h2>Advanced settings</h2><span class="hint">grip, air, drafts, robot moving, spin lift, shot scatter, turret, HIVE tilt</span></summary>
+        <summary><h2>Advanced settings</h2><span class="hint">grip, air, drafts, robot moving, spin lift, shot scatter, flywheel droop, turret, HIVE tilt</span></summary>
         <div class="row"><label>Grip <span class="lab">ASSUMED</span> <span class="term" title="v/u: ball exit speed ÷ wheel surface speed">v/u</span></label><div class="seg" id="rvu-seg"></div>
           <p class="hint">How much of the wheel speed the ball gets. Not measured yet; 0.42 is the middle guess. It changes the rpm, not the shot.</p></div>
         <div class="row"><label for="raero">Air model <span class="lab">ASSUMED</span></label><select id="raero"></select>
@@ -318,6 +319,9 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
           <p class="hint">How much one shot differs from the next with the same setting: exit speed, hood (launch) angle and aim left/right, as one standard deviation. Used for the chance it goes in and to find the best-chance setting. Not measured on the robot: defaults 1.5 %, 0.40°, 0.50° are guesses. Measure your shooter's spread (for example, film 20 shots) and enter it here. 0 turns that source off. Changing these does not re-solve the window; only the chance search runs again.</p></div>
         <div class="row"><label for="rphi">Air carried with the ball <span class="lab">ASSUMED</span></label><input id="rphi" type="number" step="0.1" min="0" max="1" placeholder="off">
           <p class="hint">A holed ball drags some air along, so it acts a little heavier: phi 0 to 1 (0 = only the usual added mass of a sphere, 1 = also all the air inside). Blank = off. At phi 1 every force acts about 1.4 % weaker (gravity too). Not measured.</p></div>
+        <div class="row"><label>Flywheel droop <span class="lab">ASSUMED</span></label>
+          <div class="xy x3"><label>Motor (CONFIRMED datasheet) <select id="rdmot"><option value="gobilda">goBILDA 5203 1:1</option><option value="revhd">REV HD Hex, bare</option></select></label><label>Wheel inertia (kg m², ASSUMED) <input id="rdiw" type="number" step="any" min="0.00005" max="0.001"></label><label>Battery (V, user) <input id="rdv" type="number" step="0.1" min="9" max="14"></label></div>
+          <p class="hint">For the "each shot slows the wheel" line in the answer. The wheel coasts while the ball is squeezed (it gives the ball its speed and spin), then the motor at full power brings it back (straight torque-speed line, speed and torque scale with battery V / 12). Motors at 12 V (CONFIRMED datasheets): goBILDA 5203 1:1 6000 rpm, 0.144 N m stall; REV HD Hex bare 6000 rpm, 0.105 N m stall. Default inertia 2.65e-4 kg m² = 98 mm wheel (guess, about 1.0e-4) + goBILDA 82 mm steel flywheel (1.65e-4, CONFIRMED). Not modelled: controller lag, current limit, motor rotor inertia. A battery under load reads lower than at rest. Changing these does not re-solve the shot.</p></div>
         <div class="row"><label>Turret travel</label><div class="seg" id="rtrav-seg"></div>
           <p class="hint">How far the turret can swing from the robot's front. If it cannot reach the cell, the answer says how far to turn the robot.</p></div>
         <div class="row"><label>HIVE tilt</label><p class="fixed">30° <span class="lab">CONFIRMED</span> <span class="hint">official field CAD. Tipped bounds 28.80° / 31.77° (wide 25.90° / 34.83°, derived). The Side view has 28.80° and 31.77° too.</span></p></div>
@@ -471,7 +475,7 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
     <details class="about"><summary><b>About this model.</b> PREDICTED by a computer model; no POLLEN drag, spin lift, bounce or grip has been measured. Test on a real robot before a match.</summary>
     <p><b>What this is.</b> Three views of one PREDICTED model (PM-001, Team 207 Critical Mass). <b>Robot</b> (the default): put a 0.457 m robot anywhere on the field at any heading, give it a turret, set the release height, backspin and grip, and the page solves the clean-entry window for that exact spot live in your browser (a background worker runs the same flight model), then gives the minimum wheel rpm, the minimum hood angle and the most forgiving shot, each beside its no-spin twin. <b>Side view</b> (single plane): the original model grid (<code>src/shooter_spec.py</code>: 111 speeds × 261 angles × 24 distances × 5 heights per case) for a shot straight down the HIVE tipping plane. <b>Field map</b>: the precomputed windows for every 0.05 m grid position (<code>data/field</code>). Air resistance is included in all three: quadratic drag (Cd), Magnus spin lift capped at a maximum, and spin decay during the flight. Those coefficients are ASSUMED literature values, not POLLEN measurements. The HIVE section is from the official field CAD; tilt 30° is confirmed.</p>
     <p><b>What the model includes.</b> Flight: quadratic drag, Magnus spin lift with a cap and spin decay, RK4 with a 2 ms step. Robot view: the shot flies along the bearing to the cell from the robot's exact spot (whole-field oblique model), and the up cell is 3D (side walls, pentagon roof, lips). The live solver reports two kinds of minimum: <b>knife edge</b> (the lowest clean shot found, a grazing one) and <b>with room for error</b> (still clean if speed and angle drift by the ASSUMED tolerance), each beside the no-spin twin. Options in Advanced settings: venue air (temperature, altitude, humidity; default 20 °C, sea level, dry = 1.204 kg/m³, derived), drag that changes with speed (reference or what-if, ASSUMED), extra drag from backspin (ASSUMED), a steady draft along, across or up the shot (user), a moving robot (speed toward the goal and sideways, turn rate, exit-angle offset d0; user / ASSUMED), a spin-lift table and reverse lift (ASSUMED), air carried with the ball (effective mass, ASSUMED), and a flag on any answer that needs more than the PREDICTED 8.9 m/s grip limit.</p>
-    <p><b>Not modelled yet</b> (largest first, from the research ranking; each needs a measurement): the real spin-lift level of POLLEN (Cl); its real drag level (Cd); grip and slip at the wheel (v/u, ball squeeze); the hood angle not being the exit angle; the random side force on a low-spin holed ball (knuckle); exit skew and a tilted spin axis (sideways error); balls and NECTAR already in the cell, bounce (COR) and the HIVE tipping mid-volley; bounces after entry; the air carried inside the ball (effective mass: an ASSUMED option only); flywheel droop and battery voltage at launch. Robot motion and sideways drafts are options (Advanced), not measurements. The "chance it goes in" line is a model probability under ASSUMED launch scatter, not a measured repeatability.</p>
+    <p><b>Not modelled yet</b> (largest first, from the research ranking; each needs a measurement): the real spin-lift level of POLLEN (Cl); its real drag level (Cd); grip and slip at the wheel (v/u, ball squeeze); the hood angle not being the exit angle; the random side force on a low-spin holed ball (knuckle); exit skew and a tilted spin axis (sideways error); balls and NECTAR already in the cell, bounce (COR) and the HIVE tipping mid-volley; bounces after entry; the air carried inside the ball (effective mass: an ASSUMED option only); flywheel droop and battery voltage at launch (the answer shows a PREDICTED per-shot droop and recovery readout, but every shot is still solved at the set wheel speed; an encoder log is needed). Robot motion and sideways drafts are options (Advanced), not measurements. The "chance it goes in" line is a model probability under ASSUMED launch scatter, not a measured repeatability.</p>
     <p><b>What it is not.</b> No POLLEN drag, spin lift, bounce or launcher grip has been measured. The air cases are literature ranges (pickleball and smooth-sphere data), not POLLEN facts. A shot that touches the HIVE stops here; a bounce can still score (see docs/05). The second HIVE and the A-frame legs are drawn for context only. One clean simulated shot says nothing about repeatability: the tolerance shown is how far speed and angle can drift and still go in. In the Robot view the release point is the robot centre at your height (an offset can be set; the turned 18 × 18 in chassis must stay inside the walls and off the A-frame base) and the turret is assumed to aim exactly (ASSUMED). The Side view and the Field map are precomputed with the same 3D cell (side walls, pentagon roof) at 1.204 kg/m³ (derived); the Side view is a straight shot down the tipping plane only.</p>
     </details>
     <p id="prov"></p>
@@ -1662,6 +1666,31 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
   function rpm(v, vu) { return v / vu / (Math.PI * WHEEL_D) * 60; }
   function vFromRpm(r, vu) { return r / 60 * (Math.PI * WHEEL_D) * vu; }
   function ballSpinRpm(v, S) { return Math.abs(S) * v / R_BALL * 60 / (2 * Math.PI); }
+
+  // ---------------------------------------------------------------- flywheel droop readout (PM-022)
+  // JS twin of src/launcher.py droop_readout() (tests/js_droop_check.js, tests/test_launcher.py): coasting wheel during
+  // contact, fixed hood. Per-shot drop = R_w m [(v - v_in) + kI S v R_b / r_c] / (2 I_w)   (impulse, generalised Brettle)
+  //   + c_rr k_n delta rho T / I_w, rho = R_w + r_c, T = wrap rho / v   (rolling hysteresis), rad/s -> rpm. No fitted factor;
+  // within about 1.5 % of hood_model on its RPM_GRID (PREDICTED), about 2 % at 2000-6000 rpm for I_w 5e-5..1e-3 (reads high
+  // below 2000 rpm with a light wheel). Recovery = launcher.recovery_time: linear motor line at
+  // V/12, Infinity when the rpm is at or above the free speed at that voltage. Not modelled: motor drive during contact,
+  // controller lag, current limit, motor rotor inertia. Values = launcher PARAMS: m, R_b CONFIRMED; R_w, delta user;
+  // kI, I_w, k_n, lam, c_rr, wrap, v_in ASSUMED.
+  const DROOP = { m: 0.025, Rb: 0.0355, kI: 0.63, Rw: 0.049, Iw: 2.65e-4, delta: 0.004, kn: 4000, lam: 1.0, crr: 0.02,
+    wrapDeg: 90, vIn: 0.5, volts: 12, gear: 1, motor: "gobilda",
+    motors: { gobilda: { label: "goBILDA 5203 1:1", freeRpm: 6000, stall: 0.144 },      // CONFIRMED datasheet (PARAMS)
+              revhd: { label: "REV HD Hex (bare)", freeRpm: 6000, stall: 0.105 } } };   // CONFIRMED datasheet (PARAMS)
+  function droopReadout(wheelRpm, v, S, o) {
+    const c = Object.assign({}, DROOP, o || {}), mo = DROOP.motors[c.motor] || DROOP.motors.gobilda, R2 = 2 * Math.PI / 60;
+    const freeRpm = c.freeRpm !== undefined ? c.freeRpm : mo.freeRpm, stall = c.stall !== undefined ? c.stall : mo.stall;
+    const rc = c.Rb - c.lam * c.delta / 2, rho = c.Rw + rc, ve = Math.max(v, 1e-9), vf = c.volts / 12;
+    const jw = c.m * ((ve - c.vIn) + c.kI * S * ve * c.Rb / rc) / 2, dImp = c.Rw * Math.max(jw, 0) / c.Iw;
+    const tc = rad(c.wrapDeg) * rho / ve, dHys = c.crr * c.kn * c.delta * rho * tc / c.Iw, drop = (dImp + dHys) / R2;
+    const wf = freeRpm * R2 / c.gear * vf, wt = wheelRpm * R2;
+    const rec = wt >= wf ? Infinity : c.Iw * wf / (c.gear * stall * vf) * Math.log((wf - (wt - drop * R2)) / (wf - wt));
+    return { dropRpm: drop, dropPct: wheelRpm > 0 ? 100 * drop / wheelRpm : Infinity, impulseRpm: dImp / R2, hystRpm: dHys / R2,
+             contactS: tc, recoverS: rec, minIntervalS: tc + rec, freeRpmLoaded: freeRpm / c.gear * vf, aboveFree: wt >= wf };
+  }
   function now() { return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now(); }
   function twinParams(p) { return Object.assign({}, p, { c1: 0, cl_table: null, cl_rev: 0 }); }
   function range(lo, hi, st) {
@@ -2463,7 +2492,7 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
   const api = { pose: pose, sectionFor: sectionFor, solve: solve, shot: shot, rpm: rpm, vFromRpm: vFromRpm,
     footprint: footprint, footprintAt: footprintAt, footprintText: footprintText, sightBlocked: sightBlocked,
     roofClearSection: roofClearSection, roofClearDrop: roofClearDrop,
-    ballSpinRpm: ballSpinRpm, labels: LABELS, tol: TOL,
+    ballSpinRpm: ballSpinRpm, droopReadout: droopReadout, DROOP: DROOP, labels: LABELS, tol: TOL,
     _fastShot: fastShot, _prepSection: prepSection, _zStopFor: zStopFor, _context: context,
     _classifyCtx: classifyCtx, _cellFor: cellFor, effParams: effParams, _flagGrip: flagGrip,
     hitChance: hitChance, bestChance: bestChance, BC: BC, _bcCandidates: bcCandidates, HC_SIG: HC_SIG, HC_NOTE: HC_NOTE, _moveFor: moveFor, _frameFor: frameFor, _launch3: launch3,
@@ -3568,6 +3597,7 @@ function fieldInit() {
 const R = { on: false, ready: false, x: -1.0, y: 0.2, heading: 0, travel: "360", h: 0.737, S: 1.0, vu: 0.42, aero: "nominal",
             tC: 20, altM: 0, rh: 0, drag: "const", sd: 0, wA: 0, wU: 0, wS: 0,
             mvOn: false, mvA: 0, mvC: 0, mvW: 0, d0: 0, lead: true, clTab: "", clRev: 0, gyro: false, sv: 1.5, sth: 0.40, spsi: 0.50, best: null, phi: "", robL: 18 * 0.0254, robW: 18 * 0.0254, robFo: 0, robLo: 0,
+            dMot: "gobilda", dIw: 2.65e-4, dV: 12, droopTest: "pending",   // flywheel droop readout (Advanced): motor CONFIRMED datasheet, inertia ASSUMED, battery user
             heat: false, twin: true, slow: true, pick: null, sel: null, res: null, resKey: "", solving: false, progress: 0,
             pose: null, shot: null, anim: null, meta: null, winGeom: null, heatMD: null, heatLayer: null, err: null };
 const robotGroup = new THREE.Group(); scene.add(robotGroup); robotGroup.visible = false;
@@ -3599,6 +3629,9 @@ const spinRpm = v => Math.abs(R.S) * v / IDX.ball_radius * 60 / (2 * Math.PI);
 const fmtAng = t => `${t.toFixed(1)}° from horizontal · ${(90 - t).toFixed(1)}° from vertical`;
 const inch = m => (m / 0.0254).toFixed(1) + " in";
 const esc = t => String(t).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+// flywheel droop readout (PM-022): solver.js droopReadout = src/launcher.py droop_readout, closed form, PREDICTED; per shot at rpmOf(v)
+const rDroop = (v, S) => PS().droopReadout(rpmOf(v), v, S, { motor: R.dMot, Iw: R.dIw, volts: R.dV });
+const fSec = t => isFinite(t) ? (t < 1 ? t.toPrecision(2) : t.toFixed(1)) + " s" : "never";   // 2 significant figures under 1 s
 // venue air (user; default 20 C, sea level, dry -> rho 1.2041 derived), drag curve and spin drag (ASSUMED), steady draft (user)
 // options off (defaults) leave the query as before: no move, no lift table / reverse lift, no effective mass
 // lift table "S:Cl, S:Cl" (user, ASSUMED); null when blank or unreadable (rClTabErr says why)
@@ -4194,7 +4227,8 @@ function rRender() {
   const pct = f => Math.round(f * 100) + "%";
   const bar = { c: "wait", t: "Working it out…", body: "" };
   const status = (c, t, why) => (bar.c = c, bar.t = t, `<div class="status ${c}"><i></i><span>${t}${why ? `<br><small>${why}</small>` : ""}</span></div>`);
-  let html = "", det = "";
+  let html = "", det = "", droopDet = "";
+  R.droopTest = res ? "none" : "pending";
   if (!res) html = status("wait", R.err ? "Solve failed" : "Working it out…", R.err ? esc(R.err) : "trying every wheel speed and hood angle at this spot");
   else if (!res.grid || !ps.ok) html = ps.status === "illegal"
     ? status("no", "The robot cannot stand here: " + (ps.footprint && (ps.footprint.wall || ps.footprint.base)
@@ -4245,10 +4279,27 @@ function rRender() {
         hcLine = `<p class="hc" id="rhc">${bWait ? "Chance it goes in: <small>finding the best-chance setting (simulated shots at many clean settings)…</small>" : rHcText(rHcGet(r.v, r.theta, rec.tw ? { v: rec.tw.v, theta: rec.tw.theta } : null), true)}</p>`;
         which = rec.which + (bWait ? " Provisional: the best-chance setting replaces it when the search is done." : "");
       }
+      // PM-022 flywheel droop readout: the answer and the no-spin twin at its own setting (S = 0 takes no spin from the wheel)
+      const dm = rDroop(r.v, R.S), twS = S0 ? null : pick.tw || null, dtw = twS ? rDroop(twS.v, 0) : null, dV = R.dV.toFixed(1);
+      const dSay = (d, rp, b) => (t => b ? `<b>${t}</b>` : t)(`${Math.round(d.dropRpm)}&nbsp;rpm`) + ` (${d.dropPct.toFixed(1)}&nbsp;%); ` + (d.aboveFree
+        ? `<span class="dw">the motor cannot reach ${Math.round(rp)} rpm at ${dV} V: that is above its free speed (${Math.round(d.freeRpmLoaded)} rpm), so the wheel never gets back to speed</span>`
+        : `back to speed in ${b ? `<b>${fSec(d.recoverS)}</b>` : fSec(d.recoverS)} at full power on a ${dV} V battery`);
+      const droopLine = `<p class="droop">Each shot slows the wheel by about ${dSay(dm, rpmOf(r.v), true)} <span class="lab">PREDICTED</span>${pick && pick.m && pick.m.gripLimited ? " <small>(rough: this setting is above the grip limit, where the formula's rolling contact may not hold)</small>" : ""}<br><small>` +
+        (S0 ? "S = 0: this is already the no-spin case." : dtw ? `No-spin twin (S = 0) at its own ${Math.round(rpmOf(twS.v))} rpm: about ${dSay(dtw, rpmOf(twS.v), false)}.`
+          : bm && bTwWait ? "No-spin twin (S = 0): finding its setting…" : "No-spin twin (S = 0): no clean shot to compare.") +
+        ` Wheel inertia ${R.dIw.toExponential(2)} kg m² is ASSUMED; controller lag, current limit and motor rotor inertia are not modelled (Advanced).</small></p>`;
+      const dD = (d, v, S) => `${Math.round(rpmOf(v))} rpm, exit ${v.toFixed(2)} m/s, S = ${S}: drop ${Math.round(d.dropRpm)} rpm = ${d.dropPct.toFixed(1)} % (speed and spin impulse ${Math.round(d.impulseRpm)} + rolling loss ${Math.round(d.hystRpm)}), ` +
+        `contact about ${Math.round(d.contactS * 1000)} ms, back to speed ${isFinite(d.recoverS) ? "in " + d.recoverS.toFixed(3) + " s" : "never (above the free speed)"}, shots at least ${isFinite(d.minIntervalS) ? d.minIntervalS.toFixed(2) + " s" : "–"} apart (feed time not included)`;
+      const mo = PS().DROOP.motors[R.dMot] || PS().DROOP.motors.gobilda;
+      droopDet = `<dt>Flywheel droop per shot (PREDICTED)</dt><dd>answer: ${dD(dm, r.v, R.S)}<br>${S0 ? "no-spin twin: same shot (S = 0)" : dtw ? "no-spin twin (comparison, takes no spin from the wheel): " + dD(dtw, twS.v, 0) : "no-spin twin: none"}<br>` +
+        `motor ${mo.label} (CONFIRMED datasheet: ${mo.freeRpm} rpm, ${mo.stall} N m at 12 V) · wheel inertia ${R.dIw.toExponential(2)} kg m² (ASSUMED) · battery ${dV} V (user), free speed ${Math.round(dm.freeRpmLoaded)} rpm · ` +
+        `ball squeeze and rolling loss from the launcher model (ASSUMED) · closed form: within about 1.5 % of the launcher contact model (hood_model) at the default inertia, about 2 % at 2000-6000 rpm across this inertia range (it reads high below 2000 rpm with a light wheel) · not modelled: controller lag, current limit, motor rotor inertia, motor drive during the shot</dd>`;
+      const dT = (d, v) => `${Math.round(rpmOf(v))}rpm/d${Math.round(d.dropRpm)}/${d.dropPct.toFixed(2)}%/rec${isFinite(d.recoverS) ? d.recoverS.toFixed(3) + "s" : "inf"}/min${isFinite(d.minIntervalS) ? d.minIntervalS.toFixed(3) + "s" : "inf"}`;
+      R.droopTest = `main:${dT(dm, r.v)},twin:${S0 ? "same" : dtw ? dT(dtw, twS.v) : "none"},set:${R.dMot}/${R.dIw}/${R.dV}`;
       html += `<div class="rec"><p class="say">Set the wheel to <b>${Math.round(rpmOf(r.v))}&nbsp;rpm</b> <span class="lab">derived</span><br>hood to <b>${r.theta.toFixed(1)}°</b> <span>from horizontal (${vert(r.theta)}° from vertical)</span> <span class="lab">PREDICTED</span></p>` +
         `<p class="twinline">${twLine}</p>` + hcLine +
         (R.mvOn && res.moveSens ? `<p class="sens">${rSensText(res.moveSens, !S0 && tw ? tw.moveSens : null)}</p>` : "") +
-        `<p class="which">${which}</p></div>`;
+        droopLine + `<p class="which">${which}</p></div>`;
       bar.body = `<span>Wheel <b>${Math.round(rpmOf(r.v))} rpm</b> <span class="lab">derived</span> · hood <b>${r.theta.toFixed(1)}°</b> (${vert(r.theta)}° from vertical) <span class="lab">PREDICTED</span>${bm ? ` · chance ${pc(bm.mean)}${bm.sets.length > 1 ? " (air-set average)" : ""}, ASSUMED scatter` : ""}</span>` +
         `<span class="rb-tw">${twLine}</span>`;
     }
@@ -4293,7 +4344,7 @@ function rRender() {
     const bs = S0 ? "none (S = 0)" : [bm && `${Math.round(spinRpm(bm.v))} rpm at the best-chance shot`, mrT && `${Math.round(spinRpm(mrT.v))} rpm at the min-rpm shot`, mf && `${Math.round(spinRpm(mf.v))} rpm at the most forgiving shot`].filter(Boolean).join(" · ") || "–";
     det += `<dl class="stats rstats"><dt>Ball spin (backspin, derived)</dt><dd>${bs}</dd>` +
       `<dt>Air and options</dt><dd>${(res.notes || []).filter(n => /^(air|drag|spin drag|draft|lift|reverse|effective|gyro|robot moving|3D cell used)/.test(n)).map(esc).join("<br>") || "–"}</dd>` +
-      `<dt>Grip limit (PREDICTED)</dt><dd>${res.gripCap ? `${res.gripCap.v} m/s exit = ${Math.round(rpmOf(res.gripCap.v))} rpm at grip ${R.vu.toFixed(2)}; faster answers are flagged` : "–"}</dd>` +
+      `<dt>Grip limit (PREDICTED)</dt><dd>${res.gripCap ? `${res.gripCap.v} m/s exit = ${Math.round(rpmOf(res.gripCap.v))} rpm at grip ${R.vu.toFixed(2)}; faster answers are flagged` : "–"}</dd>` + droopDet +
       `<dt>Clean pairs found</dt><dd>${res.count}${S0 ? "" : " · twin " + (res.twin ? res.twin.count : 0)}</dd>` +
       `<dt>Solved</dt><dd>${g2(res.grid.v)} speeds × ${g2(res.grid.th)} angles (${res.grid.dv} m/s × ${res.grid.dth}°) in ${(res.ms / 1000).toFixed(1)} s</dd></dl>`;
   }
@@ -4353,7 +4404,7 @@ function rTest() {
     `move=${R.mvOn ? [R.mvA, R.mvC, R.mvW, R.d0, R.lead].join(",") : "off"}`, `engine=${RW.fallback ? "main-thread" : "workers"}`,
     `best=${(B => B && B.main ? (B.main.ok ? `${Math.round(rpmOf(B.main.v))}rpm@${B.main.theta.toFixed(2)}deg/` + B.main.sets.map(t => t.name + ":" + t.k + "/" + t.n).join(",") + "/dom:" + (B.main.breakdown ? B.main.breakdown.dominant : "na") : "none") : "pending")(rBestCur())}`,
     `twinBest=${(B => B && B.twin ? (B.twin.ok ? `${Math.round(rpmOf(B.twin.v))}rpm@${B.twin.theta.toFixed(2)}deg/${B.twin.sets[0].k}/${B.twin.sets[0].n}/dom:${B.twin.breakdown ? B.twin.breakdown.dominant : "na"}` : "none") : "pending")(rBestCur())}`,
-    `sig=${R.sv},${R.sth},${R.spsi}`, `gyro=${R.gyro}`, `msMain=${ok && res.msMain ? Math.round(res.msMain) : ""}`].join(";");
+    `sig=${R.sv},${R.sth},${R.spsi}`, `gyro=${R.gyro}`, `msMain=${ok && res.msMain ? Math.round(res.msMain) : ""}`, `droop=${ok ? R.droopTest : "pending"}`].join(";");
 }
 
 // ---- robot-view UI
@@ -4375,8 +4426,8 @@ function rSyncInputs() {
   sel.value = R.aero;
   $("rdrag").value = R.drag;
   [["rtc", "tC"], ["ralt", "altM"], ["rrh", "rh"], ["rwa", "wA"], ["rwu", "wU"], ["rws", "wS"], ["rmva", "mvA"], ["rmvc", "mvC"], ["rmvw", "mvW"], ["rd0", "d0"],
-   ["rclt", "clTab"], ["rclr", "clRev"], ["rphi", "phi"], ["rsv", "sv"], ["rsth", "sth"], ["rspsi", "spsi"]].forEach(([id, k]) => { if (document.activeElement !== $(id)) $(id).value = R[k]; });
-  $("rmv").checked = R.mvOn; $("rlead").checked = R.lead; $("rgyro").checked = R.gyro;
+   ["rclt", "clTab"], ["rclr", "clRev"], ["rphi", "phi"], ["rsv", "sv"], ["rsth", "sth"], ["rspsi", "spsi"], ["rdiw", "dIw"], ["rdv", "dV"]].forEach(([id, k]) => { if (document.activeElement !== $(id)) $(id).value = R[k]; });
+  $("rmv").checked = R.mvOn; $("rlead").checked = R.lead; $("rgyro").checked = R.gyro; $("rdmot").value = R.dMot;
   $("rclt").setAttribute("aria-invalid", String(!!R.clTab.trim() && !rClTab(R.clTab)));
   $("rclt-h").dataset.bad = R.clTab.trim() && !rClTab(R.clTab) ? "1" : "";
   const A = PH.airState(R.tC, PH.pressureFromAltitude(R.altM), R.rh / 100);
@@ -4413,6 +4464,10 @@ function robotInit() {
   [["rsv", "sv", 0, 10], ["rsth", "sth", 0, 5], ["rspsi", "spsi", 0, 5]].forEach(([id, k, lo, hi]) =>   // scatter: only the chance search runs again
     $(id).addEventListener("change", e => { const v = parseFloat(e.target.value); if (!isFinite(v)) return; const nv = Math.max(lo, Math.min(hi, v)); if (nv !== R[k]) { R[k] = nv; F.fcKey = ""; rScatterChanged(); } }));
   $("rphi").addEventListener("change", e => { const t = e.target.value.trim(), v = parseFloat(t); R.phi = t === "" || !isFinite(v) ? "" : String(Math.max(0, Math.min(1, v))); rChanged("opt"); });
+  // flywheel droop readout inputs: only the readout changes, no re-solve
+  $("rdmot").addEventListener("change", e => { R.dMot = e.target.value; rChanged("droop"); });
+  [["rdiw", "dIw", 5e-5, 1e-3], ["rdv", "dV", 9, 14]].forEach(([id, k, lo, hi]) =>
+    $(id).addEventListener("change", e => { const v = parseFloat(e.target.value); if (isFinite(v)) { R[k] = Math.max(lo, Math.min(hi, v)); rChanged("droop"); } }));
   rh.addEventListener("input", () => { R.h = +rh.value; rChanged("param"); });
   $("rhd").addEventListener("input", e => { R.heading = wrap180(+e.target.value); rChanged("heading"); });
   [["rlen", "robL", 6, 30, 0.0254], ["rwid", "robW", 6, 30, 0.0254], ["rofo", "robFo", -0.4, 0.4, 1], ["rolo", "robLo", -0.4, 0.4, 1]].forEach(([id, k, lo, hi, f]) =>
@@ -4491,7 +4546,8 @@ function robotInit() {
   rClamp(); rPose();
   R0 = { x: R.x, y: R.y, heading: R.heading, travel: R.travel, h: R.h, S: R.S, vu: R.vu, aero: R.aero, heat: R.heat, twin: R.twin, slow: R.slow,
          tC: R.tC, altM: R.altM, rh: R.rh, drag: R.drag, sd: R.sd, wA: R.wA, wU: R.wU, wS: R.wS, mvOn: R.mvOn, mvA: R.mvA, mvC: R.mvC, mvW: R.mvW,
-         d0: R.d0, lead: R.lead, clTab: R.clTab, clRev: R.clRev, gyro: R.gyro, sv: R.sv, sth: R.sth, spsi: R.spsi, phi: R.phi, robL: R.robL, robW: R.robW, robFo: R.robFo, robLo: R.robLo };
+         d0: R.d0, lead: R.lead, clTab: R.clTab, clRev: R.clRev, gyro: R.gyro, sv: R.sv, sth: R.sth, spsi: R.spsi, phi: R.phi, robL: R.robL, robW: R.robW, robFo: R.robFo, robLo: R.robLo,
+         dMot: R.dMot, dIw: R.dIw, dV: R.dV };
   R.ready = true;
 }
 let R0 = null;

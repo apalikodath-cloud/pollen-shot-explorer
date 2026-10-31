@@ -1,12 +1,16 @@
 """Unit tests for src/launcher.py (single 98 mm flywheel + hood / passive roller)."""
+import json
 import math
 import os
 import random
+import shutil
+import subprocess
 import sys
 import unittest
 from dataclasses import replace
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src"))
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(HERE), "src"))
 
 import launcher as L  # noqa: E402
 
@@ -231,6 +235,108 @@ class Envelope(unittest.TestCase):
         self.assertGreater(t, 0.0)
         self.assertLess(t, 1.0)
         self.assertTrue(math.isinf(L.recovery_time(200.0, 6000.0, w, m)))
+
+
+class DroopReadout(unittest.TestCase):
+    """PM-022: closed-form per-shot droop / recovery readout (launcher.droop_readout) against the contact model
+    (hood_model) and against its JS twin (viz/explorer/solver.js droopReadout via tests/js_droop_check.js)."""
+    TOL = 0.03   # stated tolerance on the drop vs hood_model; measured on RPM_GRID: +0.9 % to -1.5 % (2026-10-31)
+
+    def test_matches_hood_model_on_rpm_grid(self):
+        worst = 0.0
+        for rpm in L.RPM_GRID:
+            r = L.hood_model(float(rpm))
+            d = L.droop_readout(rpm, r.v_exit, r.S)
+            err = d["drop_rpm"] / r.rpm_drop - 1.0
+            worst = max(worst, abs(err))
+            self.assertLess(abs(err), self.TOL, f"{rpm} rpm: closed form {d['drop_rpm']:.1f} vs hood_model {r.rpm_drop:.1f}")
+            self.assertAlmostEqual(d["drop_pct"], 100.0 * d["drop_rpm"] / rpm, places=12)
+            # contact-time estimate wrap rho / v: never longer than the contact model's, at most 40 % shorter on this grid
+            self.assertLessEqual(d["contact_s"], 1.01 * r.contact_time)
+            self.assertGreater(d["contact_s"], 0.6 * r.contact_time)
+        self.assertLess(worst, 0.02)   # a drift past 2 % should be looked at before the tolerance is touched
+
+    def test_inertia_and_wrap_variants(self):
+        """Page inertia range (Advanced clamp 5e-5..1e-3 kg m^2) x the ASSUMED wrap bracket 60-120 deg, 2000-6000 rpm (the
+        answer band): measured -1.7 % to +2.1 % (2026-10-31), asserted within TOL. Stated limit, not asserted: below
+        2000 rpm a light wheel reads high (1000 rpm: +5 % at 1e-4, +30 % at 5e-5 kg m^2, wrap 90)."""
+        for wrap in (60.0, 90.0, 120.0):
+            for iw in (5e-5, 1e-4, 5e-4, 1e-3):
+                for rpm in (2000, 3000, 4500, 6000):
+                    kw = dict(wheel=L.Wheel(inertia=iw), wrap_deg=wrap)
+                    r = L.hood_model(float(rpm), **kw)
+                    d = L.droop_readout(rpm, r.v_exit, r.S, **kw)
+                    self.assertLess(abs(d["drop_rpm"] / r.rpm_drop - 1.0), self.TOL, f"I_w {iw} wrap {wrap} {rpm} rpm")
+
+    def test_impulse_term_is_brettle(self):
+        """Rigid radius, no hysteresis, no feed speed, rolling exit: the closed form is Brettle's relation."""
+        b, w, c = L.Ball(), L.Wheel(), L.Contact(**RIGID)
+        om_i = 3000.0 * L.RPM2RAD
+        om_f = L.brettle_omega_f(om_i, b, w)
+        d = L.droop_readout(3000.0, w.radius * om_f / 2.0, 1.0, ball=b, wheel=w, contact=c, v_in=0.0)
+        self.assertAlmostEqual(d["drop_rpm"], (om_i - om_f) * L.RAD2RPM, places=9)
+        self.assertEqual(d["hysteresis_rpm"], 0.0)
+
+    def test_recovery_is_recovery_time(self):
+        w = L.Wheel()
+        for m in (L.Motor(), L.Motor(voltage_frac=11.0 / 12.0), L.Motor(stall_torque=0.105)):
+            for rpm in (2000.0, 3000.0, 4500.0):
+                d = L.droop_readout(rpm, 6.5, 1.0, wheel=w, motor=m)
+                self.assertEqual(d["recovery_s"], L.recovery_time(d["drop_rpm"], rpm, w, m))
+                self.assertGreater(d["recovery_s"], 0.0)
+                self.assertAlmostEqual(d["min_interval_s"], d["contact_s"] + d["recovery_s"], places=12)
+                self.assertFalse(d["above_free"])
+        top = L.droop_readout(6000.0, 8.9, 1.0)   # at the 12 V free speed: never recovers
+        self.assertTrue(math.isinf(top["recovery_s"]) and math.isinf(top["min_interval_s"]) and top["above_free"])
+        sag = L.droop_readout(5800.0, 8.9, 1.0, motor=L.Motor(voltage_frac=11.0 / 12.0))   # free speed 5500 rpm at 11 V
+        self.assertTrue(math.isinf(sag["recovery_s"]) and sag["above_free"])
+        self.assertAlmostEqual(sag["free_rpm_loaded"], 5500.0, places=6)
+
+    def test_no_spin_twin(self):
+        """The no-spin twin (S = 0) takes no spin from the wheel: smaller drop at the same exit speed, same rolling loss."""
+        a, b = L.droop_readout(3000.0, 6.5, 1.0), L.droop_readout(3000.0, 6.5, 0.0)
+        self.assertLess(b["drop_rpm"], a["drop_rpm"])
+        self.assertEqual(b["hysteresis_rpm"], a["hysteresis_rpm"])
+        self.assertLess(b["recovery_s"], a["recovery_s"])
+
+    def test_js_twin_matches_python(self):
+        node = shutil.which("node")
+        if not node:
+            self.skipTest("node not installed")
+        motors = {"gobilda": L.PARAMS["motor_gobilda_5203_1to1"], "revhd": L.PARAMS["motor_rev_hdhex_bare"]}
+        cases, py = [], []
+        for name, mp in motors.items():
+            for volts in (11.0, 12.0, 13.2):
+                for iw in (1e-4, 2.65e-4, 5e-4):
+                    for rpm, v, S in ((1500.0, 3.2, 1.0), (2911.0, 6.27, 1.0), (2878.0, 6.2, 0.0), (4200.0, 8.6, 0.6), (5800.0, 8.9, 1.0)):
+                        cases.append({"rpm": rpm, "v": v, "S": S, "o": {"motor": name, "Iw": iw, "volts": volts}})
+                        m = L.Motor(free_rpm=mp["free_rpm"], stall_torque=mp["stall_torque"], voltage_frac=volts / 12.0)
+                        py.append(L.droop_readout(rpm, v, S, wheel=L.Wheel(inertia=iw), motor=m))
+        r = subprocess.run([node, os.path.join(HERE, "js_droop_check.js")], input=json.dumps({"cases": cases}),
+                           capture_output=True, text=True, timeout=120)
+        self.assertEqual(r.returncode, 0, r.stderr[-2000:])
+        js = json.loads(r.stdout.strip().splitlines()[-1])
+        keys = {"drop_rpm": "dropRpm", "drop_pct": "dropPct", "impulse_rpm": "impulseRpm", "hysteresis_rpm": "hystRpm",
+                "contact_s": "contactS", "recovery_s": "recoverS", "min_interval_s": "minIntervalS", "free_rpm_loaded": "freeRpmLoaded"}
+        worst, n_inf = 0.0, 0
+        for c, p, j in zip(cases, py, js["out"]):
+            self.assertEqual(p["above_free"], j["aboveFree"], c)
+            for pk, jk in keys.items():
+                if math.isinf(p[pk]):
+                    self.assertIsNone(j[jk], (c, pk))   # JSON has no Infinity: the JS twin's Infinity prints as null
+                    n_inf += 1
+                    continue
+                worst = max(worst, abs(j[jk] - p[pk]) / max(abs(p[pk]), 1e-12))
+        self.assertGreater(n_inf, 0)   # the set includes rpm above the free speed at 11 V
+        self.assertLessEqual(worst, 0.01)
+        # the JS defaults are the launcher defaults (twin constants stay aligned)
+        D, b, w, c = js["defaults"], L.Ball(), L.Wheel(), L.Contact()
+        for jk, val in (("m", b.mass), ("Rb", b.radius), ("kI", b.kI), ("Rw", w.radius), ("Iw", w.inertia), ("delta", c.delta),
+                        ("kn", c.k_n), ("lam", c.lam_radius), ("crr", c.c_rr), ("wrapDeg", L.PARAMS["wrap_deg"]["value"]),
+                        ("vIn", L.PARAMS["v_in"]["value"])):
+            self.assertEqual(D[jk], val, jk)
+        for name, mp in motors.items():
+            self.assertEqual((D["motors"][name]["freeRpm"], D["motors"][name]["stall"]), (mp["free_rpm"], mp["stall_torque"]))
 
 
 if __name__ == "__main__":

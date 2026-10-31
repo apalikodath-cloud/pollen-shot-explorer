@@ -702,13 +702,13 @@ def _mc_cell(aim: dict, n: int, seed: int, err, cell, frame: dict, prm3: dict, d
     P, V = tr["P"], tr["V"]
     counts: dict = {}
     clean = np.zeros(n, bool)
+    below = (P[:, 1:, 2] < zs) & (V[:, 1:, 2] < 0)
+    stop = np.where(below.any(axis=1), np.argmax(below, axis=1) + 2, P.shape[1])
+    ok = np.nonzero(L["ok"])[0]
+    res_ok = dict(zip(ok.tolist(), c3d.classify_paths3d(   # one batched call (= classify_path3d per shot)
+        [(P[i, :stop[i], 0], P[i, :stop[i], 1], P[i, :stop[i], 2]) for i in ok], cell, R)))
     for i in range(n):
-        if not L["ok"][i]:
-            res = "infeasible"
-        else:
-            stop = np.nonzero((P[i, 1:, 2] < zs) & (V[i, 1:, 2] < 0))[0]
-            e = int(stop[0]) + 2 if stop.size else P.shape[1]
-            res = c3d.classify_path3d(P[i, :e, 0], P[i, :e, 1], P[i, :e, 2], cell, R)["result"]
+        res = res_ok.get(i, "infeasible")
         counts[res] = counts.get(res, 0) + 1
         clean[i] = res == "clean"
     kc = int(clean.sum())
@@ -717,6 +717,34 @@ def _mc_cell(aim: dict, n: int, seed: int, err, cell, frame: dict, prm3: dict, d
     if return_paths:
         out["paths"] = P
     return out
+
+
+def mc_cell_counts(aims: list, draws, err, cell, frame: dict, prm3: dict) -> list:
+    """k_clean of _mc_cell for several aims (same S, h, z_stop; one prm3) with the same draws, integrated and
+    classified in one batch: per shot the same arithmetic as one _mc_cell call per aim, so the same counts."""
+    E = dict(HC_SIG, **(ERR_SETS[err] if isinstance(err, str) else err))
+    Z = np.asarray(draws, float).reshape(-1, 3)
+    n, m = len(Z), len(aims)
+    if n == 0 or m == 0:
+        return [0] * m
+    v = np.concatenate([a["v"] * (1.0 + E["sig_v_rel"] * Z[:, 0]) for a in aims])
+    th = np.concatenate([a["theta"] + E["sig_th"] * Z[:, 1] for a in aims])
+    dpsi = np.tile(np.radians(E["sig_psi"] * Z[:, 2]), m)
+    R, h = float(prm3["radius"]), float(aims[0]["h"])
+    L = launch_state(frame, v, th, float(aims[0].get("S", 0.0)), R, h, dpsi)
+    w3 = prm3.get("wind3")
+    wind = None if w3 is None else np.tile(np.asarray(w3, float), (n * m, 1))
+    zs = float(aims[0]["z_stop"]) + h
+    tr = integrate3d(L["x0"], L["v0"], L["w0"], prm3, wind=wind, t_max=3.0, z_stop=zs, eps_v=1e-6,
+                     dtype=np.float64)
+    P, V = tr["P"], tr["V"]
+    below = (P[:, 1:, 2] < zs) & (V[:, 1:, 2] < 0)
+    stop = np.where(below.any(axis=1), np.argmax(below, axis=1) + 2, P.shape[1])
+    ok = np.nonzero(L["ok"])[0]
+    res = c3d.classify_paths3d([(P[i, :stop[i], 0], P[i, :stop[i], 1], P[i, :stop[i], 2]) for i in ok], cell, R)
+    clean = np.zeros(n * m, bool)
+    clean[ok] = np.array([r == "clean" for r in res], bool)
+    return [int(clean[j * n:(j + 1) * n].sum()) for j in range(m)]
 
 
 def hit_chance(cell, frame: dict, aim: dict, sets: dict, n: int = 1000, seed: int = 20261031,

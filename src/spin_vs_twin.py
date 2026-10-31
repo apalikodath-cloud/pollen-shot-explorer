@@ -193,13 +193,19 @@ def search(plan: dict, n1: int = BC["n1"], n2: int = BC["n2"], n: int = BC["n"],
         c.update(mean=k / (m * nS), lo=lo, hi=hi)
 
     C = [{"v": float(c["v"]), "theta": float(c["theta"]), "from": c.get("from", "given")} for c in plan["candidates"]]
-    for c in C:
-        c["k"] = [count(c, nm, Zs[:n1]) for nm in names]
+    def counts(cs, nm, Z):          # count() for several candidates in one batch (same counts)
+        aims = [dict(base, v=c["v"], theta=c["theta"]) for c in cs]
+        return rb.mc_cell_counts(aims, Z, err, cell, F, plan["sets"][nm])
+
+    K = [counts(C, nm, Zs[:n1]) for nm in names]
+    for i, c in enumerate(C):
+        c["k"] = [K[j][i] for j in range(nS)]
         pooled(c, n1)
     best_lo = max(c["lo"] for c in C)
     keep = sorted([c for c in C if c["hi"] >= best_lo], key=lambda c: (-c["mean"], c["v"], c["theta"]))[:k2]
-    for c in keep:
-        c["k"] = [k0 + count(c, nm, Zs[n1:n2]) for k0, nm in zip(c["k"], names)]
+    K = [counts(keep, nm, Zs[n1:n2]) for nm in names]
+    for i, c in enumerate(keep):
+        c["k"] = [k0 + K[j][i] for j, k0 in enumerate(c["k"])]
         pooled(c, n2)
     keep.sort(key=lambda c: (-c["mean"], c["v"], c["theta"]))
     w = keep[0]

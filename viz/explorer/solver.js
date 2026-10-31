@@ -491,6 +491,31 @@
   function rpm(v, vu) { return v / vu / (Math.PI * WHEEL_D) * 60; }
   function vFromRpm(r, vu) { return r / 60 * (Math.PI * WHEEL_D) * vu; }
   function ballSpinRpm(v, S) { return Math.abs(S) * v / R_BALL * 60 / (2 * Math.PI); }
+
+  // ---------------------------------------------------------------- flywheel droop readout (PM-022)
+  // JS twin of src/launcher.py droop_readout() (tests/js_droop_check.js, tests/test_launcher.py): coasting wheel during
+  // contact, fixed hood. Per-shot drop = R_w m [(v - v_in) + kI S v R_b / r_c] / (2 I_w)   (impulse, generalised Brettle)
+  //   + c_rr k_n delta rho T / I_w, rho = R_w + r_c, T = wrap rho / v   (rolling hysteresis), rad/s -> rpm. No fitted factor;
+  // within about 1.5 % of hood_model on its RPM_GRID (PREDICTED), about 2 % at 2000-6000 rpm for I_w 5e-5..1e-3 (reads high
+  // below 2000 rpm with a light wheel). Recovery = launcher.recovery_time: linear motor line at
+  // V/12, Infinity when the rpm is at or above the free speed at that voltage. Not modelled: motor drive during contact,
+  // controller lag, current limit, motor rotor inertia. Values = launcher PARAMS: m, R_b CONFIRMED; R_w, delta user;
+  // kI, I_w, k_n, lam, c_rr, wrap, v_in ASSUMED.
+  const DROOP = { m: 0.025, Rb: 0.0355, kI: 0.63, Rw: 0.049, Iw: 2.65e-4, delta: 0.004, kn: 4000, lam: 1.0, crr: 0.02,
+    wrapDeg: 90, vIn: 0.5, volts: 12, gear: 1, motor: "gobilda",
+    motors: { gobilda: { label: "goBILDA 5203 1:1", freeRpm: 6000, stall: 0.144 },      // CONFIRMED datasheet (PARAMS)
+              revhd: { label: "REV HD Hex (bare)", freeRpm: 6000, stall: 0.105 } } };   // CONFIRMED datasheet (PARAMS)
+  function droopReadout(wheelRpm, v, S, o) {
+    const c = Object.assign({}, DROOP, o || {}), mo = DROOP.motors[c.motor] || DROOP.motors.gobilda, R2 = 2 * Math.PI / 60;
+    const freeRpm = c.freeRpm !== undefined ? c.freeRpm : mo.freeRpm, stall = c.stall !== undefined ? c.stall : mo.stall;
+    const rc = c.Rb - c.lam * c.delta / 2, rho = c.Rw + rc, ve = Math.max(v, 1e-9), vf = c.volts / 12;
+    const jw = c.m * ((ve - c.vIn) + c.kI * S * ve * c.Rb / rc) / 2, dImp = c.Rw * Math.max(jw, 0) / c.Iw;
+    const tc = rad(c.wrapDeg) * rho / ve, dHys = c.crr * c.kn * c.delta * rho * tc / c.Iw, drop = (dImp + dHys) / R2;
+    const wf = freeRpm * R2 / c.gear * vf, wt = wheelRpm * R2;
+    const rec = wt >= wf ? Infinity : c.Iw * wf / (c.gear * stall * vf) * Math.log((wf - (wt - drop * R2)) / (wf - wt));
+    return { dropRpm: drop, dropPct: wheelRpm > 0 ? 100 * drop / wheelRpm : Infinity, impulseRpm: dImp / R2, hystRpm: dHys / R2,
+             contactS: tc, recoverS: rec, minIntervalS: tc + rec, freeRpmLoaded: freeRpm / c.gear * vf, aboveFree: wt >= wf };
+  }
   function now() { return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now(); }
   function twinParams(p) { return Object.assign({}, p, { c1: 0, cl_table: null, cl_rev: 0 }); }
   function range(lo, hi, st) {
@@ -1292,7 +1317,7 @@
   const api = { pose: pose, sectionFor: sectionFor, solve: solve, shot: shot, rpm: rpm, vFromRpm: vFromRpm,
     footprint: footprint, footprintAt: footprintAt, footprintText: footprintText, sightBlocked: sightBlocked,
     roofClearSection: roofClearSection, roofClearDrop: roofClearDrop,
-    ballSpinRpm: ballSpinRpm, labels: LABELS, tol: TOL,
+    ballSpinRpm: ballSpinRpm, droopReadout: droopReadout, DROOP: DROOP, labels: LABELS, tol: TOL,
     _fastShot: fastShot, _prepSection: prepSection, _zStopFor: zStopFor, _context: context,
     _classifyCtx: classifyCtx, _cellFor: cellFor, effParams: effParams, _flagGrip: flagGrip,
     hitChance: hitChance, bestChance: bestChance, BC: BC, _bcCandidates: bcCandidates, HC_SIG: HC_SIG, HC_NOTE: HC_NOTE, _moveFor: moveFor, _frameFor: frameFor, _launch3: launch3,

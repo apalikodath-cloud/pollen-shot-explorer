@@ -309,6 +309,47 @@ about 1.6 s (backspin) and 0.5 s (twin) after the answer shows. On a fully loade
 the same parts took 2.2 s in node and 7-10 s in headless Edge; the field chance layer took about 6 min for 80
 blocks there.
 
+## Flywheel droop readout (PM-022, `solver.js` `droopReadout` / `DROOP`, python `src/launcher.py` `droop_readout`)
+
+A readout only (PREDICTED, closed form, no fitted factor): every shot is still solved at the set wheel speed, so
+the window, the chance search and the field map do not change. The wheel coasts while the ball is squeezed
+(fixed hood), then the motor at full power brings it back.
+
+* Drop per shot: `I_w dOm = R_w m [(v - v_in) + kI S v R_b / r_c] / 2` (the impulse that gives the ball its speed
+  and spin, generalised Brettle) `+ c_rr k_n delta rho T` (rolling loss), `r_c = R_b - lam delta / 2`,
+  `rho = R_w + r_c`, contact time `T = wrap rho / v` (hood_model's is 0-60 % longer above 1000 rpm). Values =
+  launcher PARAMS (`DROOP`): m, R_b CONFIRMED; R_w, delta user; kI, I_w, k_n, lam, c_rr, wrap 90 deg, v_in 0.5 m/s
+  ASSUMED.
+* Recovery = `recovery_time`: straight torque-speed line, free speed and stall torque times battery V / 12,
+  `tau = I_w w_f / (gear stall V/12)`, `t = tau ln((w_f - w_start) / (w_f - w_set))`. Infinity when the set rpm is
+  at or above the free speed at that voltage (the page says "never" with a warning). Minimum shot interval =
+  contact + recovery (feed time not included).
+* `droopReadout(wheelRpm, v, S, {motor, Iw, volts, ...})` returns `dropRpm, dropPct, impulseRpm, hystRpm,
+  contactS, recoverS, minIntervalS, freeRpmLoaded, aboveFree` (python: `drop_rpm` ... `above_free`).
+* Advanced, "Flywheel droop" (no re-solve, only the readout changes): motor goBILDA 5203 1:1 (default) or REV HD
+  Hex bare (CONFIRMED datasheets at 12 V: 6000 rpm, 0.144 / 0.105 N m stall), wheel inertia 2.65e-4 kg m^2
+  (ASSUMED: 98 mm wheel about 1.0e-4, a guess, + goBILDA 82 mm steel flywheel 1.65e-4 CONFIRMED; clamp 5e-5 to
+  1e-3), battery 12 V (user; clamp 9 to 14). Not in the URL hash.
+* Answer card: one line for the answer and one for the no-spin twin at its own setting (S = 0 takes no spin from
+  the wheel); Details has the split, the contact time and the minimum interval. `body[data-robot-test]` has
+  `droop=main:<rpm>rpm/d<drop>/<pct>%/rec<s>s/min<s>s,twin:...|same|none,set:<motor>/<I_w>/<V>` (`pending`
+  until solved; `inf` when the motor cannot reach the rpm).
+* Agreement with `hood_model` (`tests/test_launcher.py` `DroopReadout`, asserted within 3 %): RPM_GRID at the
+  defaults +0.9 % (1000 rpm) to -1.5 % (4000-6000 rpm); I_w 5e-5 to 1e-3 x wrap 60-120 deg at 2000-6000 rpm
+  -1.7 % to +2.1 %. Limit: below 2000 rpm a light wheel loses most of its speed, the ball slows before it leaves
+  and T is overestimated, so the drop reads high (1000 rpm, wrap 90: +5 % at 1e-4, +30 % at 5e-5 kg m^2).
+* JS = python: `tests/js_droop_check.js` (node, run by `test_js_twin_matches_python`, 90 cases, both motors, 11 /
+  12 / 13.2 V, three inertias): max relative error 2e-16, Infinity cases agree; the JS constants are checked
+  against launcher PARAMS.
+* Not modelled: motor drive during contact, controller lag, current limit, motor rotor inertia (I_w only), battery
+  sag under load, feed time, and the next shot leaving slower when it is fired before the wheel is back.
+
+Default spot (x -1.0, y 0.2, defaults above; PREDICTED): answer 3062 rpm, 6.6 m/s, S 1.0: drop 251 rpm (8.2 %) =
+spin and speed impulse 232 + rolling loss 19, contact about 20 ms, back to speed in 0.095 s, shots at least
+0.114 s apart. No-spin twin 3851 rpm, 8.3 m/s: 187 rpm (4.9 %), 0.096 s, 0.112 s. At 9 V (the lowest input) the
+free speed is 4500 rpm, so only settings above 4500 rpm get the warning. REV HD Hex, 1.0e-4 kg m^2, 11 V: 664 rpm
+(21.7 %), 0.144 s.
+
 ## 3D cell model (PM-013, `physics.js` `buildCell3D` / `classifyOblique3D`, python `src/cell3d.py`)
 
 Exact clean test of the ball-centre path (x, y, z) against the cell as 3D faces inflated by R = 0.0355 m
