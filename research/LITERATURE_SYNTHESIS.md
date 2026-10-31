@@ -51,7 +51,7 @@ No evidence about POLLEN aerodynamics reaches grade A. Only the Cross bounce pap
 |---|---|---|---|---|
 | Lindsey 2025 (TWU) | 26- and 40-hole pickleballs in free flight, 6.0–11.5 m/s, Re 2.95e4–5.67e4, S ≤ 0.37 | **Drag:** indoor 26-hole Cd 0.45 (SD 0.09); outdoor 40-hole Cd 0.33. Hole-modification control ball: Cd 0.59–0.985 (fit 0.65–0.82). Taping the holes cut Cd to about 0.43. **Lift:** backspin \|Cl\| ≈ 0.173 + 0.02 S; topspin 0.24 + 0.44 S | **C** | Unreviewed. Ball mass is not given and no data were released. Both worked examples are topspin. The 0.17 offset may not be Magnus lift, which leaves a Magnus slope of only about 0.02 |
 | Steyn et al. 2025 | Outdoor 40-hole ball, 6 shots, Re 4.7–6.1e4, S 0.03–0.3 | Cd 0.30 ± 0.02; Cl = 0.195 S (fit through the origin, large scatter) | **B** | Only the preprint was read, not the version of record. The lift sign in its Eq. 3 is wrong; its Fig. 1 caption disagrees with Eq. 6 |
-| Van Wyk, Smith, Lyu 2026 | Pickleball in a wind tunnel, Re 7.7e4–1.4e5, S 0.30–0.56 | Cl ≈ 0.0124 + 0.466 S; Cd ≈ 0.40 | **B** | Short conference paper, manufacturer-funded. Its Re is above POLLEN's |
+| Van Wyk, Smith, Lyu 2026 | Pickleball lab tests (method per Lyu et al. 2025, not described in the paper), Re 7.7e4–1.4e5, S 0.30–0.56 | Cl ≈ 0.0124 + 0.466 S; Cd ≈ 0.40 | **B** | Short conference paper, manufacturer-funded. Its Re is above POLLEN's |
 | Rossmann & Rau 2007 | Wiffle ball, wind tunnel, not spinning | Cd 0.36–1.05 depending on orientation and Re, rising toward about 1 at low Re. Non-Magnus side Cl from −0.15 to +0.145, changing sign near Re 5.5e4 | **B** | The holes are one-sided slots, which POLLEN does not have. **Full text read**; Cd 0.6 is the β = 90° orientation |
 | Emond, Sun, Swartz 2024 | Pickleball simulation | Cd 0.6 borrowed from Rossmann; no lift | B (no new data) | Not evidence for Cd |
 | Muto et al. 2012 | Smooth sphere LES; Re 1e4, 2e5, 1.14e6 | At Re 1e4: Cl 0.167 (Γ 0.2) and 0.301 (Γ 1.0); Cd 0.474 and 0.661. Negative lift at Re 2e5, Γ 0.1–0.5 | B | The authors say their subcritical Cd disagrees with experiment, and Γ is defined ambiguously |
@@ -64,7 +64,7 @@ No evidence about POLLEN aerodynamics reaches grade A. Only the Cross bounce pap
 | Vilumbrales 2024 | Rough spheres, wind tunnel | Re_c = 75000·exp(−431 k/d) + 49600; Cl max 0.35–0.40 | C | Preprint |
 | Sareen 2024 | Spinning sphere | Sudden drop in Cl and Cd at a critical rotation for 1e3 < Re ≲ 5e4 | B | Abstract only |
 | Nathan (spin-down note) | Golf / baseball | β = 0.009–0.012 in C_M = β S | B | Different ball |
-| FUEL drop test (FRC 2017) | 5 in foam ball | Recomputed Cd 0.88 | D | Forum |
+| FUEL drop test (FRC 2017) | 5 in perforated ball | Recomputed Cd 0.88 | D | Forum |
 | Team 254 (2017) | Perforated FRC ball | The ball veers depending on hole orientation | D | Observation |
 
 Ito & Kamijima lift-crisis values (B):
@@ -111,9 +111,9 @@ Ito & Kamijima lift-crisis values (B):
 | **Cd** | 0.33 / 0.50 / 0.90; optional spin term +0–0.15·min(S/0.6, 1) | C | 0.35 / 0.48 / 0.65 | Nominal inside. **High is optimistic**: a spinning, perforated ball at Re ≤ 5e4 can reach 0.8–0.9 (Lindsey control ball, Wiffle at low Re, Muto 0.66 at S = 1, FUEL 0.88) |
 | **Cl(S)**, linear-capped (c1, cap) | **floor 0.02/0.04**; low 0.20/0.15; nominal 0.35/0.25; high 0.80/0.40 | floor C, others B | low 0.15/0.10, nominal 0.35/0.25, high 0.80/0.40; Cl = 0 floor mentioned only in text | Nominal and high inside. **PM-001's low is not the worst case**: the floor set (Lindsey Magnus-only reading) is much lower. The high set is generous for a perforated ball |
 | Cl lift-crisis dip | Table in `params_lit.json` (`Cl.dip_variant`): Cl 0.29 at S 0.5 → 0.18 at S 0.88 → 0.30 at S 1.1 | B | Not modelled | Missing. It matters mainly when exit S is about 0.85–0.95. With the hood (S ≈ 1.0–1.3) the ball starts just past the trough, and S rises in flight (1.06 → 1.5–1.7), so the effect is small for the PM-001 hood case |
-| Reverse Magnus | Low probability at POLLEN Re | B | Text only, "run Cl = 0" | Inside. It cannot be excluded, because no perforated ball has been tested at S > 0.56 |
+| Reverse Magnus | Low probability at POLLEN Re | B | Text only, "run Cl = 0" | Inside. It cannot be excluded, because perforated-ball lift data stop at S ≈ 0.56 in backspin (Van Wyk) and S ≈ 0.65 in topspin (Lindsey, unreviewed) |
 | Non-Magnus hole force | Cl-equivalent 0 / 0.03 / 0.15, random direction | B (Wiffle) / D | Not modelled | Missing. It adds scatter, not bias: at S ≈ 1 the ball turns 30–50 rev/s, so the force averages out |
-| **Spin decay k** | Preferred form k = 0.30 β \|v\|, β 0.009 / 0.02 / 0.05. Constant k at 5 m/s: 0.005 / 0.03 / 0.15 s⁻¹ | B | 0.01 / 0.05 / 0.30 (constant) | Nominal inside. **High is pessimistic** beyond any evidence. Second-order: a 1.2 s flight loses 0.6 % / 3.5 % / 17 % of its spin |
+| **Spin decay k** | Preferred form k = 0.30 β \|v\|, β 0.009 / 0.02 / 0.05. Constant k 0.005 / 0.03 / 0.15 s⁻¹: the nominal is β 0.02 at \|v\| ≈ 5 m/s; the low and high are β 0.009 at ≈ 2 m/s and β 0.05 at ≈ 10 m/s | B | 0.01 / 0.05 / 0.30 (constant) | Nominal inside. **High is pessimistic** beyond any evidence. Second-order: a 1.2 s flight loses 0.6 % / 3.5 % / 17 % of its spin |
 | **I_b, α** | α 0.60 / 0.63 / 0.667; mass 23.5 / 24.95 / 27.5 g | B / C | α same; mass high 26.5 g; launcher k_I low 0.55 | Mass high bound slightly low (listing weight 27.2 g). k_I 0.55 is pessimistic but harmless |
 | **μ_wheel** | 0.5 / 0.8 / 1.2 | D | same | Inside, but unsourced |
 | **μ_hood** | 0.05 / 0.3 / 1.0 | D | same | Inside. Use the sliding in-contact μ, which Cross found is about 3× below the static value |

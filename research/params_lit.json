@@ -100,7 +100,7 @@
   "vs_PM001": "inside (high raised only to follow the 27.5 g mass bound)",
   "prov": "thick-shell 0.4(Ro^5-Ri^5)/((Ro^3-Ri^3)Ro^2) = 0.634 (1.78 mm wall), 0.629 (2.1 mm). Cross 2002: real tennis ball alpha 0.55 (thick 6 mm rubber wall); POLLEN wall/R ~0.05 so 0.55 is not expected; launcher k_I low 0.55 is pessimistic but harmless. Measure with a rolling incline: a = g sin(th)/(1+alpha)."
  },
- "Re_range_note": "Re = vD/nu, D 0.071 m: 2-10 m/s -> 9.5e3-4.7e4. This OVERLAPS the smooth-sphere LIFT-crisis band (Sakai/Miyazaki table-tennis wind tunnel Re 3e4-5e4 dips; Ito & Kamijima CFD 2.65e4-5.3e4; Sareen 1e3-5e4) but lies below the drag crisis and below every documented negative-Magnus window (Maccoll >= 4.6e4 at S < 0.6; Taneda 6e4+; Muto LES 2e5). Pickleball free-flight data cover Re 2.95e4-5.67e4 (Lindsey, 6.0-11.5 m/s) and 4.7e4-6.1e4 (Steyn); Van Wyk wind tunnel 7.7e4-1.4e5.",
+ "Re_range_note": "Re = vD/nu, D 0.071 m: 2-10 m/s -> 9.5e3-4.7e4. This OVERLAPS the smooth-sphere LIFT-crisis band (Sakai/Miyazaki table-tennis wind tunnel Re 3e4-5e4 dips; Ito & Kamijima CFD 2.65e4-5.3e4; Sareen 1e3-5e4) but lies below the drag crisis and below every documented negative-Magnus window (Maccoll >= 4.6e4 at S < 0.6; Taneda 6e4+; Muto LES 2e5). Pickleball free-flight data cover Re 2.95e4-5.67e4 (Lindsey, 6.0-11.5 m/s) and 4.7e4-6.1e4 (Steyn); Van Wyk lab tests (method per Lyu et al. 2025, not described in the paper) 7.7e4-1.4e5.",
  "Cd": {
   "low": 0.33,
   "nominal": 0.5,
@@ -118,7 +118,7 @@
    "fuel_cd154587"
   ],
   "vs_PM001": "nominal 0.48 inside; high 0.65 OPTIMISTIC (too little drag for a spinning perforated ball); low 0.35 fine",
-  "prov": "26-hole indoor pickleball free flight 0.45 (SD 0.09) but the same author's hole-modification control ball reads 0.59-0.985 (fit 0.65-0.82) at 6.2-8.25 m/s and taping the holes gives ~0.43 (Lindsey, C); 40-hole outdoor 0.33 (Lindsey) and 0.30+/-0.02 (Steyn, n=6); pickleball wind tunnel ~0.40 at Re 7.7e4-1.4e5 (Van Wyk, B); Wiffle 0.36-1.05 by orientation and Re, rising toward ~1 at the lowest Re (Rossmann & Rau, full text, B); smooth spinning sphere 0.45-0.62 (Ito CFD), 0.474 (S 0.2) / 0.661 (S 1.0) (Muto LES; authors flag subcritical disagreement); 2017 FRC FUEL drop test recomputed 0.88 (D)."
+  "prov": "26-hole indoor pickleball free flight 0.45 (SD 0.09) but the same author's hole-modification control ball reads 0.59-0.985 (fit 0.65-0.82) at 6.2-8.25 m/s and taping the holes gives ~0.43 (Lindsey, C); 40-hole outdoor 0.33 (Lindsey) and 0.30+/-0.02 (Steyn, n=6); pickleball lab tests ~0.40 at Re 7.7e4-1.4e5 (Van Wyk, B; method per Lyu et al. 2025, not described in the paper); Wiffle 0.36-1.05 by orientation and Re, rising toward ~1 at the lowest Re (Rossmann & Rau, full text, B); smooth spinning sphere 0.45-0.62 (Ito CFD), 0.474 (S 0.2) / 0.661 (S 1.0) (Muto LES; authors flag subcritical disagreement); 2017 FRC FUEL drop test recomputed 0.88 (D)."
  },
  "Cl": {
   "model": "linear_capped",
@@ -246,7 +246,7 @@
    ]
   },
   "negative_magnus": {
-   "probability": "low at POLLEN Re: documented negative-lift windows are Re >= 4.6e4 at S < 0.6, mostly 1e5-2e5. Not excluded: no perforated ball has been tested at S > 0.56.",
+   "probability": "low at POLLEN Re: documented negative-lift windows are Re >= 4.6e4 at S < 0.6, mostly 1e5-2e5. Not excluded: perforated-ball lift data stop at S ~0.56 in backspin (Van Wyk) and S ~0.65 in topspin (Lindsey, unreviewed).",
    "grade": "B",
    "source_ids": [
     "muto2012",
@@ -277,7 +277,7 @@
   "nominal": 0.03,
   "high": 0.15,
   "units": "1/s",
-  "model": "preferred: d(omega)/dt = -(pi rho beta R^2 |v| / (alpha m)) omega = -0.30 beta |v| omega; constant-k values above are the |v| ~5 m/s equivalents",
+  "model": "preferred: d(omega)/dt = -(pi rho beta R^2 |v| / (alpha m)) omega = -0.30 beta |v| omega; constant k: nominal 0.03 is the |v| ~5 m/s equivalent of beta 0.02; low 0.005 and high 0.15 are the beta_low at |v| ~2 m/s and beta_high at |v| ~10 m/s extremes",
   "beta": {
    "low": 0.009,
    "nominal": 0.02,

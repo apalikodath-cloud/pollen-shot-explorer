@@ -42,7 +42,7 @@ fresh shots (seed $20261031$, common random numbers).
 \end{itemize}
 The twin and every backspin winner at a pose are scored on the same fresh draws, so each pair is matched.
 
-The lift sets are low, nominal and high from Table~\ref{tab:flight-clsets}. Every shot uses
+The lift sets are low, nominal and high from Table~\ref{tab:flight-clsets}; the floor set was not run. Every shot uses
 $C_d=0.5$\assumed{} and $k=0.03$\,\unit{1/s}\assumed. The launch scatter is $1.5\,\%$\assumed{} in exit speed,
 $0.40^\circ$\assumed{} in elevation and $0.50^\circ$\assumed{} in heading ($1\sigma$), with no spin scatter.
 A shot counts only if it enters cleanly; bounce-ins are not scored.
@@ -74,7 +74,9 @@ there. No row has the verdict spin $>$ twin: not on either side, nor for any $S$
     (Section~\ref{sec:svt-sat}). The table gives the medians over the poses of the backspin and twin chances and
     of $\Delta p$, the verdict counts of Eq.~\eqref{eq:svt-verdict}, and the cost of not knowing the lift (tuned
     minus robust at the same pose, median $[\min,\max]$). All values are \predicted, in percent or percentage
-    points (pp).}
+    points (pp). Medians over an even number of poses can be exact ties at the next decimal (for example
+    $34.45$\predicted{} or $7.35$\predicted); they are rounded from the floating-point value, so such ties may
+    round down or up, here and in the text.}
   \label{tab:svt-unfav}
   \small
   \begin{tabular}{@{}llrrrrrl@{}}
@@ -98,39 +100,40 @@ there. No row has the verdict spin $>$ twin: not on either side, nor for any $S$
   \includegraphics[width=\linewidth]{spin_vs_twin.png}
   \caption{Backspin chance against the twin's chance at every scored unfavourable-side pose, $S=1.0$ (model
     output \predicted{} under ASSUMED scatter and air sets). Left: robust, one setting for all three lift sets
-    (the lift unknown). Right: tuned, the setting for the true lift set. Colour and marker give the lift set. A
+    (the lift unknown). Right: tuned, the setting tuned to the assumed lift set used for that dot. Colour and marker give the lift set. A
     dot on the diagonal means backspin $=$ twin. Data: \code{data/spin\_vs\_twin.csv}.}
   \label{fig:svt}
 \end{figure}
 
-\paragraph{Lift known: level with the twin.} Tuned backspin and the twin are level at all $84$\derived{}
-unfavourable-side poses, for every lift set. The medians are $34.4$\predicted{} to $35.7\,\%$\predicted{}
+\paragraph{Lift known: unclear (level within the noise).} The verdict for tuned backspin against the twin is
+unclear at all $84$\derived{} unfavourable-side poses, for every lift set. The medians are $34.4$\predicted{} to $35.7\,\%$\predicted{}
 against $35.2\,\%$\predicted. At $S=1.0$ the median $\Delta p$ is $-0.3$\predicted, $-0.5$\predicted{} and
 $-1.0$\,pp\predicted{} for the low, nominal and high sets, with a full range of $-3.9$\predicted{} to
 $+3.4$\,pp\predicted. Backspin is lower at $51$\predicted, $62$\predicted{} and $65$\predicted{} of the $84$
 poses. All poses use the same seeded draws, so these counts are not independent tests. The lean is also much
-smaller than the half-width of each interval, so the model does not resolve it.
+smaller than the half-width of each interval, so the unpaired Wilson rule of Eq.~\eqref{eq:svt-verdict} does
+not resolve it.
 
-\paragraph{Lift unknown: below the twin.} One setting for all three lift sets puts backspin clearly below the
-twin at $84$\predicted, $61$\predicted{} and $84$\predicted{} of the $84$ poses. Robust backspin reaches
-$50\,\%$ at $2$\predicted{} poses (nominal set only), the twin at $11$\predicted. This is the cost of not
-knowing the lift, $7.3$\predicted{} to $30.1$\,pp\predicted{} at the median (last column of
-Table~\ref{tab:svt-unfav}). It is not an advantage of a ball without spin. The robust search pools only the
+\paragraph{Lift unknown: below the twin.} At $S=1.0$, one setting for all three lift sets puts backspin clearly
+below the twin at $84$\predicted, $61$\predicted{} and $84$\predicted{} of the $84$ poses (low, nominal and high
+set). Robust backspin reaches $50\,\%$ at $2$\predicted{} poses (nominal set only), the twin at $11$\predicted.
+This is the cost of not knowing the lift: a median $7.3$\predicted{} to $30.1$\,pp\predicted{} per pose, tuned
+minus robust (last column of Table~\ref{tab:svt-unfav}). It is not an advantage of a ball without spin. The robust search pools only the
 lift uncertainty, the twin has no lift to pool, and $C_d$ has the same fixed value for both shots. If $C_d$ were
 uncertain too, both shots would pay for it; that case was not run. Tuning on the real ball, or measuring its
 lift, removes the cost in the model.
 
-\paragraph{Favourable side.} Both shots enter almost always: medians $99.7$\predicted{} to
-$99.8\,\%$\predicted{} against $99.8\,\%$\predicted. Every pose is unclear except $3$\predicted{} in robust
-$S=0.5$ with the high set, where the twin is clearly higher ($97.9$\predicted{} to $98.6\,\%$\predicted{}
-against $99.8$\predicted{} to $99.9\,\%$\predicted).
+\paragraph{Favourable side.} Every pose is unclear except $3$\predicted{} in robust $S=0.5$ with the high set,
+where the twin is clearly higher ($97.9$\predicted{} to $98.6\,\%$\predicted{} against $99.8$\predicted{} to
+$99.9\,\%$\predicted). The median model chances are $99.7$\predicted{} to $99.8\,\%$\predicted{} for backspin
+against $99.8\,\%$\predicted{} for the twin.
 
 \paragraph{Where on the unfavourable side.} The twin's chance ranges from $25.4$\predicted{} to
 $59.7\,\%$\predicted{} over the $84$ poses. All $11$\predicted{} poses where it reaches $50\,\%$ lie on the
 line $x=-0.65$\,\unit{m}\assumed, at bearings $|\psi|=37.3^\circ$\derived{} to $56.7^\circ$\derived. There the
-twin gives $50.6$\predicted{} to $59.7\,\%$\predicted{} and tuned backspin $50.6$\predicted{} to
-$58.9\,\%$\predicted, unclear at every pose and for every set. The robust shot is clearly below the twin at
-$31$\predicted{} of the $33$ pose and set pairs. In the robust nominal case the twin is clearly higher at
+twin gives $50.6$\predicted{} to $59.7\,\%$\predicted. At $S=1.0$ tuned backspin gives $50.6$\predicted{} to
+$58.9\,\%$\predicted, unclear at every pose and for every set, and the robust shot is clearly below the twin at
+$31$\predicted{} of the $33$ pose and set pairs. In the robust nominal case at $S=1.0$ the twin is clearly higher at
 $15$\predicted, $19$\predicted{} and $27$\predicted{} of $28$ poses for $h=0.35$\assumed, $0.5$\assumed{}
 and $0.737$\,\unit{m}\assumed.
 
@@ -171,8 +174,11 @@ and its tuned rows at $S=0.5$ equal the $S=1.0$ rows at $144$\derived{} of $144$
 differ, because there the lift stays below its cap for part of the flight. At $S=0.5$ the unfavourable-side
 tuned medians are $34.4$\predicted{} to $34.8\,\%$\predicted, and the robust medians are $18.0$\predicted,
 $30.6$\predicted{} and $1.0\,\%$\predicted{} (low, nominal, high), against $35.2\,\%$\predicted{} for the
-twin. Neither $S$ beats the twin. In this model
-more spin is therefore not better, and above $S_0\approx0.82$\derived{} it changes nothing. As
+twin. Neither $S$ beats the twin. For the three swept lift sets
+more spin is therefore not better in this model, and above $S_0\approx0.82$\derived{} it changes nothing. The
+floor set of Table~\ref{tab:flight-clsets} was not run here: its $S_{\mathrm{sat}}=2.0$\derived{} lies above
+every swept $S_0$, so at these $S_0$ it is below its cap for part of the flight and still responds to more
+spin (Section~\ref{sec:flight-lift}). As
 Section~\ref{sec:flight-lift} stresses, the cap is a model assumption. A real perforated ball may keep gaining
 lift, show a dip or gain drag with spin, and then $S$ would matter again, in either direction.
 
@@ -181,8 +187,8 @@ lift, show a dip or gain drag with spin, and then $S$ would matter again, in eit
 \label{sec:svt-limits}
 
 \begin{itemize}
-  \item \textbf{Air sets.} The air sets are literature bounds, not POLLEN data, and no lift of POLLEN has been
-    measured yet. $C_d$ is fixed for both shots. The spin-drag option of Eq.~\eqref{eq:field-spindrag}, off by
+  \item \textbf{Air sets.} The air sets are assumed ranges based on the literature, not proven bounds and not
+    POLLEN data, and no lift of POLLEN has been measured yet. $C_d$ is fixed for both shots. The spin-drag option of Eq.~\eqref{eq:field-spindrag}, off by
     default, would act on the backspin shot only and was not run.
   \item \textbf{Scatter.} The scatter is assumed and is the same for both shots, with no spin scatter. On a ball
     whose lift keeps rising with $S$, spin scatter would hit the backspin shot only.
@@ -191,8 +197,9 @@ lift, show a dip or gain drag with spin, and then $S$ would matter again, in eit
   \item \textbf{Grid.} The grid is coarse. Spots closer than $x=-0.65$\,\unit{m}\assumed{} are not sampled. At
     $33$\derived{} of the $84$ unfavourable-side poses the straight line to the aim point crosses the other
     HIVE in plan; it is flagged but not modelled as an obstacle (a high ball can pass above it).
-  \item \textbf{Exact tuning.} Still air and a robot at rest are assumed. The tuned search knows the true lift
-    set exactly, which tuning by test shots on a field does not.
+  \item \textbf{Exact tuning.} Still air and a robot at rest are assumed. The tuned search knows exactly which of
+    the three assumed lift sets is true, which tuning by test shots on a field does not, and the real lift may
+    follow none of them.
 \end{itemize}
 Four measurements would change the answer: POLLEN's $C_l(S)$ and $C_d$ from the twin test of
 Section~\ref{sec:field-chance}, the real exit $S$ of the hood, the real launch scatter including spin, and the

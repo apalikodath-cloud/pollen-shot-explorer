@@ -80,18 +80,26 @@ rim and interior collision law, and a robustness layer that turns entry windows 
 specification. Every equation matches what the code in \code{src/} computes.
 
 \emph{Every result in this paper is a model prediction.} No aerodynamic or contact property of
-POLLEN has been measured: drag, spin lift, spin decay, restitution and friction are all bounded
-from pickleball and smooth-sphere literature, which are not POLLEN measurements. Within those
-bounds the model predicts that a clean far-side entry is physically possible, but only with a
-tight shot-to-shot repeatability (about $\pm0.075$\,\unit{m/s}\predicted{} in exit speed and
-$\pm0.15^\circ$\predicted{} in elevation) after the wheel speed has been tuned on the field.
+POLLEN has been measured: drag, spin lift, spin decay, restitution and friction all take assumed
+ranges based on pickleball and smooth-sphere literature, which are not POLLEN measurements and are
+not proven bounds. Within those ranges the model predicts that a clean far-side entry is physically
+possible, but only if the shooter holds its exit speed and elevation to a tight tolerance after the
+wheel speed has been tuned on the field. With the nominal coefficients and the
+$30^\circ$\confirmed{} tilt, the largest all-clean box is about $\pm0.075$\,\unit{m/s}\predicted{}
+by $\pm0.15^\circ$\predicted{} with backspin (spin parameter $S=0.5$\assumed{} or $1.0$\assumed)
+and $\pm0.05$\,\unit{m/s}\predicted{} by $\pm0.10^\circ$\predicted{} for the no-spin twin
+($S=0$\assumed). These are requirements on the shooter, not a measured repeatability.
+% CHECK 2026-10-31: data/_spec_cache *_nominal.npz, unfav_t30, 120 (h, d) rows, best_square: S=0 k*=3
+% in 89 rows (none above 3), S=0.5 k*=4 in 4 rows, S=1.0 k*=4 in 10 rows, no k*=5 (spec_nominal.csv
+% agrees). Other single conditions differ (S=0 with high Cd reaches k*=4), so the nominal set is named.
 Backspin shifts the clean window to other speeds and angles rather than being required for it:
 no-spin shots have clean windows of their own, and more spin is not always better, because the lift
 coefficient saturates in this model and backspin can lower retention after a contact.
 Over a field grid of $144$\derived{} scored release poses, backspin never has a clearly higher
-clean-entry chance than a no-spin twin scored on the same simulated shots. Tuned to the true lift
-set it is level with the twin (unfavourable-side medians $34.4$\predicted{} to
-$35.7\,\%$\predicted{} against $35.2\,\%$\predicted); one setting for an unknown lift is lower.
+clean-entry chance than a no-spin twin scored on the same simulated shots. Tuned to whichever of
+the three assumed lift sets (low, nominal, high) is true, it is level with the twin
+(unfavourable-side medians $34.4$\predicted{} to $35.7\,\%$\predicted{} against
+$35.2\,\%$\predicted); one setting for an unknown lift is lower.
 \end{abstract}
 
 \tableofcontents
@@ -145,7 +153,7 @@ Every number carries one grey tag that says where it comes from:
   \bottomrule
 \end{tabular}
 \end{center}
-The aerodynamic and contact bounds come from pickleball and smooth-sphere work
+The aerodynamic and contact ranges are based on pickleball and smooth-sphere work
 \cite{emond2024,steyn2025,vanwyk2026}, collected in the project literature synthesis
 \cite{litsynth}; the launcher model starts from the flywheel analysis of \cite{brettle}.
 Every worked example was computed by running the repository code. The code is the source of
@@ -157,7 +165,7 @@ source file carries a comment recording the difference. Aerodynamic parameter ra
 \paragraph{What the paper does not claim.}
 It does not claim that more backspin is always better, that a dual-powered-wheel shooter is
 needed, or that a single successful shot shows repeatability. The literature coefficients for
-pickleballs and smooth spheres are used only as bounds.
+pickleballs and smooth spheres are used only as assumed ranges, not as POLLEN values.
 
 % ---------------------------------------------------------------------------------------------
 \subsection*{Notation}
@@ -357,7 +365,7 @@ error (dimensionless).
   \centering
   \includegraphics[width=0.78\linewidth]{hive_section_pose_pos.png}
   \caption{HIVE tipping-plane section in \code{pose\_pos} at the $30^\circ$\confirmed{} tilt
-    (bounds $28.5$--$31.5^\circ$\derived), centre plane $s=0$. Blue: HIVE body (rotates about the
+    (bounds $28.80$--$31.77^\circ$\derived), centre plane $s=0$. Blue: HIVE body (rotates about the
     pivot at $z_p=1.1163$\,\unit{m}\confirmed); grey: static A-frame (dashed legs are projected from
     3D); orange: mouth line and its outward normal $\vect{n}$; shaded: inside region $\mathcal{I}$
     for the ball centre; dotted circle: POLLEN with $R=0.0355$\,\unit{m}\confirmed. The geometry is
@@ -378,8 +386,9 @@ error (dimensionless).
   \caption{PREDICTED clean-entry cells in the (launch elevation, exit speed) plane for an
     unfavourable-side shot from release height $h=0.737$\,\unit{m}\assumed{} and distance
     $d=0.75$\,\unit{m}\assumed{} with backspin $S=1.0$\assumed. Each colour is one aerodynamic or
-    tilt condition from \code{research/params\_lit.json} (nominal, $C_d$ and lift bounds, fast spin
-    decay) or the tilt bounds $28.5^\circ$\derived{} and $31.5^\circ$\derived. The clean bands of the
+    tilt condition from \code{research/params\_lit.json} (nominal, low and high $C_d$, low and high
+    lift, fast spin decay) or the tilt bounds $28.80^\circ$\derived{} and $31.77^\circ$\derived{} with
+    nominal aerodynamics. The clean bands of the
     different conditions do not overlap in one common cell (Eq.~\eqref{eq:robust_spec-robust}), which
     is why the specification relies on tuning the wheel speed on the field
     (Section~\ref{sec:robust_spec-hood}). All cells are model output, not measurements.}
@@ -400,11 +409,15 @@ evidence that the shot works. The prototype test plan in \code{docs/07\_test\_pl
 below into concrete tests with pass and fail lines.
 
 \begin{itemize}
-  \item \textbf{Shot scatter.} The clean window on the unfavourable side is narrow: the largest clean
-    square found is about $\pm0.075$\,\unit{m/s}\predicted{} by $\pm0.15^\circ$\predicted. Whether a
-    real shooter repeats that well is the deciding question for hypothesis (A). It must be measured
-    as the standard deviation of exit speed and elevation over many shots at one setting, with the
-    wheel-speed sag from rapid fire and battery voltage logged alongside.
+  \item \textbf{Shot scatter.} The clean window on the unfavourable side is narrow: with the nominal
+    coefficients and the $30^\circ$\confirmed{} tilt, the largest clean square found is about
+    $\pm0.075$\,\unit{m/s}\predicted{} by $\pm0.15^\circ$\predicted{} with backspin
+    ($S=0.5$\assumed{} or $1.0$\assumed) and $\pm0.05$\,\unit{m/s}\predicted{} by
+    $\pm0.10^\circ$\predicted{} for the no-spin twin. These are tolerances the shooter must hold, not
+    a measured repeatability. Whether a real shooter holds them is the deciding question for
+    hypothesis (A); its scatter must be measured as the standard deviation of exit speed and elevation
+    over many shots at one setting, with the wheel-speed sag from rapid fire and battery voltage
+    logged alongside.
   \item \textbf{The ratio $v/u$.} The exit speed as a fraction of the wheel surface speed depends on
     the hood friction, the compression and the ball; the model does not treat $v=u/2$ as universal.
     It sets the wheel speed needed for a target exit speed and must be measured on the built shooter.
@@ -416,17 +429,17 @@ below into concrete tests with pass and fail lines.
     In this model the lift coefficient saturates, so more spin past saturation does not add curvature.
     Section~\ref{sec:svt} puts a price on the unknown lift: one setting chosen without knowing it has
     a median unfavourable-side chance $7.3$\predicted{} to $30.1$\predicted{} percentage points below
-    the setting tuned to the true lift set.
+    the setting tuned to whichever of the three assumed lift sets is true.
   \item \textbf{Contact restitution $e$ and friction $\mu$.} Retention after a rim or floor contact
     (hypothesis B) depends mostly on $e$, and backspin can raise or lower it. Drop and spin tests on a
     sample of the HIVE wall material give $e$ and $\mu$.
   \item \textbf{Real HIVE tilt.} The $30^\circ$\confirmed{} tilt comes from the official CAD and the
-    manual figure, and the field acceptance tolerance gives $28.5$--$31.5^\circ$\derived. The tilt of
+    manual figure, and the field acceptance tolerance gives $28.80$--$31.77^\circ$\derived. The tilt of
     the real field element, resting on its damper stop, should be measured, because it moves the
     minimum descent angle one-for-one.
-  \item \textbf{Geometry and sideways effects.} The precomputed maps use one section through the HIVE
-    centre plane. The live solver flies the oblique shot against the 3D cell with side walls and the
-    pentagon roof (Section~\ref{sec:field-cell3d}). Sideways drafts, robot motion and a spin axis tilted by
+  \item \textbf{Geometry and sideways effects.} The precomputed maps and the live solver both fly the
+    oblique shot against the 3D cell with side walls and the pentagon roof
+    (Section~\ref{sec:field-cell3d}). Sideways drafts, robot motion and a spin axis tilted by
     turning are options (Section~\ref{sec:field-move}), but launcher sidespin and exit skew are still not
     modelled (Section~\ref{sec:field-missing}).
   \item \textbf{One shot is not a rate.} A success rate must be reported with a Wilson interval from

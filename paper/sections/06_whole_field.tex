@@ -38,21 +38,23 @@ still air. Bearings above $60^\circ$\assumed{} are flagged as extrapolated.
 \subsection{The 3D cell: side walls and pentagon roof}
 \label{sec:field-cell3d}
 
-The precomputed maps use the centre section at one assumed lateral offset per bearing and do not
-model the side walls. The live solver instead tests the ball-centre path $(x,y,z)$ against the cell
-as 3D faces inflated by $R=0.0355$\,\unit{m}\confirmed: the centre section extruded across the cell,
+The precomputed maps (since PM-019) and the live solver both test the ball-centre path $(x,y,z)$
+against the cell as 3D faces inflated by $R=0.0355$\,\unit{m}\confirmed: the centre section extruded across the cell,
 side walls at $\pm0.254$\,\unit{m}\confirmed{} with inner face, rim and outer face, wall thickness
 $0.0508$\,\unit{m}\assumed, and a pentagon roof whose ridge drops linearly towards the side walls
 (from the opening profile $0.3556\to0.19329$\,\unit{m} over $0.254$\,\unit{m}\derived). The
 clearance is the exact segment-to-polygon distance minus $R$. A shot is clean when the centre enters
-the cell interior before any face comes closer than $R$.
+the cell interior before any face comes closer than $R$. Before PM-019 the precomputed maps used the
+centre section at one assumed lateral offset per bearing and did not model the side walls; the live
+solver still offers that section model as \code{sideWalls: false}.
 
 At $\psi=0$ with the ridge off the 3D test reproduces the section test exactly (2500 shots per side).
 With the ridge on it is slightly stricter on the centre line, because the roof is lower off it. Off
 the centre line the 3D cell is usually more permissive than the old single-offset section: at
-$d=1.0$\,\unit{m}, $h=0.5$\,\unit{m}, $S=1.0$ the far-side clean grid cells go from $306$ to $301$ at
-$\psi=0$, from $212$ to $309$ at $20^\circ$ and from $164$ to $362$ at $40^\circ$\predicted{} (no-spin
-twin $348\to346$, $253\to347$, $186\to401$\predicted). These are counts on a coarse search grid, not
+$d=1.0$\,\unit{m}\assumed, $h=0.5$\,\unit{m}\assumed, $S=1.0$\assumed{} and still air
+($\rho=1.2041$\,\unit{kg/m\textsuperscript{3}}\derived) the far-side clean grid cells go from $306$ to $302$ at
+$\psi=0$, from $218$ to $312$ at $20^\circ$ and from $168$ to $362$ at $40^\circ$\predicted{} (no-spin
+twin $349\to340$, $253\to339$, $194\to409$\predicted). These are counts on a coarse search grid, not
 probabilities.
 
 % ---------------------------------------------------------------------------------------------
@@ -128,8 +130,9 @@ Atmosphere pressure from altitude,
 with $R_d=287.06$\,\unit{J/(kg\,K)}, $t$ in \unit{$^\circ$C}, $T=t+273.15$, humidity $\phi$ and altitude
 $z$ in \unit{m} (user inputs). Viscosity follows Sutherland's law. Still air at $20^\circ$C,
 $101.325$\,\unit{kPa}, dry gives $\rho=1.2041$\,\unit{kg/m\textsuperscript{3}}\derived{} and
-$\nu=1.506\times10^{-5}$\,\unit{m$^2$/s}\derived. This is now the live solver's default instead of the
-rounded $1.20$\assumed{} used by the precomputed maps. At the default spot the change moves the tolerant
+$\nu=1.506\times10^{-5}$\,\unit{m$^2$/s}\derived. This is the default of the live solver and, since
+PM-019, of the precomputed maps; both used the rounded $1.20$\assumed{} before. At the default spot the
+change moves the tolerant
 minimum from $2793$\,rpm at $73.43^\circ$ to $2784$\,rpm at $73.30^\circ$\predicted. The twin stays at
 $2784$\,rpm at $74.47^\circ$\predicted{} to the precision shown.
 
@@ -209,9 +212,13 @@ chance here.
 
 \paragraph{Lift options.} Gyro-correct spin ratio $S_\perp=|\vect{\omega}\times\vect{v}_{\text{rel}}|R/
 |\vect{v}_{\text{rel}}|^2$ on the 3D path (equal to $S$ for pure backspin, tested). A user table $C_l(S)$,
-linear between points and flat after the last. Reverse Magnus: when $\mathrm{Re}<4.6\times10^4$ and
-$S<0.5$ the lift blends (smoothstep near both bounds) to $-C_{l,\text{rev}}\min(S/0.1,1)$, $C_{l,\text{rev}}\in[0,0.1]$\assumed{} (smooth-sphere
-data of Kim et al.\ 2014 and Kray et al.\ 2012, not POLLEN).
+linear between points and flat after the last. Reverse Magnus (a what-if, off by default): when
+$\mathrm{Re}<4.6\times10^4$\assumed{} and $S<0.5$\assumed{} the lift blends (smoothstep near both bounds) to
+$-C_{l,\text{rev}}\min(S/0.1,1)$, $C_{l,\text{rev}}\in[0,0.1]$\assumed. The smooth-sphere data behind
+these bounds (Kim et al.\ 2014 and Kray et al.\ 2012, not POLLEN) show negative lift only at
+$\mathrm{Re}\gtrsim4.6\times10^4$\assumed{} and, in Kim et al., only at $S\lesssim0.6$\assumed. The option
+therefore assumes that the holes move this onset down to POLLEN's Reynolds numbers, which has not been
+measured.
 
 \paragraph{Effective mass.} $\varepsilon=(0.5+\phi)\rho V/m$ with $\phi\in[0,1]$\assumed{} the share of the
 air inside the ball that moves with it, and
@@ -257,7 +264,7 @@ the reported chance is not biased by the selection. The score is the mean over t
 nominal, high), equal weight\assumed. The no-spin twin is searched on its own grid, and one scatter source at a
 time names the one that matters most.
 
-\paragraph{Default spot} ($x=-1.0$, $y=0.2$\,m, $h=0.737$\,m\userval, $S=1.0$\userval, grip $0.42$\assumed,
+\paragraph{Default spot} ($x=-1.0$, $y=0.2$\,m, $h=0.737$\,m\userval, $S=1.0$\assumed, grip $0.42$\assumed,
 scatter $1.5\,\%$, $0.40^\circ$, $0.50^\circ$\assumed; all chances \predicted, Wilson $95\,\%$ ranges):
 \begin{center}
 \begin{tabular}{@{}lllll@{}}

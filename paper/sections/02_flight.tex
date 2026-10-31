@@ -17,10 +17,11 @@ And does adding more backspin keep helping?
 In this model the answer to the second question is no: above a certain spin the lift coefficient
 stops growing, and extra spin changes nothing.
 
-Every aerodynamic coefficient in this section is a literature bound, not a POLLEN measurement.
+Every aerodynamic coefficient in this section is taken from an assumed, literature-based range, not
+from a POLLEN measurement.
 The ranges come from \code{research/params\_lit.json}.
-Pickleball and smooth-sphere data set the bounds, but no one has yet measured drag, lift or spin
-decay on a real POLLEN ball.
+They are based on pickleball and smooth-sphere data, but they are not proven bounds: no one has yet
+measured drag, lift or spin decay on a real POLLEN ball.
 
 % ---------------------------------------------------------------------------------------------
 \subsection{Frame, state and parameters}
@@ -305,7 +306,9 @@ Eq.~\eqref{eq:flight-FM-perp} requires.
     holds for every $S$: the model has no reverse (negative) Magnus effect.
     The literature judges reverse Magnus unlikely at POLLEN's Reynolds numbers (the documented
     negative-lift windows are at $\mathrm{Re} \ge 4.6\times10^{4}$\assumed\ and $S < 0.6$\assumed),
-    but does not exclude it, because no perforated ball has been tested above $S = 0.56$\assumed.
+    but does not exclude it, because perforated-ball lift data stop at $S \approx 0.56$\assumed\ in
+    backspin (Van Wyk et al.\ 2026) and $S \approx 0.65$\assumed\ in topspin (Lindsey 2025, an unreviewed
+    web article).
     % Fixed: the draft said "unlikely at S >= 0.5"; params_lit.json Cl.negative_magnus states the Re and S
     % windows above instead.
 \end{itemize}
@@ -341,8 +344,10 @@ Table~\ref{tab:flight-clsets} gives the four sets in \code{params\_lit.json}.
 
 \begin{table}[htbp]
   \centering
-  \caption{Lift sets in \code{research/params\_lit.json}. All are literature bounds, not POLLEN
-    measurements. $S_{\mathrm{sat}}$ is from Eq.~\eqref{eq:flight-ssat}.}
+  \caption{Assumed lift sets in \code{research/params\_lit.json}, based on pickleball data at
+    $S \le 0.56$\assumed\ and on smooth-sphere data. No perforated-ball lift has been measured at the
+    $S \approx 1$\assumed\ to $2.5$\predicted\ of a POLLEN shot, so the sets are not proven bounds and
+    not POLLEN measurements. $S_{\mathrm{sat}}$ is from Eq.~\eqref{eq:flight-ssat}.}
   \label{tab:flight-clsets}
   \begin{tabular}{@{}lllll@{}}
     \toprule
@@ -411,8 +416,9 @@ $1.0$\predicted, already above $S_{\mathrm{sat}} = 0.714$\derived.
 Changing $k$ to $0.005$\assumed\ or $0.15$\,\unit{1/s}\assumed\ also leaves the path unchanged.
 Table~\ref{tab:flight-setfx} compares the sets against the same launch without spin.
 Only the floor set responds to the extra spin: its $S_{\mathrm{sat}} = 2.0$\derived\ lies above
-$S_0 = 1.06$, so with $S_0 = 1.06$ it is below its cap for most of the path (it saturates only near the
-apex, where $S$ peaks at $2.53$\predicted), while with $S_0 = 2.0$ it is capped for the whole flight.
+$S_0 = 1.06$, so with $S_0 = 1.06$ it is below its cap for most of the path (it saturates only around the
+apex, from $t = 0.39$\predicted\ to $0.79$\,\unit{s}\predicted\ of a $1.25$\,\unit{s}\predicted\ flight,
+where $S$ peaks at $2.38$\predicted), while with $S_0 = 2.0$ it is capped for the whole flight.
 
 \begin{table}[htbp]
   \centering
@@ -844,7 +850,7 @@ The parameters, not the numerics, limit what the model can say.
   \item Spin decay $\vect{\omega} = \vect{\omega}_0 e^{-kt}$ with constant $k$; the spin axis is fixed.
   \item Backspin axis $\operatorname{unit}(\vect{v}_0\times\hat{\vect{z}})$, so pure backspin keeps the
     ball in the vertical launch plane.
-  \item All aerodynamic coefficients are literature bounds (pickleball and smooth-sphere data), not
-    POLLEN measurements. The worked numbers above are single model runs and say nothing about
-    shot-to-shot repeatability.
+  \item All aerodynamic coefficients come from assumed, literature-based ranges (pickleball and
+    smooth-sphere data). They are not proven bounds and not POLLEN measurements. The worked numbers
+    above are single model runs and say nothing about shot-to-shot repeatability.
 \end{enumerate}

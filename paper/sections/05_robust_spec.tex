@@ -16,7 +16,7 @@ The earlier sections give, for one release state, a yes-or-no answer: does the b
 upward-facing CELL of the HIVE cleanly or not?
 A shooter, though, is not a single release state.
 Its exit speed and its angle scatter from shot to shot, the ball's mass and its aerodynamic
-coefficients are only known to within literature bounds, and the HIVE itself sits on the field
+coefficients are only known within assumed, literature-based ranges, and the HIVE itself sits on the field
 with a tolerance.
 This section turns the yes-or-no windows into numbers a CAD designer can build to.
 It goes in five steps:
@@ -111,8 +111,8 @@ At $d\le0.70$\,\unit{m}\assumed\ no cell is clean at the heights
 $h=0.50$ to $0.737$\,\unit{m}\assumed: the ball cannot both clear the roof and descend steeply enough
 into the mouth from that close.
 The count peaks near $d=0.80$\,\unit{m}\predicted\ and then falls slowly with distance.
-At $d=0.75$\,\unit{m}\assumed\ the window shrinks with height: 369\predicted\ cells at
-$h=0.737$\,\unit{m}\assumed, 295\predicted\ at 0.65\,\unit{m}\assumed\ and 170\predicted\ at
+At $d=0.75$\,\unit{m}\assumed\ the window shrinks with height: 378\predicted\ cells at
+$h=0.737$\,\unit{m}\assumed, 286\predicted\ at 0.65\,\unit{m}\assumed\ and 169\predicted\ at
 0.50\,\unit{m}\assumed\ (no spin).
 For $S=1$ at $h=0.50$\,\unit{m}\assumed\ the cell count at $d=0.75$\,\unit{m}\assumed\ is already
 0\predicted.
@@ -126,8 +126,8 @@ For $S=1$ at $h=0.50$\,\unit{m}\assumed\ the cell count at $d=0.75$\,\unit{m}\as
     \toprule
     $d$ (\unit{m}) & 0.75 & 0.80 & 0.85 & 0.90 & 1.15 & 1.50 & 1.75 \\
     \midrule
-    $N$, $S=0$ & 369\predicted & 457\predicted & 445\predicted & 429\predicted & 355\predicted & 288\predicted & 244\predicted \\
-    $N$, $S=1$ & 303\predicted & 418\predicted & 410\predicted & 398\predicted & 321\predicted & 249\predicted & 214\predicted \\
+    $N$, $S=0$ & 378\predicted & 457\predicted & 436\predicted & 426\predicted & 359\predicted & 287\predicted & 247\predicted \\
+    $N$, $S=1$ & 292\predicted & 412\predicted & 408\predicted & 386\predicted & 335\predicted & 244\predicted & 209\predicted \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -144,8 +144,8 @@ More spin above that adds nothing.
   \item The 2D model has no wind and no sideways motion; azimuth is added in
     Section~\ref{sec:robust_spec-azimuth}.
   \item A grid cell is a point sample; nothing is claimed about the space between grid points.
-  \item The aerodynamic coefficients are literature bounds from pickleball and smooth-sphere data,
-    not POLLEN measurements.
+  \item The aerodynamic coefficients are assumed ranges based on pickleball and smooth-sphere data,
+    not proven bounds and not POLLEN measurements.
   \item The HIVE tilt is the nominal $30^\circ$\confirmed\ unless a variant says otherwise.
 \end{itemize}
 
@@ -222,22 +222,32 @@ perfect.
 
 \paragraph{Worked example.}
 At $h=0.737$\,\unit{m}\assumed, $d=0.75$\,\unit{m}\assumed\ and $S=0$\assumed, nominal aerodynamics,
-the search ends at $k^\ast=4$\predicted\ with $(i_0,j_0)=(78,223)$\predicted.
+the search ends at $k^\ast=3$\predicted\ with $(i_0,j_0)=(70,218)$\predicted.
 Then
-$v_c = 5.0 + (78+1.5)(0.05) = 8.975$\,\unit{m/s}\predicted\ and
-$\theta_c = 62 + (223+1.5)(0.1) = 84.45^\circ$\predicted, with
-$\delta_v = 1.5\times0.05 = 0.075$\,\unit{m/s}\derived\ and
-$\delta_\theta = 1.5\times0.1 = 0.15^\circ$\derived.
-The smallest raster clearance inside the block is only 0.2\,\unit{mm}\predicted.
-For $S=0.5$\assumed\ the square is also $k^\ast=4$\predicted\ at (9.275\,\unit{m/s}\predicted,
-$82.45^\circ$\predicted); for $S=1.0$\assumed\ it is $k^\ast=4$\predicted\ at
-(9.025\,\unit{m/s}\predicted, $81.95^\circ$\predicted).
-Over every unfavourable-side row of the sweep with $S\in\{0,0.5,1\}$, the square sizes are
-$k^\ast=4$ in 16\predicted\ rows, $k^\ast=3$ in 251\predicted, $k^\ast=2$ in 40\predicted,
-$k^\ast=1$ in 1\predicted\ and empty in 52\predicted.
-No row reaches $k^\ast=5$.
-So $\pm0.075$\,\unit{m/s}\predicted\ and $\pm0.15^\circ$\predicted\ is the best repeatability the grid
-admits anywhere, and it holds for one set of aerodynamic coefficients only.
+$v_c = 5.0 + (70+1)(0.05) = 8.55$\,\unit{m/s}\predicted\ and
+$\theta_c = 62 + (218+1)(0.1) = 83.9^\circ$\predicted, with
+$\delta_v = 1\times0.05 = 0.05$\,\unit{m/s}\derived\ and
+$\delta_\theta = 1\times0.1 = 0.10^\circ$\derived.
+The smallest raster clearance inside the block is 4.9\,\unit{mm}\predicted.
+For $S=0.5$\assumed\ the square is $k^\ast=4$\predicted\ at (9.125\,\unit{m/s}\predicted,
+$82.35^\circ$\predicted), above the $8.909$\,\unit{m/s}\predicted\ grip limit of
+Section~\ref{sec:launcher:grip} (the search applies no speed cap); for $S=1.0$\assumed\ it is
+$k^\ast=4$\predicted\ at (8.875\,\unit{m/s}\predicted, $81.85^\circ$\predicted).
+Over every unfavourable-side row of the nominal sweep (nominal aerodynamics, $30^\circ$\confirmed\ tilt)
+with $S\in\{0,0.5,1\}$, the square sizes are
+$k^\ast=4$ in 14\predicted\ rows, $k^\ast=3$ in 250\predicted, $k^\ast=2$ in 42\predicted,
+$k^\ast=1$ in 2\predicted\ and empty in 52\predicted.
+No row of it reaches $k^\ast=5$.
+So, for the nominal aerodynamics and tilt, $\pm0.075$\,\unit{m/s}\predicted\ and $\pm0.15^\circ$\predicted\
+is the widest tolerance the grid admits (a requirement on the shooter, not a measured repeatability).
+Only backspin reaches it ($S=0.5$ in 4\predicted\ rows, $S=1.0$ in 10\predicted); the no-spin twin stops
+at $k^\ast=3$\predicted, i.e.\ $\pm0.05$\,\unit{m/s}\predicted\ and $\pm0.10^\circ$\predicted.
+Single changed conditions can do better: with high drag at the $31.77^\circ$\derived\ tilt
+($h=0.737$\,\unit{m}\assumed, $d=0.75$\,\unit{m}\assumed) backspin reaches $k^\ast=5$\predicted\ at
+9.25\,\unit{m/s}\predicted, above the grip limit, and the twin $k^\ast=4$\predicted\ at
+(8.875\,\unit{m/s}\predicted, $83.35^\circ$\predicted).
+Each square is found for one set of coefficients and one tilt; no single setting is clean under
+all conditions at once (Section~\ref{sec:robust_spec-hood}).
 
 \paragraph{Assumptions.}
 \begin{itemize}
@@ -263,8 +273,8 @@ This subsection asks which hood angle leaves a usable speed under every conditio
 A condition $c$ is one aerodynamic variant combined with one HIVE tilt.
 \code{shooter\_spec.variants} gives the nominal set and the drag bounds (Cd\_low, Cd\_high); for
 $S\ne0$ it adds the lift bounds (Cl\_low, Cl\_high) and fast spin decay (k\_high).
-The tilts are $28.5^\circ$\derived, $30^\circ$\confirmed\ and $31.5^\circ$\derived\ (the field
-acceptance lip-height tolerance).
+The tilts are $28.80^\circ$\derived, $30^\circ$\confirmed\ and $31.77^\circ$\derived\ (the field
+acceptance lip-height tolerance, solved exactly for the tilt).
 That gives $3\times3=9$\derived\ conditions for $S=0$ and $6\times3=18$\derived\ for $S\ne0$.
 Each condition has its own mask $M_c(v_i,\theta_j)$.
 
@@ -334,41 +344,54 @@ condition separately, and the runs may sit at different speeds.
 At $h=0.737$\,\unit{m}\assumed\ and $d=0.75$\,\unit{m}\assumed\ with $\tau=0.2^\circ$\assumed\
 ($n_b=2$\derived):
 \begin{itemize}
-  \item No spin: the hood is $\theta_{\mathrm{hood}}=80.8^\circ$\predicted.
-    The nine run centres lie between 6.65\,\unit{m/s}\predicted\ (Cd\_low) and
-    7.35\,\unit{m/s}\predicted\ (Cd\_high); the nominal-drag centres are
-    6.825--6.9\,\unit{m/s}\predicted.
+  \item No spin: the hood is $\theta_{\mathrm{hood}}=80.9^\circ$\predicted.
+    The nine run centres lie between 6.7\,\unit{m/s}\predicted\ (Cd\_low) and
+    7.4\,\unit{m/s}\predicted\ (Cd\_high); the nominal-drag centres are
+    6.875--6.9\,\unit{m/s}\predicted.
     The worst run is $w=1$\predicted\ cell, so $\delta_{v,\mathrm{tune}}=0$\derived: each condition has
     exactly one tuned speed that works.
   \item Backspin $S\in\{0.5,1.0,1.5\}$: no hood index is feasible at $\tau=0.2^\circ$\assumed.
-    With $\tau=0.1^\circ$\assumed\ ($n_b=1$\derived) the hood is feasible at $80.3^\circ$\predicted\
-    ($S=0.5$) and $80.4^\circ$\predicted\ ($S=1.0$) with $w=2$\predicted, i.e.\
-    $\delta_{v,\mathrm{tune}}=0.025$\,\unit{m/s}\derived.
+    With $\tau=0.1^\circ$\assumed\ ($n_b=1$\derived) the code picks $80.4^\circ$\predicted\ for both
+    $S=0.5$ and $S=1.0$, with $w=3$\predicted, i.e.\
+    $\delta_{v,\mathrm{tune}}=0.05$\,\unit{m/s}\derived.
+    The no-spin twin at the same band picks $84.0^\circ$\predicted\ with $w=4$\predicted\
+    ($\delta_{v,\mathrm{tune}}=0.075$\,\unit{m/s}\derived).
+    Neither search applies the $8.909$\,\unit{m/s}\predicted\ grip limit of
+    Section~\ref{sec:launcher:grip}, and both tuning ranges reach above it (to 9.125\,\unit{m/s}\predicted\
+    with backspin, 9.575\,\unit{m/s}\predicted\ without).
+    With the speeds capped there, backspin keeps $w=2$\predicted\ at $80.3^\circ$\predicted\ and the
+    twin $w=3$\predicted\ at $82.0^\circ$\predicted.
   \item With $\tau=0.5^\circ$\assumed\ no row of the sweep is feasible for any spin.
 \end{itemize}
-Without the band ($\tau=0$), every condition has clean speeds at the backspin hood $80.5^\circ$\predicted\
+Without the band ($\tau=0$), every condition has clean speeds at the backspin hood $80.4^\circ$\predicted\
 (conditions of $S=0.5$ and $S=1$ together);
-the lowest clean speed per condition ranges from 6.9\,\unit{m/s}\predicted\ to 8.9\,\unit{m/s}\predicted\
-(the high-lift bound needs the most speed).
-For no spin at $80.8^\circ$\predicted\ the union of the nine clean speed sets is
-6.6--7.45\,\unit{m/s}\predicted.
+the lowest clean speed per condition ranges from 6.85\,\unit{m/s}\predicted\ to 8.6\,\unit{m/s}\predicted\
+(the high-lift set needs the most speed).
+For no spin at $80.9^\circ$\predicted\ the union of the nine clean speed sets is
+6.6--7.0\,\unit{m/s}\predicted\ and 7.2--7.5\,\unit{m/s}\predicted.
 An exit speed range of about 6.5--9.0\,\unit{m/s}\predicted\ therefore contains a clean speed for
 every condition at the chosen hood.
 The nominal-only fixed hood of \code{describe} at $\tau=0.2^\circ$\assumed\ is $82.8^\circ$\predicted\
-for no spin (7.75--7.8\,\unit{m/s}\predicted) and $80.5^\circ$\predicted\ for $S=0.5$ and $S=1$; at
+for no spin (7.75--7.8\,\unit{m/s}\predicted) and $80.9^\circ$\predicted\ for $S=0.5$
+(7.6--7.65\,\unit{m/s}\predicted) and $S=1$ (7.8--7.85\,\unit{m/s}\predicted); at
 $\tau=0.5^\circ$\assumed\ it finds none.
+At $80.9^\circ$\predicted\ the high-lift conditions of $S=0.5$ and $S=1$ (all three tilts) have no
+clean speed even at $\tau=0$, so this nominal-only hood does not carry over to the high lift set.
 % Code/doc difference: docs/08_shooter_spec.md says a fixed hood at +-0.2 deg shrinks the window to
 % a single 0.05 m/s cell. In the code this holds for S = 0 only; for backspin tunable_rows finds no
 % feasible hood at +-0.2 deg (only at +-0.1 deg).
-% Code/doc difference: docs/08 "about 81 deg (no spin)" matches the tunable hood 80.8 deg; the
+% Code/doc difference: docs/08 "about 81 deg (no spin)" matches the tunable hood 80.9 deg; the
 % nominal-only hood02 value for S = 0 is 82.8 deg.
 
 \paragraph{Assumptions.}
 \begin{itemize}
   \item The team can re-tune wheel speed at the field but not the hood angle.
-  \item The conditions are the corners of the literature bounds, not a measured distribution.
+  \item The conditions are one-at-a-time changes from the nominal set (drag low/high; for $S\ne0$ also
+    lift low/high and fast spin decay) at three tilts, not joint corners and not a measured distribution.
+    The floor lift set of Table~\ref{tab:flight-clsets} ($c_1=0.02$\assumed, $C_{L,\max}=0.04$\assumed),
+    which \code{research/params\_lit.json} recommends as the pessimistic set, is not included.
   \item Topspin ($S=-1$\assumed) is feasible at $\tau=0.2^\circ$\assumed\ in the sweep
-    (for example $81.6^\circ$\predicted, 6.4--7.05\,\unit{m/s}\predicted) but is not the chosen
+    (for example $82.0^\circ$\predicted, 6.5--7.2\,\unit{m/s}\predicted) but is not the chosen
     configuration.
 \end{itemize}
 
@@ -443,14 +466,15 @@ $s_d = 0.025/0.05 = 0.5$\derived\ cells, $s_\theta = 0.40/0.1 = 4.0$\derived\ ce
 $s_v = 0.015\times6.0/0.05 = 1.8$\derived\ cells near 6\,\unit{m/s} (1.05\derived\ near 3.5 and
 2.55\derived\ near 8.5\,\unit{m/s}).
 At $h=0.737$\,\unit{m}\assumed\ the best smoothed probability with no spin is
-0.419\predicted\ at $d=0.75$\,\unit{m}\assumed\ (aim 7.1\,\unit{m/s}\predicted, $81.4^\circ$\predicted),
-0.426\predicted\ at $d=0.80$\,\unit{m}\assumed\ (7.15\,\unit{m/s}\predicted, $81.2^\circ$\predicted) and
-0.364\predicted\ at $d=1.15$\,\unit{m}\assumed.
-With $S=1$ it is 0.423\predicted\ at $d=0.75$\,\unit{m}\assumed\ (7.2\,\unit{m/s}\predicted,
-$79.9^\circ$\predicted) and 0.418\predicted\ at $d=0.80$\,\unit{m}\assumed\ (7.25\,\unit{m/s}\predicted,
-$79.7^\circ$\predicted).
+0.424\predicted\ at $d=0.75$\,\unit{m}\assumed\ (aim 7.2\,\unit{m/s}\predicted, $81.6^\circ$\predicted),
+0.430\predicted\ at $d=0.80$\,\unit{m}\assumed\ (7.05\,\unit{m/s}\predicted, $80.9^\circ$\predicted) and
+0.362\predicted\ at $d=1.15$\,\unit{m}\assumed\ (aim 9.1\,\unit{m/s}\predicted, above the grip limit;
+0.356\predicted\ with $v_{\mathrm{cap}}=8.909$\,\unit{m/s}\predicted\ of Section~\ref{sec:launcher:grip}).
+With $S=1$ it is 0.378\predicted\ at $d=0.75$\,\unit{m}\assumed\ (8.2\,\unit{m/s}\predicted,
+$81.3^\circ$\predicted) and 0.412\predicted\ at $d=0.80$\,\unit{m}\assumed\ (7.25\,\unit{m/s}\predicted,
+$79.7^\circ$\predicted), below no spin at both distances.
 Two points stand out.
-First, the smoothed optimum sits near $80$--$81^\circ$, not at the $84.45^\circ$ square of
+First, the smoothed optimum sits near $80$--$82^\circ$, not at the $83.9^\circ$ no-spin square of
 Section~\ref{sec:robust_spec-square}: a blur of $4$ cells in elevation rewards the part of the window that is
 deep in elevation, while the square rewards the part that is wide in both directions.
 Second, even the best aim is clean only about four times in ten with nominal release errors.
@@ -666,7 +690,7 @@ does not move), a wind of $\sigma_w=0.30$\,\unit{m/s}\assumed\ per horizontal co
 during the shot, and a spin parameter uniform on $[1.03, 1.27]$\predicted\ (the contact model's hood
 band); the release-error-only scenario fixes $S=1.0597$\predicted.
 The HIVE is drawn per shot with tilt $\beta=\operatorname{clip}(30^\circ+0.75^\circ\varepsilon_{13},\
-28.5^\circ, 31.5^\circ)$ (spread $0.75^\circ$\assumed, clipped to the derived tilt bounds), pivot height
+28.80^\circ, 31.77^\circ)$ (spread $0.75^\circ$\assumed, clipped to the derived tilt bounds), pivot height
 $1.11633$\,\unit{m}\confirmed\ with spread 0.005\,\unit{m}\assumed\ clipped to
 1.09093--1.14173\,\unit{m}\confirmed\ (the manual's $\pm1$\,in field tolerance), and an $x$ offset of
 spread 0.01\,\unit{m}\assumed.
@@ -732,13 +756,19 @@ The two most common failures there are the outer roof (147\predicted\ shots) and
 % params_lit upper bound is 27.5 g.
 These Monte Carlo results were computed with the older first-pass coefficient file
 \code{data/aero\_params.json}; a rerun with \code{research/params\_lit.json} has not been made.
+The stored file also predates the current scenario list of \code{mc\_scenarios}: it has no no-spin
+shots at the backspin aim, and (as \code{data/aero\_params.json} has no floor set) no rows for the
+floor lift set.
+% The clip above is the current code (fz.TILT_BOUNDS 28.80-31.77); squashed git history cannot show
+% which clip produced data/robust_mc.csv.
 
 \paragraph{Assumptions.}
 \begin{itemize}
   \item All spreads in Eqs.~\eqref{eq:robust_spec-mc-v}--\eqref{eq:robust_spec-mc-phys} are assumed, independent and
     Gaussian or uniform; none is measured on the robot.
   \item The wind is constant during one shot and horizontal.
-  \item The aerodynamic coefficients are literature bounds, not POLLEN measurements.
+  \item The aerodynamic coefficients are assumed literature-based ranges, not proven bounds and not
+    POLLEN measurements.
   \item Shots are independent trials, which Section~\ref{sec:robust_spec-wilson} needs.
 \end{itemize}
 
@@ -882,11 +912,11 @@ All of them are model outputs.
     \midrule
     Release height $h$ & 0.65--0.737\,\unit{m}\predicted & Table~\ref{tab:robust_spec-nclean}; window shrinks below 0.65\,\unit{m}\predicted \\
     Distance $d$ & 0.75--0.85\,\unit{m}\predicted & no clean cell at $d\le0.70$\,\unit{m}\predicted; peak near 0.80\,\unit{m}\predicted \\
-    Hood angle, no spin & about $81^\circ$\predicted & Eq.~\eqref{eq:robust_spec-score}: $80.8^\circ$\predicted\ at $\tau=0.2^\circ$\assumed \\
-    Hood angle, backspin & 80--80.5$^\circ$\predicted & Eq.~\eqref{eq:robust_spec-score} at $\tau=0.1^\circ$\assumed; nominal band hood \\
+    Hood angle, no spin & about $81^\circ$\predicted & Eq.~\eqref{eq:robust_spec-score}: $80.9^\circ$\predicted\ at $\tau=0.2^\circ$\assumed \\
+    Hood angle, backspin & about $80.4^\circ$\predicted & Eq.~\eqref{eq:robust_spec-score} at $\tau=0.1^\circ$\assumed, $S=0.5$\assumed\ and $1.0$\assumed\ ($80.3^\circ$\predicted\ with speeds capped at the grip limit) \\
     Exit speed range & 6.5--9.0\,\unit{m/s}\predicted & every condition has a clean speed (Sec.~\ref{sec:robust_spec-hood}) \\
-    Speed repeatability & $\pm0.075$\,\unit{m/s}\predicted & Eq.~\eqref{eq:robust_spec-tol}, $k^\ast=4$\predicted \\
-    Angle repeatability & $\pm0.15^\circ$\predicted & Eq.~\eqref{eq:robust_spec-tol}, $k^\ast=4$\predicted \\
+    Speed repeatability & $\pm0.075$\,\unit{m/s}\predicted\ with backspin, $\pm0.05$\,\unit{m/s}\predicted\ without & Eq.~\eqref{eq:robust_spec-tol}, $k^\ast=4$\predicted\ with backspin, $k^\ast=3$\predicted\ for the no-spin twin (nominal aerodynamics) \\
+    Angle repeatability & $\pm0.15^\circ$\predicted\ with backspin, $\pm0.10^\circ$\predicted\ without & Eq.~\eqref{eq:robust_spec-tol}, as for the speed \\
     Wheel speed & about 2500--7000 rpm\predicted & Eq.~\eqref{eq:robust_spec-wheel}, depends on $r$ \\
     \bottomrule
   \end{tabular}
@@ -900,27 +930,33 @@ All of them are model outputs.
     Lower release heights shrink it quickly (Table~\ref{tab:robust_spec-nclean} and the $h$ comparison in
     Section~\ref{sec:robust_spec-grid}).
   \item \emph{Hood angle.}
-    The hood is chosen so that, for every drag, lift and tilt corner, some tuned wheel speed is clean
+    The hood is chosen so that, for every drag, lift and tilt condition, some tuned wheel speed is clean
     (Eq.~\eqref{eq:robust_spec-wmin}).
     The backspin hood is slightly flatter than the no-spin hood, but backspin does not enlarge the
     window and its hood needs a tighter angle tolerance ($\pm0.1^\circ$ instead of $\pm0.2^\circ$).
   \item \emph{Exit speed.}
     The range is a tuning range, not a tolerance: the team sets one speed at the field and keeps it.
   \item \emph{Repeatability.}
-    The $\pm0.075$\,\unit{m/s} and $\pm0.15^\circ$ figures are the largest clean square anywhere in
-    the sweep (Section~\ref{sec:robust_spec-square}) for one set of coefficients.
+    The $\pm0.075$\,\unit{m/s}\predicted\ and $\pm0.15^\circ$\predicted\ figures are the largest clean
+    square of the nominal sweep (nominal coefficients, $30^\circ$\confirmed\ tilt;
+    Section~\ref{sec:robust_spec-square}), and only backspin reaches them; the no-spin twin reaches
+    $\pm0.05$\,\unit{m/s}\predicted\ and $\pm0.10^\circ$\predicted.
+    Each square is found for one set of coefficients and one tilt.
     They are a target for shot-to-shot scatter, roughly the tight release set of the Monte Carlo
     ($\sigma_\theta=0.15^\circ$\assumed), which raises the modelled clean rate from 0.30\predicted\ to
     0.41\predicted.
     They are not a guarantee of clean entry under every condition.
 \end{itemize}
-% Code/doc difference: docs/08 puts the repeatability +-0.075 m/s and +-0.15 deg on the card next to
-% the ~81 deg hood. In the code these come from the nominal-aero best square at (8.975 m/s,
-% 84.45 deg), S = 0, h = 0.737 m, d = 0.75 m, not at the ~81 deg hood and not robust over conditions;
-% at the field-tuned hood (tunable_rows, tau = 0.2 deg) the guaranteed speed tolerance is 0.
-% Code/doc difference: the backspin hood 80-80.5 deg matches the nominal-only hood (80.5 deg,
-% fixed_elev at +-0.2 deg) and the field-tuned hood at +-0.1 deg (80.3-80.4 deg); at +-0.2 deg the
-% field-tuned search finds no backspin hood.
+% Code/doc difference: docs/08 puts the repeatability (no spin +-0.05 m/s and +-0.1 deg, backspin
+% +-0.075 m/s and +-0.15 deg) on the card next to the ~81 deg hood. In the code these are the
+% nominal-aero best squares at h = 0.737 m, d = 0.75 m, tilt 30 deg: S = 0 k*=3 at (8.55 m/s,
+% 83.9 deg), S = 0.5 k*=4 at (9.125 m/s, 82.35 deg, above the 8.909 m/s cap), S = 1 k*=4 at
+% (8.875 m/s, 81.85 deg); none is at the ~81 deg hood and none is robust over conditions. At the
+% field-tuned no-spin hood (tunable_rows, tau = 0.2 deg) the guaranteed speed tolerance is 0.
+% Code/doc difference: docs/08 gives the backspin hood as about 80.5-81.5 deg (band centre). The
+% field-tuned hood at +-0.1 deg is 80.4 deg (80.3 deg with speeds capped at 8.909 m/s). The
+% nominal-only hood (fixed_elev at +-0.2 deg) is 80.9 deg, where the Cl_high conditions have no clean
+% speed. At +-0.2 deg the field-tuned search finds no backspin hood.
 
 \paragraph{Assumptions.}
 \begin{itemize}

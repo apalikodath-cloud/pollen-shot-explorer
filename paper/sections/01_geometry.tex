@@ -219,15 +219,24 @@ expected for a rotation about the pivot. At $\tau_0$ it is $0.49072$\,\unit{m/ra
 19.32$\,\unit{in/rad}\derived{} $= 0.3372$\,\unit{in/deg}\derived.
 
 \paragraph{Step 3: invert for the tolerance.} The checklist allows
-$\Delta z_{\mathrm{lip}} = \pm 0.5$\,\unit{in}\confirmed. With the pivot at its nominal height,
+$\Delta z_{\mathrm{lip}} = \pm 0.5$\,\unit{in}\confirmed. With the pivot at its nominal height, the
+linear estimate is
 \begin{equation}
   \Delta\tau \approx \frac{\Delta z_{\mathrm{lip}}}{\mathrm{d}z_{\mathrm{lip}}/\mathrm{d}\tau}
-  = \frac{0.5}{0.3372} = 1.48^\circ\text{\derived} \;\to\; \tau \in [28.5^\circ, 31.5^\circ]\text{\derived}.
+  = \frac{0.5}{0.3372} = 1.48^\circ\text{\derived},
   \label{eq:geometry-tilt-bound}
 \end{equation}
+or about $\tau \in [28.5^\circ, 31.5^\circ]$\derived. The nominal lip is at $53.41$\,\unit{in}\derived,
+not at the checklist's $53.5$\,\unit{in}\confirmed, and \eqref{eq:geometry-zlip} is not linear, so the
+code uses the exact solutions of $z_{\mathrm{lip}}(\tau) = 53.0$\,\unit{in}\derived{} and
+$54.0$\,\unit{in}\derived: $\tau \in [28.80^\circ, 31.77^\circ]$\derived, that is $1.20^\circ$\derived{} below and
+$1.77^\circ$\derived{} above the nominal tilt (\code{low} and \code{high} in
+\code{data/hive\_geometry.json}, read by \code{feasibility.TILT\_BOUNDS}).
 If the pivot height is also off by the manual's general $\pm 1$\,\unit{in}\confirmed{} tolerance,
 the lip can move $1.5$\,\unit{in}\derived{} for the same checklist reading, giving
-$1.5/0.3372 = 4.45^\circ$\derived, rounded to the wide bounds $[25.5^\circ, 34.5^\circ]$\derived{}
+$1.5/0.3372 = 4.45^\circ$\derived{} in the linear estimate. Solving $z_{\mathrm{lip}}(\tau) =
+53$\,\unit{in}\derived{} with the pivot $1$\,\unit{in}\confirmed{} higher, and $54$\,\unit{in}\derived{}
+with it $1$\,\unit{in}\confirmed{} lower, gives the wide bounds $[25.90^\circ, 34.83^\circ]$\derived{}
 (\code{low\_wide}, \code{high\_wide}). The code re-poses the body at any tilt with
 \eqref{eq:geometry-world-x}--\eqref{eq:geometry-world-z}; Table~\ref{tab:geometry-tilt} in
 Section~\ref{sec:geometry-steep} shows how the entry requirement moves with $\tau$.
@@ -579,17 +588,23 @@ the upper lip ($0.31203 + 0.0355 = 0.3475$\,\unit{m}\derived) to the gate's low 
   \caption{Descent-angle limits on the unfavourable side versus tilt. $\varphi_{\mathrm{kin}}$:
   \eqref{eq:geometry-phi-kin}; $\varphi_{\mathrm{gate}}$: \eqref{eq:geometry-phi-gate} (the code's criterion);
   $\varphi_{\mathrm{fit}}$: \eqref{eq:geometry-phi-fit}; ``code'' is the bisection with
-  \code{Hive.classify\_path}; $z_{\mathrm{lip}}$ from the re-posed \code{Hive}.}
+  \code{Hive.classify\_path}; $z_{\mathrm{lip}}$ from the re-posed \code{Hive} at the nominal pivot
+  height. The rows other than $30^\circ$\confirmed{} are the tilt bounds of Section~\ref{sec:geometry-tilt}.}
   \label{tab:geometry-tilt}
+  % CHECK: re-run 2026-10-31 (bisection, 400 entry points, same method). Old rows 28.5 / 30 / 31.5 gave
+  % 67.85 / 66.35 / 64.85, so the method reproduces them. At 28.80 and 31.77 the line through the gate's
+  % low end grazes at exactly zero clearance (clean); at 28.5 / 31.5 it touches by float round-off and
+  % at 30 by -0.003 mm (5-decimal stored pose). That is the 0.01-0.02 deg gap between the code column
+  % and phi_gate in those rows, not a different criterion.
   \begin{tabular}{@{}rrrrrr@{}}
     \toprule
     $\tau$ & $z_{\mathrm{lip}}$ (\unit{m}) & $\varphi_{\mathrm{kin}}$ & $\varphi_{\mathrm{gate}}$ & code & $\varphi_{\mathrm{fit}}$ \\
     \midrule
-    $25.5^\circ$\derived & $1.3173$\derived & $64.5^\circ$\derived & $70.83^\circ$\derived & -- & $75.96^\circ$\derived \\
-    $28.5^\circ$\derived & $1.3436$\derived & $61.5^\circ$\derived & $67.83^\circ$\derived & $67.85^\circ$\predicted & $72.96^\circ$\derived \\
+    $25.90^\circ$\derived & $1.3208$\derived & $64.10^\circ$\derived & $70.43^\circ$\derived & -- & $75.56^\circ$\derived \\
+    $28.80^\circ$\derived & $1.3462$\derived & $61.20^\circ$\derived & $67.53^\circ$\derived & $67.53^\circ$\predicted & $72.66^\circ$\derived \\
     $30.0^\circ$\confirmed & $1.3565$\derived & $60.0^\circ$\derived & $66.33^\circ$\derived & $66.35^\circ$\predicted & $71.46^\circ$\derived \\
-    $31.5^\circ$\derived & $1.3693$\derived & $58.5^\circ$\derived & $64.83^\circ$\derived & $64.85^\circ$\predicted & $69.96^\circ$\derived \\
-    $34.5^\circ$\derived & $1.3943$\derived & $55.5^\circ$\derived & $61.83^\circ$\derived & -- & $66.96^\circ$\derived \\
+    $31.77^\circ$\derived & $1.3716$\derived & $58.23^\circ$\derived & $64.56^\circ$\derived & $64.56^\circ$\predicted & $69.69^\circ$\derived \\
+    $34.83^\circ$\derived & $1.3970$\derived & $55.17^\circ$\derived & $61.50^\circ$\derived & -- & $66.63^\circ$\derived \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -648,8 +663,9 @@ pass over the roof, condition \eqref{eq:geometry-roof}.
   \item ``Clean'' means the centre crosses the gate inward with no earlier contact (an assumed
         criterion). Contact after the crossing, and whether the ball then stays in, belongs to the contact
         model. A planned bank shot off the roof is outside this channel (and is a G417 risk).
-  \item The tilt is a fixed $30^\circ$\confirmed{} rest angle, with $\pm 1.5^\circ$\derived{} and
-        $\pm 4.5^\circ$\derived{} bounds; the HIVE does not move during the shot.
+  \item The tilt is a fixed $30^\circ$\confirmed{} rest angle, with derived bounds
+        $[28.80^\circ, 31.77^\circ]$\derived{} and wide bounds $[25.90^\circ, 34.83^\circ]$\derived;
+        the HIVE does not move during the shot.
   \item The descent-angle limits \eqref{eq:geometry-phi-gate} and \eqref{eq:geometry-phi-fit} treat the last few
         centimetres of the path as straight.
   \item The release height limit \eqref{eq:geometry-hmax} applies to the ball centre.

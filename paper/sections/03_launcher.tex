@@ -62,7 +62,9 @@ dataclasses \code{Ball}, \code{Wheel}, \code{Contact}, \code{Hood} and \code{Rol
 \toprule
 Symbol & Meaning & Default & Range used \\
 \midrule
-$m$ & ball mass & 0.025\,\unit{kg}\confirmed & 0.0245--0.0255\,\unit{kg}\assumed \\
+% Ball mass: AndyMark vendor listing 0.055 lb = 24.95 g (not CAD or manual), so [A] as in the abstract,
+% the flight table (0.02495) and the contact section; launcher.PARAMS rounds it to 0.025 kg.
+$m$ & ball mass & 0.025\,\unit{kg}\assumed & 0.0245--0.0255\,\unit{kg}\assumed \\
 $R_b$ & nominal ball radius & 0.0355\,\unit{m}\confirmed & -- \\
 $k_I$ & ball inertia factor, $I_b = k_I m R_b^2$ & 0.63\assumed & 0.55--0.667\assumed \\
 $R_w$ & flywheel radius & 0.049\,\unit{m}\userval & -- \\
@@ -135,7 +137,7 @@ $\sigma > 0$ means the surface runs ahead of the ball, so its friction pushes th
 
 \paragraph{Worked example.} With $R_b = 0.0355$\,\unit{m}\confirmed, $\delta = 0.004$\,\unit{m}\userval{} and
 $\lambda = 1$\assumed, \eqref{eq:launcher-rc} gives $r_c = 0.0355 - 0.002 = 0.0335$\,\unit{m}\derived. With
-$m = 0.025$\,\unit{kg}\confirmed{} and $k_I = 0.63$\assumed, \eqref{eq:launcher-Ib} gives
+$m = 0.025$\,\unit{kg}\assumed{} and $k_I = 0.63$\assumed, \eqref{eq:launcher-Ib} gives
 $I_b = 0.63\times0.025\times0.0355^2 = 1.985\times10^{-5}$\,\unit{kg\,m$^2$}\derived.
 
 \subsection{The ideal hood and where ``$v = u/2$'' comes from}
