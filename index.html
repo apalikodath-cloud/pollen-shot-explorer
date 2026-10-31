@@ -113,7 +113,7 @@ html, body { overflow-x: hidden; }
 .big .bk { font-size: 12px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 3px; margin-top: 2px; }
 .big .bk b { color: var(--fg); font-weight: 600; }
 .rstats { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); } .rstats dd { overflow-wrap: anywhere; }
-.xy { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .xy.x3 { grid-template-columns: 1fr 1fr 1fr; } .xy label { display: grid; gap: 3px; font-size: 12.5px; color: var(--muted); }
+.xy { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .xy.x3 { grid-template-columns: 1fr 1fr 1fr; align-items: end; } .xy label { display: grid; gap: 3px; font-size: 12.5px; color: var(--muted); }
 input[type=number], input.tx { width: 100%; box-sizing: border-box; font: 13px var(--mono); color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 5px 6px; }
 @media (max-width: 520px) { #rwin { aspect-ratio: 4 / 3; } .big .bv { font-size: 26px; } }
 /* PM-011: simpler layout. Type scale: 28 title, 34 answer, 18 tile value, 16 headings, 14 body, 12 small, 10 badges.
@@ -180,7 +180,7 @@ body[data-view=robot] .stage { min-height: 460px; }
 .rec .sens { font-size: 13px; margin: 4px 0 0; }
 .rec .tw { color: var(--twin); } .hint[data-bad="1"]::before { content: "Could not read the lift table, so it is ignored. "; color: var(--hit); }
 .twinline { font-size: 14px; color: var(--twin); border-left: 2px dashed var(--twin); padding-left: 8px; margin: 4px 0 0; }
-.tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 .tile { display: grid; gap: 2px; align-content: start; text-align: left; font: 400 12px/1.35 var(--body); color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px; cursor: pointer; min-width: 0; min-height: 44px; }
 .tile:hover { border-color: var(--muted); }
 .tile[aria-pressed=true] { border-color: var(--pollen); }
@@ -218,6 +218,8 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
   .tile .tl { grid-area: 1 / 1; } .tile .tv { grid-area: 2 / 1; } .tile .ts { grid-area: 1 / 2; } .tile .tt { grid-area: 2 / 2; }
   .hudnote { display: none; }
 }
+.kitlink { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+.kitlink a { color: var(--pollen); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .seg button small { display: block; font: 400 10px var(--mono); color: inherit; opacity: .75; }
 .spinseg button { font-family: var(--body); }
 </style>
@@ -235,6 +237,7 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
       <button type="button" data-v="plane"><b>Side view</b><span>One shot up close</span></button>
       <button type="button" data-v="field"><b>Field map</b><span>Every spot at once</span></button>
     </nav>
+    <p class="kitlink"><a href="measure/measure.html" id="measure-link">Measure your shooter</a> <span>· track a slow-motion video and fit drag (Cd) and spin lift (Cl) with the no-spin twin test, then enter them here (Advanced settings)</span></p>
   </header>
 
   <div class="rtop" id="rtop" hidden>
@@ -280,7 +283,7 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
       </section>
 
       <details class="card adv" id="radv">
-        <summary><h2>Advanced settings</h2><span class="hint">grip, air, drafts, robot moving, spin lift, turret, HIVE tilt</span></summary>
+        <summary><h2>Advanced settings</h2><span class="hint">grip, air, drafts, robot moving, spin lift, shot scatter, turret, HIVE tilt</span></summary>
         <div class="row"><label>Grip <span class="lab">ASSUMED</span> <span class="term" title="v/u: ball exit speed ÷ wheel surface speed">v/u</span></label><div class="seg" id="rvu-seg"></div>
           <p class="hint">How much of the wheel speed the ball gets. Not measured yet; 0.42 is the middle guess. It changes the rpm, not the shot.</p></div>
         <div class="row"><label for="raero">Air model <span class="lab">ASSUMED</span></label><select id="raero"></select>
@@ -307,11 +310,17 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
         <div class="row"><label>Spin lift options <span class="lab">ASSUMED</span></label>
           <div class="xy"><label>Lift table S:Cl <input id="rclt" class="tx" type="text" placeholder="e.g. 0.5:0.2, 1.5:0.35" spellcheck="false"></label><label>Reverse lift Cl_rev (0 to 0.1) <input id="rclr" type="number" step="0.01" min="0" max="0.1"></label></div>
           <p class="hint" id="rclt-h">Lift table: your own spin-lift curve (pairs of spin ratio S and lift coefficient Cl), straight lines between points, flat after the last. Blank = the air model's capped line. Reverse lift: at slow speed and low spin a smooth ball can lift the wrong way (smooth-sphere data, Kim 2014 / Kray 2012, not POLLEN); below Reynolds 46,000 (about 9.8 m/s) and S 0.5 the lift blends toward minus this value. 0 = off. The no-spin twin never gets lift.</p></div>
+        <div class="row"><label>Gyro spin <span class="lab">ASSUMED</span></label>
+          <label class="tog"><input type="checkbox" id="rgyro"> Lift from the spin across the flight only (gyro-correct S)</label>
+          <p class="hint">Only the part of the spin that is across the ball's path makes lift. On: the 3D flight uses that part (S_perp). It changes nothing for pure backspin; it matters when the robot moves or turns, so the spin axis is tilted to the path. Only the 3D path uses it (robot moving, sideways draft, and the chance it goes in). Off by default.</p></div>
+        <div class="row"><label>Shot scatter <span class="lab">ASSUMED</span></label>
+          <div class="xy x3"><label>Speed (%, 1σ) <input id="rsv" type="number" step="0.1" min="0" max="10"></label><label>Hood angle (°, 1σ) <input id="rsth" type="number" step="0.05" min="0" max="5"></label><label>Aim (°, 1σ) <input id="rspsi" type="number" step="0.05" min="0" max="5"></label></div>
+          <p class="hint">How much one shot differs from the next with the same setting: exit speed, hood (launch) angle and aim left/right, as one standard deviation. Used for the chance it goes in and to find the best-chance setting. Not measured on the robot: defaults 1.5 %, 0.40°, 0.50° are guesses. Measure your shooter's spread (for example, film 20 shots) and enter it here. 0 turns that source off. Changing these does not re-solve the window; only the chance search runs again.</p></div>
         <div class="row"><label for="rphi">Air carried with the ball <span class="lab">ASSUMED</span></label><input id="rphi" type="number" step="0.1" min="0" max="1" placeholder="off">
           <p class="hint">A holed ball drags some air along, so it acts a little heavier: phi 0 to 1 (0 = only the usual added mass of a sphere, 1 = also all the air inside). Blank = off. At phi 1 every force acts about 1.4 % weaker (gravity too). Not measured.</p></div>
         <div class="row"><label>Turret travel</label><div class="seg" id="rtrav-seg"></div>
           <p class="hint">How far the turret can swing from the robot's front. If it cannot reach the cell, the answer says how far to turn the robot.</p></div>
-        <div class="row"><label>HIVE tilt</label><p class="fixed">30° <span class="lab">CONFIRMED</span> <span class="hint">official field CAD. Tipped bounds 28.80° / 31.77° (wide 25.90° / 34.83°, derived). The Side view's 28.5° and 31.5° are the old sweep bounds (not re-run).</span></p></div>
+        <div class="row"><label>HIVE tilt</label><p class="fixed">30° <span class="lab">CONFIRMED</span> <span class="hint">official field CAD. Tipped bounds 28.80° / 31.77° (wide 25.90° / 34.83°, derived). The Side view has 28.80° and 31.77° too.</span></p></div>
       </details>
     </div>
   </div>
@@ -463,7 +472,7 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
     <p><b>What this is.</b> Three views of one PREDICTED model (PM-001, Team 207 Critical Mass). <b>Robot</b> (the default): put a 0.457 m robot anywhere on the field at any heading, give it a turret, set the release height, backspin and grip, and the page solves the clean-entry window for that exact spot live in your browser (a background worker runs the same flight model), then gives the minimum wheel rpm, the minimum hood angle and the most forgiving shot, each beside its no-spin twin. <b>Side view</b> (single plane): the original model grid (<code>src/shooter_spec.py</code>: 111 speeds × 261 angles × 24 distances × 5 heights per case) for a shot straight down the HIVE tipping plane. <b>Field map</b>: the precomputed windows for every 0.05 m grid position (<code>data/field</code>). Air resistance is included in all three: quadratic drag (Cd), Magnus spin lift capped at a maximum, and spin decay during the flight. Those coefficients are ASSUMED literature values, not POLLEN measurements. The HIVE section is from the official field CAD; tilt 30° is confirmed.</p>
     <p><b>What the model includes.</b> Flight: quadratic drag, Magnus spin lift with a cap and spin decay, RK4 with a 2 ms step. Robot view: the shot flies along the bearing to the cell from the robot's exact spot (whole-field oblique model), and the up cell is 3D (side walls, pentagon roof, lips). The live solver reports two kinds of minimum: <b>knife edge</b> (the lowest clean shot found, a grazing one) and <b>with room for error</b> (still clean if speed and angle drift by the ASSUMED tolerance), each beside the no-spin twin. Options in Advanced settings: venue air (temperature, altitude, humidity; default 20 °C, sea level, dry = 1.204 kg/m³, derived), drag that changes with speed (reference or what-if, ASSUMED), extra drag from backspin (ASSUMED), a steady draft along, across or up the shot (user), a moving robot (speed toward the goal and sideways, turn rate, exit-angle offset d0; user / ASSUMED), a spin-lift table and reverse lift (ASSUMED), air carried with the ball (effective mass, ASSUMED), and a flag on any answer that needs more than the PREDICTED 8.9 m/s grip limit.</p>
     <p><b>Not modelled yet</b> (largest first, from the research ranking; each needs a measurement): the real spin-lift level of POLLEN (Cl); its real drag level (Cd); grip and slip at the wheel (v/u, ball squeeze); the hood angle not being the exit angle; the random side force on a low-spin holed ball (knuckle); exit skew and a tilted spin axis (sideways error); balls and NECTAR already in the cell, bounce (COR) and the HIVE tipping mid-volley; bounces after entry; the air carried inside the ball (effective mass: an ASSUMED option only); flywheel droop and battery voltage at launch. Robot motion and sideways drafts are options (Advanced), not measurements. The "chance it goes in" line is a model probability under ASSUMED launch scatter, not a measured repeatability.</p>
-    <p><b>What it is not.</b> No POLLEN drag, spin lift, bounce or launcher grip has been measured. The air cases are literature ranges (pickleball and smooth-sphere data), not POLLEN facts. A shot that touches the HIVE stops here; a bounce can still score (see docs/05). The second HIVE and the A-frame legs are drawn for context only. One clean simulated shot says nothing about repeatability: the tolerance shown is how far speed and angle can drift and still go in. In the Robot view the release point is the robot centre at your height (an offset can be set; the turned 18 × 18 in chassis must stay inside the walls and off the A-frame base) and the turret is assumed to aim exactly (ASSUMED). The Side view and the Field map are precomputed 2D sections at 1.20 kg/m³: their side walls are not modelled, so their windows from a bearing of 35.57° or more are optimistic.</p>
+    <p><b>What it is not.</b> No POLLEN drag, spin lift, bounce or launcher grip has been measured. The air cases are literature ranges (pickleball and smooth-sphere data), not POLLEN facts. A shot that touches the HIVE stops here; a bounce can still score (see docs/05). The second HIVE and the A-frame legs are drawn for context only. One clean simulated shot says nothing about repeatability: the tolerance shown is how far speed and angle can drift and still go in. In the Robot view the release point is the robot centre at your height (an offset can be set; the turned 18 × 18 in chassis must stay inside the walls and off the A-frame base) and the turret is assumed to aim exactly (ASSUMED). The Side view and the Field map are precomputed with the same 3D cell (side walls, pentagon roof) at 1.204 kg/m³ (derived); the Side view is a straight shot down the tipping plane only.</p>
     </details>
     <p id="prov"></p>
   </footer>
@@ -2163,33 +2172,44 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
   // mc_shots(cell=...) is the Python twin (tests/test_move.py).
   const HC_SIG = { sv: 0.015, sth: 0.40, spsi: 0.50 };
   const HC_NOTE = "model probability under ASSUMED launch scatter (not a measured repeatability)";
-  function hitChance(q, v, theta, opts) {
-    const t0 = now(), o = opts || {}, n = o.n || 1000, seed = o.seed === undefined ? 20261031 : o.seed;
-    const sig = Object.assign({}, HC_SIG, o.sig || {});
-    const ep = effParams(q), qq = Object.assign({}, q, { params: ep.p }), ctx = context(qq, true);
-    if (!ctx.ps.ok) return { ok: false, reason: "pose not legal", n: n };
-    const S = q.S || 0, Z = P.normals(seed, 3 * n), out = [0, 0, 0, 0], cell = ctx.c3.cell;
-    function run(Sx, p, v, theta) {
-      let k = 0;
-      for (let i = 0; i < n; i++) {
-        const vi = v * (1 + sig.sv * Z[3 * i]), ti = theta + sig.sth * Z[3 * i + 1], dp = rad(sig.spsi * Z[3 * i + 2]);
-        if (fastShot3D(ctx.F, vi, ti, Sx, p, ctx.pr, cell, q.h, ctx.zStop, out, dp) === 1) k++;
-      }
-      const w = P.wilson(k, n);
-      return { k: k, n: n, p: k / n, lo: w[0], hi: w[1] };
-    }
-    let names = o.sets;
-    // a user Cl(S) table replaces the lift of every aero set, so low / nominal / high would be the same run under
-    // three names: run it once as "Cl_table"
-    const tab = !!(ep.p.cl_table && ep.p.cl_table.length);
+  function hcSig(o) { return Object.assign({}, HC_SIG, (o && o.sig) || {}); }
+  // the aero sets of this spin: Cl low / nominal / high from meta.cases (S != 0); a user Cl(S) table replaces the
+  // lift of every set, so low / nominal / high would be the same run under three names: it runs once as "Cl_table"
+  function hcSets(q, ep, names) {
+    const S = q.S || 0, tab = !!(ep.p.cl_table && ep.p.cl_table.length);
     if (!names) names = S !== 0 && q.meta && !tab ? ["Cl_low", "nominal", "Cl_high"] : ["nominal"];
-    const sets = [];
+    const out = [];
     for (const nm of names) {
       const c = q.meta && q.meta.cases ? q.meta.cases.find(function (cc) { return cc.S === S && cc.var === nm; }) : null;
       const p = c ? effParams(Object.assign({}, q, { params: c.params })).p : ep.p;
-      sets.push(Object.assign({ name: tab && S !== 0 && nm === "nominal" ? "Cl_table" : nm }, run(S, p, v, theta)));
+      out.push({ name: tab && S !== 0 && nm === "nominal" ? "Cl_table" : nm, p: p });
     }
-    if (!sets.length) sets.push(Object.assign({ name: "given" }, run(S, ep.p, v, theta)));
+    if (!out.length) out.push({ name: "given", p: ep.p });
+    return out;
+  }
+  // clean 3D shots among draws i0..i1-1 of Z (z_v, z_theta, z_psi per shot) at one setting
+  function mcCount(ctx, h, S, p, v, theta, Z, sig, i0, i1, out) {
+    const cell = ctx.c3.cell;
+    let k = 0;
+    for (let i = i0; i < i1; i++) {
+      const vi = v * (1 + sig.sv * Z[3 * i]), ti = theta + sig.sth * Z[3 * i + 1], dp = rad(sig.spsi * Z[3 * i + 2]);
+      if (fastShot3D(ctx.F, vi, ti, S, p, ctx.pr, cell, h, ctx.zStop, out, dp) === 1) k++;
+    }
+    return k;
+  }
+  function hcRow(k, n) { const w = P.wilson(k, n); return { k: k, n: n, p: k / n, lo: w[0], hi: w[1] }; }
+  function hcNote(sig) {
+    return HC_NOTE + "; scatter: speed " + (sig.sv * 100).toFixed(1) + " % , angle " + sig.sth + " deg, heading " +
+           sig.spsi + " deg (1 sigma, ASSUMED; robustness.py ERR_SETS nominal by default); Wilson 95 % interval";
+  }
+  function hitChance(q, v, theta, opts) {
+    const t0 = now(), o = opts || {}, n = o.n || 1000, seed = o.seed === undefined ? 20261031 : o.seed;
+    const sig = hcSig(o);
+    const ep = effParams(q), qq = Object.assign({}, q, { params: ep.p }), ctx = context(qq, true);
+    if (!ctx.ps.ok) return { ok: false, reason: "pose not legal", n: n };
+    const S = q.S || 0, Z = P.normals(seed, 3 * n), out = [0, 0, 0, 0];
+    function run(Sx, p, v, theta) { return hcRow(mcCount(ctx, q.h, Sx, p, v, theta, Z, sig, 0, n, out), n); }
+    const sets = hcSets(q, ep, o.sets).map(function (s) { return Object.assign({ name: s.name }, run(S, s.p, v, theta)); });
     // the twin has no lift, so it is the same for every aero set: computed once, at opts.twinAt (its own
     // recommended setting) or else at the same setting
     const ta = o.twinAt && isFinite(o.twinAt.v) && isFinite(o.twinAt.theta) ? o.twinAt : { v: v, theta: theta };
@@ -2197,39 +2217,187 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
                                            sameSetting: ta.v === v && ta.theta === theta }, run(0, twinParams(ep.p), ta.v, ta.theta)) : null;
     return { ok: true, v: v, theta: theta, rpm: rpm(v, q.vu), S: S, n: n, seed: seed, sig: sig, sets: sets, twin: twin,
              model: "3D flight on the 3D cell" + (ctx.forced3D ? " (used here although the section model is selected)" : ""),
-             note: HC_NOTE + "; scatter: speed " + (sig.sv * 100).toFixed(1) + " % , angle " + sig.sth + " deg, heading " +
-                   sig.spsi + " deg (1 sigma, ASSUMED; robustness.py ERR_SETS nominal by default); Wilson 95 % interval",
+             note: hcNote(sig), ms: now() - t0 };
+  }
+
+  // ---- best chance (PM-017): the clean-window setting (v, theta) with the highest hit chance under the ASSUMED
+  // scatter, averaged over the aero sets of this spin (equal weight, ASSUMED). res = the main result of solve() or
+  // its twin (res.isTwin: S = 0, no-lift params, one set). Search:
+  //  0. candidates: clean grid cells at or below the hood cap 8.9 m/s (all clean cells when none is, flagged
+  //     gripLimited), ranked by a smoothed clean share (Gaussian over the grid, sigma = the speed and angle
+  //     scatter; heading ignored), greedy at least one sigma apart, the best k1; plus the tolerant lowest-rpm /
+  //     lowest-hood and the most forgiving setting when inside the cap
+  //  1. every candidate: n1 shots per set from the search draws P.normals(seed + 1, 3 n2) (common random numbers:
+  //     the same draws for every candidate and set); keep those whose pooled Wilson upper bound reaches the best
+  //     lower bound, at most k2 (highest mean first)
+  //  2. the kept ones: extended to n2 shots on the same draws (a prefix of the longer list); winner = highest mean
+  //     (ties: lower speed, then lower hood angle)
+  //  3. the winner again on fresh draws P.normals(seed, 3 n) (the same draws as hitChance, so the reported chance is
+  //     not biased by the selection and equals hitChance at that setting), per set with a Wilson 95 % interval
+  //  4. which scatter matters most: at the winner, nominal set only, one source at a time (the other two
+  //     set to 0) on the same draws; the source whose chance alone is lowest dominates
+  //     (opts.breakdown === false skips it: the field-map chance layer)
+  // src/robustness.py best_chance replays stages 1 to 4 on the same candidate list (tests/test_best_chance.py).
+  // A model probability under ASSUMED scatter, not a measured repeatability.
+  const BC = { n1: 64, n2: 400, n: 1000, k1: 24, k2: 5 };
+  function bcCandidates(res, sig, k1) {
+    const g = res.grid, V = g.v, TH = g.th, nV = V.length, nTh = TH.length, cap = P.HOOD_V_MAX + 1e-9, cl = g.clean;
+    let inCap = false;
+    for (let iv = 0; iv < nV && !inCap; iv++) {
+      if (V[iv] > cap) break;
+      for (let it = 0; it < nTh; it++) if (cl[iv * nTh + it]) { inCap = true; break; }
+    }
+    const lim = inCap ? cap : Infinity;
+    // smoothed clean share: Gaussian along theta (sigma sth), then along v (sigma sv v) at candidate cells only
+    const sT = Math.max(sig.sth, 0.02), rT = Math.min(nTh, Math.ceil(2.5 * sT / g.dth)), wT = [];
+    for (let k = -rT; k <= rT; k++) wT.push(Math.exp(-0.5 * Math.pow(k * g.dth / sT, 2)));
+    const sw = wT.reduce(function (a, b) { return a + b; }, 0);
+    const sm = new Float32Array(nV * nTh);
+    for (let iv = 0; iv < nV; iv++) {
+      const b = iv * nTh;
+      let any = false;
+      for (let it = 0; it < nTh; it++) if (cl[b + it]) { any = true; break; }
+      if (!any) continue;
+      for (let it = 0; it < nTh; it++) {
+        let s = 0;
+        for (let k = -rT; k <= rT; k++) { const j = it + k; if (j >= 0 && j < nTh && cl[b + j]) s += wT[k + rT]; }
+        sm[b + it] = s / sw;
+      }
+    }
+    const cand = [];
+    for (let iv = 0; iv < nV; iv++) {
+      if (V[iv] > lim) break;
+      const sV = Math.max(sig.sv * V[iv], 0.005), rV = Math.ceil(2.5 * sV / g.dv);
+      for (let it = 0; it < nTh; it++) {
+        if (!cl[iv * nTh + it]) continue;
+        let s = 0, w = 0;
+        for (let k = -rV; k <= rV; k++) {
+          const wk = Math.exp(-0.5 * Math.pow(k * g.dv / sV, 2)), j = iv + k;
+          w += wk;
+          if (j >= 0 && j < nV) s += wk * sm[j * nTh + it];
+        }
+        cand.push({ v: V[iv], theta: TH[it], score: s / w });
+      }
+    }
+    cand.sort(function (a, b) { return b.score - a.score || a.v - b.v || a.theta - b.theta; });
+    const pick = [];
+    for (const c of cand) {
+      if (pick.length >= k1) break;
+      const sV = Math.max(sig.sv * c.v, 0.005), sTh = Math.max(sig.sth, 0.02);
+      if (pick.some(function (p) { return Math.pow((p.v - c.v) / sV, 2) + Math.pow((p.theta - c.theta) / sTh, 2) < 1; })) continue;
+      pick.push({ v: c.v, theta: c.theta, from: "grid", smooth: c.score });
+    }
+    [["minRpmTol", "lowest rpm"], ["minAngleTol", "lowest hood"], ["mostForgiving", "most forgiving"]].forEach(function (kv) {
+      const r = res[kv[0]];
+      if (r && isFinite(r.v) && isFinite(r.theta) && r.v <= lim) pick.push({ v: r.v, theta: r.theta, from: kv[1], smooth: NaN });
+    });
+    return { list: pick, inCap: inCap, cells: cand.length };
+  }
+  function bestChance(q, res, opts) {
+    const t0 = now(), o = Object.assign({}, BC, opts || {}), seed = o.seed === undefined ? 20261031 : o.seed;
+    const sig = hcSig(o), isTwin = !!(res && res.isTwin);
+    const base = { ok: false, isTwin: isTwin, sig: sig, note: hcNote(sig) };
+    if (!res || !res.grid || !res.count) return Object.assign(base, { reason: "no clean setting here", ms: now() - t0 });
+    const ep = effParams(q), qq = Object.assign({}, q, { params: ep.p }), ctx = context(qq, true);
+    if (!ctx.ps.ok) return Object.assign(base, { reason: "pose not legal", ms: now() - t0 });
+    const S = isTwin ? 0 : (q.S || 0);
+    const sets = isTwin ? [{ name: "no-spin twin", p: twinParams(ep.p) }] : hcSets(q, ep, o.sets);
+    const nS = sets.length, out = [0, 0, 0, 0], h = q.h;
+    const cd = o.candidates ? { list: o.candidates.map(function (c) { return { v: c.v, theta: c.theta, from: c.from || "given" }; }),
+                                inCap: true, cells: o.candidates.length } : bcCandidates(res, sig, o.k1);
+    const C = cd.list;
+    if (!C.length) return Object.assign(base, { reason: "no clean setting inside the search", ms: now() - t0 });
+    const n1 = Math.min(o.n1, o.n2), n2 = o.n2, Zs = P.normals(seed + 1, 3 * n2);
+    function pooled(c, n) {
+      const k = c.k.reduce(function (a, b) { return a + b; }, 0), w = P.wilson(k, n * nS);
+      return { mean: k / (n * nS), lo: w[0], hi: w[1] };
+    }
+    function better(a, b) { return a.mean - b.mean || b.v - a.v || b.theta - a.theta; }
+    // stage 1
+    for (const c of C) {
+      c.k = sets.map(function (s) { return mcCount(ctx, h, S, s.p, c.v, c.theta, Zs, sig, 0, n1, out); });
+      Object.assign(c, pooled(c, n1));
+    }
+    const bestLo = Math.max.apply(null, C.map(function (c) { return c.lo; }));
+    const keep = C.filter(function (c) { return c.hi >= bestLo; }).sort(function (a, b) { return better(b, a); }).slice(0, o.k2);
+    const s1 = C.map(function (c) { return { v: c.v, theta: c.theta, from: c.from, k: c.k.slice(), mean: c.mean }; });
+    // stage 2
+    for (const c of keep) {
+      c.k = c.k.map(function (k0, j) { return k0 + mcCount(ctx, h, S, sets[j].p, c.v, c.theta, Zs, sig, n1, n2, out); });
+      Object.assign(c, pooled(c, n2));
+    }
+    keep.sort(function (a, b) { return better(b, a); });
+    const w = keep[0];
+    // stage 3: fresh draws, the same as hitChance
+    const n = o.n, Z = P.normals(seed, 3 * n);
+    const rows = sets.map(function (s) { return Object.assign({ name: s.name }, hcRow(mcCount(ctx, h, S, s.p, w.v, w.theta, Z, sig, 0, n, out), n)); });
+    const mean = rows.reduce(function (a, r) { return a + r.p; }, 0) / rows.length;
+    // stage 4: one scatter source at a time, on the nominal set (or the Cl table / the only set)
+    const ib = Math.max(0, rows.findIndex(function (r) { return r.name === "nominal" || r.name === "Cl_table"; }));
+    const parts = o.breakdown === false ? [] : [["speed", { sv: sig.sv, sth: 0, spsi: 0 }], ["angle", { sv: 0, sth: sig.sth, spsi: 0 }],
+                   ["heading", { sv: 0, sth: 0, spsi: sig.spsi }]].map(function (ps) {
+      return Object.assign({ source: ps[0], sig: ps[1] }, hcRow(mcCount(ctx, h, S, sets[ib].p, w.v, w.theta, Z, ps[1], 0, n, out), n));
+    });
+    const act = parts.filter(function (r) { return r.sig.sv || r.sig.sth || r.sig.spsi; });
+    const dom = act.length ? act.reduce(function (a, b) { return b.p < a.p ? b : a; }) : null;
+    return { ok: true, isTwin: isTwin, S: S, v: w.v, theta: w.theta, rpm: rpm(w.v, q.vu), ballSpinRpm: ballSpinRpm(w.v, S),
+             from: w.from, gripLimited: w.v > P.HOOD_V_MAX + 1e-9, inCap: cd.inCap, n: n, seed: seed, sig: sig,
+             sets: rows, mean: mean, min: Math.min.apply(null, rows.map(function (r) { return r.p; })),
+             max: Math.max.apply(null, rows.map(function (r) { return r.p; })),
+             breakdown: o.breakdown === false ? null : { set: rows[ib].name, n: n, all: rows[ib], parts: parts, dominant: dom ? dom.source : null },
+             search: { cells: cd.cells, candidates: C.length, n1: n1, n2: n2, k2: o.k2, seed: seed + 1, stage1: s1,
+                       stage2: keep.map(function (c) { return { v: c.v, theta: c.theta, from: c.from, k: c.k.slice(), mean: c.mean }; }) },
+             model: "3D flight on the 3D cell", label: "PREDICTED (model probability under ASSUMED scatter; aero sets ASSUMED, equal weight)",
+             note: hcNote(sig) + "; best of " + C.length + " clean settings (two-stage search, common random numbers), reported on fresh draws",
              ms: now() - t0 };
   }
 
-  function solve(q, onProgress) {
-    const t0 = now();
+  // solve(q, onProgress, {part}): part "main" = the backspin grid only (twin left out unless it is the same grid),
+  // "twin" = the no-spin twin only, undefined = both. A page can run the two parts in parallel workers and set
+  // main.twin = the twin part. S = 0 with no Cl(S) table: the twin is the same flight, so its grid is reused.
+  function solve(q, onProgress, sopt) {
+    const t0 = now(), part = sopt && sopt.part;
     const ep = effParams(q);
     q = Object.assign({}, q, { params: ep.p });
     const ctx = context(q), LABELS = labelsFor(ctx);
     if (!ctx.ps.ok) {
       return { pose: ctx.ps, grid: null, count: 0, minRpm: null, minAngle: null, mostForgiving: null,
-               twin: null, ms: now() - t0, labels: LABELS, section: null, sideWalls: ctx.sideWalls };
+               twin: null, ms: now() - t0, labels: LABELS, section: null, sideWalls: ctx.sideWalls, part: part };
     }
-    const S = q.S || 0;
-    const main = solveOne(q, S, q.params, ctx, onProgress, 0, 0.5);
-    const twin = solveOne(q, 0, twinParams(q.params), ctx, onProgress, 0.5, 1.0);
-    twin.labels = LABELS; twin.pose = ctx.ps; twin.isTwin = true;
+    const S = q.S || 0, tp = twinParams(q.params);
+    const same = S === 0 && !(q.params.cl_table && q.params.cl_table.length);
+    function finishTwin(t) {
+      t.labels = LABELS; t.pose = ctx.ps; t.isTwin = true; t.sideWalls = ctx.sideWalls;
+      return t;
+    }
+    if (part === "twin") {
+      const t = finishTwin(solveOne(q, 0, tp, ctx, onProgress, 0, 1));
+      flagGrip(t, q);
+      if (ctx.F) t.moveSens = moveSens(q, 0, tp, ctx, t.minRpmTol || t.minRpm);
+      t.part = "twin"; t.ms = now() - t0;
+      return t;
+    }
+    const both = !part && !same;
+    const main = solveOne(q, S, q.params, ctx, onProgress, 0, both ? 0.5 : 1);
+    let twin = null;
+    if (both) twin = finishTwin(solveOne(q, 0, tp, ctx, onProgress, 0.5, 1.0));
     const notes = ctx.ps.notes.slice();
     notes.push(modelNote(ctx));
     optionNotes(q, ep).forEach(function (t) { notes.push(t); });
-    flagGrip(main, q); flagGrip(twin, q);
-    twin.sideWalls = ctx.sideWalls;
+    flagGrip(main, q);
+    if (twin) flagGrip(twin, q);
     if (ctx.F) {
       if (ctx.forced3D) notes.push("3D cell used although the section model is selected: the moving-robot / sideways-draft path is 3D");
       main.moveSens = moveSens(q, S, q.params, ctx, main.minRpmTol || main.minRpm);
-      twin.moveSens = moveSens(q, 0, twinParams(q.params), ctx, twin.minRpmTol || twin.minRpm);
+      if (twin) twin.moveSens = moveSens(q, 0, tp, ctx, twin.minRpmTol || twin.minRpm);
     }
+    // S = 0: the twin IS the main flight (no spin, so no lift or spin drag): same grid and answers, twin params
+    if (same) twin = finishTwin(Object.assign({}, main, { params: tp, sameAsMain: true }));
     const gm = gridMeta(q.meta);
     if (q.h < gm.h[0] - 1e-9 || q.h > gm.h[gm.h.length - 1] + 1e-9)
       notes.push("release height " + q.h.toFixed(3) + " m is outside the exported 0.20..0.737 m (ASSUMED robot limit); live model still runs");
     if (onProgress) onProgress(1);
-    return Object.assign(main, { pose: ctx.ps, twin: twin, ms: now() - t0, labels: LABELS, notes: notes,
+    return Object.assign(main, { pose: ctx.ps, twin: twin, twinPending: !twin, part: part, ms: now() - t0, labels: LABELS, notes: notes,
       section: ctx.sideWalls
         ? { key: ctx.sec.key, how: "3D cell built from the s = 0 section (" + ctx.sec.key + ")", sEff: null, model: "3d",
             ridge: ctx.c3.cell.ridge, wallT: ctx.c3.cell.wallT }
@@ -2298,7 +2466,7 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
     ballSpinRpm: ballSpinRpm, labels: LABELS, tol: TOL,
     _fastShot: fastShot, _prepSection: prepSection, _zStopFor: zStopFor, _context: context,
     _classifyCtx: classifyCtx, _cellFor: cellFor, effParams: effParams, _flagGrip: flagGrip,
-    hitChance: hitChance, HC_SIG: HC_SIG, HC_NOTE: HC_NOTE, _moveFor: moveFor, _frameFor: frameFor, _launch3: launch3,
+    hitChance: hitChance, bestChance: bestChance, BC: BC, _bcCandidates: bcCandidates, HC_SIG: HC_SIG, HC_NOTE: HC_NOTE, _moveFor: moveFor, _frameFor: frameFor, _launch3: launch3,
     _fastShot3D: fastShot3D, _path3D: path3D, _params3: params3, _moveSens: moveSens, twinParams: twinParams,
     // one fused shot under a context (either model)
     _shotCtx: function (ctx, v, th, S, p, h, out) {
@@ -2821,7 +2989,7 @@ function syncUI(data) {
   });
   aero.value = st.aero;
   $("world-note").textContent = st.side === "fav" || st.tilt !== "30"
-    ? "Tilt 28.5° / 31.5° (old sweep bounds; derived bounds now 28.80° / 31.77°, not re-run) and the mouth side were run with the nominal air case only."
+    ? "Tilt 28.80° / 31.77° (derived tipped bounds) and the mouth side were run with the nominal air case only."
     : "Every air case is a literature range, not a POLLEN measurement. Yellow outlines in the window = clean in every air case for this spin.";
   const spinRpm = Math.abs(st.S) * c.v / IDX.ball_radius * 60 / (2 * Math.PI);
   const inGridNote = c.inGrid ? "" : " (outside the model grid 5–10.5 m/s)";
@@ -2842,7 +3010,7 @@ function syncUI(data) {
   else html += `<span class="pill miss">MISSES the cell</span>`;
   if (st.S !== 0 && st.twin) html += `<span class="pill twin">no-spin twin, same speed and angle: ${tw.result === "clean" ? "clean" : tw.result === "hit" ? "touches " + prettyPart(tw.hit) : "misses"}</span>`;
   $("verdict").innerHTML = html;
-  $("win-cap").textContent = `Release ${st.d.toFixed(2)} m out, ${h} m up, backspin ${SPIN_LABEL[String(st.S)]}, ${AERO_NAMES[st.aero].toLowerCase()}, ${st.side === "fav" ? "mouth side" : "back side"}, tilt ${st.tilt}°${st.tilt !== "30" ? " (old sweep bound; derived bounds 28.80° / 31.77°)" : ""}. ` +
+  $("win-cap").textContent = `Release ${st.d.toFixed(2)} m out, ${h} m up, backspin ${SPIN_LABEL[String(st.S)]}, ${AERO_NAMES[st.aero].toLowerCase()}, ${st.side === "fav" ? "mouth side" : "back side"}, tilt ${st.tilt}°${st.tilt !== "30" ? " (derived tipped bound)" : ""}. ` +
     `${curSlice.clean.reduce((a, b) => a + b, 0)} clean squares of 0.05 m/s × 0.1°; brighter = holds more error. ` +
     (robustSlice ? `${robustSlice.reduce((a, b) => a + b, 0)} are clean in every air case (yellow outline). ` : "") + "Click a square to load it.";
   void data;
@@ -3018,22 +3186,114 @@ const sideLabels = (g, narrow) => {   // [left text, right text] on the map
   return g.blue ? [mouth, back] : [back, mouth];
 };
 const heatCol = t => `hsl(158,65%,${(12 + 38 * t).toFixed(1)}%)`;
+// ---- field map "chance" layer (PM-017): the best hit chance per 0.3 m block (one spot per block, the legal cell nearest
+// its centre), with backspin and for the no-spin twin. A small best-chance search per spot (3D flight, the field
+// air set, ASSUMED shot scatter from the Robot view's Advanced settings) runs in a pool of Web Workers, coarse
+// blocks first, then by distance to the chosen spot. A model probability, PREDICTED, not a measured repeatability.
+const FC = { key: "", res: new Map(), blocks: [], ws: [], job: [], done: 0, legal: 0, paintT: 0, B: 6 };
+const FC_BC = { n1: 32, n2: 128, n: 300, k1: 10, k2: 3, breakdown: false };
+const fcOn = () => F.on && (F.metric === "chance" || F.metric === "chance0");
+const fcKeyNow = () => [F.ih, F.S, F.aero, st.vu, R.sv, R.sth, R.spsi].join("|");
+// precomputed field data built on the 3D cell (format 2, cell_model cell3d) checks the side walls itself
+const fWalls = () => !!(F.FI && F.FI.cell_model === "cell3d");
+const fMeta = () => { const FI = F.FI; return { grid: FI.grid, sections: FI.sections, frame: FI.frame, field_grid: FI.field_grid, cases: FI.cases.map(c => ({ S: c.S, var: c.var, params: c.params })) }; };
+function fcStop() { FC.ws.forEach(w => w && w.terminate()); FC.ws = []; FC.job = []; }
+function fcBlockOf(col, row) { const FG = F.FI.field_grid; return Math.floor(row / FC.B) * Math.ceil(FG.nx / FC.B) + Math.floor(col / FC.B); }
+function fcEnsure(MD) {   // (re)start the pool for the current settings; results stay cached per settings key
+  if (!fcOn()) { fcStop(); return; }
+  const key = fcKeyNow(), FG = F.FI.field_grid, B = FC.B, nbx = Math.ceil(FG.nx / B), nby = Math.ceil(FG.ny / B);
+  if (key !== FC.key) {
+    fcStop(); FC.key = key; FC.res = new Map(); FC.done = 0; FC.blocks = [];
+    for (let by = 0; by < nby; by++) for (let bx = 0; bx < nbx; bx++) {
+      let best = -1, bd = 1e9; const cy = by * B + (B - 1) / 2, cx = bx * B + (B - 1) / 2;
+      for (let row = by * B; row < Math.min(FG.ny, by * B + B); row++) for (let col = bx * B; col < Math.min(FG.nx, bx * B + B); col++) {
+        const i = row * FG.nx + col; if (MD.ST.status[i] !== 0) continue;
+        const d = (row - cy) ** 2 + (col - cx) ** 2; if (d < bd) { bd = d; best = i; }
+      }
+      if (best >= 0) FC.blocks.push({ b: by * nbx + bx, i: best, coarse: by % 2 === 0 && bx % 2 === 0 });
+    }
+    const c0 = Math.max(0, F.col), r0 = Math.max(0, F.row);
+    const dist = e => { const col = e.i % FG.nx, row = Math.floor(e.i / FG.nx); return (col - c0) ** 2 + (row - r0) ** 2; };
+    FC.blocks.sort((a, b) => (a.coarse === b.coarse ? 0 : a.coarse ? -1 : 1) || dist(a) - dist(b));
+    FC.legal = FC.blocks.length;
+  }
+  if (FC.ws.length) return;
+  let n = 1;
+  try { n = Math.max(1, Math.min(3, (navigator.hardwareConcurrency || 2) - 1)); } catch (_) { /* one worker */ }
+  try {
+    for (let k = 0; k < n; k++) {
+      const w = new Worker(rWorkerUrl()), wi = k;
+      w.onmessage = e => fcDone(e.data, wi); w.onerror = e => { if (e.preventDefault) e.preventDefault(); fcStop(); };
+      w.postMessage({ meta: fMeta() }); FC.ws.push(w); FC.job.push(null);
+    }
+  } catch (e) { fcStop(); setTest({ chance: "no-worker" }); return; }   // no main-thread fallback: too slow for the whole field
+  FC.ws.forEach((w, wi) => fcPump(wi));
+}
+function fcPump(wi) {
+  const w = FC.ws[wi]; if (!w) return;
+  const busy = new Set(FC.job.filter(j => j).map(j => j.b));
+  const here = F.col >= 0 ? fcBlockOf(F.col, F.row) : -1, free = x => !FC.res.has(x.b) && !busy.has(x.b);   // the chosen spot's block first
+  const e = FC.blocks.find(x => x.b === here && free(x)) || FC.blocks.find(free);
+  if (!e) { FC.job[wi] = null; return; }
+  const FG = F.FI.field_grid, GG = F.FI.grid, col = e.i % FG.nx, row = Math.floor(e.i / FG.nx), cs = fCur();
+  const q = { x: FG.xs[col], y: FG.ys[row], h: GG.h[F.ih], S: F.S, vu: st.vu, params: cs.params, air: { tC: 20, altM: 0, rh: 0 },
+              drag: { model: "const", spin: 0 }, wind: { along: 0, up: 0, side: 0 }, robot: { length: 18 * 0.0254, width: 18 * 0.0254, offset: [0, 0] }, refine: false };
+  FC.job[wi] = { b: e.b, key: FC.key };
+  w.postMessage({ fcKey: FC.key + "#" + e.b, q, bc: Object.assign({ sets: [cs.var], sig: rSig() }, FC_BC) });
+}
+function fcDone(m, wi) {
+  if (wi == null) return;
+  const [key, b] = m.fcKey.split("#");
+  if (key === FC.key) { FC.res.set(+b, m.fc || { main: { p: null }, twin: { p: null }, error: m.fcError }); FC.done = FC.res.size; }
+  fcPump(wi);
+  if (key !== FC.key || !fcOn()) return;
+  const now = performance.now();   // repaint the map at most a few times a second
+  if (now - FC.paintT > 350 || FC.done >= FC.legal) { FC.paintT = now; fcPaint(); } else { clearTimeout(FC.pt); FC.pt = setTimeout(fcPaint, 360); }
+}
+function fcPaint() { if (!fcOn() || !F.MDc) return; F.layer = null; drawMap(F.MDc); fcLegendCap(); }
+const fcAt = (col, row) => FC.key === fcKeyNow() ? FC.res.get(fcBlockOf(col, row)) : undefined;
+function fcBest(part) { let b = null; FC.res.forEach(r => { const t = r[part]; if (t && t.p != null && (!b || t.p > b.p)) b = t; }); return b; }
+function fcLegendCap() {
+  const pc1 = p => (100 * p).toFixed(0) + "%", tw = F.metric === "chance0", spin = F.S !== 0;
+  const sw = (c, t) => `<span><i style="background:${c}"></i>${t}</span>`;
+  $("fleg").innerHTML = sw(heatCol(0.05), "0-10%") + sw(heatCol(0.5), "50%") + sw(heatCol(1), "100%") + sw("#33455a", "not worked out yet") + sw("#3a2224", "no clean shot") +
+    sw("#46515c", "illegal") + sw("#171e25", "outside table range") + sw("#241d2e", "bearing beyond 77.5°") +
+    `<span><i style="background:#2c1f10;border-color:#f4a43c"></i>amber dot: sight line crosses the other HIVE (ASSUMED obstacle; the chance ignores it)</span>` +
+    `<span><i style="background:linear-gradient(45deg,#1f6b55 46%,#ffb45a 50%,#1f6b55 54%)"></i>diagonal: side wall may block (bearing about ${sideWallPsi()}° or more)</span>` +
+    `<span><i style="background:linear-gradient(135deg,#1f6b55 46%,#dcc8ff 50%,#1f6b55 54%)"></i>diagonal: bearing over 60° (extrapolated, ASSUMED)</span>`;
+  const bm = fcBest("main"), bt = fcBest("twin"), sg = rSig();
+  const I = F.info, here = I ? fcAt(I.col, I.row) : undefined;
+  $("fmap-cap").textContent = `Colour = ${tw ? "no-spin twin (S = 0)" : "best"} hit chance per 0.3 m block: a model probability under ASSUMED shot scatter (1 sigma: speed ${(sg.sv * 100).toFixed(1)}%, hood angle ${sg.sth}°, aim ${sg.spsi}°; set in the Robot view, Advanced), ` +
+    `3D flight, release ${F.FI.grid.h[F.ih]} m, ${tw ? (spin ? `no backspin (the twin of backspin ${SPIN_LABEL[String(F.S)]}: no spin, so no lift)` : "no backspin (S = 0)") : `backspin ${SPIN_LABEL[String(F.S)]}`}, ${AERO_NAMES[fCur().var] || fCur().var} (ASSUMED), grip ${st.vu.toFixed(2)}, 18 × 18 in robot at the block's centre spot. PREDICTED, not a measured repeatability. ` +
+    `${FC.done} of ${FC.legal} blocks worked out${FC.done < FC.legal && FC.ws.length ? " (running in the background)" : ""}. ` +
+    (bm ? `Best block: ${spin ? "with backspin " : ""}${pc1(bm.p)}` + (spin && bt ? `, no-spin twin ${pc1(bt.p)}. ` : ". ") : "") + "Click or drag to place the robot.";
+  setTest({ chance: `${FC.done}/${FC.legal}` });
+  const el = $("fpos-hc");
+  if (el) el.innerHTML = here === undefined ? "working it out…" : fcTxt(here, I ? FC.blocks.find(e => e.b === fcBlockOf(I.col, I.row)) : null);
+}
+function fcTxt(r, e) {   // e = the block entry: its spot (the legal cell nearest the block centre)
+  const one = t => !t || t.p == null ? "none (illegal spot or no data)" : t.p === 0 && t.v == null ? "0% (no clean shot)" : `${(100 * t.p).toFixed(0)}% at ${Math.round(vToRpm(t.v))} rpm, ${t.theta.toFixed(1)}°`;
+  return `${one(r.main)}` + (F.S !== 0 ? ` · no-spin twin ${one(r.twin)}` : "") + " <span class=\"lab\">PREDICTED</span> (ASSUMED scatter, this 0.3 m block" +
+    (e ? `, worked out at x ${F.FI.field_grid.xs[e.i % F.FI.field_grid.nx].toFixed(2)}, y ${F.FI.field_grid.ys[Math.floor(e.i / F.FI.field_grid.nx)].toFixed(2)} m` : "") + ")";
+}
 const MONO = () => "11px " + getComputedStyle(document.body).getPropertyValue("--mono");
 function drawMap(MD) {
   const cv = $("fmap"), { x, w, h } = setupCanvas(cv);
   if (w < 20) return;
   const FG = F.FI.field_grid, ST = MD.ST, g = mapGeom(w, h), N = ST.N, cw = FG.step * g.s, psiMax = F.FI.grid.psi_max_model * 100, swPsi = sideWallPsi();
   x.fillStyle = "#0b1015"; x.fillRect(0, 0, w, h);
-  const key = [F.ih, F.S, F.aero, F.metric, Math.round(w), Math.round(h), window.devicePixelRatio || 1].join("|");
+  const chance = F.metric === "chance" || F.metric === "chance0", cPart = F.metric === "chance0" ? "twin" : "main";
+  const key = [F.ih, F.S, F.aero, F.metric, Math.round(w), Math.round(h), window.devicePixelRatio || 1, chance ? fcKeyNow() + "#" + FC.done : ""].join("|");
   if (!F.layer || F.layer.key !== key) {   // heat layer cached: drags only redraw the marker
     let max = 1;
-    for (let i = 0; i < N; i++) if (ST.status[i] === 0) { const P = ST.fav[i] ? MD.near : MD.far, o = F.ih * N + i, v = F.metric === "k" ? P.k[o] : P.count[o]; if (v > max) max = v; }
+    if (!chance) for (let i = 0; i < N; i++) if (ST.status[i] === 0) { const P = ST.fav[i] ? MD.near : MD.far, o = F.ih * N + i, v = F.metric === "k" ? P.k[o] : P.count[o]; if (v > max) max = v; }
     const L = document.createElement("canvas"); L.width = cv.width; L.height = cv.height;
     const lx = L.getContext("2d"); lx.setTransform(cv.width / w, 0, 0, cv.height / h, 0, 0);
     for (let row = 0; row < FG.ny; row++) for (let col = 0; col < FG.nx; col++) {
       const i = row * FG.nx + col, s = ST.status[i], px = g.X(FG.xs[col]) - cw / 2, py = g.Y(FG.ys[row]) - cw / 2;
       let fill;
       if (s === 1) fill = "#46515c"; else if (s === 2) fill = "#171e25"; else if (s === 3) fill = "#241d2e";
+      else if (chance) { const r = fcAt(col, row), t = r && r[cPart]; fill = !r ? "#33455a" : !t || t.p == null || (t.p === 0 && t.v == null) ? "#3a2224" : heatCol(t.p); }
       else { const P = ST.fav[i] ? MD.near : MD.far, o = F.ih * N + i, v = F.metric === "k" ? P.k[o] : P.count[o]; fill = v ? heatCol(v / max) : "#3a2224"; }
       lx.fillStyle = fill; lx.fillRect(px, py, cw + 0.6, cw + 0.6);
       if (s === 0) {
@@ -3075,7 +3335,7 @@ function drawLegend(max) {
   $("fleg").innerHTML = sw(heatCol(0.15), "few") + sw(heatCol(1), `most (${max})`) + sw("#3a2224", "no clean shot") + sw("#46515c", "illegal (18 × 18 in robot overlaps a wall or the A-frame base at every heading)") +
     sw("#171e25", "outside table range (d 0.55-1.75 m)") + sw("#241d2e", "bearing beyond 77.5°") +
     `<span><i style="background:#2c1f10;border-color:#f4a43c"></i>amber dot: sight line crosses the other HIVE (ASSUMED obstacle)</span>` +
-    `<span><i style="background:linear-gradient(45deg,#1f6b55 46%,#ffb45a 50%,#1f6b55 54%)"></i>diagonal: side wall may block, not in this precomputed map (the Robot view has the 3D walls), window optimistic (bearing about ${sideWallPsi()}° or more)</span>` +
+    `<span><i style="background:linear-gradient(45deg,#1f6b55 46%,#ffb45a 50%,#1f6b55 54%)"></i>diagonal: ${fWalls() ? "side walls narrow the window (3D cell walls are in this map)" : "side wall may block, not in this precomputed map (the Robot view has the 3D walls), window optimistic"} (bearing about ${sideWallPsi()}° or more)</span>` +
     `<span><i style="background:linear-gradient(135deg,#1f6b55 46%,#dcc8ff 50%,#1f6b55 54%)"></i>diagonal: bearing over 60° (extrapolated, ASSUMED)</span>`;
 }
 
@@ -3132,18 +3392,20 @@ async function fieldUpdate() {
     if (MD.ST.status[r * FG.nx + c] !== 0) { let b = -1, bi = 0; for (let i = 0; i < MD.ST.N; i++) if (MD.ST.status[i] === 0 && MD.far.count[F.ih * MD.ST.N + i] > b) { b = MD.far.count[F.ih * MD.ST.N + i]; bi = i; } c = bi % FG.nx; r = Math.floor(bi / FG.nx); }
     F.col = c; F.row = r;
   }
-  const I = cellInfo(MD, F.col, F.row); F.info = I;
-  const h = GG.h[F.ih], cs = fCur(), spinOn = F.S > 0;
+  const I = cellInfo(MD, F.col, F.row); F.info = I; F.MDc = MD;
+  const h = GG.h[F.ih], cs = fCur(), spinOn = F.S > 0, chanceMap = fcOn();
+  fcEnsure(MD);
   drawMap(MD); drawLegend(F.layer.max);
-  $("fmap-cap").textContent = `PREDICTED, not measured. Colour = ${F.metric === "k" ? "tolerance k (side of the largest all-clean square of speed and angle cells)" : "number of clean speed and angle pairs"} at release height ${h} m, backspin ${SPIN_LABEL[String(F.S)]}, ${AERO_NAMES[cs.var] || cs.var} (aero from literature, ASSUMED). Click or drag to place the robot. ${MAPV.blue ? "Blue alliance view (map turned half a turn). " : ""}${SWAP_NOTE}`;
+  if (!chanceMap) $("fmap-cap").textContent = `PREDICTED, not measured. Colour = ${F.metric === "k" ? "tolerance k (side of the largest all-clean square of speed and angle cells)" : "number of clean speed and angle pairs"} at release height ${h} m, backspin ${SPIN_LABEL[String(F.S)]}, ${AERO_NAMES[cs.var] || cs.var} (aero from literature, ASSUMED). Click or drag to place the robot. ${MAPV.blue ? "Blue alliance view (map turned half a turn). " : ""}${SWAP_NOTE}`;
   const warn = [];
   if (I.status === 0 && I.psi > GG.psi_max_model) warn.push(`Bearing ${I.psi.toFixed(0)}° is above 60°: extrapolated, ASSUMED (the base model treats it as infeasible).`);
-  if (I.status === 0 && I.psi >= sideWallPsi()) warn.push(`Side wall may block (bearing ${I.psi.toFixed(1)}°, at or above ${sideWallPsi()}°: near-side estimate, far side not checked): not in this precomputed map, window optimistic. The Robot view checks the 3D side walls per shot.`);
+  if (I.status === 0 && I.psi >= sideWallPsi()) warn.push(`Side wall may block (bearing ${I.psi.toFixed(1)}°, at or above ${sideWallPsi()}°: near-side estimate, far side not checked): ${fWalls() ? "this map uses the 3D cell, so the walls are checked, but the window is narrow and small aim errors matter here." : "not in this precomputed map, window optimistic. The Robot view checks the 3D side walls per shot."}`);
   if (I.other) warn.push("The sight line crosses the other HIVE: ASSUMED obstacle. The window ignores it.");
   $("fwarn").textContent = warn.join("\n");
   const base = [["Position", `x ${I.x.toFixed(2)} m, y ${I.y.toFixed(2)} m`], ["Side", I.side === "fav" ? "mouth side (favourable)" : "back side (unfavourable)"],
     ["Distance d to pivot plane", I.d.toFixed(2) + " m"], ["Bearing ψ off the HIVE tipping plane", I.psi.toFixed(1) + "°"]];
-  const dl = rows => { $("fpos").innerHTML = rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join(""); };
+  if (chanceMap) base.push(["Best hit chance (this block)", `<span id="fpos-hc"></span>`]);
+  const dl = rows => { $("fpos").innerHTML = rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join(""); if (chanceMap) fcLegendCap(); };
   const pill = (c, t) => `<span class="pill ${c}">${t}</span>`;
   clearGroup(fieldGroup);
   if (st.side !== I.side || st.tilt !== "30") { st.side = I.side; st.tilt = "30"; buildHive(); }
@@ -3231,7 +3493,8 @@ async function fieldUpdate() {
   $("fnote").textContent = `3D is drawn in the shooter's frame (near-side positions mirrored). Green fan: ${fanN} of ${fanTried} sampled clean squares also replay clean at this exact spot (sample capped for speed). ` +
     (F.arcs ? `Yellow arcs: best shot from ${arcN} spots, every 0.3 m on this side. ` : "") + "PREDICTED, not measured.";
   setTest({ view: "on", pos: `${I.x.toFixed(2)},${I.y.toFixed(2)}`, side: I.side, d: I.d.toFixed(2), psi: I.psi.toFixed(1), window: win.n,
-            shot: `${v.toFixed(2)}@${th.toFixed(1)}`, verdict: main.r.result, twin: twinV, fan: fanN, arcs: arcN, S: F.S });
+            shot: `${v.toFixed(2)}@${th.toFixed(1)}`, verdict: main.r.result, twin: twinV, fan: fanN, arcs: arcN, S: F.S,
+            chance: chanceMap ? `${FC.done}/${FC.legal}` : "off" });
 }
 
 // ---- field-view UI
@@ -3253,7 +3516,8 @@ function fieldInit() {
   fseg($("fh-seg"), GG.h.map((h, i) => [i, h + " m"]), () => F.ih, v => { F.ih = +v; });
   fseg($("fs-seg"), Ss.map(s => [s, spinBtn(s)]), () => F.S, v => { F.S = +v; });
   fseg($("fvu-seg"), IDX.v_over_u.map(r => [r, r.toFixed(2)]), () => st.vu, v => { st.vu = +v; });
-  fseg($("fmetric-seg"), [["count", "clean-shot count"], ["k", "tolerance k"]], () => F.metric, v => { F.metric = v; });
+  if (["count", "k", "chance", "chance0"].includes(HASHQ.get("metric"))) F.metric = HASHQ.get("metric");   // #field?metric=chance
+  fseg($("fmetric-seg"), [["count", "clean-shot count"], ["k", "tolerance k"], ["chance", "best hit chance"], ["chance0", "twin hit chance"]], () => F.metric, v => { F.metric = v; });
   $("faero").addEventListener("change", e => { F.aero = e.target.value; F.pick = null; fieldSchedule(); });
   [["fc-fan", "fan"], ["fc-twin", "twin"], ["fc-arcs", "arcs"]].forEach(([id, key]) => $(id).addEventListener("change", e => { F[key] = e.target.checked; fieldSchedule(); }));
   const fm = $("fmap"); let down = false;
@@ -3293,7 +3557,7 @@ function fieldInit() {
 // far / unfavourable side x < 0, near / favourable side x > 0, up-cell gate at (+0.401, 0).
 const R = { on: false, ready: false, x: -1.0, y: 0.2, heading: 0, travel: "360", h: 0.737, S: 1.0, vu: 0.42, aero: "nominal",
             tC: 20, altM: 0, rh: 0, drag: "const", sd: 0, wA: 0, wU: 0, wS: 0,
-            mvOn: false, mvA: 0, mvC: 0, mvW: 0, d0: 0, lead: true, clTab: "", clRev: 0, phi: "", robL: 18 * 0.0254, robW: 18 * 0.0254, robFo: 0, robLo: 0,
+            mvOn: false, mvA: 0, mvC: 0, mvW: 0, d0: 0, lead: true, clTab: "", clRev: 0, gyro: false, sv: 1.5, sth: 0.40, spsi: 0.50, best: null, phi: "", robL: 18 * 0.0254, robW: 18 * 0.0254, robFo: 0, robLo: 0,
             heat: false, twin: true, slow: true, pick: null, sel: null, res: null, resKey: "", solving: false, progress: 0,
             pose: null, shot: null, anim: null, meta: null, winGeom: null, heatMD: null, heatLayer: null, err: null };
 const robotGroup = new THREE.Group(); scene.add(robotGroup); robotGroup.visible = false;
@@ -3314,7 +3578,10 @@ function rPose() { R.pose = PS().pose(R.x, R.y, R.meta, { robot: rRobot(true) })
 const TRAVEL = [["360", "360°"], ["180", "±180°"], ["90", "±90°"], ["45", "±45°"], ["0", "fixed"]];
 const PS = () => window.PollenSolver;
 const wrap180 = a => { a = ((a + 180) % 360 + 360) % 360 - 180; return a === -180 ? 180 : a; };
-const rKey = () => [R.x.toFixed(4), R.y.toFixed(4), R.h.toFixed(4), R.S, R.aero, R.tC, R.altM, R.rh, R.drag, R.sd, R.wA, R.wU, R.wS, R.mvOn, R.mvA, R.mvC, R.mvW, R.d0, R.lead, R.clTab, R.clRev, R.phi, R.robL, R.robW, R.robFo, R.robLo].join("|");
+const rKey = () => [R.x.toFixed(4), R.y.toFixed(4), R.h.toFixed(4), R.S, R.aero, R.tC, R.altM, R.rh, R.drag, R.sd, R.wA, R.wU, R.wS, R.mvOn, R.mvA, R.mvC, R.mvW, R.d0, R.lead, R.clTab, R.clRev, R.gyro, R.phi, R.robL, R.robW, R.robFo, R.robLo].join("|");
+// launch scatter (ASSUMED, Advanced): only the hit chance and the best-chance search use it, so it is not in rKey
+const rSig = () => ({ sv: R.sv / 100, sth: R.sth, spsi: R.spsi });
+const rBKey = () => rKey() + "|" + [R.sv, R.sth, R.spsi].join(",");
 const rCase = () => fCase(R.S, R.aero) || fCase(R.S, "nominal");
 const rpmOf = v => v / R.vu / (Math.PI * WHEEL_D) * 60;
 const vOfRpm = r => r / 60 * Math.PI * WHEEL_D * R.vu;
@@ -3336,7 +3603,7 @@ function rQuery() {
               drag: { model: R.drag, spin: R.sd }, wind: { along: R.wA, up: R.wU, side: R.wS }, robot: rRobot(false) };
   if (R.mvOn) q.move = { along: R.mvA, across: R.mvC, wz: R.mvW, d0: R.d0, lead: R.lead };
   const tab = rClTab(R.clTab);
-  if (tab || R.clRev) q.lift = { table: tab, rev: R.clRev };
+  if (tab || R.clRev || R.gyro) q.lift = { table: tab, rev: R.clRev, gyro: R.gyro };
   if (R.phi !== "" && isFinite(+R.phi)) q.effMass = { phi: +R.phi };
   return q;
 }
@@ -3355,63 +3622,163 @@ function rTurret() {   // yaw the turret needs, relative to the chassis front (+
            dir: yaw > 0 ? "left (counter-clockwise)" : "right (clockwise)" };
 }
 
-// ---- live solve in a worker (falls back to the main thread if a worker cannot start)
-const RW = { w: null, url: null, busy: false, id: 0, key: "", timer: 0, fallback: false };
-const WORKER_TAIL = "\n;var META=null;self.onmessage=function(e){var m=e.data;if(m.meta){META=m.meta;return;}" +
-  "if(m.hcKey){try{var h=m.hc;h.q.meta=META;self.postMessage({hcKey:m.hcKey,hc:self.PollenSolver.hitChance(h.q,h.v,h.theta,h.opts)});}" +
-  "catch(err){self.postMessage({hcKey:m.hcKey,hcError:String(err&&err.message||err)});}return;}" +
-  "try{var q=m.q;q.meta=META;var r=self.PollenSolver.solve(q,function(p){self.postMessage({id:m.id,progress:p});});" +
-  "[r.grid,r.twin&&r.twin.grid].forEach(function(g){if(g){delete g.evaluated;delete g.rowEvaluated;}});" +
-  "self.postMessage({id:m.id,res:r});}catch(err){self.postMessage({id:m.id,error:String(err&&err.message||err)});}};";
-function rWorker() {
-  if (RW.w) return RW.w;
+// ---- live solve in two workers (PM-017; falls back to the main thread if a worker cannot start). Worker 0 solves the
+// backspin grid, then searches it for the best-chance setting; worker 1 does the same for the no-spin twin (not
+// started when S = 0 with no lift table: the twin is then the same flight and solver.js reuses the main grid).
+// The answer shows when both grids are in (about the time of the slower one); the best chance follows.
+const RW = { ws: [null, null], url: null, busy: [false, false], id: 0, bid: 0, key: "", bkey: "", timer: 0, fallback: false,
+             parts: {}, prog: {}, twinSep: true };
+function rWorkerMain() {   // runs inside each worker: its source is appended to the inlined physics.js + solver.js
+  var META = null, LAST = {};
+  function err(x) { return String(x && x.message || x); }
+  function strip(r) { [r && r.grid, r && r.twin && r.twin.grid].forEach(function (g) { if (g) { delete g.evaluated; delete g.rowEvaluated; } }); return r; }
+  self.onmessage = function (e) {
+    var m = e.data, Sv = self.PollenSolver;
+    if (m.meta) { META = m.meta; return; }
+    if (m.hcKey) {   // chance it goes in at one setting
+      try { m.hc.q.meta = META; self.postMessage({ hcKey: m.hcKey, hc: Sv.hitChance(m.hc.q, m.hc.v, m.hc.theta, m.hc.opts) }); }
+      catch (x) { self.postMessage({ hcKey: m.hcKey, hcError: err(x) }); }
+      return;
+    }
+    if (m.fcKey) {   // field-map chance layer: one spot, best chance with backspin and for the no-spin twin (small search)
+      try {
+        var q = m.q; q.meta = META;
+        var one = function (part) {
+          var r = Sv.solve(q, null, { part: part }), b = Sv.bestChance(q, r, m.bc);
+          return b.ok ? { p: b.mean, v: b.v, theta: b.theta, n: b.n, count: r.count, gripLimited: b.gripLimited }
+                      : { p: r.pose && r.pose.ok ? 0 : null, count: r.count || 0, reason: b.reason };
+        };
+        var main = one("main"), twin = q.S !== 0 || (q.lift && q.lift.table) ? one("twin") : main;
+        self.postMessage({ fcKey: m.fcKey, fc: { main: main, twin: twin } });
+      } catch (x) { self.postMessage({ fcKey: m.fcKey, fcError: err(x) }); }
+      return;
+    }
+    if (m.bestOnly) {   // the scatter changed: search again on the grid this worker solved last
+      var L = LAST[m.part];
+      if (!L || L.key !== m.key) { self.postMessage({ bid: m.bid, part: m.part, missing: true }); return; }
+      var bb;
+      try { bb = Sv.bestChance(L.q, L.res, m.bc); } catch (x) { bb = { ok: false, reason: err(x) }; }
+      self.postMessage({ bid: m.bid, part: m.part, best: bb });
+      return;
+    }
+    try {
+      var qq = m.q; qq.meta = META;
+      var r = strip(Sv.solve(qq, function (p) { self.postMessage({ id: m.id, part: m.part, progress: p }); }, { part: m.part }));
+      LAST[m.part] = { key: m.key, q: qq, res: r };
+      self.postMessage({ id: m.id, part: m.part, res: r });
+      var b;
+      try { b = Sv.bestChance(qq, r, m.bc); } catch (x) { b = { ok: false, reason: err(x) }; }
+      self.postMessage({ id: m.id, part: m.part, best: b });
+    } catch (x) { self.postMessage({ id: m.id, part: m.part, error: err(x) }); }
+  };
+}
+function rWorkerUrl() {
   if (!RW.url) {
     const a = $("js-physics"), b = $("js-solver");
     if (!a || !b || typeof Worker === "undefined" || typeof Blob === "undefined") throw new Error("no inline solver source");
-    RW.url = URL.createObjectURL(new Blob([a.textContent, "\n", b.textContent, WORKER_TAIL], { type: "text/javascript" }));
+    RW.url = URL.createObjectURL(new Blob([a.textContent, "\n", b.textContent, "\n;(" + rWorkerMain.toString() + ")();\n"], { type: "text/javascript" }));
   }
-  const w = new Worker(RW.url);
-  w.onmessage = e => rOnMsg(e.data);
-  w.onerror = e => { if (e.preventDefault) e.preventDefault(); RW.w = null; RW.busy = false; RW.fallback = true; rSolveNow(); };
-  w.postMessage({ meta: R.meta });
-  RW.w = w; return w;
+  return RW.url;
 }
+function rWorker(i) {
+  if (RW.ws[i]) return RW.ws[i];
+  const w = new Worker(rWorkerUrl());
+  w.onmessage = e => rOnMsg(e.data);
+  w.onerror = e => { if (e.preventDefault) e.preventDefault(); rKill(); RW.fallback = true; rSolveNow(); };
+  w.postMessage({ meta: R.meta });
+  RW.ws[i] = w; return w;
+}
+function rKill() { RW.ws.forEach((w, i) => { if (w) w.terminate(); RW.ws[i] = null; }); RW.busy = [false, false]; HC.pending = {}; }
 function rSchedule(delay) {
   R.solving = true; R.progress = 0; rSolvingLabel();
   clearTimeout(RW.timer); RW.timer = setTimeout(rSolveNow, delay == null ? 180 : delay);
 }
+const rBestCur = () => R.best && R.best.key === rBKey() ? R.best : null;
 function rSolveNow() {
-  const id = ++RW.id, q = rQuery(); RW.key = rKey();
+  const id = ++RW.id, q = rQuery(), key = rKey(), bc = { sig: rSig() };
+  RW.key = key; RW.bkey = rBKey(); RW.parts = {}; RW.prog = {}; R.best = { key: RW.bkey, main: null, twin: null };
+  RW.twinSep = !(R.S === 0 && !rClTab(R.clTab));
   if (!RW.fallback) {
     try {
-      if (RW.busy && RW.w) { RW.w.terminate(); RW.w = null; HC.pending = {}; }   // a newer request replaces the one in flight
-      const w = rWorker(); RW.busy = true; w.postMessage({ id, q }); return;
-    } catch (e) { RW.fallback = true; RW.w = null; }
+      if (RW.busy[0] || RW.busy[1]) rKill();   // a newer request replaces the one in flight
+      rWorker(0); if (RW.twinSep) rWorker(1);
+      RW.busy = [true, RW.twinSep];
+      RW.ws[0].postMessage({ id, key, q, part: "main", bc });
+      if (RW.twinSep) RW.ws[1].postMessage({ id, key, q: rQuery(), part: "twin", bc });
+      return;
+    } catch (e) { rKill(); RW.fallback = true; }
   }
-  setTimeout(() => {   // main-thread fallback: blocks the page for about a second
+  setTimeout(() => {   // main-thread fallback: blocks the page for a few seconds
     if (id !== RW.id) return;
-    try { rOnMsg({ id, res: PS().solve(Object.assign(q, { meta: R.meta })) }); } catch (e) { rOnMsg({ id, error: String(e.message || e) }); }
+    let r;
+    try { r = PS().solve(Object.assign(q, { meta: R.meta })); rOnMsg({ id, part: "main", res: r }); }
+    catch (e) { rOnMsg({ id, part: "main", error: String(e.message || e) }); return; }
+    setTimeout(() => {
+      if (id !== RW.id) return;
+      const bs = res => { try { return PS().bestChance(q, res, bc); } catch (e) { return { ok: false, reason: String(e.message || e) }; } };
+      rOnMsg({ id, part: "main", best: bs(r) });
+      if (RW.twinSep && r.twin) rOnMsg({ id, part: "twin", best: bs(r.twin) });
+    }, 30);
   }, 30);
 }
 function rOnMsg(m) {
-  if (m && m.hcKey) { rHcDone(m); return; }
-  if (!m || m.id !== RW.id) return;
-  if (m.progress != null && !m.res && !m.error) { R.progress = m.progress; rSolvingLabel(); return; }
-  RW.busy = false; R.solving = false;
-  if (m.error) { R.err = m.error; console.error("robot view solve failed: " + m.error); rDrawAll(); return; }
-  R.err = null; R.res = m.res; R.resKey = RW.key;
+  if (!m) return;
+  if (m.hcKey) { rHcDone(m); return; }
+  if (m.fcKey) { fcDone(m); return; }
+  if (m.bid != null) { rBestOnlyDone(m); return; }
+  if (m.id !== RW.id) return;
+  const wi = m.part === "twin" ? 1 : 0;
+  if (m.progress != null && !m.res && !m.error) {
+    RW.prog[m.part] = m.progress;
+    R.progress = RW.twinSep && !RW.fallback ? ((RW.prog.main || 0) + (RW.prog.twin || 0)) / 2 : m.progress;
+    rSolvingLabel(); return;
+  }
+  if (m.error) { RW.busy[wi] = false; R.solving = false; R.err = m.error; console.error("robot view solve failed: " + m.error); rDrawAll(); return; }
+  if (m.best) { RW.busy[wi] = false; rBestIn(m.part, m.best); return; }
+  if (!m.res) return;
+  RW.parts[m.part] = m.res;
+  const main = RW.parts.main;
+  if (!main || (main.twinPending && !RW.parts.twin)) return;   // wait for the other part
+  if (main.twinPending) { main.twin = RW.parts.twin; main.twinPending = false; main.msMain = main.ms; main.ms = Math.max(main.ms, RW.parts.twin.ms); }
+  R.solving = false; R.err = null; R.res = main; R.resKey = RW.key;
   rShotUpdate(); rDrawAll(); rFire();
+}
+// a best-chance result for the current inputs (part "main" or "twin"); S = 0 with no lift table: the twin is the main
+function rBestIn(part, best) {
+  if (!R.best || R.best.key !== RW.bkey) return;
+  R.best[part === "twin" ? "twin" : "main"] = best;
+  if (part !== "twin" && !RW.twinSep) R.best.twin = best;
+  if (R.resKey !== rKey()) return;   // the grid is not shown yet: rOnMsg draws both when it arrives
+  if (part !== "twin" && !R.pick) { rShotUpdate(); rDrawAll(); rFire(); } else rDrawAll();
+}
+// the launch scatter changed: no new solve, only the best-chance search again (on the grids the workers hold)
+function rScatterChanged() {
+  if (rStale() || RW.fallback || !RW.ws[0] || RW.busy[0] || RW.busy[1] || (RW.twinSep && !RW.ws[1])) { rChanged("opt"); return; }
+  const bid = ++RW.bid, bc = { sig: rSig() };
+  RW.bkey = rBKey(); R.best = { key: RW.bkey, main: null, twin: null };
+  RW.busy = [true, RW.twinSep];
+  RW.ws[0].postMessage({ bestOnly: true, bid, key: RW.key, part: "main", bc });
+  if (RW.twinSep) RW.ws[1].postMessage({ bestOnly: true, bid, key: RW.key, part: "twin", bc });
+  if (R.pick && R.pick.src === "best") R.pick = null;
+  rDrawAll();
+}
+function rBestOnlyDone(m) {
+  if (m.bid !== RW.bid) return;
+  RW.busy[m.part === "twin" ? 1 : 0] = false;
+  if (m.missing) { rChanged("opt"); return; }   // the worker lost its grid: solve again
+  rBestIn(m.part, m.best);
 }
 // ---- chance it goes in (2b): solver.js hitChance in the worker, one job per (inputs, setting); ASSUMED scatter
 const HC = { done: {}, pending: {}, n: 1000 };
 function rHcGet(v, theta, twinAt) {   // result, or null after asking for it (the answer card redraws when it arrives)
   if (!R.res || rStale() || !R.pose || !R.pose.ok || !isFinite(v) || !isFinite(theta)) return null;
-  const key = [rKey(), v.toFixed(5), theta.toFixed(4), twinAt ? twinAt.v.toFixed(5) + "@" + twinAt.theta.toFixed(4) : "same"].join("|");
+  const key = [rBKey(), v.toFixed(5), theta.toFixed(4), twinAt ? twinAt.v.toFixed(5) + "@" + twinAt.theta.toFixed(4) : "same"].join("|");
   if (HC.done[key]) return HC.done[key];
   if (HC.pending[key]) return null;
   HC.pending[key] = true;
-  const job = { q: rQuery(), v, theta, opts: { n: HC.n, twinAt: twinAt || undefined } };
-  if (!RW.fallback && RW.w) { try { RW.w.postMessage({ hcKey: key, hc: job }); return null; } catch (e) { /* main thread below */ } }
+  const job = { q: rQuery(), v, theta, opts: { n: HC.n, twinAt: twinAt || undefined, sig: rSig() } };
+  const w = RW.ws[1] || RW.ws[0];
+  if (!RW.fallback && w) { try { w.postMessage({ hcKey: key, hc: job }); return null; } catch (e) { /* main thread below */ } }
   setTimeout(() => {
     try { rHcDone({ hcKey: key, hc: PS().hitChance(Object.assign(job.q, { meta: R.meta }), v, theta, job.opts) }); }
     catch (e) { rHcDone({ hcKey: key, hcError: String(e.message || e) }); }
@@ -3424,7 +3791,8 @@ function rHcDone(m) {
   const ks = Object.keys(HC.done); if (ks.length > 40) ks.slice(0, ks.length - 40).forEach(k => delete HC.done[k]);
   if (R.on && R.ready) { rRender(); rTest(); }
 }
-const HC_NAMES = { Cl_low: "low lift", Cl_high: "high lift", nominal: "nominal air", given: "your air", Cl_table: "your Cl table" };
+const HC_NAMES = { Cl_low: "low lift", Cl_high: "high lift", nominal: "nominal air", given: "your air", Cl_table: "your Cl table", "no-spin twin": "no-spin twin" };
+const SRC_NAMES = { speed: "exit speed", angle: "hood angle", heading: "aim (left / right)" };
 const pc = p => (p * 100).toFixed(p < 0.1 ? 1 : 0) + "%";
 function rHcText(h, withTwin) {   // one "chance it goes in" line with the twin
   if (!h) return `Chance it goes in: <small>working it out (${HC.n} simulated shots per air set)…</small>`;
@@ -3438,6 +3806,25 @@ function rHcText(h, withTwin) {   // one "chance it goes in" line with the twin
   t += `<br><small>A model probability under ASSUMED launch scatter (speed ${(h.sig.sv * 100).toFixed(1)}%, hood angle ${h.sig.sth}°, aim ${h.sig.spsi}°, 1 sigma), ${h.n} simulated shots per air set, 3D flight; not a measured repeatability. Test on the robot.</small>`;
   return t;
 }
+function rHcShort(h) {   // nominal set (or the only set) and the average of the air sets
+  const nom = h.sets.find(t => t.name === "nominal" || t.name === "Cl_table") || h.sets[0];
+  return `${HC_NAMES[nom.name] || nom.name} ${pc(nom.p)}` + (h.sets.length > 1 ? `, average of the air sets ${pc(h.sets.reduce((a, t) => a + t.p, 0) / h.sets.length)}` : "");
+}
+function rBestText(b) {   // the best-chance setting's chance, per air set, with how it was found
+  const nom = b.sets.find(t => t.name === "nominal" || t.name === "Cl_table") || b.sets[0], oth = b.sets.filter(t => t !== nom);
+  return `Chance it goes in: <b>${pc(nom.p)}</b> (95% range ${pc(nom.lo)} to ${pc(nom.hi)}, ${HC_NAMES[nom.name] || nom.name})` +
+    (oth.length ? " · " + oth.map(o => `${HC_NAMES[o.name] || o.name} ${pc(o.p)}`).join(" · ") + ` · average ${pc(b.mean)}` : "") + ` <span class="lab">PREDICTED</span>` +
+    `<br><small>The best of ${b.search.candidates} clean settings tried (two rounds of ${b.search.n1} and ${b.search.n2} simulated shots per air set, then ${b.n} fresh shots per air set at the winner). ` +
+    `A model probability under ASSUMED shot scatter (speed ${(b.sig.sv * 100).toFixed(1)}%, hood angle ${b.sig.sth}°, aim ${b.sig.spsi}°, 1 sigma; Advanced settings), 3D flight; not a measured repeatability. Test on the robot.</small>`;
+}
+function rDomText(b, bt) {   // which scatter source costs the most: one at a time, the other two off
+  const bd = b.breakdown; if (!bd) return "";
+  const f = d => d.parts.map(q => `${SRC_NAMES[q.source]} only ${pc(q.p)}`).join(" · ");
+  let t = `Which scatter matters most here: <b>${bd.dominant ? SRC_NAMES[bd.dominant] : "none (all scatter set to 0)"}</b> <span class="lab">PREDICTED</span>` +
+    `<br><small>One source at a time (the other two off), ${HC_NAMES[bd.set] || bd.set}: ${f(bd)}; all three ${pc(bd.all.p)}. The lowest one loses the most shots in the model, so a tighter ${bd.dominant ? SRC_NAMES[bd.dominant] : "launch"} helps most.</small>`;
+  if (bt && bt.breakdown) t += `<br><span class="tw">No-spin twin: ${bt.breakdown.dominant ? SRC_NAMES[bt.breakdown.dominant] : "none"} matters most (${f(bt.breakdown)})</span>`;
+  return t;
+}
 function rSensText(ms, twms) {   // how much the setting moves per 0.1 m/s of robot speed (moving robot only)
   if (!ms) return "";
   const f = d => d.lost ? "the clean run is lost" : `hood ${isFinite(d.dTheta) ? (d.dTheta >= 0 ? "+" : "") + d.dTheta.toFixed(2) + "°" : "–"}, wheel ${isFinite(d.dRpm) ? (d.dRpm >= 0 ? "+" : "") + Math.round(d.dRpm) + " rpm" : "–"}`;
@@ -3445,7 +3832,8 @@ function rSensText(ms, twms) {   // how much the setting moves per 0.1 m/s of ro
   if (twms) t += `<br><span class="tw">No-spin twin: toward ${f(twms.toward)}; left ${f(twms.sideways)}</span>`;
   return t + `<br><small>Shift of the middle of the clean range (sampled every ${ms.step.theta}° / ${ms.step.v} m/s).</small>`;
 }
-function rSolvingLabel() { $("rsolve").textContent = R.solving ? `solving… ${Math.round(R.progress * 100)}%` : ""; $("rres").classList.toggle("stale", rStale()); $("rbar").classList.toggle("stale", rStale()); }
+const rBestPending = () => { const B = rBestCur(); return !!(R.res && R.res.count && !rStale() && (!B || !B.main || (R.S !== 0 && !B.twin))); };
+function rSolvingLabel() { $("rsolve").textContent = R.solving ? `solving… ${Math.round(R.progress * 100)}%` : rBestPending() ? "finding the best-chance setting…" : ""; $("rres").classList.toggle("stale", rStale()); $("rbar").classList.toggle("stale", rStale()); }
 // phone / narrow: a sticky answer bar while the answer card is off screen (hidden on wide screens by CSS)
 function rBarSync() {
   const b = $("rbar"), r = $("rans").getBoundingClientRect(), vh = window.innerHeight || 800;
@@ -3461,7 +3849,8 @@ function rShotUpdate() {
   const res = R.res;
   if (!res || !res.pose || !res.pose.ok || !R.pose || !R.pose.ok || R.resKey !== rKey()) return;
   let sel = R.pick;
-  if (!sel) {   // same order as the recommendation: skip shots above the PREDICTED grip limit when another qualifies
+  if (!sel) { const B = rBestCur(); if (B && B.main && B.main.ok) sel = { v: B.main.v, theta: B.main.theta, src: "best" }; }   // PM-017 recommendation
+  if (!sel) {   // until the search is in: the same order as the tolerant recommendation: skip shots above the PREDICTED grip limit when another qualifies
     const c = [[res.mostForgiving, "mf"], [res.minRpmTol, "minRpm"], [res.minAngleTol, "minAngle"]].filter(([m]) => m);
     const k = c.find(([m]) => !m.gripLimited) || c[0];
     if (k) sel = { v: k[0].v, theta: k[0].theta, src: k[1] };
@@ -3475,6 +3864,10 @@ function rShotUpdate() {
 }
 function rPick(src) {
   const res = R.res; if (!res || rStale()) return;
+  if (src === "best") {
+    const B = rBestCur(); if (!B || !B.main || !B.main.ok) return;
+    R.pick = { v: B.main.v, theta: B.main.theta, src }; rShotUpdate(); rDrawAll(); rFire(); return;
+  }
   let m = src === "mf" ? res.mostForgiving : src === "minRpm" ? res.minRpmTol : res.minAngleTol;
   if (!m && src !== "mf") { m = src === "minRpm" ? res.minRpm : res.minAngle; src += "Knife"; }
   if (!m) return;
@@ -3732,6 +4125,8 @@ function drawRWin() {
   if (res.minRpmTol) tri(X(res.minRpmTol.v), Y(res.minRpmTol.theta), true, "#f4c430");
   if (res.minAngleTol) dia(X(res.minAngleTol.v), Y(res.minAngleTol.theta), true, "#ff9d3c");
   if (res.mostForgiving) { x.strokeStyle = "#e3eaf0"; x.lineWidth = 2; x.beginPath(); x.arc(X(res.mostForgiving.v), Y(res.mostForgiving.theta), 7, 0, 6.3); x.stroke(); }
+  { const B = rBestCur(), sq = (b, fill, col) => { if (!b || !b.ok) return; x.beginPath(); x.rect(X(b.v) - 6, Y(b.theta) - 6, 12, 12); if (fill) { x.fillStyle = col; x.fill(); } else { x.strokeStyle = col; x.lineWidth = 1.5; x.stroke(); } };
+    if (B) { if (tc && B.twin !== B.main) sq(B.twin, false, "#a9b4bf"); sq(B.main, true, "#5ec8ff"); } }   // best chance (PM-017)
   if (R.sel) {
     const px = X(R.sel.v), py = Y(R.sel.theta); x.strokeStyle = "#f4c430"; x.lineWidth = 2;
     x.beginPath(); x.moveTo(px - 14, py); x.lineTo(px - 8, py); x.moveTo(px + 8, py); x.lineTo(px + 14, py); x.moveTo(px, py - 14); x.lineTo(px, py - 8); x.moveTo(px, py + 8); x.lineTo(px, py + 14); x.stroke();
@@ -3806,46 +4201,71 @@ function rRender() {
       maT && { m: maT, which: "Recommended: the lowest hood angle that still has room for error (ASSUMED tolerance).", tw: tw && (tw.minAngleTol || tw.minAngle) }].filter(Boolean);
     const rec = cands.find(c => !c.m.gripLimited) || cands[0] || null;
     if (rec && mf && rec.m !== mf && mf.gripLimited) rec.which += gripNote;
+    // PM-017: once the search is in, the best-chance setting is the recommendation (until then the tolerant pick, provisional)
+    const B = rBestCur(), bm = B && B.main && B.main.ok ? B.main : null, bt = B && B.twin && B.twin.ok ? B.twin : null;
+    const bWait = !!res.count && (!B || !B.main), bTwWait = !S0 && !!res.count && (!B || !B.twin);
+    const pick = bm ? { m: bm, tw: bt } : rec;
     const flags = [];
     if (T && !T.ok) flags.push(`turn the robot ${Math.ceil(T.turn)}° first`);
     if (ps.ok && ps.sideWallRisk) flags.push("steep angle: the side walls narrow the window");
-    if (rec && rec.m.gripLimited) flags.push(`needs more than ${res.gripCap.v} m/s exit speed (${Math.round(rpmOf(res.gripCap.v))} rpm), where the wheel may slip (PREDICTED limit)`);
+    if (pick && pick.m.gripLimited) flags.push(`needs more than ${res.gripCap.v} m/s exit speed (${Math.round(rpmOf(res.gripCap.v))} rpm), where the wheel may slip (PREDICTED limit)`);
     if (ps.status === "psi_extrapolated") flags.push("past the model's angle range");
     if (ps.otherHive) flags.push("the other HIVE may be in the way");
     if (!mrT && !maT) flags.push("no setting meets the ASSUMED error tolerance");
     if (ps.status === "beyond_model") html += status("out", "Outside the model", "Treat these numbers as a rough guess.");
-    else if (!rec) html += status("no", "No clean shot from here", (mr ? "Only grazing knife-edge shots (see Details). " : "") + "Move the robot or change the height.");
+    else if (!pick) html += status("no", "No clean shot from here", (mr ? "Only grazing knife-edge shots (see Details). " : "") + "Move the robot or change the height.");
     else if (flags.length) html += status("tight", "Tight", flags.join(" · "));
     else html += status("ok", "Clean shot possible", "with room for error in speed and angle");
-    if (rec) {
-      const r = rec.m, twLine = S0 ? "This is already the no-spin case (S = 0)." : rec.tw
-        ? `No-spin twin (S = 0, no backspin): ${Math.round(rpmOf(rec.tw.v))} rpm, hood ${rec.tw.theta.toFixed(1)}° (${vert(rec.tw.theta)}° from vertical)`
+    if (pick) {
+      const r = pick.m, twLine = S0 ? "This is already the no-spin case (S = 0)." : bm
+        ? (bt ? `No-spin twin (S = 0, no backspin) at its own best-chance setting: ${Math.round(rpmOf(bt.v))} rpm, hood ${bt.theta.toFixed(1)}° (${vert(bt.theta)}° from vertical), chance ${pc(bt.mean)} (95% range ${pc(bt.sets[0].lo)} to ${pc(bt.sets[0].hi)}) <span class="lab">PREDICTED</span>`
+              : bTwWait ? "No-spin twin (S = 0): finding its best-chance setting…" : "No-spin twin (S = 0): no clean shot without spin at this spot.")
+        : rec.tw ? `No-spin twin (S = 0, no backspin): ${Math.round(rpmOf(rec.tw.v))} rpm, hood ${rec.tw.theta.toFixed(1)}° (${vert(rec.tw.theta)}° from vertical)`
         : "No-spin twin (S = 0): no clean shot without spin at this spot.";
+      let hcLine, which;
+      if (bm) {
+        const cmpH = mrT ? rHcGet(mrT.v, mrT.theta, tw && tw.minRpmTol ? { v: tw.minRpmTol.v, theta: tw.minRpmTol.theta } : null) : null;
+        const cmp = !mrT ? "" : ` For comparison, the lowest rpm with room for error (${Math.round(rpmOf(mrT.v))} rpm, ${mrT.theta.toFixed(1)}°): ` +
+          (!cmpH ? "working it out…" : !cmpH.ok ? "not available" : rHcShort(cmpH) + (cmpH.twin ? `; no-spin twin at its own lowest rpm ${pc(cmpH.twin.p)}` : "")) + " (PREDICTED).";
+        hcLine = `<p class="hc" id="rhc">${rBestText(bm)}</p><p class="hc" id="rdom">${rDomText(bm, S0 ? null : bt)}</p>`;
+        which = "Recommended: the best-chance setting, the clean setting with the highest chance to go in under the ASSUMED shot scatter (average over the air sets, equal weight)." +
+          (bm.gripLimited ? ` No clean setting is inside the PREDICTED grip limit of ${res.gripCap ? res.gripCap.v : 8.9} m/s, so the wheel may slip here.` : " Searched inside the PREDICTED grip limit.") + cmp;
+      } else {
+        hcLine = `<p class="hc" id="rhc">${bWait ? "Chance it goes in: <small>finding the best-chance setting (simulated shots at many clean settings)…</small>" : rHcText(rHcGet(r.v, r.theta, rec.tw ? { v: rec.tw.v, theta: rec.tw.theta } : null), true)}</p>`;
+        which = rec.which + (bWait ? " Provisional: the best-chance setting replaces it when the search is done." : "");
+      }
       html += `<div class="rec"><p class="say">Set the wheel to <b>${Math.round(rpmOf(r.v))}&nbsp;rpm</b> <span class="lab">derived</span><br>hood to <b>${r.theta.toFixed(1)}°</b> <span>from horizontal (${vert(r.theta)}° from vertical)</span> <span class="lab">PREDICTED</span></p>` +
-        `<p class="twinline">${twLine}</p>` +
-        `<p class="hc" id="rhc">${rHcText(rHcGet(r.v, r.theta, rec.tw ? { v: rec.tw.v, theta: rec.tw.theta } : null), true)}</p>` +
+        `<p class="twinline">${twLine}</p>` + hcLine +
         (R.mvOn && res.moveSens ? `<p class="sens">${rSensText(res.moveSens, !S0 && tw ? tw.moveSens : null)}</p>` : "") +
-        `<p class="which">${rec.which}</p></div>`;
-      bar.body = `<span>Wheel <b>${Math.round(rpmOf(r.v))} rpm</b> <span class="lab">derived</span> · hood <b>${r.theta.toFixed(1)}°</b> (${vert(r.theta)}° from vertical) <span class="lab">PREDICTED</span></span>` +
+        `<p class="which">${which}</p></div>`;
+      bar.body = `<span>Wheel <b>${Math.round(rpmOf(r.v))} rpm</b> <span class="lab">derived</span> · hood <b>${r.theta.toFixed(1)}°</b> (${vert(r.theta)}° from vertical) <span class="lab">PREDICTED</span>${bm ? ` · chance ${pc(bm.mean)}${bm.sets.length > 1 ? " (air-set average)" : ""}, ASSUMED scatter` : ""}</span>` +
         `<span class="rb-tw">${twLine}</span>`;
     }
     const sel = R.sel ? R.sel.src.replace("Knife", "") : "";
     const tile = (src, label, tag, m, val, sub, twm, twTxt) => `<button type="button" class="tile" data-pick="${src}" aria-pressed="${sel === src}" title="Fly this shot in the 3D view">` +
       `<span class="tl">${label}${tag ? ` <span class="lab">${tag}</span>` : ""}</span>` +
-      (m ? `<span class="tv">${val}</span><span class="ts">${sub}${m.gripLimited ? " · above the grip limit (PREDICTED)" : ""}</span>` : `<span class="tv">–</span><span class="ts">none with room for error${src === "mf" ? "" : "; knife edge in Details"}</span>`) +
-      `<span class="tt">${S0 ? "no-spin case (S = 0)" : twm ? "twin S = 0: " + twTxt(twm) : "twin S = 0: none"}</span></button>`;
+      (m ? `<span class="tv">${val}</span><span class="ts">${sub}${m.gripLimited ? " · above the grip limit (PREDICTED)" : ""}</span>` : `<span class="tv">–</span><span class="ts">${src === "best" ? (bWait ? "searching…" : "none") : "none with room for error" + (src === "mf" ? "" : "; knife edge in Details")}</span>`) +
+      `<span class="tt">${S0 ? "no-spin case (S = 0)" : twm ? "twin S = 0: " + twTxt(twm) : src === "best" && bTwWait ? "twin S = 0: searching…" : "twin S = 0: none"}</span></button>`;
     html += `<div class="tiles">` +
+      tile("best", "Best chance", "ASSUMED scatter", bm, bm && `${Math.round(rpmOf(bm.v))} rpm`, bm && `hood ${bm.theta.toFixed(1)}° (${vert(bm.theta)}° from vert.) · chance ${pc(bm.mean)}${bm.sets.length > 1 ? " (air-set average)" : ""}`,
+        bt, t => `${Math.round(rpmOf(t.v))} rpm, ${t.theta.toFixed(1)}°, chance ${pc(t.mean)}`) +
       tile("minRpm", "Lowest rpm", "ASSUMED margin", mrT, mrT && `${Math.round(rpmOf(mrT.v))} rpm`, mrT && `hood ${mrT.theta.toFixed(1)}° (${vert(mrT.theta)}° from vert.)`,
         tw && tw.minRpmTol, t => `${Math.round(rpmOf(t.v))} rpm, ${t.theta.toFixed(1)}° (${vert(t.theta)}° from vert.)`) +
       tile("minAngle", "Lowest hood", "ASSUMED margin", maT, maT && `${maT.theta.toFixed(1)}°`, maT && `${vert(maT.theta)}° from vert. · ${Math.round(rpmOf(maT.v))} rpm`,
         tw && tw.minAngleTol, t => `${t.theta.toFixed(1)}° (${vert(t.theta)}° from vert.), ${Math.round(rpmOf(t.v))} rpm`) +
       tile("mf", "Most forgiving", "", mf, mf && `${Math.round(rpmOf(mf.v))} rpm`, mf && `hood ${mf.theta.toFixed(1)}° (${vert(mf.theta)}° from vert.)`,
         tw && tw.mostForgiving, t => `${Math.round(rpmOf(t.v))} rpm, ${t.theta.toFixed(1)}° (${vert(t.theta)}° from vert.)`) + `</div>`;
-    html += `<p class="labkey">All answers PREDICTED (model, not measured); rpm is derived from the exit speed and the ASSUMED grip ${R.vu.toFixed(2)}. ASSUMED margin = still goes in if speed and angle drift by our guessed amount (see Details). Tap a tile to fly that shot in 3D. Labels: CONFIRMED = official · user = your setting · ASSUMED = our guess · derived = computed.</p>`;
+    html += `<p class="labkey">All answers PREDICTED (model, not measured); rpm is derived from the exit speed and the ASSUMED grip ${R.vu.toFixed(2)}. ASSUMED margin = still goes in if speed and angle drift by our guessed amount (see Details). Best chance = the highest model chance to go in under the ASSUMED shot scatter (not measured). Tap a tile to fly that shot in 3D. Labels: CONFIRMED = official · user = your setting · ASSUMED = our guess · derived = computed.</p>`;
     // everything for the paper: knife edges, clearances, runs, envelopes, solver grid, timing
     const tolTxt = `ASSUMED tolerance: clean over ${tl.theta.toFixed(1)}° of hood angle / ${tl.v.toFixed(2)} m/s of exit speed with ≥ ${Math.round(tl.margin * 1000)} mm clearance`;
     const knifeR = r => r ? `<b>Knife edge</b> (lowest clean found, a grazing shot: do not set the robot here): ${Math.round(rpmOf(r.v))} rpm (${r.v.toFixed(3)} m/s) at ${fmtAng(r.theta)}, clearance ${mm(r.margin)}, continuous clean hood run ${r.run.toFixed(3)}°. Envelope ${r.thetaLo.toFixed(2)}–${r.thetaHi.toFixed(2)}° is ${pct(r.envelopeCleanFrac)} clean.${ast(r)}` : "";
     const knifeA = r => r ? `<b>Knife edge</b> (lowest clean found, a grazing shot: do not set the robot here): ${r.theta.toFixed(2)}° (${(90 - r.theta).toFixed(2)}° from vertical) at ${Math.round(rpmOf(r.v))} rpm, clearance ${mm(r.margin)}, continuous clean run ${Math.round(rpmOf(r.runLo))}–${Math.round(rpmOf(r.runHi))} rpm. Envelope ${Math.round(rpmOf(r.vLo))}–${Math.round(rpmOf(r.vHi))} rpm is ${pct(r.envelopeCleanFrac)} clean.${ast(r)}` : "";
+    if (bm) det += box("Best chance", `${Math.round(rpmOf(bm.v))} <small>rpm at</small> ${bm.theta.toFixed(1)}°`,
+      `exit ${bm.v.toFixed(2)} m/s at ${fmtAng(bm.theta)} · ${bm.sets.map(t => `${HC_NAMES[t.name] || t.name} ${t.k}/${t.n} = ${pc(t.p)} (${pc(t.lo)} to ${pc(t.hi)})`).join(" · ")} · ` +
+      `search: ${bm.search.cells} clean cells${bm.inCap ? " inside the grip limit" : ""}, ${bm.search.candidates} settings tried on ${bm.search.n1} shots, the best ${bm.search.stage2.length} on ${bm.search.n2}, winner on ${bm.n} fresh shots (${(bm.ms / 1000).toFixed(1)} s) · ` +
+      `scatter ASSUMED (1 sigma): speed ${(bm.sig.sv * 100).toFixed(1)}%, angle ${bm.sig.sth}°, aim ${bm.sig.spsi}° · air sets ASSUMED, equal weight · not a measured repeatability`, "",
+      S0 ? "S = 0: this is already the no-spin case." : bt ? `No-spin twin (S = 0), its own best: ${Math.round(rpmOf(bt.v))} rpm at ${bt.theta.toFixed(1)}°, ${bt.sets[0].k}/${bt.sets[0].n} = ${pc(bt.mean)} (${pc(bt.sets[0].lo)} to ${pc(bt.sets[0].hi)})` :
+        "No-spin twin (S = 0): " + (bTwWait ? "searching…" : "no clean shot without spin"), false, "ASSUMED scatter");
     det += box("Minimum wheel rpm", mrT ? `${Math.round(rpmOf(mrT.v))} <small>rpm (derived)</small>` : mr ? "only knife edges" : "no clean shot",
       mrT ? `exit ${mrT.v.toFixed(2)} m/s at ${fmtAng(mrT.theta)} · clean hood run ${mrT.thetaLo.toFixed(2)}–${mrT.thetaHi.toFixed(2)}°${mrT.runCapped ? " or wider" : ""} · clearance ${mm(mrT.margin)} · ${tolTxt}` : mr ? `No speed meets the ${tolTxt.replace("ASSUMED tolerance: ", "ASSUMED tolerance (")}).` : "",
       knifeR(mr),
@@ -3859,7 +4279,7 @@ function rRender() {
     det += box("Most forgiving shot", mf ? `${Math.round(rpmOf(mf.v))} <small>rpm at</small> ${mf.theta.toFixed(1)}°` : "none",
       mf ? `holds ±${Math.round(rpmOf(mf.tolV))} rpm (±${mf.tolV.toFixed(2)} m/s) and ±${mf.tolTheta.toFixed(2)}° on the search grid · ${(90 - mf.theta).toFixed(1)}° from vertical · clearance ${mm(mf.margin)}` : "", "",
       twinTxt(t => t.mostForgiving && `${Math.round(rpmOf(t.mostForgiving.v))} rpm at ${t.mostForgiving.theta.toFixed(1)}° (${(90 - t.mostForgiving.theta).toFixed(1)}° from vertical), holds ±${t.mostForgiving.tolTheta.toFixed(2)}°`), !mf);
-    const bs = S0 ? "none (S = 0)" : [mrT && `${Math.round(spinRpm(mrT.v))} rpm at the min-rpm shot`, mf && `${Math.round(spinRpm(mf.v))} rpm at the most forgiving shot`].filter(Boolean).join(" · ") || "–";
+    const bs = S0 ? "none (S = 0)" : [bm && `${Math.round(spinRpm(bm.v))} rpm at the best-chance shot`, mrT && `${Math.round(spinRpm(mrT.v))} rpm at the min-rpm shot`, mf && `${Math.round(spinRpm(mf.v))} rpm at the most forgiving shot`].filter(Boolean).join(" · ") || "–";
     det += `<dl class="stats rstats"><dt>Ball spin (backspin, derived)</dt><dd>${bs}</dd>` +
       `<dt>Air and options</dt><dd>${(res.notes || []).filter(n => /^(air|drag|spin drag|draft|lift|reverse|effective|gyro|robot moving|3D cell used)/.test(n)).map(esc).join("<br>") || "–"}</dd>` +
       `<dt>Grip limit (PREDICTED)</dt><dd>${res.gripCap ? `${res.gripCap.v} m/s exit = ${Math.round(rpmOf(res.gripCap.v))} rpm at grip ${R.vu.toFixed(2)}; faster answers are flagged` : "–"}</dd>` +
@@ -3874,6 +4294,7 @@ function rRender() {
   $("rwin-cap").textContent = `Solved live at x ${R.x.toFixed(2)}, y ${R.y.toFixed(2)} m, height ${R.h.toFixed(3)} m (user), backspin ${SPIN_LABEL[String(R.S)]}, air ${caseName.toLowerCase()} (ASSUMED). PREDICTED, not measured.`;
   const sw = (c, t) => `<span><i style="background:${c}"></i>${t}</span>`;
   $("rwin-leg").innerHTML = sw("#5ad49e", "clean with this spin") + (S0 ? "" : `<span><i style="background:transparent;border:1.5px dashed #a9b4bf"></i>no-spin twin (S = 0) clean area</span>`) +
+    sw("#5ec8ff", "■ best chance (ASSUMED scatter)") + (S0 ? "" : "<span>hollow grey square = twin best chance</span>") +
     sw("#f4c430", "▶ lowest rpm (filled: with room for error, hollow: knife edge)") + sw("#ff9d3c", "◆ lowest hood angle (same)") + `<span><i style="background:transparent;border:2px solid #e3eaf0;border-radius:50%"></i>most forgiving</span>` +
     (S0 ? "" : "<span>hollow grey = twin lowest points</span>");
   // selected shot card + verdict
@@ -3882,7 +4303,7 @@ function rRender() {
   const pill = (c, t) => `<span class="pill ${c}">${t}</span>`;
   const verdictOf = c => c.result === "clean" ? "clean entry" : c.result === "hit" ? "touches " + prettyPart(c.hit) : "misses the cell";
   if (s && sel && !stale && ps.ok) {
-    rows.push(["Shot", { mf: "most forgiving", minRpm: "minimum rpm (with ASSUMED tolerance)", minAngle: "minimum hood angle (with ASSUMED tolerance)",
+    rows.push(["Shot", { best: "best chance (ASSUMED scatter)", mf: "most forgiving", minRpm: "minimum rpm (with ASSUMED tolerance)", minAngle: "minimum hood angle (with ASSUMED tolerance)",
                          minRpmKnife: "minimum rpm (knife edge: grazing)", minAngleKnife: "minimum hood angle (knife edge: grazing)", cell: "your pick" }[sel.src]],
       ["Wheel speed (derived)", `${Math.round(rpmOf(sel.v))} rpm at grip ${R.vu.toFixed(2)}`], ["Exit speed", sel.v.toFixed(2) + " m/s"],
       ["Hood angle", fmtAng(sel.theta)], ["Ball spin (derived)", S0 ? "none" : Math.round(spinRpm(sel.v)) + " rpm backspin"],
@@ -3892,7 +4313,9 @@ function rRender() {
       ["No-spin twin (same rpm, angle)", S0 ? "same shot (S = 0)" : verdictOf(s.twin.cls)],
       ["Chance it goes in (this setting)", (h => !h ? "working it out…" : !h.ok ? "not available" :
         h.sets.map(t => `${HC_NAMES[t.name] || t.name} ${pc(t.p)} (${pc(t.lo)} to ${pc(t.hi)})`).join(" · ") +
-        (h.twin ? ` · no-spin twin, same setting: ${pc(h.twin.p)}` : "") + " · PREDICTED under ASSUMED launch scatter, not a measured repeatability")(rHcGet(sel.v, sel.theta, null))]);
+        (h.twin ? ` · no-spin twin, same setting: ${pc(h.twin.p)}` : "") +
+        (h.twinOwn ? ` · no-spin twin at its own best (${Math.round(rpmOf(h.twinOwn.v))} rpm, ${h.twinOwn.theta.toFixed(1)}°): ${pc(h.twinOwn.mean)}` : "") + " · PREDICTED under ASSUMED launch scatter, not a measured repeatability")(
+        sel.src === "best" && rBestCur() && rBestCur().main && rBestCur().main.ok ? { ok: true, sets: rBestCur().main.sets, twin: null, twinOwn: !S0 && rBestCur().twin && rBestCur().twin.ok ? rBestCur().twin : null } : rHcGet(sel.v, sel.theta, null))]);
     pills = pill(s.cls.result === "clean" ? "clean" : s.cls.result === "hit" ? "hit" : "miss", "LIVE REPLAY: " + verdictOf(s.cls).toUpperCase());
     if (!S0 && R.twin) pills += pill("twin", "no-spin twin, same rpm and angle: " + verdictOf(s.twin.cls));
     if (T && !T.ok) pills += pill("hit", `turn the robot ${Math.ceil(T.turn)}°`);
@@ -3916,7 +4339,10 @@ function rTest() {
     `twin=${ok ? (res.twin ? "minRpm " + fr(res.twin.minRpmTol) + " minAngle " + fa(res.twin.minAngleTol) + " knife " + fr(res.twin.minRpm) : "none") : "pending"}`,
     `shot=${R.shot && ok ? R.shot.cls.result : "none"}`, `ms=${ok ? Math.round(res.ms) : ""}`,
     `hc=${(() => { const h = Object.values(HC.done).reverse().find(x => x && x.ok && x.sets); return h ? h.sets.map(t => t.name + ":" + t.k + "/" + t.n).join(",") + (h.twin ? ",twin:" + h.twin.k + "/" + h.twin.n : "") : "none"; })()}`,
-    `move=${R.mvOn ? [R.mvA, R.mvC, R.mvW, R.d0, R.lead].join(",") : "off"}`, `engine=${RW.fallback ? "main-thread" : "worker"}`].join(";");
+    `move=${R.mvOn ? [R.mvA, R.mvC, R.mvW, R.d0, R.lead].join(",") : "off"}`, `engine=${RW.fallback ? "main-thread" : "workers"}`,
+    `best=${(B => B && B.main ? (B.main.ok ? `${Math.round(rpmOf(B.main.v))}rpm@${B.main.theta.toFixed(2)}deg/` + B.main.sets.map(t => t.name + ":" + t.k + "/" + t.n).join(",") + "/dom:" + (B.main.breakdown ? B.main.breakdown.dominant : "na") : "none") : "pending")(rBestCur())}`,
+    `twinBest=${(B => B && B.twin ? (B.twin.ok ? `${Math.round(rpmOf(B.twin.v))}rpm@${B.twin.theta.toFixed(2)}deg/${B.twin.sets[0].k}/${B.twin.sets[0].n}/dom:${B.twin.breakdown ? B.twin.breakdown.dominant : "na"}` : "none") : "pending")(rBestCur())}`,
+    `sig=${R.sv},${R.sth},${R.spsi}`, `gyro=${R.gyro}`, `msMain=${ok && res.msMain ? Math.round(res.msMain) : ""}`].join(";");
 }
 
 // ---- robot-view UI
@@ -3938,8 +4364,8 @@ function rSyncInputs() {
   sel.value = R.aero;
   $("rdrag").value = R.drag;
   [["rtc", "tC"], ["ralt", "altM"], ["rrh", "rh"], ["rwa", "wA"], ["rwu", "wU"], ["rws", "wS"], ["rmva", "mvA"], ["rmvc", "mvC"], ["rmvw", "mvW"], ["rd0", "d0"],
-   ["rclt", "clTab"], ["rclr", "clRev"], ["rphi", "phi"]].forEach(([id, k]) => { if (document.activeElement !== $(id)) $(id).value = R[k]; });
-  $("rmv").checked = R.mvOn; $("rlead").checked = R.lead;
+   ["rclt", "clTab"], ["rclr", "clRev"], ["rphi", "phi"], ["rsv", "sv"], ["rsth", "sth"], ["rspsi", "spsi"]].forEach(([id, k]) => { if (document.activeElement !== $(id)) $(id).value = R[k]; });
+  $("rmv").checked = R.mvOn; $("rlead").checked = R.lead; $("rgyro").checked = R.gyro;
   $("rclt").setAttribute("aria-invalid", String(!!R.clTab.trim() && !rClTab(R.clTab)));
   $("rclt-h").dataset.bad = R.clTab.trim() && !rClTab(R.clTab) ? "1" : "";
   const A = PH.airState(R.tC, PH.pressureFromAltitude(R.altM), R.rh / 100);
@@ -3972,6 +4398,9 @@ function robotInit() {
   $("rmv").addEventListener("change", e => { R.mvOn = e.target.checked; rChanged("opt"); });
   $("rlead").addEventListener("change", e => { R.lead = e.target.checked; if (R.mvOn) rChanged("opt"); else rChanged("view"); });
   $("rclt").addEventListener("change", e => { R.clTab = e.target.value.trim(); rChanged("opt"); });
+  $("rgyro").addEventListener("change", e => { R.gyro = e.target.checked; rChanged("opt"); });
+  [["rsv", "sv", 0, 10], ["rsth", "sth", 0, 5], ["rspsi", "spsi", 0, 5]].forEach(([id, k, lo, hi]) =>   // scatter: only the chance search runs again
+    $(id).addEventListener("change", e => { const v = parseFloat(e.target.value); if (!isFinite(v)) return; const nv = Math.max(lo, Math.min(hi, v)); if (nv !== R[k]) { R[k] = nv; F.fcKey = ""; rScatterChanged(); } }));
   $("rphi").addEventListener("change", e => { const t = e.target.value.trim(), v = parseFloat(t); R.phi = t === "" || !isFinite(v) ? "" : String(Math.max(0, Math.min(1, v))); rChanged("opt"); });
   rh.addEventListener("input", () => { R.h = +rh.value; rChanged("param"); });
   $("rhd").addEventListener("input", e => { R.heading = wrap180(+e.target.value); rChanged("heading"); });
@@ -4044,10 +4473,13 @@ function robotInit() {
   [["x", "x"], ["y", "y"], ["heading", "heading"]].forEach(([q, k]) => { const v = parseFloat(HASHQ.get(q)); if (isFinite(v)) R[k] = k === "heading" ? wrap180(v) : v; });
   { const mv = (HASHQ.get("move") || "").split(",").filter(Boolean).map(Number);   // #robot?move=along,across[,turn deg/s]
     if (mv.length >= 2 && mv.every(isFinite)) Object.assign(R, { mvOn: true, mvA: mv[0], mvC: mv[1], mvW: mv[2] || 0 }); }
+  { const sc = (HASHQ.get("scatter") || "").split(",").filter(Boolean).map(Number);   // #robot?scatter=speed %,angle deg,aim deg
+    if (sc.length === 3 && sc.every(v => isFinite(v) && v >= 0)) Object.assign(R, { sv: Math.min(10, sc[0]), sth: Math.min(5, sc[1]), spsi: Math.min(5, sc[2]) }); }
+  if (HASHQ.get("gyro") === "1") R.gyro = true;
   rClamp(); rPose();
   R0 = { x: R.x, y: R.y, heading: R.heading, travel: R.travel, h: R.h, S: R.S, vu: R.vu, aero: R.aero, heat: R.heat, twin: R.twin, slow: R.slow,
          tC: R.tC, altM: R.altM, rh: R.rh, drag: R.drag, sd: R.sd, wA: R.wA, wU: R.wU, wS: R.wS, mvOn: R.mvOn, mvA: R.mvA, mvC: R.mvC, mvW: R.mvW,
-         d0: R.d0, lead: R.lead, clTab: R.clTab, clRev: R.clRev, phi: R.phi, robL: R.robL, robW: R.robW, robFo: R.robFo, robLo: R.robLo };
+         d0: R.d0, lead: R.lead, clTab: R.clTab, clRev: R.clRev, gyro: R.gyro, sv: R.sv, sth: R.sth, spsi: R.spsi, phi: R.phi, robL: R.robL, robW: R.robW, robFo: R.robFo, robLo: R.robLo };
   R.ready = true;
 }
 let R0 = null;
@@ -4082,6 +4514,7 @@ async function setMode(m) {
   const prev = MODE;
   if (prev === "plane" || prev === null) R.savedPlane = { side: st.side, tilt: st.tilt };
   MODE = m; F.on = m === "field"; R.on = m === "robot"; anim = null; R.anim = null;
+  if (!F.on) fcStop();
   try { if (location.hash !== "#" + m) history.replaceState(null, "", "#" + m); } catch (_) { /* ignore */ }
   showFor(m); $("verdict").innerHTML = ""; tip.hidden = true;
   if (m === "plane") {
@@ -4122,7 +4555,7 @@ async function boot() {
   segButtons($("h-seg"), G.h.map((h, i) => [i, h + " m"]), () => st.ih, v => { st.ih = +v; });
   segButtons($("vu-seg"), IDX.v_over_u.map(r => [r, r.toFixed(2)]), () => st.vu, v => { const vv = rpmToV(st.rpm); st.vu = +v; st.rpm = vToRpm(vv); });
   segButtons($("s-seg"), [0, 0.5, 1, 1.5, -1].map(s => [s, spinBtn(s)]), () => st.S, v => { st.S = +v; });
-  segButtons($("tilt-seg"), [["28.5", "28.5° (old bound)"], ["30", "30° (CAD)"], ["31.5", "31.5° (old bound)"]], () => st.tilt, v => { st.tilt = v; });
+  segButtons($("tilt-seg"), [["28.8", "28.80° (tipped bound)"], ["30", "30° (CAD)"], ["31.77", "31.77° (tipped bound)"]], () => st.tilt, v => { st.tilt = v; });
   $("side-seg").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { st.side = b.dataset.v; if (st.side === "fav") st.tilt = "30"; refresh(); }));
   d.addEventListener("input", () => { st.d = +d.value; refresh({ fire: false }); });
   d.addEventListener("change", () => fire());

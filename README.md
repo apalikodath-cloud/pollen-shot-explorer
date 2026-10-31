@@ -5,6 +5,8 @@ Interactive 3D explorer for the POLLEN shot design (Team 207, Critical Mass).
 All results shown are PREDICTED by simulation, not measured.
 
 Open `index.html` through a web server (it fetches `data/` by relative URL).
+`measure/measure.html` is the measurement kit: track a slow-motion video of a shot and fit drag
+(Cd) and spin lift (Cl) from a no-spin shot and its backspin twin. Files stay in the browser.
 
 ## Rebuild
 
