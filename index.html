@@ -1399,6 +1399,6 @@ async function boot() {
   $("loading").hidden = true;
   requestAnimationFrame(loop);
 }
-boot().catch(err => { $("loading").textContent = "Could not load the shot grid: " + err.message; console.error(err); });
+boot().catch(err => { $("loading").textContent = location.protocol === "file:" ? "This page needs its data folder and a web server. Open it from the team link (https://apalikodath-cloud.github.io/pollen-shot-explorer/), not as a downloaded file." : "Could not load the shot grid: " + err.message; console.error(err); });
 })();
 </script>
