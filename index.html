@@ -4097,6 +4097,7 @@ async function setMode(m) {
   if (MODE !== m) return;
   if (m === "field") {
     if (!F.ready) fieldInit();
+    buildHive();   // a direct #field load starts at side unfav / tilt 30, so fieldUpdate alone never builds the HIVE
     camera.position.copy(W(-3.6, -3.2, 2.7)); controls.target.copy(W(-0.1, 0, 0.5)); controls.update();
     await fieldUpdate();
     return;
