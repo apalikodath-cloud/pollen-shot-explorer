@@ -115,6 +115,8 @@ static void usage() {
 		"  ref=4 occupancy voxels per cell   revox=<steps> geometry update interval of a spinning STL (default: wall moves <= 0.1 cell)\n"
 		"  svol=22312.36 STL enclosed volume in mm^3 (check)   pert=1e-3 initial noise (fraction of u)   wg=128 work-group size\n"
 		"  favg=1 each CSV row averages the force over every step since the previous row (0: instantaneous sample)\n"
+		"  bulk=<omega> relaxation rate of the bulk (trace) part of the stress, regularized only (default: same as shear)\n"
+		"  csn=<Cs> Smagorinsky constant of the wall cells (default Cs)   taun=<tau> lower bound of tau in the wall cells\n"
 		"  rotstokes: uw=0.005 wall speed omega R, nu=0.2   platform=0 device=0 (GPU index on that OpenCL platform)\n");
 }
 
@@ -237,7 +239,7 @@ int main(int argc, char** argv) {
 		g_arg[s.substr(0, e)] = s.substr(e + 1);
 	}
 	static const char* known[] = { "body", "D", "Re", "u", "S", "Lx", "Ly", "Lz", "xc", "T", "every", "out", "cl", "prec", "coll", "Cs",
-		"outlet", "stl", "Dmm", "rx", "ry", "rz", "ref", "revox", "svol", "pert", "wg", "uw", "nu", "platform", "device", "favg" };
+		"outlet", "stl", "Dmm", "rx", "ry", "rz", "ref", "revox", "svol", "pert", "wg", "uw", "nu", "platform", "device", "favg", "bulk", "csn", "taun" };
 	for (const auto& kv : g_arg) {
 		bool ok = false;
 		for (const char* k : known) ok = ok || kv.first == k;
@@ -259,6 +261,10 @@ int main(int argc, char** argv) {
 	if (coll != "reg" && coll != "bgk") die("coll must be reg or bgk");
 	if (outlet != "p" && outlet != "eq") die("outlet must be p or eq");
 	const double Cs = arg_d("Cs", 0.1), csm = 18.0 * std::sqrt(2.0) * Cs * Cs;
+	const double csn = arg_d("csn", Cs), bulk = arg_d("bulk", 0.0), taun = arg_d("taun", 0.0);
+	if (csn < 0.0 || bulk < 0.0 || bulk >= 2.0 || taun < 0.0 || taun > 2.0) die("csn, bulk or taun out of range");
+	if (bulk > 0.0 && coll != "reg") die("bulk needs coll=reg");
+	const bool favg = arg_d("favg", 1.0) != 0.0;
 	const double pert = stokes ? 0.0 : arg_d("pert", 1e-3);
 	const int wg = (int)arg_d("wg", 128.0);
 	if (wg < 32 || wg > 1024 || (wg & (wg - 1))) die("wg must be a power of two in 32..1024");
@@ -276,6 +282,7 @@ int main(int argc, char** argv) {
 	uint64_t every = (uint64_t)arg_d("every", std::max(1.0, std::round(tunit / 50.0)));
 	if (every < 1) every = 1;
 	if (spin_mesh) every = ((every + revox - 1) / revox) * revox;
+	if (favg && every % 2u == 1u) every += spin_mesh ? revox : 1u; // even: a period-2 force oscillation cancels in each row
 	const std::string out = arg_s("out", "pm012_run.csv");
 	std::string clpath = arg_s("cl", "");
 	if (clpath.empty()) {
@@ -351,9 +358,15 @@ int main(int argc, char** argv) {
 		while ((r = fread(b, 1, sizeof(b), f)) > 0) src.append(b, r);
 		fclose(f);
 	}
-	char opts[512];
-	snprintf(opts, sizeof(opts), "-cl-fast-relaxed-math -DNX=%uu -DNY=%uu -DNZ=%uu -DNCELLS=%lluu -DWG=%du%s%s", Nx, Ny, Nz,
-		(unsigned long long)N, wg, prec == "fp16" ? " -DFP16" : "", coll == "reg" ? " -DREG" : "");
+	char opts[768], extra[256] = "";
+	{
+		int o = 0;
+		if (csn != Cs) o += snprintf(extra + o, sizeof(extra) - o, " -DCSMN=%.9g", 18.0 * std::sqrt(2.0) * csn * csn);
+		if (bulk > 0.0) o += snprintf(extra + o, sizeof(extra) - o, " -DKB=%.9g", 1.0 - bulk);
+		if (taun > 0.0) o += snprintf(extra + o, sizeof(extra) - o, " -DTAUN=%.9g", taun);
+	}
+	snprintf(opts, sizeof(opts), "-cl-fast-relaxed-math -DNX=%uu -DNY=%uu -DNZ=%uu -DNCELLS=%lluu -DWG=%du%s%s%s", Nx, Ny, Nz,
+		(unsigned long long)N, wg, prec == "fp16" ? " -DFP16" : "", coll == "reg" ? " -DREG" : "", extra);
 	const char* srcp = src.c_str();
 	const size_t srcl = src.size();
 	cl_program prog = cl.CreateProgramWithSource(ctx, 1, &srcp, &srcl, &err);
@@ -380,6 +393,8 @@ int main(int argc, char** argv) {
 	const size_t ngf = (nbox + wg - 1) / wg;
 	cl_mem partb = cl.CreateBuffer(ctx, CL_MEM_READ_WRITE, ngf * 6u * sizeof(float), nullptr, &err);
 	if (err != CL_SUCCESS) die("partial-sum allocation failed: %d", (int)err);
+	cl_mem partnb = cl.CreateBuffer(ctx, CL_MEM_READ_WRITE, ngf * 6u * sizeof(float), nullptr, &err);
+	if (err != CL_SUCCESS) die("partial-sum allocation failed: %d", (int)err);
 
 	// flags: faces are fixed equilibrium cells, the outlet face (without its edges) a pressure outlet
 	{
@@ -403,7 +418,7 @@ int main(int argc, char** argv) {
 	const float om = (float)omega, fcx = (float)cc[0], fcy = (float)cc[1], fcz = (float)cc[2];
 	for (int p = 0; p < 2; p++) {
 		ArgSetter(k_sc[p]).lattice(fl[p]).lattice(fl[1 - p])(flags)(om)(fcx)(fcy)(fcz)((float)tau0)((float)csm);
-		ArgSetter(k_force[p]).lattice(fl[p])(flags)(bx0)(by0)(bz0)(bx)(by)(bz)(fcx)(fcy)(fcz)(om)((cl_uint)0)(partb);
+		ArgSetter(k_force[p]).lattice(fl[p])(flags)(bx0)(by0)(bz0)(bx)(by)(bz)(fcx)(fcy)(fcz)(om)((cl_uint)0)(1.0f)(partb)(partnb);
 		ArgSetter(k_commit[p]).lattice(fl[p])(flags)(bx0)(by0)(bz0)(bx)(by)(bz)(fcx)(fcy)(fcz)(om);
 	}
 	const float r2 = use_stl ? -1.0f : (float)(R * R);
@@ -438,10 +453,11 @@ int main(int argc, char** argv) {
 	FILE* fo = fopen(out.c_str(), "wb");
 	if (!fo) die("cannot write %s", out.c_str());
 	fprintf(fo, "# PM-012 pm012_lbm run; body=%s stl=%s D=%.9g Re=%.9g u=%.9g S=%.9g omega=%.9g nu=%.9g tau=%.9g N=%ux%ux%u centre=%.9g,%.9g,%.9g "
-		"every=%llu revox=%llu rx=%.9g ry=%.9g rz=%.9g Dmm=%.9g prec=%s coll=%s Cs=%.9g outlet=%s pert=%.9g Lx=%.9g Ly=%.9g Lz=%.9g xc=%.9g device=%s\n",
+		"every=%llu revox=%llu rx=%.9g ry=%.9g rz=%.9g Dmm=%.9g prec=%s coll=%s Cs=%.9g csn=%.9g bulk=%.9g taun=%.9g favg=%d "
+		"outlet=%s pert=%.9g Lx=%.9g Ly=%.9g Lz=%.9g xc=%.9g device=%s\n",
 		body.c_str(), use_stl ? arg_s("stl", "").c_str() : "", D, Re, u, S, omega, nu, tau0, Nx, Ny, Nz, cc[0], cc[1], cc[2],
 		(unsigned long long)every, (unsigned long long)(spin_mesh ? revox : 0), arg_d("rx", 0.0), arg_d("ry", 0.0), arg_d("rz", 0.0),
-		use_stl ? Dmm : 0.0, prec.c_str(), coll.c_str(), Cs, outlet.c_str(), pert, Lx, Ly, Lz, xc, dname);
+		use_stl ? Dmm : 0.0, prec.c_str(), coll.c_str(), Cs, csn, bulk, taun, favg ? 1 : 0, outlet.c_str(), pert, Lx, Ly, Lz, xc, dname);
 	fprintf(fo, "# solid_cells=%llu solid_over_reference_volume=%.9g near_cells=%llu A_ref=pi*(D/2)^2=%.9g cells; Cd=Fx/q Cy=Fy/q Cl=Fz/q CM=-Ty/(q*R), q=0.5*u^2*A\n",
 		(unsigned long long)solid, (double)solid / vol_ref, (unsigned long long)nearc, A);
 	if (use_stl) fprintf(fo, "# stl_triangles=%u stl_bbox_centre_mm=%.6g,%.6g,%.6g occ_M=%d occ_h=%.6g occ_volume_over_stl_volume=%.6g odd_rays=%lld/%lld\n",
@@ -452,23 +468,34 @@ int main(int argc, char** argv) {
 		body.c_str(), dname, Nx, Ny, Nz, N * 1e-6, D, Re, nu, tau0, S, prec.c_str(), coll.c_str(), (double)solid / vol_ref, (unsigned long long)steps);
 	fflush(stdout);
 
-	std::vector<float> part(ngf * 6u);
+	std::vector<float> part(ngf * 6u), partn(ngf * 6u);
 	double last[6] = { 0, 0, 0, 0, 0, 0 };
-	const bool favg = arg_d("favg", 1.0) != 0.0;
+	// period-2 check: per row, p2 = mean of (-1)^t F over the row's steps (F = mean + a (-1)^t gives p2 = a for an even
+	// row length); accumulated over the rows with t* >= 15 into a footer line (Cd, Cl and CM units)
+	double p2sum[3] = { 0, 0, 0 }, p2sq[3] = { 0, 0, 0 };
+	uint64_t p2n = 0;
 	uint64_t nacc = 0; // force evaluations summed in partb since the last row
-	auto accumulate = [&]() {
+	auto accumulate = [&](uint64_t t) {
 		const cl_uint acc = nacc > 0 ? 1u : 0u;
+		const float sg = (t % 2u == 0u) ? 1.0f : -1.0f;
 		CK(cl.SetKernelArg(k_force[par], 30, sizeof(cl_uint), &acc));
+		CK(cl.SetKernelArg(k_force[par], 31, sizeof(float), &sg));
 		launch(k_force[par], nbox);
 		nacc++;
 	};
 	auto sample = [&](uint64_t t) {
-		if (!favg || nacc == 0) { nacc = 0; accumulate(); }
+		if (!favg || nacc == 0) { nacc = 0; accumulate(t); }
 		CK(cl.EnqueueReadBuffer(q, partb, CL_TRUE, 0, part.size() * sizeof(float), part.data(), 0, nullptr, nullptr));
-		double s[6] = { 0, 0, 0, 0, 0, 0 };
-		for (size_t g = 0; g < ngf; g++) for (int k = 0; k < 6; k++) s[k] += part[6 * g + k];
-		for (int k = 0; k < 6; k++) { s[k] /= (double)nacc; last[k] = s[k]; }
+		CK(cl.EnqueueReadBuffer(q, partnb, CL_TRUE, 0, partn.size() * sizeof(float), partn.data(), 0, nullptr, nullptr));
+		double s[6] = { 0, 0, 0, 0, 0, 0 }, sn[6] = { 0, 0, 0, 0, 0, 0 };
+		for (size_t g = 0; g < ngf; g++) for (int k = 0; k < 6; k++) { s[k] += part[6 * g + k]; sn[k] += partn[6 * g + k]; }
+		for (int k = 0; k < 6; k++) { s[k] /= (double)nacc; sn[k] /= (double)nacc; last[k] = s[k]; }
 		const double ts = ((double)t - 0.5 * (double)(nacc - 1)) / tunit; // centre of the averaging interval
+		if (favg && nacc % 2u == 0u && ts >= 15.0 && qd > 0) {
+			const double a[3] = { sn[0] / qd, sn[2] / qd, -sn[4] / (qd * R) };
+			for (int k = 0; k < 3; k++) { p2sum[k] += a[k]; p2sq[k] += a[k] * a[k]; }
+			p2n++;
+		}
 		nacc = 0;
 		const double Cd = qd > 0 ? s[0] / qd : 0, Cy = qd > 0 ? s[1] / qd : 0, Cl = qd > 0 ? s[2] / qd : 0, CM = qd > 0 ? -s[4] / (qd * R) : 0;
 		fprintf(fo, "%llu,%.9g,%.9g,%.9g,%.9g,%.9g,%.9g,%.9g,%.9g,%.9g,%.9g,%.9g\n", (unsigned long long)t, ts, s[0], s[1], s[2], s[3], s[4], s[5], Cd, Cy, Cl, CM);
@@ -483,7 +510,7 @@ int main(int argc, char** argv) {
 	uint64_t next_print = (uint64_t)tunit;
 	for (uint64_t t = 0;; t++) {
 		if (spin_mesh && t > 0 && t % revox == 0) geometry(omega * (double)t);
-		if (favg && t > 0) accumulate();
+		if (favg && t > 0) accumulate(t);
 		if (t > 0 && (t % every == 0 || t == steps)) {
 			const std::vector<double> r = sample(t);
 			if (t >= next_print) {
@@ -502,6 +529,13 @@ int main(int argc, char** argv) {
 	const double secs = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
 	const double mlups = (double)N * (double)steps / secs * 1e-6;
 	fprintf(fo, "# runtime_s=%.6g steps=%llu MLUPs=%.6g\n", secs, (unsigned long long)steps, mlups);
+	if (p2n > 0) {
+		double m[3], r[3];
+		for (int k = 0; k < 3; k++) { m[k] = p2sum[k] / p2n; r[k] = std::sqrt(p2sq[k] / p2n); }
+		fprintf(fo, "# period2 rows=%llu p2_Cd_mean=%.6g p2_Cd_rms=%.6g p2_Cl_mean=%.6g p2_Cl_rms=%.6g p2_CM_mean=%.6g p2_CM_rms=%.6g\n",
+			(unsigned long long)p2n, m[0], r[0], m[1], r[1], m[2], r[2]);
+		printf("period-2 force component (t* >= 15): Cd rms %.4f, Cl rms %.4f, CM rms %.4f\n", r[0], r[1], r[2]);
+	}
 	if (stokes) {
 		const double Tst = -8.0 * PI * nu * R * R * R * omega;
 		fprintf(fo, "# rotstokes body_Ty=%.9g stokes_Ty(R_nominal)=%.9g\n", last[4], Tst);
