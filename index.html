@@ -1,0 +1,944 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POLLEN Shot Explorer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a night-arena scope. The 3D field is the hero on the left, the shooter's dials sit on a
+   rail to the right, and the two charts that answer "which shots work" run underneath.
+   One committed dark look (WebGL scene + dark panels), colours set explicitly. */
+:root {
+  --bg: #0b1015;
+  --panel: #111921;
+  --panel-2: #16212b;
+  --line: #24323f;
+  --fg: #e3eaf0;
+  --muted: #8d9caa;
+  --pollen: #f4c430;      /* POLLEN yellow: the ball and the chosen shot */
+  --clean: #38d39f;       /* clean entry */
+  --hit: #ff6b5a;         /* touched the HIVE first */
+  --miss: #71808f;
+  --twin: #a9b4bf;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: dark;
+}
+html, body { background: var(--bg); color: var(--fg); }
+body { font-family: var(--body); font-size: 14px; line-height: 1.45; }
+.wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px 28px; max-width: 1480px; margin: 0 auto; display: grid; gap: 14px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+h1 { font-family: var(--display); font-weight: 700; font-size: 30px; letter-spacing: .01em; margin: 0; text-wrap: balance; }
+h1 b { color: var(--pollen); font-weight: 700; }
+.sub { color: var(--muted); max-width: 78ch; margin: 0; }
+.tag { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--bg); background: var(--pollen); padding: 2px 7px; border-radius: 3px; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 14px; }
+@media (max-width: 960px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.stage { position: relative; min-width: 0; background: #070b0f; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; height: min(68vh, 680px); min-height: 380px; }
+#gl { width: 100%; height: 100%; display: block; touch-action: none; }
+.hud { position: absolute; left: 12px; top: 12px; right: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; pointer-events: none; flex-wrap: wrap; }
+.hud > * { pointer-events: auto; }
+.views { display: flex; gap: 4px; flex-wrap: wrap; }
+.views button, .btn { font: 500 12px var(--body); color: var(--fg); background: rgba(17,25,33,.86); border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px; cursor: pointer; }
+.views button:hover, .btn:hover { border-color: var(--muted); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--pollen); outline-offset: 1px; }
+.legend { background: rgba(11,16,21,.86); border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; font-size: 12px; display: grid; gap: 3px; }
+.legend i { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
+.verdict { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; pointer-events: none; }
+.pill { font: 600 13px var(--mono); letter-spacing: .04em; padding: 4px 9px; border-radius: 999px; border: 1px solid currentColor; background: rgba(11,16,21,.82); }
+.pill.clean { color: var(--clean); } .pill.hit { color: var(--hit); } .pill.miss { color: var(--miss); } .pill.twin { color: var(--twin); font-weight: 500; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-family: var(--mono); background: #070b0f; }
+.rail { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; display: grid; gap: 10px; }
+.card h2 { font-family: var(--display); font-weight: 600; font-size: 17px; letter-spacing: .05em; text-transform: uppercase; margin: 0; color: var(--muted); }
+.row { display: grid; gap: 4px; }
+.row label { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.row label output, .num { font-family: var(--mono); color: var(--fg); font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--pollen); }
+select { width: 100%; font: 13px var(--body); color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 5px 6px; }
+.seg { display: flex; flex-wrap: wrap; gap: 4px; }
+.seg button { flex: 1 1 auto; font: 500 12px var(--mono); color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 5px 6px; cursor: pointer; }
+.seg button[aria-pressed=true] { background: var(--pollen); color: #14110a; border-color: var(--pollen); }
+.seg button:disabled { opacity: .35; cursor: not-allowed; }
+.stats { display: grid; grid-template-columns: 1fr auto; gap: 3px 10px; font-size: 12.5px; }
+.stats dt { color: var(--muted); } .stats dd { margin: 0; text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.checks { display: grid; gap: 5px; font-size: 12.5px; }
+.checks label { display: flex; gap: 7px; align-items: center; cursor: pointer; }
+.btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn.primary { background: var(--pollen); color: #14110a; border-color: var(--pollen); font-weight: 600; }
+.note { font-size: 12px; color: var(--muted); margin: 0; }
+.charts { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 14px; }
+@media (max-width: 960px) { .charts { grid-template-columns: minmax(0, 1fr); } }
+.chart { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; min-width: 0; display: grid; gap: 6px; }
+.chart h3 { margin: 0; font-family: var(--display); font-weight: 600; font-size: 19px; letter-spacing: .02em; }
+.chart p { margin: 0; color: var(--muted); font-size: 12.5px; }
+.chart canvas { width: 100%; display: block; cursor: crosshair; }
+#win { aspect-ratio: 16 / 9; } #stand { aspect-ratio: 4 / 3; }
+.tip { position: fixed; pointer-events: none; background: #05080b; border: 1px solid var(--line); border-radius: 4px; padding: 5px 8px; font: 12px var(--mono); color: var(--fg); z-index: 20; white-space: nowrap; }
+footer { color: var(--muted); font-size: 12px; display: grid; gap: 6px; max-width: 110ch; }
+footer p { margin: 0; }
+code { font-family: var(--mono); font-size: 12px; }
+[hidden] { display: none !important; }
+.wrap > * { min-width: 0; }
+html, body { overflow-x: hidden; }
+.pill { max-width: 100%; white-space: normal; }
+@media (max-width: 520px) { .legend { display: none; } h1 { font-size: 24px; } #win { aspect-ratio: 4 / 3; } .stage { min-height: 340px; } .hud { right: 8px; left: 8px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1><b>POLLEN</b> Shot Explorer</h1>
+    <span class="tag">Predicted · not measured</span>
+    <p class="sub">Every launch that drops POLLEN into the upward CELL without touching the HIVE, from the PM-001 model (Team 207 Critical Mass). Set the robot's distance, release height, hood angle, wheel rpm and backspin; the green fan is every clean shot from that spot.</p>
+  </header>
+
+  <div class="main">
+    <div class="stage">
+      <canvas id="gl" aria-label="3D view of the field, HIVE and shot paths"></canvas>
+      <div class="hud">
+        <div class="views" role="group" aria-label="Camera">
+          <button id="v-side" type="button">Side</button>
+          <button id="v-iso" type="button">3/4</button>
+          <button id="v-shooter" type="button">Driver</button>
+          <button id="v-cell" type="button">Into the cell</button>
+          <button id="v-top" type="button">Top</button>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--pollen)"></i>your shot</span>
+          <span><i style="background:var(--twin)"></i>no-spin twin (same speed, angle)</span>
+          <span><i style="background:var(--clean)"></i>every clean shot from here</span>
+          <span><i style="background:var(--hit)"></i>contact point</span>
+        </div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="loading" id="loading">Loading the model's shot grid…</div>
+    </div>
+
+    <div class="rail">
+      <section class="card" aria-labelledby="h-robot">
+        <h2 id="h-robot">Robot</h2>
+        <div class="row"><label for="d">Distance to HIVE pivot plane <output id="d-o"></output></label><input id="d" type="range"></div>
+        <div class="row"><label>Release height (ball centre)</label><div class="seg" id="h-seg"></div></div>
+        <div class="row"><label>Shooting at</label><div class="seg" id="side-seg">
+          <button type="button" data-v="unfav">Far side (mouth faces away)</button>
+          <button type="button" data-v="fav">Near side (mouth faces you)</button></div></div>
+      </section>
+
+      <section class="card" aria-labelledby="h-shooter">
+        <h2 id="h-shooter">Shooter</h2>
+        <div class="row"><label for="th">Hood / launch angle <output id="th-o"></output></label><input id="th" type="range"></div>
+        <div class="row"><label for="rpm">Flywheel speed (98 mm wheel) <output id="rpm-o"></output></label><input id="rpm" type="range"></div>
+        <div class="row"><label>Grip: exit speed ÷ wheel surface speed</label><div class="seg" id="vu-seg"></div></div>
+        <div class="row"><label>Backspin S = ωR/v</label><div class="seg" id="s-seg"></div></div>
+        <dl class="stats" id="exit"></dl>
+      </section>
+
+      <section class="card" aria-labelledby="h-world">
+        <h2 id="h-world">Unknowns to try</h2>
+        <div class="row"><label for="aero">Air (drag and spin lift)</label><select id="aero"></select></div>
+        <div class="row"><label>HIVE tilt</label><div class="seg" id="tilt-seg"></div></div>
+        <p class="note" id="world-note"></p>
+      </section>
+
+      <section class="card" aria-labelledby="h-show">
+        <h2 id="h-show">Show</h2>
+        <div class="checks">
+          <label><input type="checkbox" id="c-fan" checked> Every clean shot from this spot</label>
+          <label><input type="checkbox" id="c-all"> Clean shots from every distance</label>
+          <label><input type="checkbox" id="c-twin" checked> No-spin twin of my shot</label>
+          <label><input type="checkbox" id="c-slow" checked> Slow motion (¼ speed)</label>
+        </div>
+        <div class="btns">
+          <button class="btn primary" id="fire" type="button">Fire</button>
+          <button class="btn" id="best" type="button">Most forgiving shot here</button>
+          <button class="btn" id="beststand" type="button">Best spot</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="charts">
+    <section class="chart" aria-labelledby="h-win">
+      <h3 id="h-win">Shot window from this spot</h3>
+      <p id="win-cap">Each square is one speed and angle. Green squares go in clean; brighter green holds more error. Click a square to load that shot.</p>
+      <canvas id="win" role="img" aria-label="Clean shot window: launch angle against exit speed"></canvas>
+    </section>
+    <section class="chart" aria-labelledby="h-stand">
+      <h3 id="h-stand">Where to stand</h3>
+      <p>Number of clean speed and angle pairs at each distance, one line per release height. Click to move the robot.</p>
+      <canvas id="stand" role="img" aria-label="Clean shot count against distance for each release height"></canvas>
+    </section>
+  </div>
+
+  <footer>
+    <p><b>What this is.</b> The squares and the green fan come straight from the PM-001 model grid (<code>src/shooter_spec.py</code>: 111 speeds × 261 angles × 24 distances × 5 heights per case). Each shot is a 2D flight in the HIVE's tipping plane, through the centre of the cell, with drag, spin lift capped at a maximum, and spin decay. The paths drawn here are re-flown in your browser with the same equations. The HIVE section is from the official field CAD; tilt 30° is confirmed.</p>
+    <p><b>What it is not.</b> No POLLEN drag, spin lift, bounce or launcher grip has been measured. The air cases are literature ranges (pickleball and smooth-sphere data), not POLLEN facts. A shot that touches the HIVE stops here; a bounce can still score (see docs/05). The second HIVE and the A-frame legs are drawn for context only. One clean simulated shot says nothing about repeatability: the tolerance shown is how far speed and angle can drift and still go in.</p>
+    <p id="prov"></p>
+  </footer>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+// Shot physics for the 3D explorer: a line-for-line port of src/feasibility.py integrate_batch
+// (fixed-step RK4, drag + capped Magnus + exponential spin decay, planar shot toward +x) and of
+// src/hive.py Hive.classify_path (ball centre vs obstacles inflated by R; clean = enters the
+// inside polygon before any contact). Checked against the Python model by test_physics.js.
+(function (root) {
+  "use strict";
+
+  function integrate(v, thDeg, S0, p, dt, tMax, zStop) {
+    dt = dt || 2e-3; tMax = tMax || 3.0; zStop = zStop === undefined ? -0.8 : zStop;
+    const th = thDeg * Math.PI / 180, R = p.radius;
+    const q = 0.5 * p.rho * Math.PI * R * R / p.mass, cd = p.Cd, g = p.g || 9.80665;
+    const w0 = S0 * v / R, sgn = Math.sign(w0), aw0 = Math.abs(w0);
+    const useM = p.c1 > 0 && S0 !== 0 && p.rho > 0;
+    const k = p.k || 0;
+    function acc(t, vx, vz, out) {
+      const sp = Math.sqrt(vx * vx + vz * vz);
+      let ax = -q * cd * sp * vx, az = -q * cd * sp * vz - g;
+      if (useM) {
+        const w = aw0 * Math.exp(-k * t);
+        const S = w * R / Math.sqrt(sp * sp + 1e-12);
+        const Cl = Math.min(p.c1 * S, p.clmax);
+        const f = q * Cl * sp * sgn;
+        ax -= f * vz; az += f * vx;
+      }
+      out[0] = ax; out[1] = az;
+    }
+    const nT = Math.ceil(tMax / dt) + 1;
+    const X = new Float64Array(nT), Z = new Float64Array(nT);
+    const VX = new Float64Array(nT), VZ = new Float64Array(nT);
+    let x = 0, z = 0, vx = v * Math.cos(th), vz = v * Math.sin(th), t = 0, last = nT - 1;
+    VX[0] = vx; VZ[0] = vz;
+    const a1 = [0, 0], a2 = [0, 0], a3 = [0, 0], a4 = [0, 0];
+    for (let n = 1; n < nT; n++) {
+      acc(t, vx, vz, a1);
+      acc(t + dt / 2, vx + dt / 2 * a1[0], vz + dt / 2 * a1[1], a2);
+      acc(t + dt / 2, vx + dt / 2 * a2[0], vz + dt / 2 * a2[1], a3);
+      acc(t + dt, vx + dt * a3[0], vz + dt * a3[1], a4);
+      x += dt * (vx + dt / 6 * (a1[0] + a2[0] + a3[0]));
+      z += dt * (vz + dt / 6 * (a1[1] + a2[1] + a3[1]));
+      vx += dt / 6 * (a1[0] + 2 * a2[0] + 2 * a3[0] + a4[0]);
+      vz += dt / 6 * (a1[1] + 2 * a2[1] + 2 * a3[1] + a4[1]);
+      t += dt;
+      X[n] = x; Z[n] = z; VX[n] = vx; VZ[n] = vz;
+      if (z < zStop && vz < 0) { last = n; break; }
+    }
+    return { X: X.subarray(0, last + 1), Z: Z.subarray(0, last + 1), VX: VX.subarray(0, last + 1),
+             VZ: VZ.subarray(0, last + 1), dt: dt, n: last + 1, w0: w0, k: k };
+  }
+
+  function segPoint(px, pz, ax, az, bx, bz) {
+    const abx = bx - ax, abz = bz - az, den = abx * abx + abz * abz;
+    let t = den > 0 ? ((px - ax) * abx + (pz - az) * abz) / den : 0;
+    t = t < 0 ? 0 : t > 1 ? 1 : t;
+    const dx = px - (ax + t * abx), dz = pz - (az + t * abz);
+    return Math.sqrt(dx * dx + dz * dz);
+  }
+
+  function segSeg(p0x, p0z, p1x, p1z, q0x, q0z, q1x, q1z) {
+    const rx = p1x - p0x, rz = p1z - p0z, sx = q1x - q0x, sz = q1z - q0z;
+    const den = rx * sz - rz * sx;
+    if (Math.abs(den) > 1e-15) {
+      const qpx = q0x - p0x, qpz = q0z - p0z;
+      const t = (qpx * sz - qpz * sx) / den, u = (qpx * rz - qpz * rx) / den;
+      if (t >= 0 && t <= 1 && u >= 0 && u <= 1) return 0;
+    }
+    return Math.min(segPoint(p0x, p0z, q0x, q0z, q1x, q1z), segPoint(p1x, p1z, q0x, q0z, q1x, q1z),
+                    segPoint(q0x, q0z, p0x, p0z, p1x, p1z), segPoint(q1x, q1z, p0x, p0z, p1x, p1z));
+  }
+
+  function insideConvex(px, pz, poly) {
+    let pos = true, neg = true;
+    for (let i = 0; i < poly.length; i++) {
+      const a = poly[i], b = poly[(i + 1) % poly.length];
+      const c = (b[0] - a[0]) * (pz - a[1]) - (b[1] - a[1]) * (px - a[0]);
+      if (c < -1e-12) pos = false;
+      if (c > 1e-12) neg = false;
+    }
+    return pos || neg;
+  }
+
+  // path: result of integrate(); release at (-d, h) in the shot frame. Mirrors classify_path.
+  function classify(path, geom, d, h, R) {
+    const n = path.n, P0 = geom.P0, P1 = geom.P1, ns = P0.length;
+    let lo = 0;
+    // skip the part of the flight far from the HIVE (cheap bounding box; same result)
+    let bx0 = Infinity, bx1 = -Infinity, bz0 = Infinity, bz1 = -Infinity;
+    for (let j = 0; j < ns; j++) {
+      bx0 = Math.min(bx0, P0[j][0], P1[j][0]); bx1 = Math.max(bx1, P0[j][0], P1[j][0]);
+      bz0 = Math.min(bz0, P0[j][1], P1[j][1]); bz1 = Math.max(bz1, P0[j][1], P1[j][1]);
+    }
+    for (const q of geom.inside) {
+      bx0 = Math.min(bx0, q[0]); bx1 = Math.max(bx1, q[0]); bz0 = Math.min(bz0, q[1]); bz1 = Math.max(bz1, q[1]);
+    }
+    const m = R + 0.2;
+    let minC = Infinity, minAt = -1;
+    for (let i = 0; i < n - 1; i++) {
+      const ax = path.X[i] - d, az = path.Z[i] + h, bx = path.X[i + 1] - d, bz = path.Z[i + 1] + h;
+      if (Math.max(ax, bx) < bx0 - m || Math.min(ax, bx) > bx1 + m ||
+          Math.max(az, bz) < bz0 - m || Math.min(az, bz) > bz1 + m) continue;
+      if (i > 0 && insideConvex(ax, az, geom.inside)) {
+        const vx = path.X[i] - path.X[i - 1], vz = path.Z[i] - path.Z[i - 1];
+        return { result: "clean", i: i, hit: null, minClear: minC,
+                 entryAngle: Math.atan2(-vz, Math.abs(vx) + 1e-300) * 180 / Math.PI };
+      }
+      let best = Infinity, bj = -1;
+      for (let j = 0; j < ns; j++) {
+        const dd = segSeg(ax, az, bx, bz, P0[j][0], P0[j][1], P1[j][0], P1[j][1]);
+        if (dd < best) { best = dd; bj = j; }
+      }
+      if (best - R < minC) { minC = best - R; minAt = i; }
+      if (best - R < 0) return { result: "hit", i: i, hit: geom.names[bj], minClear: minC, entryAngle: null };
+    }
+    const lastIn = insideConvex(path.X[n - 1] - d, path.Z[n - 1] + h, geom.inside);
+    if (lastIn) return { result: "clean", i: n - 1, hit: null, minClear: minC, entryAngle: null };
+    return { result: "miss", i: n - 1, hit: null, minClear: minC, entryAngle: null };
+  }
+
+  const api = { integrate: integrate, classify: classify, segSeg: segSeg, insideConvex: insideConvex };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  else root.PollenPhysics = api;
+})(typeof self !== "undefined" ? self : this);
+
+</script>
+<script>
+(function () {
+"use strict";
+const PH = window.PollenPhysics;
+const $ = id => document.getElementById(id);
+const COL = { pollen: 0xf4c430, clean: 0x38d39f, hit: 0xff6b5a, twin: 0xa9b4bf };
+const AERO_NAMES = { nominal: "Nominal (literature middle)", Cd_low: "Low drag (Cd 0.33)", Cd_high: "High drag (Cd 0.9)",
+  Cl_low: "Weak spin lift", Cl_high: "Strong spin lift", k_high: "Fast spin decay" };
+const SPIN_LABEL = { "0": "none", "0.5": "0.5", "1": "1.0", "1.5": "1.5", "-1": "−1 top" };
+
+let IDX, G, NH, ND, NV, NT;
+const st = { d: 0.75, ih: 4, side: "unfav", theta: 80.5, rpm: 3700, vu: 0.42, S: 1.0, aero: "nominal", tilt: "30",
+             fan: true, all: false, twin: true, slow: true };
+const fileCache = new Map();
+
+// ---------------------------------------------------------------- data
+async function loadCase(file) {
+  if (fileCache.has(file)) return fileCache.get(file);
+  // masks ship as base64 text (artifact hosting serves no raw binary): <name>.bin -> <name>.b64.txt
+  const p = fetch("data/" + file.replace(/\.bin$/, ".b64.txt")).then(r => { if (!r.ok) throw new Error(file + " " + r.status); return r.text(); })
+    .then(b64 => { const s = atob(b64.trim()), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u.buffer; })
+    .then(buf => {
+      const n = new Uint32Array(buf, 0, 1)[0];
+      const idx = new Uint32Array(buf, 4, n);
+      const mg = new Uint16Array(buf, 4 + 4 * n, n);
+      const an = new Uint16Array(buf, 4 + 6 * n, n);
+      const count = new Uint32Array(NH * ND);
+      const per = NV * NT;
+      for (let i = 0; i < n; i++) count[Math.floor(idx[i] / per)]++;
+      return { n, idx, mg, an, count };
+    });
+  fileCache.set(file, p);
+  return p;
+}
+function geomKey() { return st.side === "fav" ? "fav_t30" : "unfav_t" + st.tilt; }
+function caseOf(S, v) { return IDX.cases.find(c => c.S === S && c.var === v); }
+function curCase() { return caseOf(st.S, st.aero); }
+function slice(data, ih, id) {
+  const per = NV * NT, base = (ih * ND + id) * per;
+  const clean = new Uint8Array(per), margin = new Float32Array(per), ang = new Float32Array(per);
+  // idx is sorted, so binary-search the slice start
+  let lo = 0, hi = data.n;
+  while (lo < hi) { const m = (lo + hi) >> 1; if (data.idx[m] < base) lo = m + 1; else hi = m; }
+  for (let i = lo; i < data.n && data.idx[i] < base + per; i++) {
+    const k = data.idx[i] - base; clean[k] = 1; margin[k] = data.mg[i] / 1e4; ang[k] = data.an[i] / 100;
+  }
+  return { clean, margin, ang };
+}
+// L-infinity distance to the nearest non-clean cell (two-pass chamfer): k = half-size of the
+// largest clean square centred on each cell, i.e. the shot holds +/- k cells of speed and angle.
+function squareMap(clean) {
+  const D = new Int32Array(NV * NT), BIG = 1 << 20;
+  for (let i = 0; i < NV; i++) for (let j = 0; j < NT; j++) {
+    const k = i * NT + j;
+    if (!clean[k]) { D[k] = 0; continue; }
+    let v = BIG;
+    if (i === 0 || j === 0 || j === NT - 1) v = 1;
+    else v = Math.min(D[k - NT] + 1, D[k - 1] + 1, D[k - NT - 1] + 1, D[k - NT + 1] + 1);
+    D[k] = v;
+  }
+  for (let i = NV - 1; i >= 0; i--) for (let j = NT - 1; j >= 0; j--) {
+    const k = i * NT + j;
+    if (!D[k]) continue;
+    let v = D[k];
+    if (i === NV - 1 || j === 0 || j === NT - 1) v = Math.min(v, 1);
+    else v = Math.min(v, D[k + NT] + 1, D[k + 1] + 1, D[k + NT + 1] + 1, D[k + NT - 1] + 1);
+    D[k] = v;
+  }
+  return D;   // D = k + 1 for clean cells
+}
+
+// ---------------------------------------------------------------- derived shot
+const rpmToV = rpm => st.vu * Math.PI * IDX.wheel_d * rpm / 60;
+const vToRpm = v => v / (st.vu * Math.PI * IDX.wheel_d) * 60;
+const nearest = (arr, x) => { let b = 0; for (let i = 1; i < arr.length; i++) if (Math.abs(arr[i] - x) < Math.abs(arr[b] - x)) b = i; return b; };
+function cell() {
+  const v = rpmToV(st.rpm);
+  return { v, iv: nearest(G.v, v), it: nearest(G.theta, st.theta), id: nearest(G.d, st.d),
+           inGrid: v >= G.v[0] - 0.025 && v <= G.v[NV - 1] + 0.025 };
+}
+
+// ---------------------------------------------------------------- three.js scene
+const canvas = $("gl");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x070b0f);
+scene.fog = new THREE.Fog(0x070b0f, 6, 14);
+const camera = new THREE.PerspectiveCamera(42, 1, 0.01, 60);
+const controls = new THREE.OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.dampingFactor = 0.08;
+controls.maxPolarAngle = Math.PI * 0.495; controls.minDistance = 0.3; controls.maxDistance = 9;
+// world (x toward HIVE, y lateral, z up) -> three (x, z, -y)
+const W = (x, y, z) => new THREE.Vector3(x, z, -y);
+
+scene.add(new THREE.HemisphereLight(0xbfd4ff, 0x1a1408, 0.55));
+const sun = new THREE.DirectionalLight(0xffffff, 0.9);
+sun.position.set(-2.5, 4.5, 2.0); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3, near: 0.5, far: 12 });
+scene.add(sun);
+
+// field: 6 x 6 FTC tiles (24 in), perimeter wall inner face 1.8009 m from the centre line (CAD)
+const FX = 1.8009, HIVE_Y = 0.3236, OTHER_Y = -2 * HIVE_Y;
+(function field() {
+  const c = document.createElement("canvas"); c.width = c.height = 1024;
+  const x = c.getContext("2d");
+  x.fillStyle = "#2a3139"; x.fillRect(0, 0, 1024, 1024);
+  const t = 1024 / 6;
+  for (let i = 0; i < 6; i++) for (let j = 0; j < 6; j++) {
+    x.fillStyle = (i + j) % 2 ? "#2d353e" : "#29313a"; x.fillRect(i * t + 2, j * t + 2, t - 4, t - 4);
+  }
+  x.strokeStyle = "#1b2128"; x.lineWidth = 4;
+  for (let i = 0; i <= 6; i++) { x.beginPath(); x.moveTo(i * t, 0); x.lineTo(i * t, 1024); x.stroke(); x.beginPath(); x.moveTo(0, i * t); x.lineTo(1024, i * t); x.stroke(); }
+  const tex = new THREE.CanvasTexture(c); tex.anisotropy = 4;
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(2 * FX, 2 * FX), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95 }));
+  floor.rotation.x = -Math.PI / 2; floor.position.copy(W(0, -HIVE_Y, 0)); floor.receiveShadow = true;
+  scene.add(floor);
+  const wm = new THREE.MeshStandardMaterial({ color: 0x5a6774, transparent: true, opacity: 0.35, roughness: 0.6 });
+  const L = 2 * FX, H = 0.3;
+  [[0, FX - HIVE_Y, L, 0.02], [0, -FX - HIVE_Y, L, 0.02], [FX, -HIVE_Y, 0.02, L], [-FX, -HIVE_Y, 0.02, L]].forEach(([x0, y0, a, b]) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(a, H, b), wm); m.position.copy(W(x0, y0, H / 2)); scene.add(m);
+  });
+})();
+
+const hiveGroup = new THREE.Group(); scene.add(hiveGroup);
+const ghostGroup = new THREE.Group(); scene.add(ghostGroup);
+const frameGroup = new THREE.Group(); scene.add(frameGroup);
+const CELL_W = 0.508;
+function segBox(p0, p1, y0, y1, mat, thick) {
+  const dx = p1[0] - p0[0], dz = p1[1] - p0[1], len = Math.hypot(dx, dz);
+  const m = new THREE.Mesh(new THREE.BoxGeometry(Math.max(len, 0.004), thick || 0.01, Math.abs(y1 - y0)), mat);
+  m.position.copy(W((p0[0] + p1[0]) / 2, (y0 + y1) / 2, (p0[1] + p1[1]) / 2));
+  m.rotation.z = Math.atan2(dz, dx);
+  m.castShadow = true; m.receiveShadow = true;
+  return m;
+}
+function quad(a, b, c, d, y, mat) {
+  const g = new THREE.BufferGeometry();
+  const P = [a, b, c, a, c, d].map(p => W(p[0], y, p[1]));
+  g.setAttribute("position", new THREE.Float32BufferAttribute(P.flatMap(v => [v.x, v.y, v.z]), 3));
+  g.computeVertexNormals();
+  return new THREE.Mesh(g, mat);
+}
+function clearGroup(gr) { while (gr.children.length) { const o = gr.children.pop(); o.geometry && o.geometry.dispose(); o.material && o.material.dispose && o.material.dispose(); } }
+function buildHive() {
+  clearGroup(hiveGroup); clearGroup(ghostGroup); clearGroup(frameGroup);
+  const gm = IDX.geoms[geomKey()];
+  const body = new THREE.MeshStandardMaterial({ color: 0xc9d2da, roughness: 0.55, metalness: 0.05 });
+  const upMat = new THREE.MeshStandardMaterial({ color: 0xe8edf2, roughness: 0.5 });
+  const frameMat = new THREE.MeshStandardMaterial({ color: 0x4d5965, roughness: 0.7, metalness: 0.3 });
+  const ghost = new THREE.MeshStandardMaterial({ color: 0x8796a4, transparent: true, opacity: 0.22, roughness: 0.8 });
+  const half = CELL_W / 2 + 0.006, yF0 = 0.628 - HIVE_Y, yF1 = -0.628 - HIVE_Y;
+  const named = {};
+  gm.names.forEach((nm, j) => {
+    named[nm] = [gm.P0[j], gm.P1[j]];
+    if (gm.body[j] === "frame_static") { frameGroup.add(segBox(gm.P0[j], gm.P1[j], yF0, yF1, frameMat, 0.012)); return; }
+    hiveGroup.add(segBox(gm.P0[j], gm.P1[j], -half, half, nm.startsWith("up_") ? upMat : body));
+    // the other HIVE (context only): opposite pose at match start, i.e. mirrored section
+    ghostGroup.add(segBox([-gm.P0[j][0], gm.P0[j][1]], [-gm.P1[j][0], gm.P1[j][1]], OTHER_Y - half, OTHER_Y + half, ghost));
+  });
+  // side walls of the up cell (translucent so the inside stays visible)
+  const fl = named.up_floor, rf = named.up_roof_inner, wallMat = new THREE.MeshStandardMaterial({ color: 0xdfe6ec, transparent: true, opacity: 0.18, side: THREE.DoubleSide, depthWrite: false });
+  if (fl && rf) [-half, half].forEach(y => hiveGroup.add(quad(fl[0], fl[1], rf[0], rf[1], y, wallMat)));
+  // entry gate: where the ball centre must cross (inside edge on the mouth plane)
+  const gt = gm.gate, gy = CELL_W / 2 - IDX.ball_radius;
+  const gg = new THREE.BufferGeometry().setFromPoints([W(gt[0][0], -gy, gt[0][1]), W(gt[1][0], -gy, gt[1][1]), W(gt[1][0], gy, gt[1][1]), W(gt[0][0], gy, gt[0][1]), W(gt[0][0], -gy, gt[0][1])]);
+  hiveGroup.add(new THREE.Line(gg, new THREE.LineDashedMaterial({ color: COL.clean, dashSize: 0.02, gapSize: 0.015 })));
+  hiveGroup.children[hiveGroup.children.length - 1].computeLineDistances();
+  // A-frame (drawn in projection: legs to the feet at x = +/-0.495 m, pivot axle at 1.1163 m)
+  const pz = 1.1163;
+  [yF0, yF1].forEach(y => [-1, 1].forEach(sg =>
+    frameGroup.add(segBox([0, pz], [sg * 0.495, 0.0], y - 0.02, y + 0.02, frameMat, 0.04))));
+  const ax = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, Math.abs(yF0 - yF1), 16), frameMat);
+  ax.rotation.x = Math.PI / 2; ax.position.copy(W(0, (yF0 + yF1) / 2, pz)); frameGroup.add(ax);
+}
+
+// robot + flywheel at the release point
+const robot = new THREE.Group(); scene.add(robot);
+function buildRobot() {
+  clearGroup(robot);
+  const h = G.h[st.ih], x = -st.d;
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1d2a36, roughness: 0.6, metalness: 0.2 });
+  const edge = new THREE.MeshStandardMaterial({ color: 0x324456, roughness: 0.5 });
+  const bh = Math.max(h - 0.08, 0.12), fw = 0.457;
+  const b = new THREE.Mesh(new THREE.BoxGeometry(fw, bh, fw), bodyMat);
+  b.position.copy(W(x - fw / 2 + 0.06, 0, bh / 2)); b.castShadow = true; robot.add(b);
+  const top = new THREE.Mesh(new THREE.BoxGeometry(fw + 0.004, 0.012, fw + 0.004), edge);
+  top.position.copy(W(x - fw / 2 + 0.06, 0, bh)); robot.add(top);
+  // 98 mm flywheel under the ball, axis along y; hood arc above it at the launch angle
+  const th = st.theta * Math.PI / 180;
+  const wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.049, 0.049, 0.05, 32), new THREE.MeshStandardMaterial({ color: 0x8a96a2, metalness: 0.6, roughness: 0.35 }));
+  wheel.rotation.x = Math.PI / 2;
+  wheel.position.copy(W(x + (0.049 + IDX.ball_radius) * Math.sin(th), 0, h - (0.049 + IDX.ball_radius) * Math.cos(th)));
+  wheel.castShadow = true; robot.add(wheel); robot.userData.wheel = wheel;
+  const hood = new THREE.Mesh(new THREE.TorusGeometry(0.049 + 2 * IDX.ball_radius + 0.004, 0.004, 6, 32, Math.PI * 0.45),
+    new THREE.MeshStandardMaterial({ color: 0xf4c430, roughness: 0.4, transparent: true, opacity: 0.8 }));
+  hood.position.copy(wheel.position); hood.rotation.z = Math.PI / 2 + th - Math.PI * 0.45; robot.add(hood);
+}
+
+// the ball: yellow perforated shell with one dark stripe so the spin is visible
+const ballTex = (function () {
+  const c = document.createElement("canvas"); c.width = 512; c.height = 256; const x = c.getContext("2d");
+  x.fillStyle = "#f4c430"; x.fillRect(0, 0, 512, 256);
+  x.fillStyle = "#b38708";
+  for (let r = 0; r < 5; r++) for (let k = 0; k < 8; k++) { x.beginPath(); x.arc((k + (r % 2) * 0.5) * 64 + 16, 28 + r * 50, 11, 0, 7); x.fill(); }
+  x.fillStyle = "#3b2c05"; x.fillRect(0, 118, 512, 20);
+  return new THREE.CanvasTexture(c);
+})();
+const ball = new THREE.Mesh(new THREE.SphereGeometry(0.0355, 32, 20), new THREE.MeshStandardMaterial({ map: ballTex, roughness: 0.55 }));
+ball.castShadow = true; scene.add(ball);
+const twinBall = new THREE.Mesh(new THREE.SphereGeometry(0.0355, 20, 14), new THREE.MeshStandardMaterial({ color: 0xa9b4bf, transparent: true, opacity: 0.55 }));
+scene.add(twinBall);
+const hitMark = new THREE.Mesh(new THREE.SphereGeometry(0.018, 16, 10), new THREE.MeshBasicMaterial({ color: COL.hit }));
+const twinHitMark = hitMark.clone(); scene.add(hitMark); scene.add(twinHitMark);
+
+const shotGroup = new THREE.Group(); scene.add(shotGroup);
+const fanGroup = new THREE.Group(); scene.add(fanGroup);
+const standGroup = new THREE.Group(); scene.add(standGroup);
+
+function pathPoints(p, d, h, upto, stride) {
+  const pts = [];
+  for (let i = 0; i <= upto; i += stride) pts.push(W(p.X[i] - d, 0, p.Z[i] + h));
+  if ((upto % stride) !== 0) pts.push(W(p.X[upto] - d, 0, p.Z[upto] + h));
+  return pts;
+}
+function endIndex(p, r, h) {
+  if (r.result !== "miss") return r.i + 1 < p.n ? r.i + 1 : r.i;
+  for (let i = 1; i < p.n; i++) if (p.Z[i] + h < IDX.ball_radius && p.VZ[i] < 0) return i;
+  return p.n - 1;
+}
+
+// ---------------------------------------------------------------- state -> scene
+let shot = null, twin = null, anim = null;
+function flyShot() {
+  const c = cell(), h = G.h[st.ih], gm = IDX.geoms[geomKey()], prm = curCase().params;
+  const p = PH.integrate(c.v, st.theta, st.S, prm);
+  const r = PH.classify(p, gm, st.d, h, IDX.ball_radius);
+  shot = { p, r, end: endIndex(p, r, h) };
+  const prm0 = caseOf(0, st.aero === "nominal" || !caseOf(0, st.aero) ? "nominal" : st.aero).params;
+  const q = PH.integrate(c.v, st.theta, 0, prm0);
+  const rq = PH.classify(q, gm, st.d, h, IDX.ball_radius);
+  twin = { p: q, r: rq, end: endIndex(q, rq, h) };
+  clearGroup(shotGroup);
+  const pts = pathPoints(p, st.d, h, shot.end, 6);
+  if (pts.length > 1) {
+    const tube = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), Math.min(400, pts.length * 3), 0.0045, 8, false),
+      new THREE.MeshStandardMaterial({ color: COL.pollen, emissive: 0x6a4a00, roughness: 0.4 }));
+    shotGroup.add(tube);
+  }
+  if (st.twin && st.S !== 0) {
+    const g = new THREE.BufferGeometry().setFromPoints(pathPoints(q, st.d, h, twin.end, 4));
+    const l = new THREE.Line(g, new THREE.LineDashedMaterial({ color: COL.twin, dashSize: 0.03, gapSize: 0.02 }));
+    l.computeLineDistances(); shotGroup.add(l);
+  }
+  const mark = (m, s) => { m.visible = s.r.result === "hit"; if (m.visible) m.position.copy(W(s.p.X[s.end] - st.d, 0, s.p.Z[s.end] + h)); };
+  mark(hitMark, shot); mark(twinHitMark, twin); twinHitMark.visible = twinHitMark.visible && st.twin && st.S !== 0;
+  placeBalls(1e9);
+}
+function placeBalls(tSec) {
+  const h = G.h[st.ih];
+  const put = (m, s) => { const i = Math.min(s.end, Math.floor(tSec / s.p.dt)); m.position.copy(W(s.p.X[i] - st.d, 0, s.p.Z[i] + h)); return i; };
+  const i = put(ball, shot);
+  // spin: omega(t) = omega0 exp(-k t), about the -y axis for backspin (three: +z)
+  const t = i * shot.p.dt, k = shot.p.k || 0;
+  const angle = k > 0 ? shot.p.w0 * (1 - Math.exp(-k * t)) / k : shot.p.w0 * t;
+  ball.rotation.set(0, 0, angle);
+  twinBall.visible = st.twin && st.S !== 0;
+  if (twinBall.visible) put(twinBall, twin);
+  return i >= shot.end && (!twinBall.visible || Math.floor(tSec / twin.p.dt) >= twin.end);
+}
+function fire() {
+  anim = { t0: performance.now() };
+}
+
+function buildFan(data) {
+  clearGroup(fanGroup);
+  const h = G.h[st.ih], gm = IDX.geoms[geomKey()], prm = curCase().params;
+  const pos = [], col = [];
+  const addPath = (v, th, d, color) => {
+    const p = PH.integrate(v, th, st.S, prm);
+    const r = PH.classify(p, gm, d, h, IDX.ball_radius);
+    const end = r.result === "clean" ? Math.min(r.i + 2, p.n - 1) : endIndex(p, r, h);
+    let prev = null;
+    for (let i = 0; i <= end; i += 5) {
+      const pt = W(p.X[i] - d, 0, p.Z[i] + h);
+      if (prev) { pos.push(prev.x, prev.y, prev.z, pt.x, pt.y, pt.z); col.push(...color, ...color); }
+      prev = pt;
+    }
+  };
+  const ramp = k => { const t = Math.min(1, k / 4); return [0.12 + 0.1 * t, 0.42 + 0.41 * t, 0.36 + 0.26 * t]; };
+  if (st.fan) {
+    const id = nearest(G.d, st.d), sl = slice(data, st.ih, id), D = squareMap(sl.clean);
+    const cells = [];
+    for (let k = 0; k < NV * NT; k++) if (sl.clean[k]) cells.push(k);
+    const step = Math.max(1, Math.ceil(cells.length / (st.all ? 160 : 420)));
+    for (let n = 0; n < cells.length; n += step) {
+      const k = cells[n]; addPath(G.v[Math.floor(k / NT)], G.theta[k % NT], st.d, ramp(D[k] - 1));
+    }
+    fanGroup.userData.count = cells.length;
+  }
+  if (st.all) {
+    for (let id = 0; id < ND; id++) {
+      if (id === nearest(G.d, st.d) && st.fan) continue;
+      const sl = slice(data, st.ih, id), cells = [];
+      for (let k = 0; k < NV * NT; k++) if (sl.clean[k]) cells.push(k);
+      const step = Math.max(1, Math.ceil(cells.length / 10));
+      for (let n = 0; n < cells.length; n += step) { const k = cells[n]; addPath(G.v[Math.floor(k / NT)], G.theta[k % NT], G.d[id], [0.2, 0.55, 0.45]); }
+    }
+  }
+  if (pos.length) {
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+    fanGroup.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: st.all ? 0.38 : 0.5, depthWrite: false })));
+  }
+}
+function buildStandStrip(data) {
+  clearGroup(standGroup);
+  const max = Math.max(1, ...Array.from({ length: ND }, (_, i) => data.count[st.ih * ND + i]));
+  for (let id = 0; id < ND; id++) {
+    const n = data.count[st.ih * ND + id];
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(0.046, 0.3), new THREE.MeshBasicMaterial({
+      color: n ? new THREE.Color().setHSL(0.44, 0.65, 0.12 + 0.38 * n / max) : 0x3a2224, transparent: true, opacity: 0.9 }));
+    m.rotation.x = -Math.PI / 2; m.position.copy(W(-G.d[id], -0.42, 0.002)); standGroup.add(m);
+  }
+}
+
+// ---------------------------------------------------------------- charts
+const tip = $("tip");
+function setupCanvas(cv) {
+  const r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr);
+  const x = cv.getContext("2d"); x.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { x, w: r.width, h: r.height };
+}
+let winGeom = null, standGeom = null, curSlice = null, curSq = null, robustSlice = null;
+function drawWindow() {
+  const cv = $("win"), { x, w, h } = setupCanvas(cv);
+  const L = 46, R = 52, T = 10, B = 34, pw = w - L - R, ph = h - T - B;
+  x.clearRect(0, 0, w, h);
+  x.fillStyle = "#0d141a"; x.fillRect(L, T, pw, ph);
+  // zoom to the part of the grid that has clean cells (plus margin), else the full grid
+  let i0 = NV, i1 = -1, j0 = NT, j1 = -1;
+  for (let i = 0; i < NV; i++) for (let j = 0; j < NT; j++) if (curSlice.clean[i * NT + j]) { i0 = Math.min(i0, i); i1 = Math.max(i1, i); j0 = Math.min(j0, j); j1 = Math.max(j1, j); }
+  const c = cell();
+  if (i1 < 0) { i0 = 0; i1 = NV - 1; j0 = 0; j1 = NT - 1; }
+  i0 = Math.max(0, Math.min(i0, c.iv) - 6); i1 = Math.min(NV - 1, Math.max(i1, c.iv) + 6);
+  j0 = Math.max(0, Math.min(j0, c.it) - 12); j1 = Math.min(NT - 1, Math.max(j1, c.it) + 12);
+  const cw = pw / (j1 - j0 + 1), chh = ph / (i1 - i0 + 1);
+  winGeom = { L, T, pw, ph, i0, i1, j0, j1, cw, chh };
+  for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
+    const k = i * NT + j;
+    if (!curSlice.clean[k]) continue;
+    const kk = curSq[k] - 1, t = Math.min(1, kk / 4);
+    x.fillStyle = `rgb(${Math.round(24 + 32 * t)},${Math.round(92 + 119 * t)},${Math.round(74 + 85 * t)})`;
+    x.fillRect(L + (j - j0) * cw, T + (i1 - i) * chh, Math.ceil(cw), Math.ceil(chh));
+    if (robustSlice && robustSlice[k]) { x.strokeStyle = "#f4c430"; x.lineWidth = 1; x.strokeRect(L + (j - j0) * cw + 0.5, T + (i1 - i) * chh + 0.5, cw - 1, chh - 1); }
+  }
+  // axes: angle (x) and exit speed (y, left) with flywheel rpm on the right
+  x.fillStyle = "#8d9caa"; x.font = "11px 'IBM Plex Mono', monospace"; x.strokeStyle = "#24323f"; x.lineWidth = 1;
+  const tStep = (G.theta[j1] - G.theta[j0]) > 8 ? 2 : (G.theta[j1] - G.theta[j0]) > 3 ? 1 : 0.5;
+  for (let a = Math.ceil(G.theta[j0] / tStep) * tStep; a <= G.theta[j1] + 1e-9; a += tStep) {
+    const px = L + (a - G.theta[j0] + 0.05) / 0.1 * cw;
+    x.beginPath(); x.moveTo(px, T); x.lineTo(px, T + ph); x.stroke();
+    x.textAlign = "center"; x.fillText(a.toFixed(tStep < 1 ? 1 : 0) + "°", px, T + ph + 14);
+  }
+  const vStep = (G.v[i1] - G.v[i0]) > 3 ? 0.5 : (G.v[i1] - G.v[i0]) > 1.2 ? 0.25 : 0.1;
+  for (let v = Math.ceil(G.v[i0] / vStep) * vStep; v <= G.v[i1] + 1e-9; v += vStep) {
+    const py = T + ph - (v - G.v[i0] + 0.025) / 0.05 * chh;
+    x.beginPath(); x.moveTo(L, py); x.lineTo(L + pw, py); x.stroke();
+    x.textAlign = "right"; x.fillText(v.toFixed(vStep < 0.25 ? 1 : 2), L - 5, py + 4);
+    x.textAlign = "left"; x.fillText(Math.round(vToRpm(v)), L + pw + 5, py + 4);
+  }
+  x.textAlign = "center"; x.fillText("launch angle", L + pw / 2, h - 4);
+  x.save(); x.translate(11, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText("exit speed m/s", 0, 0); x.restore();
+  x.save(); x.translate(w - 8, T + ph / 2); x.rotate(Math.PI / 2); x.fillText(`wheel rpm at grip ${st.vu}`, 0, 0); x.restore();
+  // current shot crosshair
+  if (c.iv >= i0 && c.iv <= i1 && c.it >= j0 && c.it <= j1) {
+    const px = L + (c.it - j0 + 0.5) * cw, py = T + (i1 - c.iv + 0.5) * chh;
+    x.strokeStyle = "#f4c430"; x.lineWidth = 2;
+    x.beginPath(); x.arc(px, py, Math.max(5, Math.min(cw, chh)), 0, 7); x.stroke();
+    x.beginPath(); x.moveTo(px - 12, py); x.lineTo(px - 6, py); x.moveTo(px + 6, py); x.lineTo(px + 12, py);
+    x.moveTo(px, py - 12); x.lineTo(px, py - 6); x.moveTo(px, py + 6); x.lineTo(px, py + 12); x.stroke();
+  }
+  x.strokeStyle = "#24323f"; x.strokeRect(L + 0.5, T + 0.5, pw - 1, ph - 1);
+  if (i1 - i0 === NV - 1 && !curSlice.clean.some(Boolean)) {
+    x.fillStyle = "#e3eaf0"; x.font = "14px 'IBM Plex Sans', sans-serif"; x.textAlign = "center";
+    x.fillText("No clean shot from this spot. The HIVE blocks the way in.", L + pw / 2, T + ph / 2);
+  }
+}
+function drawStand(caseData) {
+  const cv = $("stand"), { x, w, h } = setupCanvas(cv);
+  const L = 44, R = 10, T = 12, B = 34, pw = w - L - R, ph = h - T - B;
+  x.clearRect(0, 0, w, h);
+  let max = 1;
+  for (let i = 0; i < NH * ND; i++) max = Math.max(max, caseData.count[i]);
+  standGeom = { L, T, pw, ph, max };
+  const X = d => L + (d - G.d[0]) / (G.d[ND - 1] - G.d[0]) * pw, Y = n => T + ph - n / max * ph;
+  x.strokeStyle = "#24323f"; x.fillStyle = "#8d9caa"; x.font = "11px 'IBM Plex Mono', monospace"; x.lineWidth = 1;
+  const nStep = max > 300 ? 100 : max > 100 ? 50 : 10;
+  for (let n = 0; n <= max; n += nStep) { x.beginPath(); x.moveTo(L, Y(n)); x.lineTo(L + pw, Y(n)); x.stroke(); x.textAlign = "right"; x.fillText(n, L - 5, Y(n) + 4); }
+  for (let d = 0.6; d <= 1.751; d += 0.2) { x.textAlign = "center"; x.fillText(d.toFixed(1), X(d), T + ph + 14); }
+  x.fillText("distance to HIVE pivot plane (m)", L + pw / 2, h - 4);
+  const hues = ["#3b5d6e", "#4b7f86", "#5aa497", "#78c9a4", "#f4c430"];
+  for (let ih = 0; ih < NH; ih++) {
+    x.strokeStyle = hues[ih]; x.lineWidth = ih === st.ih ? 2.5 : 1.4; x.beginPath();
+    for (let id = 0; id < ND; id++) { const px = X(G.d[id]), py = Y(caseData.count[ih * ND + id]); id ? x.lineTo(px, py) : x.moveTo(px, py); }
+    x.stroke();
+    x.fillStyle = hues[ih]; x.textAlign = "left";
+    x.fillText(`h ${G.h[ih]}`, L + 6 + ih * Math.min(70, pw / 5), T + 12);
+  }
+  const px = X(G.d[nearest(G.d, st.d)]), py = Y(caseData.count[st.ih * ND + nearest(G.d, st.d)]);
+  x.fillStyle = "#f4c430"; x.beginPath(); x.arc(px, py, 5, 0, 7); x.fill();
+  x.strokeStyle = "rgba(244,196,48,.4)"; x.setLineDash([3, 3]); x.beginPath(); x.moveTo(px, T); x.lineTo(px, T + ph); x.stroke(); x.setLineDash([]);
+}
+
+// ---------------------------------------------------------------- UI wiring
+function segButtons(el, items, get, set) {
+  el.innerHTML = "";
+  items.forEach(([val, label]) => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.dataset.v = val;
+    b.addEventListener("click", () => { set(val); refresh(); });
+    el.appendChild(b);
+  });
+  el._sync = () => el.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === String(get()))));
+}
+function syncSeg(el, get, disable) {
+  el.querySelectorAll("button").forEach(b => { b.setAttribute("aria-pressed", String(b.dataset.v === String(get()))); b.disabled = disable ? disable(b.dataset.v) : false; });
+}
+
+let refreshToken = 0, pending = null;
+function refresh(opts) {   // coalesce bursts (slider drags) into one run per animation frame
+  const first = !pending; pending = Object.assign(pending || {}, opts || {});
+  if (first) requestAnimationFrame(() => { const o = pending; pending = null; doRefresh(o).catch(e => console.error(e)); });
+}
+async function doRefresh(opts) {
+  opts = opts || {};
+  const tok = ++refreshToken;
+  // only the nominal air case has the tilt bounds and the near side; fall back if needed
+  if (st.side === "fav" || st.tilt !== "30") st.aero = "nominal";
+  if (st.S === 0 && !["nominal", "Cd_low", "Cd_high"].includes(st.aero)) st.aero = "nominal";
+  const cs = curCase(), gk = geomKey();
+  const data = await loadCase(cs.files[gk].file);
+  if (tok !== refreshToken) return;
+  const id = nearest(G.d, st.d);
+  curSlice = slice(data, st.ih, id); curSq = squareMap(curSlice.clean);
+  // robust overlay: clean under every air case for this spin (far side, tilt 30 only)
+  robustSlice = null;
+  if (gk === "unfav_t30") {
+    const vars = IDX.cases.filter(c => c.S === st.S);
+    const all = await Promise.all(vars.map(c => loadCase(c.files.unfav_t30.file)));
+    if (tok !== refreshToken) return;
+    robustSlice = new Uint8Array(NV * NT).fill(1);
+    all.forEach(dd => { const s = slice(dd, st.ih, id); for (let k = 0; k < NV * NT; k++) robustSlice[k] &= s.clean[k]; });
+  }
+  buildHive(); buildRobot(); flyShot(); buildFan(data); buildStandStrip(data);
+  syncUI(data);
+  drawWindow(); drawStand(data);
+  if (opts.fire !== false) fire();
+}
+function syncUI(data) {
+  const c = cell(), h = G.h[st.ih], k = c.iv * NT + c.it;
+  $("d").value = st.d; $("d-o").textContent = st.d.toFixed(2) + " m";
+  $("th").value = st.theta; $("th-o").textContent = st.theta.toFixed(1) + "°";
+  $("rpm").value = Math.round(st.rpm); $("rpm-o").textContent = Math.round(st.rpm) + " rpm";
+  syncSeg($("h-seg"), () => st.ih);
+  syncSeg($("side-seg"), () => st.side);
+  syncSeg($("vu-seg"), () => st.vu);
+  syncSeg($("s-seg"), () => st.S);
+  syncSeg($("tilt-seg"), () => st.tilt, v => st.side === "fav" && v !== "30");
+  const aero = $("aero");
+  aero.innerHTML = "";
+  IDX.cases.filter(cc => cc.S === st.S).forEach(cc => {
+    const o = document.createElement("option"); o.value = cc.var; o.textContent = AERO_NAMES[cc.var] || cc.var;
+    o.disabled = (st.side === "fav" || st.tilt !== "30") && cc.var !== "nominal"; aero.appendChild(o);
+  });
+  aero.value = st.aero;
+  $("world-note").textContent = st.side === "fav" || st.tilt !== "30"
+    ? "Tilt 28.5° / 31.5° and the near side were run with the nominal air case only."
+    : "Every air case is a literature range, not a POLLEN measurement. Yellow outlines in the window = clean in every air case for this spin.";
+  const spinRpm = Math.abs(st.S) * c.v / IDX.ball_radius * 60 / (2 * Math.PI);
+  const inGridNote = c.inGrid ? "" : " (outside the model grid 5–10.5 m/s)";
+  $("exit").innerHTML = `<dt>Exit speed</dt><dd>${c.v.toFixed(2)} m/s${inGridNote}</dd>
+    <dt>Model grid cell</dt><dd>${G.v[c.iv].toFixed(2)} m/s · ${G.theta[c.it].toFixed(1)}°</dd>
+    <dt>Ball spin</dt><dd>${st.S === 0 ? "none" : Math.round(spinRpm) + " rpm " + (st.S > 0 ? "back" : "top")}</dd>
+    <dt>Release</dt><dd>${st.d.toFixed(2)} m out, ${h} m up</dd>`;
+  // verdict from the model grid (authoritative), with the replay's detail
+  const clean = c.inGrid && curSlice.clean[k] === 1;
+  const sq = clean ? curSq[k] - 1 : -1;
+  const r = shot.r, tw = twin.r;
+  let html = "";
+  if (clean) {
+    html += `<span class="pill clean">CLEAN ENTRY · descends ${curSlice.ang[k].toFixed(1)}° · ${(curSlice.margin[k] * 1000).toFixed(0)} mm clearance</span>`;
+    html += `<span class="pill clean">holds ±${(sq * 0.05).toFixed(2)} m/s and ±${(sq * 0.1).toFixed(1)}°</span>`;
+  } else if (r.result === "hit") html += `<span class="pill hit">TOUCHES ${prettyPart(r.hit)} first</span>`;
+  else if (r.result === "clean") html += `<span class="pill clean">CLEAN in the replay, at the window edge</span>`;
+  else html += `<span class="pill miss">MISSES the cell</span>`;
+  if (st.S !== 0 && st.twin) html += `<span class="pill twin">no-spin twin: ${tw.result === "clean" ? "clean" : tw.result === "hit" ? "touches " + prettyPart(tw.hit) : "misses"}</span>`;
+  $("verdict").innerHTML = html;
+  $("win-cap").textContent = `Release ${st.d.toFixed(2)} m out, ${h} m up, backspin ${SPIN_LABEL[String(st.S)]}, ${AERO_NAMES[st.aero].toLowerCase()}, ${st.side === "fav" ? "near side" : "far side"}, tilt ${st.tilt}°. ` +
+    `${curSlice.clean.reduce((a, b) => a + b, 0)} clean squares of 0.05 m/s × 0.1°; brighter = holds more error. ` +
+    (robustSlice ? `${robustSlice.reduce((a, b) => a + b, 0)} are clean in every air case (yellow outline). ` : "") + "Click a square to load it.";
+  void data;
+}
+function prettyPart(n) {
+  if (!n) return "the HIVE";
+  const m = { up_roof_outer: "the up-cell roof (top)", up_upper_lip: "the upper lip", up_roof_inner: "the roof inside",
+    up_floor: "the cell floor", up_lower_lip: "the lower lip", up_back_wall: "the back wall", up_underside: "the cell underside",
+    down_back_wall: "the down cell", down_roof_outer: "the down cell", down_upper_lip: "the down cell lip", down_roof_inner: "the down cell",
+    down_floor: "the down cell", down_lower_lip: "the down cell lip", down_underside: "the down cell", pivot_plate_top: "the pivot plate" };
+  return m[n] || n.replace(/_/g, " ");
+}
+
+function pickBest(here) {
+  // most forgiving cell: largest centred clean square, ties broken by clearance
+  let best = -1, bk = -1;
+  for (let k = 0; k < NV * NT; k++) if (curSlice.clean[k]) {
+    const s = (curSq[k] - 1) * 1000 + curSlice.margin[k];
+    if (s > best) { best = s; bk = k; }
+  }
+  if (bk < 0) return false;
+  st.theta = G.theta[bk % NT];
+  st.rpm = vToRpm(G.v[Math.floor(bk / NT)]);
+  void here;
+  return true;
+}
+
+// ---------------------------------------------------------------- camera + render loop
+function view(name) {
+  const h = G ? G.h[st.ih] : 0.7, mid = W(-st.d / 2 + 0.2, 0, 1.0);
+  const V = {
+    side: [W(-st.d / 2 + 0.2, -3.6, 1.1), mid],
+    iso: [W(-st.d - 1.4, -2.2, 2.0), W(0, 0, 1.0)],
+    shooter: [W(-st.d - 0.7, -0.35, h + 0.35), W(0.3, 0, 1.45)],
+    cell: [W(1.05, -0.35, 2.15), W(0.32, 0, 1.45)],
+    top: [W(-0.4, -0.001, 4.6), W(-0.4, 0, 0)],
+  }[name];
+  camera.position.copy(V[0]); controls.target.copy(V[1]); controls.update();
+}
+["side", "iso", "shooter", "cell", "top"].forEach(n => $("v-" + n).addEventListener("click", () => view(n)));
+function resize() {
+  const r = canvas.getBoundingClientRect();
+  renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix();
+}
+let roPending = false;
+new ResizeObserver(() => {
+  if (roPending) return; roPending = true;
+  requestAnimationFrame(() => { roPending = false; resize(); if (curSlice) { drawWindow(); loadCase(curCase().files[geomKey()].file).then(drawStand).catch(() => {}); } });
+}).observe(document.body);
+function loop(now) {
+  requestAnimationFrame(loop);
+  controls.update();
+  if (anim && shot) {
+    const t = (now - anim.t0) / 1000 * (st.slow ? 0.25 : 1);
+    if (placeBalls(t)) anim = null;
+  }
+  if (robot.userData.wheel) robot.userData.wheel.rotation.y += 0.25;
+  renderer.render(scene, camera);
+}
+
+// ---------------------------------------------------------------- boot
+async function boot() {
+  IDX = await fetch("data/index.json").then(r => r.json());
+  G = IDX.grid; NH = G.h.length; ND = G.d.length; NV = G.v.length; NT = G.theta.length;
+  const d = $("d"); d.min = G.d[0]; d.max = G.d[ND - 1]; d.step = 0.05;
+  const th = $("th"); th.min = G.theta[0]; th.max = G.theta[NT - 1]; th.step = 0.1;
+  const rpm = $("rpm"); rpm.min = 1500; rpm.max = 9000; rpm.step = 1;
+  segButtons($("h-seg"), G.h.map((h, i) => [i, h + " m"]), () => st.ih, v => { st.ih = +v; });
+  segButtons($("vu-seg"), IDX.v_over_u.map(r => [r, r.toFixed(2)]), () => st.vu, v => { const vv = rpmToV(st.rpm); st.vu = +v; st.rpm = vToRpm(vv); });
+  segButtons($("s-seg"), [[0, "none"], [0.5, "0.5"], [1, "1.0"], [1.5, "1.5"], [-1, "−1 top"]], () => st.S, v => { st.S = +v; });
+  segButtons($("tilt-seg"), [["28.5", "28.5°"], ["30", "30° (CAD)"], ["31.5", "31.5°"]], () => st.tilt, v => { st.tilt = v; });
+  $("side-seg").querySelectorAll("button").forEach(b => b.addEventListener("click", () => { st.side = b.dataset.v; if (st.side === "fav") st.tilt = "30"; refresh(); }));
+  d.addEventListener("input", () => { st.d = +d.value; refresh({ fire: false }); });
+  d.addEventListener("change", () => fire());
+  th.addEventListener("input", () => { st.theta = +th.value; refresh({ fire: false }); });
+  th.addEventListener("change", () => fire());
+  rpm.addEventListener("input", () => { st.rpm = +rpm.value; refresh({ fire: false }); });
+  rpm.addEventListener("change", () => fire());
+  $("aero").addEventListener("change", e => { st.aero = e.target.value; refresh(); });
+  [["c-fan", "fan"], ["c-all", "all"], ["c-twin", "twin"], ["c-slow", "slow"]].forEach(([id, key]) =>
+    $(id).addEventListener("change", e => { st[key] = e.target.checked; if (key !== "slow") refresh(); }));
+  $("fire").addEventListener("click", fire);
+  $("best").addEventListener("click", () => { if (pickBest(true)) refresh(); });
+  $("beststand").addEventListener("click", async () => {
+    const data = await loadCase(curCase().files[geomKey()].file);
+    let bi = 0; for (let i = 0; i < NH * ND; i++) if (data.count[i] > data.count[bi]) bi = i;
+    st.ih = Math.floor(bi / ND); st.d = G.d[bi % ND];
+    curSlice = slice(data, st.ih, bi % ND); curSq = squareMap(curSlice.clean); pickBest(); refresh(); view("iso");
+  });
+  // window chart: hover + click
+  const win = $("win");
+  const winCell = e => {
+    if (!winGeom) return null;
+    const r = win.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top, g = winGeom;
+    if (px < g.L || px > g.L + g.pw || py < g.T || py > g.T + g.ph) return null;
+    return { j: g.j0 + Math.floor((px - g.L) / g.cw), i: g.i1 - Math.floor((py - g.T) / g.chh) };
+  };
+  win.addEventListener("mousemove", e => {
+    const c = winCell(e); if (!c) { tip.hidden = true; return; }
+    const k = c.i * NT + c.j, ok = curSlice.clean[k];
+    tip.hidden = false; tip.style.left = (e.clientX + 14) + "px"; tip.style.top = (e.clientY + 12) + "px";
+    tip.textContent = `${G.v[c.i].toFixed(2)} m/s (${Math.round(vToRpm(G.v[c.i]))} rpm) · ${G.theta[c.j].toFixed(1)}° · ` +
+      (ok ? `clean, holds ±${((curSq[k] - 1) * 0.05).toFixed(2)} m/s ±${((curSq[k] - 1) * 0.1).toFixed(1)}°` : "not clean");
+  });
+  win.addEventListener("mouseleave", () => { tip.hidden = true; });
+  win.addEventListener("click", e => { const c = winCell(e); if (!c) return; st.theta = G.theta[c.j]; st.rpm = vToRpm(G.v[c.i]); refresh(); });
+  const stand = $("stand");
+  stand.addEventListener("click", async e => {
+    if (!standGeom) return;
+    const r = stand.getBoundingClientRect(), g = standGeom, px = e.clientX - r.left, py = e.clientY - r.top;
+    const dd = G.d[0] + (px - g.L) / g.pw * (G.d[ND - 1] - G.d[0]);
+    const id = Math.max(0, Math.min(ND - 1, Math.round((dd - G.d[0]) / 0.05)));
+    const data = await loadCase(curCase().files[geomKey()].file);
+    const n = g.max * (1 - (py - g.T) / g.ph);
+    let ih = st.ih, bd = Infinity;
+    for (let k = 0; k < NH; k++) { const dist = Math.abs(data.count[k * ND + id] - n); if (dist < bd) { bd = dist; ih = k; } }
+    st.d = G.d[id]; st.ih = ih; refresh();
+  });
+  $("prov").textContent = "Data: " + IDX.label + ". Flight integrator: " + IDX.integrator.method + ", dt " + IDX.integrator.dt + " s.";
+  // open on the CAD-card spot: h 0.737 m, d 0.75 m, backspin S 1.0, most forgiving shot there
+  st.ih = NH - 1; st.d = 0.75;
+  const data = await loadCase(curCase().files[geomKey()].file);
+  curSlice = slice(data, st.ih, nearest(G.d, st.d)); curSq = squareMap(curSlice.clean); pickBest();
+  resize(); view("iso");
+  await doRefresh();
+  $("loading").hidden = true;
+  requestAnimationFrame(loop);
+}
+boot().catch(err => { $("loading").textContent = "Could not load the shot grid: " + err.message; console.error(err); });
+})();
+</script>
