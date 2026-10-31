@@ -1,0 +1,333 @@
+% =============================================================================================
+\section{Whole-field model, live solver and missing effects}
+\label{sec:field}
+
+Sections~\ref{sec:geometry}--\ref{sec:robust_spec} treat one shot straight down the HIVE tipping
+plane. This section describes how the same flight model is used for a release point anywhere on the
+field (the explorer's Robot view, \code{viz/explorer/solver.js}, with a Python copy in
+\code{src/}), which effects were added on top of it, and which effects are still missing. Every
+window here is model output\predicted{} with the literature aerodynamics\assumed; none of it is a
+hit rate.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Whole-field oblique model}
+\label{sec:field-oblique}
+
+The release point is $(x,y)$ in the field frame of the HIVE section: $x$ along the shot axis with the
+pivot plane at $x=0$, the far (unfavourable) side at $x<0$, and the up-cell gate centre at
+$(x_g,0)$ with $x_g=0.401$\,\unit{m}\derived. The shot is aimed at the gate centre. With
+$d=|x|$ the distance to the pivot plane,
+\begin{equation}
+  L_h=\begin{cases} d+x_g & \text{far side},\\ \max(d-x_g,\,10^{-3}\,\text{m}) & \text{near side},\end{cases}
+  \qquad \psi=\arctan\frac{|y|}{L_h},
+  \label{eq:field-psi}
+\end{equation}
+where $\psi$ is the bearing off the HIVE centre line\derived. The ball flies in the vertical plane of
+that bearing with its spin axis perpendicular to it, so there is no sideways Magnus force. Its
+in-plane path is the planar path of Section~\ref{sec:flight} with the horizontal coordinate and
+velocity projected on the shot axis,
+\begin{equation}
+  X_{\text{axis}}(t)=X(t)\cos\psi,\qquad V_{X,\text{axis}}(t)=V_X(t)\cos\psi,
+  \label{eq:field-proj}
+\end{equation}
+and the lateral offset of the ball centre from the cell centre line is
+$s(t)=(x_g-x_{\text{axis}}(t))\tan\psi$. The projection is exact for walls extruded along $y$ and
+still air. Bearings above $60^\circ$\assumed{} are flagged as extrapolated.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{The 3D cell: side walls and pentagon roof}
+\label{sec:field-cell3d}
+
+The precomputed maps use the centre section at one assumed lateral offset per bearing and do not
+model the side walls. The live solver instead tests the ball-centre path $(x,y,z)$ against the cell
+as 3D faces inflated by $R=0.0355$\,\unit{m}\confirmed: the centre section extruded across the cell,
+side walls at $\pm0.254$\,\unit{m}\confirmed{} with inner face, rim and outer face, wall thickness
+$0.0508$\,\unit{m}\assumed, and a pentagon roof whose ridge drops linearly towards the side walls
+(from the opening profile $0.3556\to0.19329$\,\unit{m} over $0.254$\,\unit{m}\derived). The
+clearance is the exact segment-to-polygon distance minus $R$. A shot is clean when the centre enters
+the cell interior before any face comes closer than $R$.
+
+At $\psi=0$ with the ridge off the 3D test reproduces the section test exactly (2500 shots per side).
+With the ridge on it is slightly stricter on the centre line, because the roof is lower off it. Off
+the centre line the 3D cell is usually more permissive than the old single-offset section: at
+$d=1.0$\,\unit{m}, $h=0.5$\,\unit{m}, $S=1.0$ the far-side clean grid cells go from $306$ to $301$ at
+$\psi=0$, from $212$ to $309$ at $20^\circ$ and from $164$ to $362$ at $40^\circ$\predicted{} (no-spin
+twin $348\to346$, $253\to347$, $186\to401$\predicted). These are counts on a coarse search grid, not
+probabilities.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Live solver: knife-edge and tolerant minima}
+\label{sec:field-solver}
+
+For a continuous release point and height the solver flies a coarse grid (exit speed $2$--$16$\,\unit{m/s}
+in $0.1$\,\unit{m/s} steps, hood angle in $0.1^\circ$ far-side or $0.25^\circ$ near-side steps) and then
+refines near the minima. It reports two kinds of minimum:
+\begin{itemize}
+  \item \textbf{Knife edge} (\code{minRpm}, \code{minAngle}): the lowest clean exit speed or hood angle the
+    search found. These are grazing shots. Their clearance is typically $0$--$0.5$\,\unit{mm}\predicted, and the
+    value moves with the resolution because the window edge carries about $0.1^\circ$ of path-sampling noise
+    at the $2$\,\unit{ms} step. They are shown, but a robot must not be set there.
+  \item \textbf{Tolerant} (\code{minRpmTol}, \code{minAngleTol}): the lowest speed whose continuous clean
+    hood-angle run is at least $0.2^\circ$\assumed{} wide, and the lowest hood angle whose continuous clean
+    speed run is at least $0.1$\,\unit{m/s}\assumed{} wide, with clearance $\ge2$\,\unit{mm}\assumed{} at every
+    sample. The most forgiving shot is the centre of the largest all-clean square on the search grid.
+\end{itemize}
+Every result is solved twice: with the chosen backspin and as the no-spin twin ($S=0$, no Magnus
+term), with the same air and drag settings. The fused integrate-and-classify fast path is checked
+against the reference integrator and classifier for equal class and clearance to $10^{-12}$\,\unit{m}.
+
+At the explorer's default robot spot ($x=-1.0$, $y=0.2$\,\unit{m}\userval, $h=0.737$\,\unit{m}\userval,
+$\psi=8.1^\circ$\derived, $S=1.0$\assumed, $v/u=0.42$\assumed, nominal aerodynamics) the solver gives
+\begin{center}
+\begin{tabular}{@{}lcc@{}}
+  \toprule
+  & backspin $S=1.0$ & no-spin twin $S=0$ \\
+  \midrule
+  knife-edge min.\ rpm & $2677$\,rpm at $71.74^\circ$\predicted{} & $2682$\,rpm at $72.86^\circ$\predicted \\
+  tolerant min.\ rpm & $2784$\,rpm at $73.30^\circ$\predicted{} & $2784$\,rpm at $74.47^\circ$\predicted \\
+  tolerant min.\ hood angle & $75.80^\circ$ at $3023$\,rpm\predicted{} & $77.30^\circ$ at $3034$\,rpm\predicted \\
+  most forgiving & $4269$\,rpm at $80.8^\circ$\predicted{} & $4872$\,rpm at $84.7^\circ$\predicted \\
+  \bottomrule
+\end{tabular}
+\end{center}
+The rpm values are derived from the exit speed with the assumed grip and a $98$\,\unit{mm}\userval{}
+wheel. The knife-edge clearance at the minimum rpm is $0.63$\,\unit{mm}\predicted. At this spot backspin
+does not lower the tolerant minimum wheel speed; it lowers the hood angle at that speed by about
+$1.2^\circ$\predicted. More spin is not always better: the lift saturates (Section~\ref{sec:flight}).
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Robot and turret view}
+\label{sec:field-robot}
+
+The Robot view places a $0.457$\,\unit{m}\confirmed{} robot anywhere on the field at any heading. The
+release point is the robot centre at the chosen height\assumed, and a turret aims at the cell centre
+exactly\assumed. The page reports the turret yaw relative to the robot front and, if the chosen turret
+travel ($360^\circ$, $\pm180^\circ$, $\pm90^\circ$, $\pm45^\circ$ or fixed) cannot reach that yaw, how far
+to turn the robot. Poses inside the A-frame base are illegal; the second HIVE is only flagged as an
+obstacle. The recommended setting is the most forgiving shot, unless it needs more exit speed than the
+grip limit below. In that case the lowest tolerant wheel speed is recommended. At the default spot the most forgiving
+shot ($4269$\,rpm, about $9.2$\,\unit{m/s}\predicted) is above the limit, so the page recommends
+$2784$\,rpm at $73.3^\circ$\predicted{} (twin $2784$\,rpm at $74.5^\circ$\predicted).
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Venue air, drag options, drafts and the grip limit}
+\label{sec:field-options}
+
+These were added from the ranked list in \code{research/MISSING\_EFFECTS.md} because they need no new
+measurement. Python (\code{src/air.py}, \code{src/feasibility.py}) and JavaScript (\code{physics.js},
+\code{solver.js}) carry the same formulas. Tests compare trajectories from the two at
+$2\times10^{-6}$ relative, which is the float32 storage limit.
+
+\paragraph{Air density.} Simplified CIPM-2007 with a Magnus-form vapour pressure and a US Standard
+Atmosphere pressure from altitude,
+\begin{equation}
+  \rho=\frac{p-0.378\,e}{R_d\,T},\quad e=\phi\,611.2\exp\frac{17.62\,t}{243.12+t},\quad
+  p=101325\,(1-2.25577\times10^{-5}\,z)^{5.25588},
+  \label{eq:field-rho}
+\end{equation}
+with $R_d=287.06$\,\unit{J/(kg\,K)}, $t$ in \unit{$^\circ$C}, $T=t+273.15$, humidity $\phi$ and altitude
+$z$ in \unit{m} (user inputs). Viscosity follows Sutherland's law. Still air at $20^\circ$C,
+$101.325$\,\unit{kPa}, dry gives $\rho=1.2041$\,\unit{kg/m\textsuperscript{3}}\derived{} and
+$\nu=1.506\times10^{-5}$\,\unit{m$^2$/s}\derived. This is now the live solver's default instead of the
+rounded $1.20$\assumed{} used by the precomputed maps. At the default spot the change moves the tolerant
+minimum from $2793$\,rpm at $73.43^\circ$ to $2784$\,rpm at $73.30^\circ$\predicted. The twin stays at
+$2784$\,rpm at $74.47^\circ$\predicted{} to the precision shown.
+
+\paragraph{Drag options.} $C_d$ stays the constant literature value by default. Two alternatives are
+available. The first is the smooth-sphere correlation $C_d(\mathrm{Re})$ of Morrison (2013), a reference
+curve for a ball without holes and not a POLLEN fact. The second is a what-if partial drag crisis that
+falls from the constant $C_d$ to $0.33$\assumed{} with a smoothstep between $\mathrm{Re}=3\times10^4$ and
+$5\times10^4$\assumed. Backspin can add drag:
+\begin{equation}
+  C_d\leftarrow C_d+\Delta C_d\,\min(S/0.6,\,1),\qquad \Delta C_d\in\{0,\,0.08,\,0.18\}\assumed .
+  \label{eq:field-spindrag}
+\end{equation}
+The no-spin twin has $S=0$ and never gets this term.
+
+\paragraph{Draft.} A steady draft $\vect{w}=(w_\parallel,w_z)$ in the shot plane (user input) enters
+through the relative velocity $\vect{v}_{\text{rel}}=\vect{v}-\vect{w}$. Drag, Magnus force and $S$ all
+use it. A sideways part is an option on the 3D path (Section~\ref{sec:field-move}).
+
+\paragraph{Grip limit.} An answer that needs an exit speed above $8.9$\,\unit{m/s}\predicted{}
+(the hood launcher model of Section~\ref{sec:launcher}) is flagged, not removed. Above that speed,
+$v/u$ and $S$ are uncertain.
+
+\paragraph{Effect at the default spot} (tolerant minimum rpm and its hood angle, twin in brackets; all
+\predicted):
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  option & backspin $S=1.0$ & twin $S=0$ \\
+  \midrule
+  still air (default) & $2784$\,rpm, $73.30^\circ$ & $2784$\,rpm, $74.47^\circ$ \\
+  Morrison $C_d(\mathrm{Re})$ & $2775$\,rpm, $73.64^\circ$ & $2765$\,rpm \\
+  what-if drag drop & as still air ($\mathrm{Re}<3\times10^4$ here) & as still air \\
+  spin drag $\Delta C_d=0.18$ & $2821$\,rpm, $72.98^\circ$ & $2784$\,rpm (no term) \\
+  tail draft $0.3$\,\unit{m/s} & $2803$\,rpm, $73.84^\circ$ & $2784$\,rpm, $74.8^\circ$ \\
+  updraft $0.3$\,\unit{m/s} & $2793$\,rpm, $73.84^\circ$ & $2765$\,rpm \\
+  altitude $1600$\,\unit{m} ($\rho=0.9925$\derived) & $2775$\,rpm, $73.77^\circ$ & $2765$\,rpm, $74.61^\circ$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+No tolerant minimum at this spot is grip-limited. Each option moves the hood angle by up to about
+$0.5^\circ$\predicted, which is wider than the $0.2^\circ$\assumed{} tolerance. A venue therefore needs
+its own aim check.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Shooting on the move, hit chance and lift options}
+\label{sec:field-move}
+
+These options come from the same ranked list (\code{research/MISSING\_EFFECTS.md}, build-next 2a--2f). All
+are off by default, so the default answer above is unchanged. Python (\code{src/robustness.py},
+\code{src/air.py}, \code{src/flight.py}) and JavaScript (\code{solver.js}, \code{physics.js}) agree on
+launch states to $10^{-12}$, on 3D paths to $10^{-9}$ relative and on every Monte Carlo count
+(\code{tests/test\_move.py}, \code{tests/js\_move\_check.js}).
+
+\paragraph{Moving robot.} The robot's ground velocity at the exit point is
+$\vect{v}_r=a\,\hat{\vect{u}}+c\,\hat{\vect{n}}+\omega_z\hat{\vect{z}}\times\vect{r}_{\text{exit}}$,
+with $\hat{\vect{u}}$ the horizontal aim direction, $\hat{\vect{n}}=\hat{\vect{z}}\times\hat{\vect{u}}$, and the
+speeds $a$, $c$ and turn rate $\omega_z$ user inputs (field-frame $v_x$, $v_y$ are also accepted). The ball
+leaves with
+\begin{equation}
+  \vect{v}_0=\vect{v}_{\text{shooter}}(v,\ \theta_e)+\vect{v}_r,\qquad \theta_e=\theta_{\text{hood}}+\delta_0,
+  \label{eq:field-move}
+\end{equation}
+where $\delta_0$ is an exit-angle offset (\assumed, default $0$). With lead on (default) the shooter turns so the
+sideways part of $\vect{v}_0$ cancels, which needs $|\vect{v}_r\cdot\hat{\vect{n}}|\le v\cos\theta_e$. The
+backspin axis is horizontal and normal to the shooter direction, plus $\omega_z$ about the vertical; the
+no-spin twin has no backspin. The flight is then 3D in the 3D cell, with a sideways draft allowed. The solver
+also reports how far the centre of the clean run moves per $0.1$\,m/s toward the goal and sideways.
+
+\paragraph{Hit chance.} At one setting the solver fires $n=1000$ shots per aero set (lift low, nominal and
+high) with ASSUMED Gaussian launch scatter: speed $1.5\,\%$, elevation $0.40^\circ$, heading $0.50^\circ$
+($1\sigma$, the nominal set of Section~\ref{sec:robust_spec-mc}). All sets and the twin use the same seeded
+draws. The result is $k/n$ with a Wilson $95\,\%$ interval (Section~\ref{sec:robust_spec-wilson}). It is a
+model probability under assumed scatter, not a measured repeatability. At the default spot and the recommended
+$2784$\,rpm, $73.3^\circ$: nominal $0.124$ $[0.105,\,0.146]$, lift low $0.092$, lift high $0.074$; the twin
+at its own setting ($2784$\,rpm, $74.47^\circ$) about $0.13$ (all \predicted). Backspin does not raise the
+chance here.
+
+\paragraph{Lift options.} Gyro-correct spin ratio $S_\perp=|\vect{\omega}\times\vect{v}_{\text{rel}}|R/
+|\vect{v}_{\text{rel}}|^2$ on the 3D path (equal to $S$ for pure backspin, tested). A user table $C_l(S)$,
+linear between points and flat after the last. Reverse Magnus: when $\mathrm{Re}<4.6\times10^4$ and
+$S<0.5$ the lift blends (smoothstep near both bounds) to $-C_{l,\text{rev}}\min(S/0.1,1)$, $C_{l,\text{rev}}\in[0,0.1]$\assumed{} (smooth-sphere
+data of Kim et al.\ 2014 and Kray et al.\ 2012, not POLLEN).
+
+\paragraph{Effective mass.} $\varepsilon=(0.5+\phi)\rho V/m$ with $\phi\in[0,1]$\assumed{} the share of the
+air inside the ball that moves with it, and
+$\dot{\vect{v}}=(\vect{F}_{\text{aero}}/m+\vect{g})/(1+\varepsilon)$. For POLLEN
+$\varepsilon=0.0045$ to $0.0136$\derived. Default $\varepsilon=0$.
+
+\paragraph{Effect at the default spot} (tolerant minimum rpm and hood angle; \predicted):
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  option & backspin $S=1.0$ & no-spin twin \\
+  \midrule
+  none (default) & $2784$\,rpm, $73.30^\circ$ & $2784$\,rpm, $74.47^\circ$ \\
+  moving, all speeds $0$ & same & same \\
+  $0.5$\,m/s toward the goal & $2738$\,rpm, $78.09^\circ$ & $2719$\,rpm, $79.01^\circ$ \\
+  $0.3$\,m/s sideways, lead & $2812$\,rpm, $73.41^\circ$ & $2784$\,rpm, $74.15^\circ$ \\
+  $0.3$\,m/s sideways, no lead & no clean shot & no clean shot \\
+  turning $90^\circ$/s & $2793$\,rpm, $73.42^\circ$ & as default \\
+  $\delta_0=+1^\circ$ & $2784$\,rpm, $72.30^\circ$ & $2784$\,rpm, $73.47^\circ$ \\
+  sideways draft $0.3$\,m/s & $2803$\,rpm, $73.54^\circ$ & $2793$\,rpm, $74.61^\circ$ \\
+  $C_l$ table $(0.5,0.2),(1.5,0.35)$ & $2803$\,rpm, $73.25^\circ$ & as default \\
+  $\phi=1$ & $2765$\,rpm, $73.34^\circ$ & $2756$\,rpm, $74.36^\circ$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+Driving toward the goal moves the hood angle by about $1^\circ$ per $0.1$\,m/s\predicted, several times the
+ASSUMED aim tolerance. Sideways motion with lead halves the backspin window (315 to 158 clean pairs, twin 364
+to 347), because the spin axis follows the turned shooter. Reverse Magnus does not act here ($S=1$).
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Hit-chance guidance and the measurement protocol}
+\label{sec:field-chance}
+
+\paragraph{Best-chance setting.} The lowest-rpm setting above sits near the edge of the clean window, so
+the page now recommends the clean setting with the highest model chance to go in instead
+(\code{solver.js} \code{bestChance}, replayed in \code{src/robustness.py} \code{best\_chance}). The
+candidates are clean cells inside the PREDICTED grip limit ($8.9$\,m/s), ranked by their share of clean
+neighbours under a Gaussian with the scatter as $\sigma$ and picked at least one $\sigma$ apart (up to $24$),
+plus the tolerant minima. Stage~1 scores each with $64$ shots per air set; at most $5$ whose pooled Wilson
+upper bound reaches the best lower bound go to stage~2 with $400$ shots. All candidates in a stage see the
+same seeded draws (common random numbers). The winner is scored again on $1000$ fresh shots per air set, so
+the reported chance is not biased by the selection. The score is the mean over the three air sets (lift low,
+nominal, high), equal weight\assumed. The no-spin twin is searched on its own grid, and one scatter source at a
+time names the one that matters most.
+
+\paragraph{Default spot} ($x=-1.0$, $y=0.2$\,m, $h=0.737$\,m\userval, $S=1.0$\userval, grip $0.42$\assumed,
+scatter $1.5\,\%$, $0.40^\circ$, $0.50^\circ$\assumed; all chances \predicted, Wilson $95\,\%$ ranges):
+\begin{center}
+\begin{tabular}{@{}lllll@{}}
+  \toprule
+  setting & lift low & nominal & lift high & mean \\
+  \midrule
+  best chance, $3062$\,rpm\derived, $76.2^\circ$ & $0.207$ & $0.295$ $[0.268,\,0.324]$ & $0.064$ & $0.189$ \\
+  lowest rpm, $2784$\,rpm\derived, $73.3^\circ$ & $0.092$ & $0.124$ $[0.105,\,0.146]$ & $0.074$ & $0.097$ \\
+  no-spin twin at its best, $3851$\,rpm\derived, $82.1^\circ$ & \multicolumn{3}{l}{$0.375$ $[0.346,\,0.405]$ (no lift: one set)} & $0.375$ \\
+  no-spin twin at its lowest rpm, $2784$\,rpm, $74.47^\circ$ & \multicolumn{3}{l}{$0.132$ $[0.112,\,0.154]$} & $0.132$ \\
+  \bottomrule
+\end{tabular}
+\end{center}
+Here the hood angle is the scatter source that matters most for both shots: with only one source on, the
+nominal chance is $0.46$ (speed only), $0.40$ (angle only) and $1.00$ (aim only)\predicted; for the twin
+$0.74$, $0.44$ and $1.00$\predicted. At $3\,\%$ speed scatter\userval{} the best setting moves to $3341$\,rpm,
+$78.0^\circ$ (nominal $0.258$), speed matters most, and the twin's best is $3990$\,rpm, $82.6^\circ$ ($0.290$)
+(all \predicted). At this spot the no-spin twin has the higher chance: more spin is not always better. Over the
+lift range the backspin chance moves by a factor of almost five ($0.064$ to $0.295$), so the measured $C_l$
+decides whether backspin helps here at all.
+
+\paragraph{What the chance is not.} It is a model probability under ASSUMED scatter and ASSUMED air sets, not
+a measured repeatability. It becomes a prediction a team can test only after the scatter itself is measured
+(the standard deviation of exit speed and elevation over about $20$ shots at one setting, logged with wheel
+speed and battery voltage) and the hit rate is counted with a Wilson interval from many shots
+(Section~\ref{sec:robust_spec-wilson}).
+
+\paragraph{Measurement protocol.} \code{docs/MEASURE.md} and the browser kit \code{viz/measure/measure.html}
+(linked from the explorer) turn the two largest unknowns into numbers with one phone camera at
+$240$\,fps or faster. The ball centre is clicked frame by frame and the track is fitted with the same RK4
+flight model as \code{physics.js} (Python \code{src/fit\_aero.py} agrees with the page to $5\times10^{-9}$).
+\begin{itemize}
+  \item \textbf{Drop test} (no launcher, no spin): $C_d$ at zero spin. With one $4$\,m drop and $4$\,mm click
+    noise the $95\,\%$ error is about $\pm0.008$, and about $\pm0.085$ from $1.5$\,m\derived.
+  \item \textbf{Twin test:} shot~A with no spin gives $v_0$, the launch angle and $C_d$; shot~B, the same
+    setting with backspin, holds A's $C_d$ and gives $C_l$ beside its no-spin twin. On synthetic
+    \code{physics.js} tracks (truth ASSUMED, $C_d=0.50$, $C_l=0.25$) one pair gives sd $0.008$ in $C_d$ and
+    $0.010$ in $C_l$ at $4$\,mm noise and $0.7$\,s tracked\derived. These are synthetic checks, not POLLEN data.
+  \item \textbf{Length scale.} The scale bar is the largest error: $+1\,\%$ in scale moves $C_l$ by about
+    $19\,\%$\derived. Shot~A also fits the scale against gravity (sd about $0.3\,\%$\derived), and the fit can
+    use either scale.
+  \item \textbf{Exit speed and spin:} wheel rpm with the video gives the grip $v/u$; counting turns of a
+    striped ball gives $S$ at the first tracked frame.
+\end{itemize}
+The results go into the explorer's Advanced settings (nearest air preset and grip), and the best-chance search
+then runs on measured rather than assumed inputs. Until then every chance above stays a model prediction.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Missing effects and how to measure them}
+\label{sec:field-missing}
+
+\code{research/MISSING\_EFFECTS.md} ranks 32 effects by how far they move the answer. The largest ones
+that are still not in the model, or are in it only as bracket sets, need measurements rather than code:
+\begin{center}
+\begin{tabular}{@{}p{0.36\linewidth}p{0.58\linewidth}@{}}
+  \toprule
+  effect & how to measure \\
+  \midrule
+  Spin lift level $C_l(S)$ (slope and cap) & side video at 240--480 fps, wheel above vs below at equal rpm, taped-hole ball (T1) \\
+  Drag level $C_d$ & the same flight video and a drop test (T1) \\
+  Grip-limited exit speed, slip $v/u$, ball squeeze & exit video with a wheel encoder (T2); mass, diameter, squeeze (T0/T4) \\
+  Hood angle $\ne$ exit angle, exit scatter & exit video over a hood-angle sweep (T2) \\
+  Knuckle force on a low-spin holed ball & shot scatter with and without spin (T1) \\
+  Exit skew and spin-axis tilt (sideways error) & axle alignment check; spin axis from video \\
+  Balls and NECTAR in the cell, restitution, TIP mid-volley & drop tests on skin, rib and NECTAR; cell tests (T5/T6) \\
+  Effective mass (an ASSUMED option only) & absorbed by tuning to real shots; mass and volume (T0) \\
+  Flywheel droop, battery; real scatter while moving & burst tests with encoder and voltage logs; shots on the move \\
+  Venue drafts and air state & air speed at robot height, temperature, humidity, station pressure \\
+  \bottomrule
+\end{tabular}
+\end{center}
+Until those numbers exist, the model's job is to say which measurement changes the answer most. It
+does not predict a scoring rate.

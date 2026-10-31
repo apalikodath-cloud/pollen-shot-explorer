@@ -1,0 +1,753 @@
+{
+ "_status": "Literature-derived parameter RANGES for PM-001 (research synthesis, 2026-10-30). NOT POLLEN measurements: no measured POLLEN Cd, Cl(S), spin decay, COR, friction or N(delta) exists anywhere (research/checks/sweep_pollen.md). Same layout as data/aero_params.json so src/flight.load_params(path=...) reads it (extra Cl set 'floor'; use which={'Cl':'floor'}); launcher and contact blocks are extra and not read by src/. Each entry has grade (A-D, see grades), source_ids (see sources) and vs_PM001 (how the current data/aero_params.json, data/launch_envelope.json or src/contact.py value compares). See research/LITERATURE_SYNTHESIS.md.",
+ "units": "SI (m, s, kg, rad)",
+ "grades": {
+  "A": "peer-reviewed original measurement, transferable to POLLEN",
+  "B": "peer-reviewed but different ball/regime, or model/theory only",
+  "C": "preprint, unreviewed web article, vendor data or forum data with numbers",
+  "D": "anecdote/observation, or assumption with no source"
+ },
+ "rho": {
+  "value": 1.2,
+  "low": 1.0,
+  "high": 1.25,
+  "units": "kg/m^3",
+  "grade": "D",
+  "source_ids": [],
+  "vs_PM001": "same",
+  "prov": "standard air property, unchanged from data/aero_params.json"
+ },
+ "nu": {
+  "value": 1.5e-05,
+  "low": 1.45e-05,
+  "high": 1.6e-05,
+  "units": "m^2/s",
+  "grade": "D",
+  "source_ids": [
+   "lindsey2025",
+   "ito2025"
+  ],
+  "vs_PM001": "same",
+  "prov": "standard air property"
+ },
+ "mass": {
+  "value": 0.02495,
+  "low": 0.0235,
+  "high": 0.0275,
+  "units": "kg",
+  "grade": "C",
+  "source_ids": [
+   "andymark_spec",
+   "andymark_shopify",
+   "andymark_step"
+  ],
+  "vs_PM001": "high bound too low (PM-001 26.5 g; vendor listing weight 27.2 g)",
+  "prov": "AndyMark spec 0.055 lb = 24.95 g; Shopify variant weight 27.2 g (listing/shipping weight, grade D); CAD shell at PE density 20.5-22.0 g. high widened to 27.5 g. Weigh >=10 balls."
+ },
+ "radius": {
+  "value": 0.0355,
+  "low": 0.035,
+  "high": 0.036,
+  "units": "m",
+  "grade": "C",
+  "source_ids": [
+   "manual_tu06",
+   "andymark_step"
+  ],
+  "vs_PM001": "same",
+  "prov": "manual 'approximately 2.8 in (7.1 cm)'; print OD 2.8 in; CAD R 1.40 in"
+ },
+ "geometry_from_cad": {
+  "outer_radius_in": 1.4,
+  "inner_radius_in": 1.33,
+  "wall_in": 0.07,
+  "wall_mm": 1.78,
+  "holes": 26,
+  "hole_diameter_in": [
+   0.4,
+   0.44
+  ],
+  "open_area_fraction": [
+   0.133,
+   0.162
+  ],
+  "hole_to_ball_diameter_ratio": [
+   0.143,
+   0.157
+  ],
+  "grade": "C",
+  "source_ids": [
+   "andymark_step",
+   "sweep_pollen_check"
+  ],
+  "prov": "STEP parsed by the sweep_pollen checker; print reads .4 (26), STEP 0.44 in; molded balls may differ (mass)."
+ },
+ "I_b": {
+  "value": 1.98e-05,
+  "low": 1.73e-05,
+  "high": 2.36e-05,
+  "units": "kg m^2",
+  "alpha_I_over_mR2": {
+   "value": 0.63,
+   "low": 0.6,
+   "high": 0.667
+  },
+  "grade": "B",
+  "source_ids": [
+   "andymark_step",
+   "cross2002grip"
+  ],
+  "vs_PM001": "inside (high raised only to follow the 27.5 g mass bound)",
+  "prov": "thick-shell 0.4(Ro^5-Ri^5)/((Ro^3-Ri^3)Ro^2) = 0.634 (1.78 mm wall), 0.629 (2.1 mm). Cross 2002: real tennis ball alpha 0.55 (thick 6 mm rubber wall); POLLEN wall/R ~0.05 so 0.55 is not expected; launcher k_I low 0.55 is pessimistic but harmless. Measure with a rolling incline: a = g sin(th)/(1+alpha)."
+ },
+ "Re_range_note": "Re = vD/nu, D 0.071 m: 2-10 m/s -> 9.5e3-4.7e4. This OVERLAPS the smooth-sphere LIFT-crisis band (Sakai/Miyazaki table-tennis wind tunnel Re 3e4-5e4 dips; Ito & Kamijima CFD 2.65e4-5.3e4; Sareen 1e3-5e4) but lies below the drag crisis and below every documented negative-Magnus window (Maccoll >= 4.6e4 at S < 0.6; Taneda 6e4+; Muto LES 2e5). Pickleball free-flight data cover Re 2.95e4-5.67e4 (Lindsey, 6.0-11.5 m/s) and 4.7e4-6.1e4 (Steyn); Van Wyk wind tunnel 7.7e4-1.4e5.",
+ "Cd": {
+  "low": 0.33,
+  "nominal": 0.5,
+  "high": 0.9,
+  "model": "constant per run; optional spin term Cd = Cd0 + dCd*min(S/0.6, 1), dCd 0-0.15 (smooth-sphere evidence that spin raises Cd)",
+  "grade": "C",
+  "source_ids": [
+   "lindsey2025",
+   "steyn2025",
+   "vanwyk2026",
+   "rossmann2007",
+   "muto2012",
+   "ito2025",
+   "sakai2016",
+   "fuel_cd154587"
+  ],
+  "vs_PM001": "nominal 0.48 inside; high 0.65 OPTIMISTIC (too little drag for a spinning perforated ball); low 0.35 fine",
+  "prov": "26-hole indoor pickleball free flight 0.45 (SD 0.09) but the same author's hole-modification control ball reads 0.59-0.985 (fit 0.65-0.82) at 6.2-8.25 m/s and taping the holes gives ~0.43 (Lindsey, C); 40-hole outdoor 0.33 (Lindsey) and 0.30+/-0.02 (Steyn, n=6); pickleball wind tunnel ~0.40 at Re 7.7e4-1.4e5 (Van Wyk, B); Wiffle 0.36-1.05 by orientation and Re, rising toward ~1 at the lowest Re (Rossmann & Rau, full text, B); smooth spinning sphere 0.45-0.62 (Ito CFD), 0.474 (S 0.2) / 0.661 (S 1.0) (Muto LES; authors flag subcritical disagreement); 2017 FRC FUEL drop test recomputed 0.88 (D)."
+ },
+ "Cl": {
+  "model": "linear_capped",
+  "formula": "Cl = min(c1*S, Cl_max); run 'floor' as the pessimistic bound and dip_variant as a structural check",
+  "S_definition": "S = |omega| R / |v_rel|",
+  "valid_S_range": "0 to 2",
+  "sets": {
+   "floor": {
+    "c1": 0.02,
+    "Cl_max": 0.04,
+    "grade": "C",
+    "source_ids": [
+     "lindsey2025"
+    ],
+    "note": "Lindsey backspin fit |Cl| = 0.173 + 0.02 S (S <= 0.37): if the 0.17 offset is not spin lift (the source cannot tell; both worked examples are topspin), the Magnus part is ~0.02 S. Also represents 'holes vent the lift away'. Replaces PM-001's informal Cl = 0 floor."
+   },
+   "low": {
+    "c1": 0.2,
+    "Cl_max": 0.15,
+    "grade": "B",
+    "source_ids": [
+     "steyn2025",
+     "ito2025",
+     "sakai2016"
+    ],
+    "note": "Steyn 0.195 S (40-hole, S <= 0.3); cap = deepest smooth-sphere crisis trough in POLLEN's Re band (Ito 0.153-0.207; Sakai valleys 0.09-0.21)."
+   },
+   "nominal": {
+    "c1": 0.35,
+    "Cl_max": 0.25,
+    "grade": "B",
+    "source_ids": [
+     "vanwyk2026",
+     "steyn2025",
+     "muto2012",
+     "ito2025",
+     "conti2026"
+    ],
+    "note": "between pickleball slopes (0.20-0.47 per unit S) and smooth (0.8-1.0); cap between smooth trough (~0.18-0.21) and smooth S ~1 values (0.30-0.33). Unchanged from PM-001."
+   },
+   "high": {
+    "c1": 0.8,
+    "Cl_max": 0.4,
+    "grade": "B",
+    "source_ids": [
+     "muto2012",
+     "ito2025",
+     "sakai2016",
+     "cross2012aero",
+     "vilumbrales2024"
+    ],
+    "note": "smooth initial slope 0.8-1.0; Ito max 0.42 (Re 6.6e3); Cross 2012 polystyrene plateau 0.33; Vilumbrales 0.35-0.40 (Re 7e4-1e5). Unchanged; Van Wyk 0.0124+0.466 S gives 0.27 at S 0.56 (end of its data) so 0.40 is generous."
+   }
+  },
+  "dip_variant": {
+   "description": "smooth-sphere lift crisis (Ito & Kamijima 2025 CFD; Sakai 2016 wind tunnel) at Re ~4e4: Cl(S) = interp(S, S_pts, Cl_pts); scale the table by 0.5-1.0 for venting. Not read by src/flight.py.",
+   "S_pts": [
+    0.0,
+    0.25,
+    0.5,
+    0.63,
+    0.88,
+    1.1,
+    1.5,
+    3.0
+   ],
+   "Cl_pts": [
+    0.0,
+    0.17,
+    0.29,
+    0.28,
+    0.18,
+    0.3,
+    0.33,
+    0.33
+   ],
+   "ito_peak_trough_by_Re": {
+    "26500": {
+     "peak": [
+      0.565,
+      0.318
+     ],
+     "trough": [
+      0.942,
+      0.207
+     ]
+    },
+    "40000": {
+     "peak": [
+      0.503,
+      0.288
+     ],
+     "trough": [
+      0.88,
+      0.183
+     ]
+    },
+    "46500": {
+     "peak": [
+      0.538,
+      0.28
+     ],
+     "trough": [
+      0.862,
+      0.165
+     ]
+    },
+    "53000": {
+     "peak": [
+      0.471,
+      0.271
+     ],
+     "trough": [
+      0.848,
+      0.153
+     ]
+    }
+   },
+   "grade": "B",
+   "source_ids": [
+    "ito2025",
+    "sakai2016",
+    "conti2026",
+    "sareen2024"
+   ]
+  },
+  "negative_magnus": {
+   "probability": "low at POLLEN Re: documented negative-lift windows are Re >= 4.6e4 at S < 0.6, mostly 1e5-2e5. Not excluded: no perforated ball has been tested at S > 0.56.",
+   "grade": "B",
+   "source_ids": [
+    "muto2012",
+    "kim2014",
+    "cross2012aero",
+    "rossmann2007"
+   ]
+  },
+  "non_magnus_hole_force": {
+   "low": 0.0,
+   "nominal": 0.03,
+   "high": 0.15,
+   "units": "Cl-equivalent; random direction per shot for a non-spinning ball; averages out per revolution for a spinning ball (mainly scatter)",
+   "grade": "B",
+   "source_ids": [
+    "rossmann2007",
+    "lindsey2025",
+    "team254_2017"
+   ],
+   "note": "Wiffle one-sided slots: -0.15 to +0.145, sign change near Re 5.5e4. POLLEN's 26 holes are near-uniform, so a smaller value is expected."
+  },
+  "grade": "B",
+  "vs_PM001": "nominal and high inside; PM-001 low (0.15 S, cap 0.10) is NOT the pessimistic bound: add 'floor' (0.02 S, cap 0.04) and run dip_variant",
+  "prov": "see sets; reasoning in research/LITERATURE_SYNTHESIS.md section 3"
+ },
+ "spin_decay_k": {
+  "low": 0.005,
+  "nominal": 0.03,
+  "high": 0.15,
+  "units": "1/s",
+  "model": "preferred: d(omega)/dt = -(pi rho beta R^2 |v| / (alpha m)) omega = -0.30 beta |v| omega; constant-k values above are the |v| ~5 m/s equivalents",
+  "beta": {
+   "low": 0.009,
+   "nominal": 0.02,
+   "high": 0.05
+  },
+  "grade": "B",
+  "source_ids": [
+   "nathan_spindown",
+   "ito2025",
+   "cross2012aero"
+  ],
+  "vs_PM001": "nominal 0.05 inside; high 0.30 beyond any evidence (pessimistic); low 0.01 inside",
+  "prov": "golf beta 0.009-0.012 (Smits & Smith; Tavares; via Nathan); Ito smooth-sphere moment C_M = (3/8)Cl/S scaled to POLLEN: k 0.011-0.023 /s; Cross 2012 saw no measurable decay in 0.7 s. Paddle effect of holes: beta to ~0.05 is a guess. 1.2 s flight: 0.6% / 3.5% / 17% spin loss. Second-order next to Cl."
+ },
+ "launcher": {
+  "model_to_adopt": "keep src/launcher.py (2x2 LCP stick/slip contact) and unit-test it against the Pedersen rigid limit (Brettle is the special case G = 0, k_p = k_w = 1/2-type inertias); add a hood no-slip check |H_h| <= mu_hood N",
+  "S_exit_hood": {
+   "low": 1.0,
+   "nominal": 1.06,
+   "high": 1.6,
+   "grade": "B",
+   "source_ids": [
+    "brettle",
+    "pedersen2026",
+    "crosscheck_evidence"
+   ],
+   "vs_PM001": "inside (envelope 1.03-1.27 at 3000 rpm); values above ~1.3 need mu_hood < ~0.1",
+   "prov": "rigid rolling on a gripping hood S = 1; compression S = R/(R - lambda delta/2) = 1.03-1.13; frictionless hood S = 1/k = 1.5-1.67. Theory only: no published spin measurement of any single-wheel hooded shooter."
+  },
+  "S_exit_passive_roller": {
+   "low": 1.0,
+   "nominal": 1.15,
+   "high": 1.67,
+   "grade": "B",
+   "source_ids": [
+    "pedersen2026",
+    "crosscheck_evidence"
+   ],
+   "vs_PM001": "inside (envelope 0.91-1.24); S < 1 only transiently (heavy roller lag)",
+   "prov": "a free roller removes the hood's forward friction impulse so S moves from 1 toward 1/k; it cannot reduce spin below ~1."
+  },
+  "v_over_surface_speed": {
+   "low": 0.3,
+   "nominal": 0.42,
+   "high": 0.5,
+   "grade": "C",
+   "source_ids": [
+    "cd394940",
+    "brettle",
+    "pedersen2026"
+   ],
+   "vs_PM001": "PM-001 hood_nominal ~0.46-0.47 below the grip limit is on the optimistic side",
+   "prov": "ideal 0.5 (rigid, no slip, infinite I_w); FRC slow-motion and forum estimates 0.30-0.45 on other balls."
+  },
+  "energy_knockdown_vs_rigid": {
+   "low": 0.55,
+   "nominal": 0.8,
+   "high": 1.0,
+   "grade": "C",
+   "source_ids": [
+    "pedersen2026",
+    "brettle"
+   ],
+   "vs_PM001": "not in src (hysteresis c_rr covers part)",
+   "prov": "Pedersen forum: real tennis-ball KE ~56% of the rigid prediction; Brettle: compression drains more wheel speed than predicted. Use as a KE multiplier when comparing to tests."
+  },
+  "mu_wheel": {
+   "low": 0.5,
+   "nominal": 0.8,
+   "high": 1.2,
+   "grade": "D",
+   "source_ids": [],
+   "vs_PM001": "same; unsourced",
+   "prov": "no PE-on-tread data found"
+  },
+  "mu_hood": {
+   "low": 0.05,
+   "nominal": 0.3,
+   "high": 1.0,
+   "grade": "D",
+   "source_ids": [
+    "cross2002grip"
+   ],
+   "vs_PM001": "same; unsourced. Use a sliding (in-contact) mu: Cross found the in-bounce mu ~3x below the quasi-static value for a gripping tennis ball at 45 deg",
+   "prov": "no PE-shell data"
+  },
+  "N_delta": {
+   "law": "piecewise: linear Reissner ramp up to delta ~ wall thickness, then softening/buckling plateau of unknown height (not Hertz)",
+   "reissner_per_contact": {
+    "formula": "K = 4 E t^2 / (R sqrt(3(1 - nu^2)))",
+    "E_GPa_assumed": [
+     0.2,
+     1.2
+    ],
+    "E_note": "PE modulus range from memory, unverified",
+    "K_low_N_per_m": 45000.0,
+    "K_high_N_per_m": 270000.0,
+    "diametral_series_low_N_per_m": 22000.0,
+    "diametral_series_high_N_per_m": 135000.0,
+    "valid_for": "per-contact delta <~ t = 1.8 mm, intact shell (holes lower it)",
+    "grade": "B",
+    "source_ids": [
+     "couturier2022"
+    ]
+   },
+   "N_at_4mm_N": {
+    "low": 6,
+    "nominal": 25,
+    "high": 150,
+    "grade": "D",
+    "source_ids": [
+     "couturier2022",
+     "vanwyk2026",
+     "cd_37246"
+    ],
+    "vs_PM001": "PM-001 linear k_n 1.5-10 N/mm (N(4 mm) 6-40 N) sits far below the intact-shell Reissner slope; holes and buckling lower the real value by an unknown amount, so the high end is widened"
+   },
+   "effect": "N sets the grip-limited top speed and flywheel drain; it barely changes S"
+  },
+  "k_I": {
+   "low": 0.6,
+   "nominal": 0.63,
+   "high": 0.667,
+   "grade": "B",
+   "source_ids": [
+    "andymark_step"
+   ],
+   "vs_PM001": "PM-001 low 0.55 pessimistic but harmless"
+  }
+ },
+ "contact": {
+  "model_to_adopt": "Walton/Brach impulse with Coulomb cap as in src/contact.py; it equals the Cross 2005 e_x model when e_t = e_x and contact grips. Keep the cap |P_t| <= mu P_n; e_x < 0 arises automatically in the slip branch.",
+  "e_n": {
+   "low": 0.3,
+   "nominal": 0.5,
+   "high": 0.75,
+   "grade": "D",
+   "source_ids": [
+    "vanwyk2026",
+    "cross2002hcor"
+   ],
+   "vs_PM001": "inside (E_GRID 0.3-0.8)",
+   "prov": "pickleball flat-plate COR 0.20 at 26.8 m/s (Van Wyk, 3-9x POLLEN's impact speed; polymer-shell COR rises at low speed) is a lower-bound proxy; tennis ~0.75 (Cross). No POLLEN value. Pickleball drop-spec COR ~0.62-0.66 is from memory, unverified. Drop test e = sqrt(h2/h1)."
+  },
+  "e_t": {
+   "low": -0.1,
+   "nominal": 0.05,
+   "high": 0.25,
+   "grade": "A",
+   "source_ids": [
+    "cross2005",
+    "cross2002grip",
+    "cross2002hcor"
+   ],
+   "vs_PM001": "default 0 inside; the 0.3 sensitivity variant is above every hollow-ball value (optimistic for spin reversal)",
+   "prov": "tennis gripping bounces 0.10-0.24 (max ~0.2 near 50 deg); ~0.06 near-normal on a heavy rigid surface; < 0 when sliding throughout. Superball 0.49-0.76 (solid rubber) does not apply. Grade A for tennis balls; POLLEN transfer is a judgement."
+  },
+  "mu_impact": {
+   "low": 0.2,
+   "nominal": 0.4,
+   "high": 0.8,
+   "grade": "D",
+   "source_ids": [
+    "cross2002hcor",
+    "allen2010"
+   ],
+   "vs_PM001": "inside (MU_GRID 0.2-0.8)",
+   "prov": "Allen: mu matters only in the sliding regime (shallow impacts); gripping bounces are mu-insensitive. Use a sliding-bounce mu."
+  },
+  "spin_retained_near_normal": {
+   "formula": "omega2/omega1 = (alpha - e_x)/(1 + alpha) + (1 + e_x)/(1 + alpha) * v_x1/(R omega1)",
+   "at_v_x1_0_alpha_0.63": {
+    "e_x_0": 0.388,
+    "e_x_0.2": 0.266
+   },
+   "grade": "A",
+   "source_ids": [
+    "cross2005"
+   ]
+  },
+  "rim_capture_effect_of_backspin": {
+   "value": "backspin helps capture on long rolling rim contacts; ~+10% makes in a basketball model; outcome very sensitive to contact point",
+   "grade": "B",
+   "source_ids": [
+    "okubo2004rim",
+    "hubbard2005isb",
+    "antali2021rim"
+   ],
+   "prov": "basketball on a round rim; POLLEN in a box-shaped CELL is far from this; qualitative only"
+  },
+  "observed_bounce_out_POLLEN": {
+   "value": 0.442,
+   "n": 43,
+   "ci95": [
+    0.3,
+    0.59
+   ],
+   "grade": "D",
+   "source_ids": [
+    "cd524080"
+   ],
+   "prov": "FTC 14343 fixed solid hood, spin not measured, distance/side not stated; bins do not reconcile (42 vs 43)"
+  }
+ },
+ "sources": [
+  {
+   "id": "lindsey2025",
+   "cite": "Lindsey C. (2025-05-12) The Physics of Pickleball Aerodynamics and Trajectories: A Revised Model of Lift and Drag. Tennis Warehouse University",
+   "url": "https://twu.tennis-warehouse.com/learning_center/pickleball/pickleball_aerodynamics.php",
+   "status": "unreviewed web article; full text read",
+   "grade": "C"
+  },
+  {
+   "id": "steyn2025",
+   "cite": "Steyn D. et al. (2025) Executing a successful third shot drop in pickleball. IJSSC (VoR not read; SportRxiv preprint read)",
+   "url": "https://doi.org/10.1177/17479541251365200",
+   "status": "peer-reviewed VoR; preprint content checked",
+   "grade": "B"
+  },
+  {
+   "id": "rossmann2007",
+   "cite": "Rossmann J.S., Rau A. (2007) An experimental study of Wiffle ball aerodynamics. Am. J. Phys. 75(12):1099-1105",
+   "url": "https://doi.org/10.1119/1.2787013",
+   "status": "peer-reviewed; full text read",
+   "grade": "B"
+  },
+  {
+   "id": "emond2024",
+   "cite": "Emond, Sun, Swartz (2024) Pickleball Flight Dynamics. IJRSS; arXiv 2409.19000",
+   "url": "https://doi.org/10.30827/ijrss.32618",
+   "status": "peer-reviewed simulation; no lift; Cd 0.6 borrowed",
+   "grade": "B"
+  },
+  {
+   "id": "brettle",
+   "cite": "Brettle D. Flywheel Shooter Analysis (Carlmont Robotics notebook)",
+   "url": "https://docs.carlmontrobotics.org/jupyter_notebooks/files/FlywheelShooter.html",
+   "status": "unreviewed theory",
+   "grade": "C"
+  },
+  {
+   "id": "pedersen2026",
+   "cite": "Pedersen (FRC 449, 2026) Flywheel Shot Analysis: Correction and Extension (whitepaper, spreadsheet, Chief Delphi post)",
+   "url": "https://robot.mbhs.edu/media/whitepapers/2026/flywheel-calculations-latest.pdf",
+   "status": "unreviewed theory; 56% KE remark is forum data",
+   "grade": "C"
+  },
+  {
+   "id": "vanwyk2026",
+   "cite": "Van Wyk, Smith, Lyu (2026) Characterization of Pickleball Ball Mechanical Behaviour. Engineering of Sport 16 (ISEA 2026)",
+   "url": "WSU Research Exchange",
+   "status": "short peer-reviewed conference paper; full text; manufacturer-funded",
+   "grade": "B"
+  },
+  {
+   "id": "sakai2016",
+   "cite": "Sakai et al. (2016) Aerodynamics of a spinning table-tennis ball - lift crisis (JSME annual meeting); Miyazaki et al. 2017 same campaign",
+   "url": "J-STAGE",
+   "status": "non-refereed proceedings; figures read",
+   "grade": "C"
+  },
+  {
+   "id": "ito2025",
+   "cite": "Ito, Kamijima (2025) CFD of a spinning smooth sphere, Trans. JSST 17(1):25-31",
+   "url": "J-STAGE",
+   "status": "peer-reviewed numerical",
+   "grade": "B"
+  },
+  {
+   "id": "cross2017",
+   "cite": "Cross R., Lindsey C. (2017) Eur. J. Phys. 38:044002",
+   "url": "https://doi.org/10.1088/1361-6404/aa6e44",
+   "status": "peer-reviewed; abstract only (paywall); no numbers used",
+   "grade": "B"
+  },
+  {
+   "id": "cross2012aero",
+   "cite": "Cross R. (2012) Aerodynamics in the classroom and at the ball park. Am. J. Phys. 80(4):289-297",
+   "url": "author PDF",
+   "status": "peer-reviewed; full text read",
+   "grade": "B"
+  },
+  {
+   "id": "cross2005",
+   "cite": "Cross R. (2005) Bounce of a spinning ball near normal incidence. Am. J. Phys. 73(10):914-920",
+   "url": "https://doi.org/10.1119/1.2008299",
+   "status": "peer-reviewed; full text read",
+   "grade": "A"
+  },
+  {
+   "id": "cross2002hcor",
+   "cite": "Cross R. (2002) Measurements of the horizontal coefficient of restitution for a superball and a tennis ball. Am. J. Phys. 70(5):482-489",
+   "url": "author PDF",
+   "status": "peer-reviewed; full text",
+   "grade": "A"
+  },
+  {
+   "id": "cross2002grip",
+   "cite": "Cross R. (2002) Grip-slip behavior of a bouncing ball. Am. J. Phys. 70(11):1093-1102",
+   "url": "author PDF",
+   "status": "peer-reviewed; full text",
+   "grade": "A"
+  },
+  {
+   "id": "allen2010",
+   "cite": "Allen, Haake, Goodwill (2010) Effect of friction on tennis ball impacts. Proc. IMechE Part P",
+   "url": "SHURA",
+   "status": "peer-reviewed; abstract only",
+   "grade": "B"
+  },
+  {
+   "id": "muto2012",
+   "cite": "Muto, Tsubokura, Oshima (2012) Negative Magnus lift on a rotating sphere at around the critical Reynolds number. Phys. Fluids 24:014102",
+   "url": "https://doi.org/10.1063/1.3673571",
+   "status": "peer-reviewed LES; full text",
+   "grade": "B"
+  },
+  {
+   "id": "kim2014",
+   "cite": "Kim, Choi, Park, Yoo (2014) Inverse Magnus effect on a rotating sphere: when and why. JFM 754 R2",
+   "url": "https://doi.org/10.1017/jfm.2014.428",
+   "status": "peer-reviewed; ranges seen only via snippets/secondary quotes",
+   "grade": "B"
+  },
+  {
+   "id": "conti2026",
+   "cite": "Conti et al. (2026) table-tennis match trajectory fits, arXiv 2606.28805v2",
+   "url": "https://arxiv.org/abs/2606.28805",
+   "status": "unreviewed preprint",
+   "grade": "C"
+  },
+  {
+   "id": "vilumbrales2024",
+   "cite": "Vilumbrales et al. (2024) arXiv 2407.01748",
+   "url": "https://arxiv.org/abs/2407.01748",
+   "status": "unreviewed preprint, wind tunnel",
+   "grade": "C"
+  },
+  {
+   "id": "sareen2024",
+   "cite": "Sareen, Hourigan, Thompson (2024) Int. J. Heat Fluid Flow 109:109501",
+   "url": "Monash portal",
+   "status": "peer-reviewed; abstract only",
+   "grade": "B"
+  },
+  {
+   "id": "nathan_spindown",
+   "cite": "Nathan A.M. The Spin Decay of a Baseball (summarizing Smits & Smith 1994; Tavares et al. 1999)",
+   "url": "https://baseball.physics.illinois.edu/spindown-rev1.pdf",
+   "status": "unreviewed note citing peer-reviewed golf data",
+   "grade": "B"
+  },
+  {
+   "id": "couturier2022",
+   "cite": "Couturier, Vella, Boudaoud (2022) Compression of a pressurized spherical shell. Eur. Phys. J. E; arXiv 2111.09710",
+   "url": "https://arxiv.org/abs/2111.09710",
+   "status": "peer-reviewed theory; Reissner limit",
+   "grade": "B"
+  },
+  {
+   "id": "okubo2004rim",
+   "cite": "Okubo, Hubbard (2004) Sports Eng. 7(1):15-29",
+   "url": "Springer",
+   "status": "peer-reviewed; abstract only",
+   "grade": "B"
+  },
+  {
+   "id": "hubbard2005isb",
+   "cite": "Hubbard (2005) ISB/ASB conference abstract",
+   "url": "",
+   "status": "conference abstract",
+   "grade": "C"
+  },
+  {
+   "id": "antali2021rim",
+   "cite": "Antali et al. (2021) Nonlinear Dyn. 104:3013-3037",
+   "url": "",
+   "status": "peer-reviewed theory",
+   "grade": "B"
+  },
+  {
+   "id": "tebbe2020spin",
+   "cite": "Tebbe et al. (2020) spin estimation of table-tennis balls, IEEE ICRA",
+   "url": "https://doi.org/10.1109/ICRA40945.2020.9196536",
+   "status": "peer-reviewed conference",
+   "grade": "B"
+  },
+  {
+   "id": "andymark_spec",
+   "cite": "AndyMark BIOBUZZ scoring elements product page (0.055 lb)",
+   "url": "https://andymark.com/products/biobuzz-scoring-elements?variant=47194281148588",
+   "status": "vendor",
+   "grade": "C"
+  },
+  {
+   "id": "andymark_shopify",
+   "cite": "AndyMark Shopify variant JSON (27.2 g listing weight)",
+   "url": "same product",
+   "status": "vendor metadata",
+   "grade": "D"
+  },
+  {
+   "id": "andymark_step",
+   "cite": "AndyMark am-5851_yellow Pollen.STEP and layout print",
+   "url": "same product",
+   "status": "vendor CAD",
+   "grade": "C"
+  },
+  {
+   "id": "manual_tu06",
+   "cite": "FIRST BIOBUZZ Competition Manual TU06/TU07 sec. 9.6-9.8",
+   "url": "https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm",
+   "status": "official",
+   "grade": "C"
+  },
+  {
+   "id": "cd524080",
+   "cite": "FTC 14343 BIOBUZZ build thread (19/43 bounce-outs)",
+   "url": "https://www.chiefdelphi.com/t/ftc-14343-escape-velocity-biobuzz-build-thread/524080",
+   "status": "forum observation",
+   "grade": "D"
+  },
+  {
+   "id": "cd_37246",
+   "cite": "FTC 37246 Chief Delphi thread 525071 (0.25 in shooter squeeze, 63 deg launch)",
+   "url": "https://www.chiefdelphi.com/t/525071",
+   "status": "forum observation",
+   "grade": "D"
+  },
+  {
+   "id": "cd394940",
+   "cite": "Chief Delphi 394940 (v/u ~0.43 eyeballed; 0.30 'standard')",
+   "url": "https://www.chiefdelphi.com/t/determine-flywheel-velocity-for-ball-exit-velocity/394940",
+   "status": "forum",
+   "grade": "C"
+  },
+  {
+   "id": "fuel_cd154587",
+   "cite": "Chief Delphi 154587 (2017 FUEL terminal velocity; Cd recomputed 0.88)",
+   "url": "https://www.chiefdelphi.com/t/154587",
+   "status": "forum",
+   "grade": "D"
+  },
+  {
+   "id": "team254_2017",
+   "cite": "Team 254 2017 technical binder (hole-orientation veer)",
+   "url": "https://media.team254.com/2017/09/964207d8-technicalBinder2017.pdf",
+   "status": "team document",
+   "grade": "D"
+  },
+  {
+   "id": "crosscheck_evidence",
+   "cite": "PM-001 crosscheck/empirical/EVIDENCE.md kinematic sweep",
+   "url": "local",
+   "status": "derived",
+   "grade": "B"
+  },
+  {
+   "id": "sweep_pollen_check",
+   "cite": "research/checks/sweep_pollen.md",
+   "url": "local",
+   "status": "fact-check",
+   "grade": "C"
+  }
+ ],
+ "open_questions": [
+  "Effective backspin Cl of a 26-hole PE shell at S 0.8-1.7, Re 1e4-5e4: 0.02 S (Lindsey offset reading) vs 0.25-0.33 (smooth sphere). Dominant uncertainty.",
+  "POLLEN Cd at S ~1: 0.33-0.9 from proxies; moves entry angle as much as Cl does.",
+  "N(delta) of the shell: Reissner says stiff below ~1.8 mm, then buckling; plateau height unknown.",
+  "COR and sliding mu of POLLEN on the HIVE surface at 3-8 m/s.",
+  "Spin decay beta of a perforated shell (second-order)."
+ ]
+}

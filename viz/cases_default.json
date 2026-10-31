@@ -1,0 +1,49 @@
+{
+  "_note": "Default shot list for viz/make_shots.py (real backend). Release heights are ASSUMED (0.40 m ball-centre height, inside the 0.737 m robot height limit). Speeds/angles were picked from a coarse search because they show the spin effect clearly; they are NOT optimised or validated shots, and the launcher's ability to deliver them is not checked here (see data/launch_envelope.json). 'S' is the release spin parameter omega*R/v; S = 1 is the ideal no-slip hood value (HANDOFF 4C, derived). aero_set picks the Cd/Cl/spin-decay bound from data/aero_params.json.",
+  "cases": [
+    {
+      "id": "U1_pospose_unfav_high",
+      "title": "Unfavourable side, backspin turns a miss into a clean entry (OPTIMISTIC aero)",
+      "pose": "pose_pos",
+      "side": "unfavorable",
+      "release": [-1.2, 0.40],
+      "v": 8.0,
+      "elev_deg": 76,
+      "S": 1.0,
+      "aero_set": "high"
+    },
+    {
+      "id": "U2_pospose_unfav_nominal",
+      "title": "Unfavourable side, no-spin lob enters but backspin hits the roof (nominal aero)",
+      "pose": "pose_pos",
+      "side": "unfavorable",
+      "release": [-1.0, 0.40],
+      "v": 7.5,
+      "elev_deg": 80,
+      "S": 1.0,
+      "aero_set": "nominal"
+    },
+    {
+      "id": "F1_pospose_fav_nominal",
+      "title": "Favourable side, backspin lifts a floor hit into a clean entry (nominal aero)",
+      "pose": "pose_pos",
+      "side": "favorable",
+      "release": [1.4, 0.40],
+      "v": 6.5,
+      "elev_deg": 55,
+      "S": 1.0,
+      "aero_set": "nominal"
+    },
+    {
+      "id": "U3_negpose_unfav_high",
+      "title": "Other HIVE pose (mirror of U1): unfavourable side, OPTIMISTIC aero",
+      "pose": "pose_neg",
+      "side": "unfavorable",
+      "release": [1.2, 0.40],
+      "v": 8.0,
+      "elev_deg": 76,
+      "S": 1.0,
+      "aero_set": "high"
+    }
+  ]
+}

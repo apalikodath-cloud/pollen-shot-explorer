@@ -1,0 +1,2256 @@
+# PREDICTED (uncalibrated aero bounds aero_params.json = ASSUMED; HIVE geometry data/hive_geometry.json = CAD-derived/confirmed tilt 30, bounds derived).
+# Shot frame: shooter fires +x from x = -d at height h (ball centre). unfav = mouth faces away from shooter (pose_pos, side neg / pose_neg, side pos). fav = mouth faces shooter.
+# Grid: v 2.0-11.0 step 0.1 m/s; elevation 5-89.75 step 0.25 deg; clean = ball centre enters the inside polygon before any obstacle contact (3D cell of src/cell3d.py built from the s = 0 section, centred straight shot; rho 1.2041 kg/m^3 derived; PM-019).
+# v_cap 8.9 = PREDICTED hood grip cap (docs/04_launcher.md). max_square_cells = largest all-clean k x k block (k*0.1 m/s by k*0.25 deg). Raster 1 mm, dt 2 ms: clearance error <= ~2.5 mm.
+# Q3: S_min_any = smallest backspin S in {0.5,1,1.5,2} (launch v, elevation re-optimised) giving >= 1 clean launch where drag-only (Cd nominal) gives none. S_min_robust: smallest S giving a clean 3x3 block (ASSUMED robustness criterion). rpm = S v / R * 60 / 2pi at launch.
+geometry,v_cap,Cl,h,d,base_n_clean,base_max_square,S_min_any,rpm_min,rpm_max,v_min,v_max,theta_min,theta_max,n_clean_at_S_min,S_min_robust,best_max_square_any_S
+unfav_t30,11.0,low,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.2,0.75,5,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.2,0.8,44,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.2,0.85,60,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.2,0.9,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.2,0.95,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.2,1.0,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.2,1.05,65,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.2,1.1,62,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.2,1.15,63,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.2,1.2,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.2,1.25,58,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.2,1.3,59,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.2,1.35,52,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.2,1.4,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.2,1.45,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.2,1.5,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.2,1.55,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.2,1.6,46,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.2,1.65,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.2,1.7,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.2,1.75,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.35,0.75,24,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.35,0.8,59,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.35,0.85,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.35,0.9,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.35,0.95,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.35,1.0,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.35,1.05,66,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.35,1.1,71,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.35,1.15,64,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.35,1.2,61,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.35,1.25,59,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.35,1.3,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.35,1.35,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.35,1.4,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.35,1.45,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.35,1.5,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.35,1.55,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.35,1.6,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.35,1.65,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.35,1.7,46,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.35,1.75,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.5,0.75,41,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.5,0.8,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.5,0.85,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.5,0.9,80,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.5,0.95,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.5,1.0,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.5,1.05,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.5,1.1,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.5,1.15,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.5,1.2,69,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.5,1.25,68,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.5,1.3,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.5,1.35,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.5,1.4,65,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.5,1.45,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.5,1.5,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.5,1.55,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.5,1.6,52,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.5,1.65,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.5,1.7,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.5,1.75,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.65,0.75,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.65,0.8,91,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.65,0.85,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.65,0.9,86,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.65,0.95,88,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.65,1.0,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.65,1.05,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.65,1.1,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.65,1.15,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.65,1.2,73,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.65,1.25,70,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.65,1.3,69,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.65,1.35,70,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.65,1.4,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.65,1.45,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.65,1.5,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.65,1.55,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.65,1.6,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.65,1.65,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.65,1.7,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.65,1.75,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,low,0.737,0.75,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.737,0.8,95,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.737,0.85,94,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.737,0.9,90,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.737,0.95,90,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.737,1.0,87,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.737,1.05,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.737,1.1,86,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.737,1.15,80,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.737,1.2,74,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.737,1.25,76,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.737,1.3,73,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,low,0.737,1.35,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.737,1.4,68,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.737,1.45,70,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.737,1.5,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.737,1.55,59,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.737,1.6,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.737,1.65,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.737,1.7,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,low,0.737,1.75,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.2,0.75,5,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.2,0.8,44,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.2,0.85,60,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.2,0.9,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.2,0.95,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.2,1.0,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.2,1.05,65,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.2,1.1,62,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.2,1.15,63,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.2,1.2,60,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.2,1.25,58,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.2,1.3,59,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.2,1.35,52,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.2,1.4,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.2,1.45,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.2,1.5,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.2,1.55,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.2,1.6,46,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.2,1.65,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.2,1.7,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.2,1.75,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.35,0.75,24,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.35,0.8,59,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.35,0.85,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.35,0.9,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.35,0.95,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.35,1.0,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.35,1.05,66,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.35,1.1,71,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.35,1.15,64,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.35,1.2,61,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.35,1.25,59,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.35,1.3,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.35,1.35,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.35,1.4,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.35,1.45,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.35,1.5,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.35,1.55,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.35,1.6,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.35,1.65,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.35,1.7,46,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.35,1.75,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.5,0.75,41,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.5,0.8,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.5,0.85,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.5,0.9,80,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.5,0.95,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.5,1.0,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.5,1.05,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.5,1.1,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.5,1.15,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.5,1.2,69,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.5,1.25,68,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.5,1.3,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.5,1.35,60,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.5,1.4,65,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.5,1.45,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.5,1.5,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.5,1.55,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.5,1.6,52,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.5,1.65,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.5,1.7,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.5,1.75,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.65,0.75,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.65,0.8,91,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.65,0.85,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.65,0.9,86,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.65,0.95,88,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.65,1.0,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.65,1.05,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.65,1.1,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.65,1.15,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.65,1.2,73,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.65,1.25,70,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.65,1.3,69,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.65,1.35,70,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.65,1.4,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.65,1.45,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.65,1.5,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.65,1.55,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.65,1.6,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.65,1.65,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.65,1.7,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.65,1.75,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,nominal,0.737,0.75,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.737,0.8,95,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.737,0.85,94,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.737,0.9,90,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.737,0.95,90,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.737,1.0,87,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.737,1.05,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.737,1.1,86,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.737,1.15,80,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.737,1.2,74,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.737,1.25,76,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.737,1.3,73,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,nominal,0.737,1.35,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.737,1.4,68,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.737,1.45,70,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.737,1.5,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.737,1.55,59,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.737,1.6,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.737,1.65,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.737,1.7,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,nominal,0.737,1.75,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.2,0.75,5,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.2,0.8,44,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.2,0.85,60,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.2,0.9,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.2,0.95,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.2,1.0,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.2,1.05,65,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.2,1.1,62,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.2,1.15,63,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.2,1.2,60,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.2,1.25,58,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.2,1.3,59,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.2,1.35,52,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.2,1.4,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.2,1.45,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.2,1.5,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.2,1.55,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.2,1.6,46,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.2,1.65,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.2,1.7,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.2,1.75,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.35,0.75,24,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.35,0.8,59,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.35,0.85,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.35,0.9,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.35,0.95,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.35,1.0,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.35,1.05,66,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.35,1.1,71,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.35,1.15,64,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.35,1.2,61,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.35,1.25,59,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.35,1.3,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.35,1.35,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.35,1.4,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.35,1.45,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.35,1.5,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.35,1.55,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.35,1.6,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.35,1.65,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.35,1.7,46,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.35,1.75,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.5,0.75,41,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.5,0.8,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.5,0.85,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.5,0.9,80,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.5,0.95,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.5,1.0,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.5,1.05,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.5,1.1,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.5,1.15,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.5,1.2,69,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.5,1.25,68,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.5,1.3,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.5,1.35,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.5,1.4,65,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.5,1.45,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.5,1.5,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.5,1.55,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.5,1.6,52,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.5,1.65,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.5,1.7,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.5,1.75,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.65,0.75,67,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.65,0.8,91,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.65,0.85,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.65,0.9,86,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.65,0.95,88,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.65,1.0,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.65,1.05,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.65,1.1,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.65,1.15,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.65,1.2,73,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.65,1.25,70,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.65,1.3,69,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.65,1.35,70,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.65,1.4,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.65,1.45,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.65,1.5,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.65,1.55,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.65,1.6,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.65,1.65,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.65,1.7,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.65,1.75,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,11.0,high,0.737,0.75,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.737,0.8,95,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.737,0.85,94,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.737,0.9,90,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.737,0.95,90,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.737,1.0,87,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.737,1.05,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.737,1.1,86,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.737,1.15,80,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.737,1.2,74,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.737,1.25,76,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.737,1.3,73,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,11.0,high,0.737,1.35,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.737,1.4,68,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.737,1.45,70,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.737,1.5,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.737,1.55,59,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.737,1.6,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.737,1.65,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.737,1.7,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,11.0,high,0.737,1.75,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.2,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.2,0.8,11,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,0.85,30,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.2,0.9,38,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.2,0.95,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.0,37,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.2,1.05,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.1,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.15,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.2,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.25,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.3,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.35,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.4,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.45,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.5,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.55,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.6,18,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.65,16,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.7,15,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.2,1.75,13,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.35,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.35,0.8,26,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.35,0.85,41,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.35,0.9,46,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.35,0.95,45,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.0,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.05,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.1,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.15,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.2,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.25,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.3,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.35,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.4,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.45,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.5,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.55,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.6,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.65,19,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.7,20,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.35,1.75,20,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.5,0.75,9,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.5,0.8,43,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.5,0.85,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.5,0.9,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.5,0.95,50,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.5,1.0,45,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.5,1.05,44,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.5,1.1,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.5,1.15,36,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.5,1.2,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.5,1.25,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.5,1.3,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.5,1.35,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.5,1.4,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.5,1.45,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.5,1.5,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.5,1.55,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.5,1.6,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.5,1.65,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.5,1.7,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.5,1.75,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.65,0.75,33,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.65,0.8,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.65,0.85,58,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.65,0.9,55,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.65,0.95,57,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.0,50,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.65,1.05,50,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.1,47,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.65,1.15,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.2,43,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.25,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.3,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.35,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.4,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.45,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.5,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.55,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.6,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.65,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.7,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.65,1.75,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,low,0.737,0.75,51,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.737,0.8,64,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.737,0.85,62,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.737,0.9,59,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.737,0.95,59,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.737,1.0,56,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.737,1.05,52,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.737,1.1,54,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,low,0.737,1.15,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.737,1.2,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.737,1.25,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.737,1.3,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.737,1.35,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.737,1.4,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.737,1.45,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.737,1.5,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.737,1.55,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.737,1.6,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.737,1.65,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.737,1.7,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,low,0.737,1.75,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.2,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.2,0.8,11,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.2,0.85,30,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.2,0.9,38,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.2,0.95,37,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.2,1.0,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.05,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.1,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.15,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.2,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.25,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.3,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.35,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.4,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.45,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.5,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.55,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.6,18,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.65,16,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.7,15,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.2,1.75,13,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.35,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.35,0.8,26,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.35,0.85,41,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.35,0.9,46,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.35,0.95,45,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.0,41,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.35,1.05,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.1,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.15,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.2,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.25,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.3,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.35,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.4,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.45,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.5,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.55,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.6,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.65,19,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.7,20,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.35,1.75,20,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.5,0.75,9,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.5,0.8,43,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.5,0.85,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.5,0.9,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.5,0.95,50,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.5,1.0,45,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.5,1.05,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.1,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.15,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.2,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.25,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.3,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.35,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.4,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.45,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.5,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.55,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.6,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.65,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.7,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.5,1.75,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.65,0.75,33,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.65,0.8,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.65,0.85,58,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.65,0.9,55,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.65,0.95,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.65,1.0,50,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.65,1.05,50,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.65,1.1,47,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.65,1.15,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.65,1.2,43,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.65,1.25,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.65,1.3,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.65,1.35,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.65,1.4,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.65,1.45,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.65,1.5,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.65,1.55,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.65,1.6,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.65,1.65,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.65,1.7,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.65,1.75,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,nominal,0.737,0.75,51,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.737,0.8,64,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.737,0.85,62,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.737,0.9,59,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.737,0.95,59,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.737,1.0,56,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.737,1.05,52,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.737,1.1,54,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.737,1.15,49,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,nominal,0.737,1.2,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.737,1.25,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.737,1.3,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.737,1.35,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.737,1.4,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.737,1.45,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.737,1.5,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.737,1.55,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.737,1.6,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.737,1.65,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.737,1.7,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,nominal,0.737,1.75,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.2,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.2,0.8,11,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.2,0.85,30,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.2,0.9,38,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.2,0.95,37,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.2,1.0,37,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.2,1.05,34,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.2,1.1,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.2,1.15,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.2,1.2,30,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.2,1.25,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.2,1.3,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.2,1.35,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.2,1.4,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.2,1.45,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.2,1.5,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.2,1.55,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.2,1.6,18,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.2,1.65,16,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.2,1.7,15,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.2,1.75,13,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.35,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.35,0.8,26,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.35,0.85,41,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.35,0.9,46,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.35,0.95,45,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.35,1.0,41,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.35,1.05,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,1.1,40,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.35,1.15,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,1.2,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,1.25,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,1.3,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,1.35,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,1.4,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,1.45,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,1.5,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,1.55,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,1.6,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,1.65,19,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,1.7,20,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.35,1.75,20,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.5,0.75,9,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.5,0.8,43,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.5,0.85,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.5,0.9,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.5,0.95,50,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.5,1.0,45,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.5,1.05,44,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.5,1.1,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,1.15,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,1.2,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,1.25,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,1.3,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,1.35,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,1.4,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,1.45,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,1.5,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,1.55,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,1.6,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,1.65,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,1.7,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.5,1.75,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.65,0.75,33,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.65,0.8,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.65,0.85,58,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.65,0.9,55,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.65,0.95,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.65,1.0,50,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.65,1.05,50,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,1.1,47,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.65,1.15,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,1.2,43,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,1.25,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,1.3,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,1.35,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,1.4,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,1.45,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,1.5,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,1.55,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,1.6,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,1.65,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,1.7,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.65,1.75,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t30,8.9,high,0.737,0.75,51,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.737,0.8,64,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.737,0.85,62,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.737,0.9,59,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.737,0.95,59,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.737,1.0,56,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.737,1.05,52,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.737,1.1,54,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t30,8.9,high,0.737,1.15,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.737,1.2,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.737,1.25,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.737,1.3,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.737,1.35,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.737,1.4,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.737,1.45,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.737,1.5,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.737,1.55,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.737,1.6,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.737,1.65,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.737,1.7,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t30,8.9,high,0.737,1.75,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.2,0.75,4,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.2,0.8,40,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.2,0.85,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.2,0.9,63,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.2,0.95,65,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.2,1.0,62,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.05,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.1,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.15,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.2,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.25,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.3,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.35,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.4,43,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.45,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.5,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.55,43,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.6,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.65,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.7,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.2,1.75,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.35,0.75,18,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.35,0.8,52,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.35,0.85,66,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.35,0.9,63,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.35,0.95,68,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.35,1.0,65,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.05,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.1,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.15,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.2,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.25,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.3,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.35,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.4,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.45,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.5,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.55,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.6,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.65,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.7,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.35,1.75,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.5,0.75,35,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.5,0.8,68,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.5,0.85,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.5,0.9,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.5,0.95,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.5,1.0,66,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.5,1.05,69,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,1.1,64,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.5,1.15,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,1.2,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,1.25,59,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,1.3,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,1.35,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,1.4,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,1.45,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,1.5,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,1.55,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,1.6,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,1.65,46,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,1.7,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.5,1.75,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.65,0.75,61,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.65,0.8,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.65,0.85,85,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.65,0.9,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.65,0.95,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.65,1.0,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.65,1.05,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.65,1.1,67,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,1.15,71,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,1.2,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,1.25,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,1.3,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,1.35,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,1.4,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,1.45,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,1.5,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,1.55,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,1.6,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,1.65,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,1.7,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.65,1.75,46,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,low,0.737,0.75,71,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.737,0.8,88,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.737,0.85,83,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.737,0.9,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.737,0.95,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.737,1.0,78,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.737,1.05,74,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.737,1.1,73,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,low,0.737,1.15,70,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.737,1.2,68,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.737,1.25,69,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.737,1.3,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.737,1.35,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.737,1.4,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.737,1.45,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.737,1.5,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.737,1.55,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.737,1.6,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.737,1.65,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.737,1.7,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,low,0.737,1.75,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.2,0.75,4,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.2,0.8,40,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,0.85,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.2,0.9,63,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.2,0.95,65,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.2,1.0,62,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.2,1.05,57,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.2,1.1,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,1.15,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,1.2,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,1.25,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,1.3,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,1.35,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,1.4,43,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,1.45,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,1.5,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,1.55,43,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,1.6,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,1.65,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,1.7,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.2,1.75,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.35,0.75,18,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.35,0.8,52,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.35,0.85,66,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.35,0.9,63,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.35,0.95,68,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.35,1.0,65,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.35,1.05,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.1,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.15,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.2,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.25,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.3,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.35,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.4,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.45,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.5,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.55,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.6,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.65,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.7,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.35,1.75,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.5,0.75,35,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.5,0.8,68,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.5,0.85,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.5,0.9,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.5,0.95,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.5,1.0,66,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.5,1.05,69,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.5,1.1,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,1.15,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,1.2,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,1.25,59,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,1.3,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,1.35,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,1.4,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,1.45,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,1.5,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,1.55,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,1.6,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,1.65,46,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,1.7,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.5,1.75,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.65,0.75,61,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.65,0.8,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.65,0.85,85,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.65,0.9,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.65,0.95,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.65,1.0,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.65,1.05,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.65,1.1,67,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,1.15,71,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,1.2,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,1.25,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,1.3,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,1.35,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,1.4,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,1.45,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,1.5,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,1.55,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,1.6,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,1.65,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,1.7,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.65,1.75,46,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,nominal,0.737,0.75,71,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.737,0.8,88,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.737,0.85,83,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.737,0.9,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.737,0.95,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.737,1.0,78,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.737,1.05,74,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,nominal,0.737,1.1,73,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,1.15,70,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,1.2,68,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,1.25,69,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,1.3,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,1.35,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,1.4,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,1.45,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,1.5,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,1.55,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,1.6,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,1.65,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,1.7,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,nominal,0.737,1.75,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.2,0.75,4,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.2,0.8,40,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.2,0.85,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.2,0.9,63,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.2,0.95,65,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.2,1.0,62,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.2,1.05,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.1,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.15,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.2,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.25,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.3,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.35,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.4,43,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.45,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.5,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.55,43,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.6,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.65,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.7,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.2,1.75,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.35,0.75,18,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.35,0.8,52,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.35,0.85,66,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.35,0.9,63,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.35,0.95,68,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.35,1.0,65,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.35,1.05,61,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.35,1.1,64,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.35,1.15,56,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.35,1.2,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.35,1.25,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.35,1.3,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.35,1.35,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.35,1.4,51,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.35,1.45,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.35,1.5,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.35,1.55,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.35,1.6,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.35,1.65,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.35,1.7,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.35,1.75,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.5,0.75,35,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.5,0.8,68,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.5,0.85,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.5,0.9,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.5,0.95,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.5,1.0,66,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.5,1.05,69,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.5,1.1,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,1.15,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,1.2,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,1.25,59,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,1.3,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,1.35,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,1.4,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,1.45,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,1.5,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,1.55,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,1.6,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,1.65,46,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,1.7,48,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.5,1.75,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.65,0.75,61,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.65,0.8,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.65,0.85,85,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.65,0.9,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.65,0.95,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.65,1.0,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.65,1.05,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.65,1.1,67,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,1.15,71,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,1.2,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,1.25,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,1.3,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,1.35,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,1.4,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,1.45,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,1.5,55,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,1.55,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,1.6,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,1.65,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,1.7,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.65,1.75,46,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,11.0,high,0.737,0.75,71,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.737,0.8,88,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.737,0.85,83,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.737,0.9,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.737,0.95,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.737,1.0,78,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.737,1.05,74,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,1.1,73,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,11.0,high,0.737,1.15,70,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,1.2,68,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,1.25,69,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,1.3,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,1.35,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,1.4,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,1.45,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,1.5,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,1.55,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,1.6,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,1.65,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,1.7,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,11.0,high,0.737,1.75,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.2,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.2,0.8,10,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,0.85,28,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.2,0.9,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,0.95,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.0,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.05,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.1,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.15,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.2,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.25,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.3,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.35,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.4,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.45,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.5,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.55,20,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.6,13,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.65,12,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.7,13,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.2,1.75,11,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.35,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.35,0.8,23,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.35,0.85,37,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.35,0.9,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,0.95,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.0,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.05,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.1,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.15,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.2,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.25,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.3,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.35,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.4,20,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.45,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.5,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.55,19,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.6,15,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.65,15,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.7,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.35,1.75,18,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.5,0.75,5,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.5,0.8,36,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.5,0.85,47,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.5,0.9,45,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.5,0.95,43,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.0,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.05,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.1,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.15,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.2,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.25,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.3,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.35,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.4,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.45,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.5,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.55,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.6,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.65,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.7,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.5,1.75,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.65,0.75,30,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.65,0.8,55,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.65,0.85,51,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.65,0.9,52,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.65,0.95,47,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.65,1.0,45,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.65,1.05,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.1,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.15,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.2,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.25,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.3,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.35,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.4,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.45,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.5,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.55,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.6,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.65,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.7,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.65,1.75,19,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,low,0.737,0.75,41,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.737,0.8,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.737,0.85,53,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.737,0.9,51,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,0.95,53,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,low,0.737,1.0,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.05,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.1,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.15,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.2,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.25,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.3,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.35,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.4,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.45,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.5,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.55,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.6,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.65,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.7,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,low,0.737,1.75,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.2,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.2,0.8,10,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.2,0.85,28,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.2,0.9,31,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.2,0.95,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.0,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.05,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.1,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.15,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.2,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.25,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.3,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.35,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.4,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.45,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.5,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.55,20,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.6,13,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.65,12,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.7,13,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.2,1.75,11,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.35,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.35,0.8,23,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.35,0.85,37,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.35,0.9,34,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.35,0.95,39,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.35,1.0,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.05,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.1,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.15,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.2,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.25,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.3,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.35,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.4,20,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.45,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.5,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.55,19,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.6,15,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.65,15,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.7,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.35,1.75,18,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.5,0.75,5,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.5,0.8,36,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.5,0.85,47,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.5,0.9,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,0.95,43,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.5,1.0,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.05,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.1,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.15,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.2,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.25,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.3,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.35,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.4,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.45,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.5,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.55,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.6,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.65,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.7,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.5,1.75,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.65,0.75,30,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.65,0.8,55,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.65,0.85,51,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.65,0.9,52,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.65,0.95,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.0,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.05,44,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.65,1.1,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.15,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.2,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.25,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.3,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.35,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.4,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.45,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.5,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.55,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.6,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.65,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.7,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.65,1.75,19,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,nominal,0.737,0.75,41,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.737,0.8,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.737,0.85,53,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.737,0.9,51,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.737,0.95,53,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,nominal,0.737,1.0,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.05,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.1,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.15,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.2,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.25,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.3,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.35,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.4,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.45,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.5,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.55,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.6,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.65,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.7,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,nominal,0.737,1.75,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.2,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.2,0.8,10,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.2,0.85,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,0.9,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,0.95,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.0,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.05,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.1,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.15,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.2,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.25,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.3,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.35,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.4,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.45,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.5,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.55,20,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.6,13,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.65,12,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.7,13,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.2,1.75,11,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.35,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.35,0.8,23,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.35,0.85,37,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.35,0.9,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,0.95,39,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.35,1.0,37,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.35,1.05,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.1,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.15,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.2,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.25,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.3,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.35,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.4,20,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.45,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.5,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.55,19,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.6,15,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.65,15,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.7,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.35,1.75,18,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.5,0.75,5,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.5,0.8,36,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.5,0.85,47,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.5,0.9,45,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.5,0.95,43,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.5,1.0,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.05,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.1,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.15,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.2,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.25,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.3,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.35,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.4,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.45,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.5,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.55,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.6,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.65,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.7,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.5,1.75,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.65,0.75,30,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.65,0.8,55,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.65,0.85,51,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.65,0.9,52,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.65,0.95,47,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.65,1.0,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.05,44,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.65,1.1,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.15,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.2,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.25,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.3,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.35,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.4,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.45,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.5,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.55,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.6,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.65,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.7,17,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.65,1.75,19,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t28.8,8.9,high,0.737,0.75,41,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.737,0.8,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.737,0.85,53,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.737,0.9,51,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.737,0.95,53,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.737,1.0,49,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t28.8,8.9,high,0.737,1.05,47,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.1,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.15,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.2,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.25,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.3,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.35,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.4,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.45,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.5,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.55,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.6,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.65,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.7,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t28.8,8.9,high,0.737,1.75,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.2,0.75,5,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.2,0.8,50,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.2,0.85,70,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.2,0.9,79,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.2,0.95,79,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.2,1.0,78,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.2,1.05,79,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.2,1.1,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.2,1.15,72,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.2,1.2,70,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.2,1.25,62,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.2,1.3,62,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.2,1.35,66,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.2,1.4,62,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.2,1.45,57,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.2,1.5,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.2,1.55,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.2,1.6,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.2,1.65,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.2,1.7,52,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.2,1.75,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.35,0.75,26,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.35,0.8,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,0.85,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,0.9,83,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,0.95,85,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,1.0,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,1.05,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,1.1,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,1.15,78,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,1.2,72,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,1.25,66,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,1.3,70,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,1.35,67,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.35,1.4,66,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,1.45,60,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,1.5,64,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.35,1.55,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.35,1.6,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.35,1.65,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.35,1.7,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.35,1.75,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.5,0.75,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,0.8,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,0.85,96,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,0.9,91,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,0.95,92,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,1.0,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,1.05,87,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,1.1,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,1.15,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,1.2,78,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,1.25,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,1.3,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,1.35,68,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,1.4,69,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,1.45,68,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,1.5,67,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,1.55,63,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.5,1.6,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.5,1.65,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.5,1.7,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.5,1.75,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.65,0.75,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,0.8,110,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,0.85,102,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,0.9,101,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,0.95,95,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,1.0,95,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,1.05,98,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,1.1,92,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,1.15,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,1.2,85,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,1.25,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,1.3,80,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,1.35,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,1.4,76,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,1.45,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,1.5,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.65,1.55,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.65,1.6,69,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.65,1.65,69,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.65,1.7,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.65,1.75,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,low,0.737,0.75,97,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,0.8,113,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,0.85,110,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,0.9,100,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,0.95,103,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,1.0,97,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,1.05,95,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,1.1,94,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,1.15,90,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,1.2,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,1.25,90,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,1.3,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,1.35,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,1.4,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,1.45,75,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,low,0.737,1.5,75,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.737,1.55,73,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.737,1.6,75,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.737,1.65,67,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.737,1.7,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,low,0.737,1.75,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.2,0.75,5,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.2,0.8,50,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,0.85,70,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,0.9,79,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,0.95,79,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,1.0,78,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,1.05,79,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,1.1,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,1.15,72,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,1.2,70,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,1.25,62,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,1.3,62,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,1.35,66,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,1.4,62,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,1.45,57,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,1.5,54,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.2,1.55,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.2,1.6,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.2,1.65,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.2,1.7,52,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.2,1.75,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.35,0.75,26,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.35,0.8,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,0.85,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,0.9,83,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,0.95,85,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,1.0,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,1.05,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,1.1,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,1.15,78,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,1.2,72,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,1.25,66,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,1.3,70,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,1.35,67,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,1.4,66,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,1.45,60,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,1.5,64,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,1.55,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.35,1.6,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.35,1.65,53,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.35,1.7,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.35,1.75,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.5,0.75,49,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.5,0.8,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,0.85,96,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,0.9,91,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,0.95,92,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,1.0,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,1.05,87,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,1.1,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,1.15,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,1.2,78,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,1.25,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,1.3,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,1.35,68,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,1.4,69,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,1.45,68,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.5,1.5,67,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.5,1.55,63,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.5,1.6,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.5,1.65,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.5,1.7,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.5,1.75,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.65,0.75,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,0.8,110,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,0.85,102,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,0.9,101,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,0.95,95,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,1.0,95,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,1.05,98,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,1.1,92,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,1.15,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,1.2,85,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,1.25,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,1.3,80,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,1.35,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,1.4,76,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,1.45,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,1.5,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,1.55,66,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.65,1.6,69,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.65,1.65,69,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.65,1.7,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.65,1.75,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,nominal,0.737,0.75,97,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,0.8,113,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,0.85,110,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,0.9,100,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,0.95,103,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,1.0,97,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,1.05,95,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,1.1,94,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,1.15,90,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,1.2,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,1.25,90,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,1.3,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,1.35,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,1.4,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,1.45,75,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,1.5,75,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,1.55,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,nominal,0.737,1.6,75,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.737,1.65,67,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.737,1.7,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,nominal,0.737,1.75,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.2,0.75,5,1,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.2,0.8,50,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.2,0.85,70,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,0.9,79,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,0.95,79,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,1.0,78,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,1.05,79,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,1.1,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,1.15,72,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,1.2,70,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,1.25,62,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,1.3,62,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,1.35,66,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,1.4,62,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,1.45,57,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,1.5,54,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.2,1.55,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.2,1.6,56,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.2,1.65,54,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.2,1.7,52,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.2,1.75,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.35,0.75,26,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.35,0.8,67,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.35,0.85,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,0.9,83,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,0.95,85,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.0,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.05,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.1,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.15,78,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.2,72,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.25,66,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.3,70,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.35,67,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.4,66,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.45,60,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.5,64,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.55,64,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.6,58,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.35,1.65,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.35,1.7,53,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.35,1.75,50,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.5,0.75,49,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.5,0.8,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,0.85,96,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,0.9,91,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,0.95,92,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,1.0,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,1.05,87,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,1.1,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,1.15,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,1.2,78,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,1.25,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,1.3,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,1.35,68,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,1.4,69,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,1.45,68,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.5,1.5,67,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.5,1.55,63,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.5,1.6,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.5,1.65,61,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.5,1.7,58,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.5,1.75,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.65,0.75,76,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.65,0.8,110,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,0.85,102,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,0.9,101,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,0.95,95,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,1.0,95,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,1.05,98,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,1.1,92,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,1.15,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,1.2,85,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,1.25,81,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,1.3,80,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,1.35,75,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,1.4,76,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,1.45,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,1.5,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.65,1.55,66,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.65,1.6,69,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.65,1.65,69,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.65,1.7,62,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.65,1.75,60,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,11.0,high,0.737,0.75,97,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,0.8,113,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,0.85,110,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,0.9,100,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,0.95,103,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,1.0,97,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,1.05,95,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,1.1,94,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,1.15,90,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,1.2,89,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,1.25,90,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,1.3,84,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,1.35,82,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,1.4,76,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,1.45,75,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,1.5,75,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.737,1.55,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,11.0,high,0.737,1.6,75,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.737,1.65,67,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.737,1.7,57,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,11.0,high,0.737,1.75,64,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.2,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.2,0.8,15,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.2,0.85,35,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.2,0.9,42,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.2,0.95,45,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.2,1.0,42,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.2,1.05,43,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.2,1.1,40,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.2,1.15,39,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.2,1.2,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.2,1.25,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.2,1.3,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.2,1.35,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.2,1.4,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.2,1.45,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.2,1.5,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.2,1.55,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.2,1.6,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.2,1.65,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.2,1.7,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.2,1.75,19,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.35,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.35,0.8,32,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.35,0.85,52,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.35,0.9,50,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.35,0.95,51,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.35,1.0,47,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.35,1.05,46,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.35,1.1,44,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.35,1.15,43,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.35,1.2,40,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.35,1.25,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.35,1.3,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.35,1.35,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.35,1.4,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.35,1.45,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.35,1.5,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.35,1.55,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.35,1.6,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.35,1.65,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.35,1.7,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.35,1.75,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.5,0.75,13,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.5,0.8,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.5,0.85,62,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.5,0.9,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.5,0.95,58,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.5,1.0,54,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.5,1.05,53,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.5,1.1,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.5,1.15,48,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.5,1.2,45,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.5,1.25,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.5,1.3,42,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.5,1.35,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.5,1.4,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.5,1.45,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.5,1.5,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.5,1.55,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.5,1.6,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.5,1.65,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.5,1.7,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.5,1.75,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.65,0.75,40,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.65,0.8,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.65,0.85,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.65,0.9,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.65,0.95,60,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.65,1.0,60,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.65,1.05,62,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.65,1.1,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.65,1.15,56,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.65,1.2,53,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.65,1.25,49,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.65,1.3,46,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.65,1.35,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.65,1.4,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.65,1.45,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.65,1.5,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.65,1.55,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.65,1.6,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.65,1.65,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.65,1.7,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.65,1.75,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,low,0.737,0.75,61,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.737,0.8,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.737,0.85,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.737,0.9,65,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.737,0.95,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.737,1.0,61,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.737,1.05,61,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.737,1.1,63,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.737,1.15,58,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.737,1.2,55,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.737,1.25,53,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.737,1.3,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.737,1.35,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,low,0.737,1.4,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.737,1.45,43,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.737,1.5,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.737,1.55,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.737,1.6,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.737,1.65,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.737,1.7,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,low,0.737,1.75,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.2,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.2,0.8,15,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.2,0.85,35,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.2,0.9,42,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.2,0.95,45,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.2,1.0,42,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.2,1.05,43,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.2,1.1,40,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.2,1.15,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.2,1.2,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.2,1.25,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.2,1.3,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.2,1.35,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.2,1.4,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.2,1.45,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.2,1.5,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.2,1.55,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.2,1.6,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.2,1.65,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.2,1.7,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.2,1.75,19,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.35,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.35,0.8,32,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.35,0.85,52,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.35,0.9,50,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.35,0.95,51,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.35,1.0,47,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.35,1.05,46,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.35,1.1,44,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.35,1.15,43,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.35,1.2,40,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.35,1.25,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.35,1.3,38,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.35,1.35,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.35,1.4,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.35,1.45,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.35,1.5,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.35,1.55,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.35,1.6,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.35,1.65,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.35,1.7,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.35,1.75,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.5,0.75,13,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.5,0.8,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.5,0.85,62,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.5,0.9,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.5,0.95,58,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.5,1.0,54,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.5,1.05,53,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.5,1.1,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.5,1.15,48,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.5,1.2,45,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.5,1.25,45,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.5,1.3,42,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.5,1.35,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.5,1.4,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.5,1.45,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.5,1.5,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.5,1.55,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.5,1.6,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.5,1.65,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.5,1.7,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.5,1.75,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.65,0.75,40,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.65,0.8,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.65,0.85,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.65,0.9,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.65,0.95,60,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.65,1.0,60,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.65,1.05,62,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.65,1.1,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.65,1.15,56,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.65,1.2,53,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.65,1.25,49,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.65,1.3,46,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.65,1.35,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.65,1.4,45,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.65,1.45,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.65,1.5,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.65,1.55,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.65,1.6,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.65,1.65,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.65,1.7,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.65,1.75,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,nominal,0.737,0.75,61,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.737,0.8,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.737,0.85,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.737,0.9,65,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.737,0.95,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.737,1.0,61,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.737,1.05,61,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.737,1.1,63,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.737,1.15,58,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.737,1.2,55,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.737,1.25,53,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.737,1.3,49,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.737,1.35,49,2,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.737,1.4,42,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,nominal,0.737,1.45,43,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.737,1.5,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.737,1.55,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.737,1.6,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.737,1.65,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.737,1.7,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,nominal,0.737,1.75,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.2,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.2,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.2,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.2,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.2,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.2,0.8,15,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.2,0.85,35,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.2,0.9,42,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.2,0.95,45,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.2,1.0,42,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.2,1.05,43,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.2,1.1,40,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.2,1.15,39,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.2,1.2,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.2,1.25,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.2,1.3,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.2,1.35,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.2,1.4,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.2,1.45,26,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.2,1.5,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.2,1.55,24,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.2,1.6,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.2,1.65,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.2,1.7,22,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.2,1.75,19,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.35,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.35,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.35,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.35,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.35,0.75,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.35,0.8,32,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.35,0.85,52,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.35,0.9,50,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.35,0.95,51,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.35,1.0,47,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.35,1.05,46,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.35,1.1,44,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.35,1.15,43,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.35,1.2,40,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.35,1.25,35,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.35,1.3,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.35,1.35,35,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.35,1.4,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.35,1.45,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.35,1.5,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.35,1.55,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.35,1.6,28,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.35,1.65,25,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.35,1.7,21,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.35,1.75,23,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.5,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.5,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.5,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.5,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.5,0.75,13,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.5,0.8,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.5,0.85,62,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.5,0.9,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.5,0.95,58,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.5,1.0,54,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.5,1.05,53,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.5,1.1,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.5,1.15,48,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.5,1.2,45,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.5,1.25,45,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.5,1.3,42,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.5,1.35,36,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.5,1.4,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.5,1.45,37,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.5,1.5,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.5,1.55,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.5,1.6,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.5,1.65,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.5,1.7,27,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.5,1.75,30,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.65,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.65,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.65,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.65,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.65,0.75,40,2,0 (feasible without spin),,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.65,0.8,73,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.65,0.85,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.65,0.9,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.65,0.95,60,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.65,1.0,60,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.65,1.05,62,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.65,1.1,57,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.65,1.15,56,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.65,1.2,53,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.65,1.25,49,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.65,1.3,46,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.65,1.35,41,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.65,1.4,45,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.65,1.45,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.65,1.5,40,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.65,1.55,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.65,1.6,38,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.65,1.65,39,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.65,1.7,32,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.65,1.75,31,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.737,0.55,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.737,0.6,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.737,0.65,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.737,0.7,0,0,none within S<=2,,,,,,,,none within S<=2,0
+unfav_t31.77,8.9,high,0.737,0.75,61,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.737,0.8,77,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.737,0.85,74,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.737,0.9,65,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.737,0.95,67,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.737,1.0,61,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.737,1.05,61,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.737,1.1,63,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.737,1.15,58,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.737,1.2,55,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.737,1.25,53,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.737,1.3,49,1,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.737,1.35,49,2,0 (feasible without spin),,,,,,,,none within S<=2,2
+unfav_t31.77,8.9,high,0.737,1.4,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.737,1.45,43,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.737,1.5,44,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.737,1.55,41,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.737,1.6,42,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.737,1.65,34,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.737,1.7,29,1,0 (feasible without spin),,,,,,,,none within S<=2,1
+unfav_t31.77,8.9,high,0.737,1.75,33,1,0 (feasible without spin),,,,,,,,none within S<=2,1

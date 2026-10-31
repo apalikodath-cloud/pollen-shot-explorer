@@ -1,0 +1,9 @@
+{
+  "_note": "Far-side hero shot picked from data/_spec_cache/S+1.0_nominal.npz (src/shooter_spec.py): unfavourable side, tilt 30, d = 1.75 m from the pivot plane, h = 0.5 m, centre of the largest clean (v, elevation) square with v <= 8.9. Literature-graded nominal aero (research/params_lit.json). PREDICTED, not measured. The twin is the same launch with no spin.",
+  "cases": [
+    {"id": "HERO_backspin_d175", "title": "Backspin POLLEN enters the CELL from the far side: 1.75 m from the pivot, 8.45 m/s at 75.6 deg, S 1.0 (PREDICTED, nominal literature aero)",
+     "pose": "pose_pos", "side": "unfavorable", "distance": 1.75, "release_z": 0.5, "v": 8.45, "elev_deg": 75.6, "S": 1.0, "aero_set": "nominal"},
+    {"id": "TWIN_nospin_d175", "title": "Same launch, NO spin: 1.75 m, 8.45 m/s at 75.6 deg, S 0 (PREDICTED)",
+     "pose": "pose_pos", "side": "unfavorable", "distance": 1.75, "release_z": 0.5, "v": 8.45, "elev_deg": 75.6, "S": 0.0, "aero_set": "nominal"}
+  ]
+}

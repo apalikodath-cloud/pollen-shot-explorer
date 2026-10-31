@@ -1,0 +1,1940 @@
+{
+ "meta": {
+  "task": "PM-001 crosscheck/solver blind reference cases",
+  "generated": "2026-10-30",
+  "generator": "crosscheck/solver/xflight.py --write-cases (fixed-step RK4, step halving to 1e-8 m, Hermite events)",
+  "label_all_outputs": "predicted (model output under ASSUMED placeholder aerodynamics; not POLLEN measurements)",
+  "parameters": {
+   "m_kg": [
+    0.025,
+    "user/HANDOFF s1-2 (AndyMark nominal 0.055 lb ~ 24.95 g, first-pass 0.025); not re-verified here"
+   ],
+   "R_m": [
+    0.0355,
+    "user/HANDOFF s2 (official nominal 71 mm diameter)"
+   ],
+   "rho_kg_m3": [
+    1.225,
+    "assumed (ISA sea-level standard air)"
+   ],
+   "Cd": [
+    0.5,
+    "ASSUMED PLACEHOLDER, constant, uncalibrated; perforated POLLEN != pickleball"
+   ],
+   "c1": [
+    0.3,
+    "ASSUMED PLACEHOLDER, Cl = min(c1*S, Cl_max), uncalibrated"
+   ],
+   "Cl_max": [
+    0.35,
+    "ASSUMED PLACEHOLDER ceiling, uncalibrated"
+   ],
+   "k_spin_1_s": [
+    "0 or 0.5 per case",
+    "ASSUMED PLACEHOLDER spin decay omega0*exp(-k t)"
+   ],
+   "g_m_s2": [
+    9.81,
+    "assumed; MUST match the main solver (rerun with --g if it uses 9.80665)"
+   ],
+   "wind_m_s": [
+    [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "assumed still air for all 24 cases"
+   ],
+   "eps_v_m_s": [
+    1e-06,
+    "regularisation floor in S"
+   ]
+  },
+  "conventions": {
+   "frame": "x toward target, y = z cross x (left), z up; release at x=0 in the x-z plane",
+   "z_is": "height of ball CENTRE above tiles",
+   "S0": "release spin parameter |omega0| R / |v_rel(0)|; S(t) recomputed in flight from decayed omega and current |v_rel|",
+   "backspin_axis": "(0,-1,0); derived: top surface moves -x  =>  omega x z_hat = -x_hat  =>  omega || -y_hat; Magnus (-y) x (+x) = +z (up)",
+   "apex": "first vz: + -> 0 crossing (Hermite on vz)",
+   "z1p0 / z0p3": "LAST DESCENDING crossing of z = 1.0 m / z = release height 0.3 m; null if never reached",
+   "ground_R": "descending crossing of z = R (ball bottom touches tiles); extra, for reference",
+   "flight_time_s": "time of return to release height z0 = 0.3 m (NOT ground)",
+   "spin_vs_nospin.equal_x": "max |z_spin(x) - z_nospin(x)| over x in [0, min of the two z0p3 x's]",
+   "spin_vs_nospin.equal_t": "max |z_spin(t) - z_nospin(t)| over t in [0, min of the two flight times]",
+   "signed_dz": "spin minus no-spin (positive = spin case higher)",
+   "horizontal_reversal": "true if vx < 0 anywhere before return to z0 (HANDOFF s0 explicit test)"
+  },
+  "design": "4 launch states x 6 spin configs: (S0,k) = (0,0),(0.5,0),(1,0),(2,0),(0.5,0.5),(1,0.5). S0=0 is the no-spin twin of each launch state.",
+  "selftest": {
+   "backspin_sign": true,
+   "v0_regularisation": true,
+   "vacuum_closed_form_err": 0.0,
+   "drag_vertical_closed_form_err": 0.0,
+   "dop853_vs_rk4_max_pos_err_m": 0.0
+  }
+ },
+ "cases": [
+  {
+   "id": "PM001-01",
+   "twin_id": "PM001-01",
+   "inputs": {
+    "v0_m_s": 3.0,
+    "elev_deg": 80.0,
+    "S0": 0.0,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.001,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 0.0,
+    "omega0_rpm": 0.0,
+    "apex": {
+     "t": 0.2967713,
+     "x": 0.152353,
+     "z": 0.7352816,
+     "vx": 0.5090962,
+     "omega_rad_s": 0.0,
+     "S": 0.0,
+     "Cl": 0.0,
+     "F_M_N": 0.0,
+     "a_M_m_s2": 0.0
+    },
+    "z1p0": null,
+    "z0p3": {
+     "t": 0.5957946,
+     "x": 0.3033191,
+     "vx": 0.4975262,
+     "vz": -2.8909143
+    },
+    "ground_R": {
+     "t": 0.6767261,
+     "x": 0.3433343,
+     "vx": 0.4911125,
+     "vz": -3.6422654
+    },
+    "flight_time_s": 0.5957946,
+    "min_vx_m_s": 0.4975824,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "note": "this IS the no-spin twin; dz == 0"
+    }
+   }
+  },
+  {
+   "id": "PM001-02",
+   "twin_id": "PM001-01",
+   "inputs": {
+    "v0_m_s": 3.0,
+    "elev_deg": 80.0,
+    "S0": 0.5,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.0005,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 42.2535211,
+    "omega0_rpm": 403.491405,
+    "apex": {
+     "t": 0.2973331,
+     "x": 0.1489459,
+     "z": 0.7362103,
+     "vx": 0.4911265,
+     "omega_rad_s": 42.2535211,
+     "S": 3.0542032,
+     "Cl": 0.35,
+     "F_M_N": 0.0002047,
+     "a_M_m_s2": 0.0081889
+    },
+    "z1p0": null,
+    "z0p3": {
+     "t": 0.5969169,
+     "x": 0.2965626,
+     "vx": 0.4980077,
+     "vz": -2.8909128
+    },
+    "ground_R": {
+     "t": 0.677868,
+     "x": 0.3370737,
+     "vx": 0.503057,
+     "vz": -3.6406868
+    },
+    "flight_time_s": 0.5969169,
+    "min_vx_m_s": 0.4906469,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.0383501,
+      "signed_dz_m": -0.0383501,
+      "x_m": 0.2965418,
+      "z_spin_m": 0.300121,
+      "t_spin_s": 0.596875,
+      "common_x_max_m": 0.2965418,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.0032379,
+      "signed_dz_m": 0.0032379,
+      "t_s": 0.59575,
+      "x_spin_m": 0.2959816,
+      "z_spin_m": 0.3033669,
+      "common_t_max_s": 0.59575
+     },
+     "dx_at_z1p0_m": null,
+     "dx_at_z0p3_m": -0.0067565,
+     "dz_apex_m": 0.0009288
+    }
+   }
+  },
+  {
+   "id": "PM001-03",
+   "twin_id": "PM001-01",
+   "inputs": {
+    "v0_m_s": 3.0,
+    "elev_deg": 80.0,
+    "S0": 1.0,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.00025,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 84.5070423,
+    "omega0_rpm": 806.98281,
+    "apex": {
+     "t": 0.297565,
+     "x": 0.146385,
+     "z": 0.7367601,
+     "vx": 0.4802175,
+     "omega_rad_s": 84.5070423,
+     "S": 6.2471694,
+     "Cl": 0.35,
+     "F_M_N": 0.0001957,
+     "a_M_m_s2": 0.0078292
+    },
+    "z1p0": null,
+    "z0p3": {
+     "t": 0.5973781,
+     "x": 0.2914644,
+     "vx": 0.498194,
+     "vz": -2.8909433
+    },
+    "ground_R": {
+     "t": 0.6783484,
+     "x": 0.3324476,
+     "vx": 0.5147101,
+     "vz": -3.6390953
+    },
+    "flight_time_s": 0.5973781,
+    "min_vx_m_s": 0.4797692,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.0661035,
+      "signed_dz_m": -0.0661035,
+      "x_m": 0.2914628,
+      "z_spin_m": 0.3000091,
+      "t_spin_s": 0.597375,
+      "common_x_max_m": 0.2914628,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.0045655,
+      "signed_dz_m": 0.0045655,
+      "t_s": 0.59575,
+      "x_spin_m": 0.2906535,
+      "z_spin_m": 0.3046945,
+      "common_t_max_s": 0.59575
+     },
+     "dx_at_z1p0_m": null,
+     "dx_at_z0p3_m": -0.0118547,
+     "dz_apex_m": 0.0014785
+    }
+   }
+  },
+  {
+   "id": "PM001-04",
+   "twin_id": "PM001-01",
+   "inputs": {
+    "v0_m_s": 3.0,
+    "elev_deg": 80.0,
+    "S0": 2.0,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.001,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 169.0140845,
+    "omega0_rpm": 1613.9656201,
+    "apex": {
+     "t": 0.2975799,
+     "x": 0.1461478,
+     "z": 0.7368028,
+     "vx": 0.4793641,
+     "omega_rad_s": 169.0140845,
+     "S": 12.516581,
+     "Cl": 0.35,
+     "F_M_N": 0.000195,
+     "a_M_m_s2": 0.0078014
+    },
+    "z1p0": null,
+    "z0p3": {
+     "t": 0.5974074,
+     "x": 0.2909892,
+     "vx": 0.4980257,
+     "vz": -2.8909787
+    },
+    "ground_R": {
+     "t": 0.6783865,
+     "x": 0.3321795,
+     "vx": 0.5212281,
+     "vz": -3.6381675
+    },
+    "flight_time_s": 0.5974074,
+    "min_vx_m_s": 0.4789182,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.0686307,
+      "signed_dz_m": -0.0686307,
+      "x_m": 0.290973,
+      "z_spin_m": 0.3000938,
+      "t_spin_s": 0.597375,
+      "common_x_max_m": 0.290973,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.0046498,
+      "signed_dz_m": 0.0046498,
+      "t_s": 0.59575,
+      "x_spin_m": 0.290164,
+      "z_spin_m": 0.3047788,
+      "common_t_max_s": 0.59575
+     },
+     "dx_at_z1p0_m": null,
+     "dx_at_z0p3_m": -0.0123299,
+     "dz_apex_m": 0.0015212
+    }
+   }
+  },
+  {
+   "id": "PM001-05",
+   "twin_id": "PM001-01",
+   "inputs": {
+    "v0_m_s": 3.0,
+    "elev_deg": 80.0,
+    "S0": 0.5,
+    "k_spin_1_s": 0.5,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.0005,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 42.2535211,
+    "omega0_rpm": 403.491405,
+    "apex": {
+     "t": 0.2973155,
+     "x": 0.1490509,
+     "z": 0.7361796,
+     "vx": 0.4917335,
+     "omega_rad_s": 36.4167903,
+     "S": 2.6290582,
+     "Cl": 0.35,
+     "F_M_N": 0.0002052,
+     "a_M_m_s2": 0.0082092
+    },
+    "z1p0": null,
+    "z0p3": {
+     "t": 0.5968607,
+     "x": 0.2965455,
+     "vx": 0.4948827,
+     "vz": -2.8914517
+    },
+    "ground_R": {
+     "t": 0.6777946,
+     "x": 0.3366765,
+     "vx": 0.4968372,
+     "vz": -3.6415509
+    },
+    "flight_time_s": 0.5968607,
+    "min_vx_m_s": 0.4912522,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.0384436,
+      "signed_dz_m": -0.0384436,
+      "x_m": 0.2965216,
+      "z_spin_m": 0.3001394,
+      "t_spin_s": 0.5968125,
+      "common_x_max_m": 0.2965216,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.0030768,
+      "signed_dz_m": 0.0030768,
+      "t_s": 0.59575,
+      "x_spin_m": 0.2959958,
+      "z_spin_m": 0.3032058,
+      "common_t_max_s": 0.59575
+     },
+     "dx_at_z1p0_m": null,
+     "dx_at_z0p3_m": -0.0067736,
+     "dz_apex_m": 0.000898
+    }
+   }
+  },
+  {
+   "id": "PM001-06",
+   "twin_id": "PM001-01",
+   "inputs": {
+    "v0_m_s": 3.0,
+    "elev_deg": 80.0,
+    "S0": 1.0,
+    "k_spin_1_s": 0.5,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.0005,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 84.5070423,
+    "omega0_rpm": 806.98281,
+    "apex": {
+     "t": 0.2975629,
+     "x": 0.1464157,
+     "z": 0.7367542,
+     "vx": 0.4803354,
+     "omega_rad_s": 72.824573,
+     "S": 5.3822236,
+     "Cl": 0.35,
+     "F_M_N": 0.0001958,
+     "a_M_m_s2": 0.007833
+    },
+    "z1p0": null,
+    "z0p3": {
+     "t": 0.5973647,
+     "x": 0.2913933,
+     "vx": 0.4945039,
+     "vz": -2.891579
+    },
+    "ground_R": {
+     "t": 0.67831,
+     "x": 0.3318268,
+     "vx": 0.5047925,
+     "vz": -3.6404982
+    },
+    "flight_time_s": 0.5973647,
+    "min_vx_m_s": 0.4798867,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.066471,
+      "signed_dz_m": -0.066471,
+      "x_m": 0.2913674,
+      "z_spin_m": 0.3001509,
+      "t_spin_s": 0.5973125,
+      "common_x_max_m": 0.2913674,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.0045278,
+      "signed_dz_m": 0.0045278,
+      "t_s": 0.59575,
+      "x_spin_m": 0.2905949,
+      "z_spin_m": 0.3046568,
+      "common_t_max_s": 0.59575
+     },
+     "dx_at_z1p0_m": null,
+     "dx_at_z0p3_m": -0.0119259,
+     "dz_apex_m": 0.0014726
+    }
+   }
+  },
+  {
+   "id": "PM001-07",
+   "twin_id": "PM001-07",
+   "inputs": {
+    "v0_m_s": 5.0,
+    "elev_deg": 55.0,
+    "S0": 0.0,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.001,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 0.0,
+    "omega0_rpm": 0.0,
+    "apex": {
+     "t": 0.4016811,
+     "x": 1.1087336,
+     "z": 1.1096515,
+     "vx": 2.6764322,
+     "omega_rad_s": 0.0,
+     "S": 0.0,
+     "Cl": 0.0,
+     "F_M_N": 0.0,
+     "a_M_m_s2": 0.0
+    },
+    "z1p0": {
+     "t": 0.5516989,
+     "x": 1.5062929,
+     "vx": 2.6228532,
+     "vz": -1.4566038
+    },
+    "z0p3": {
+     "t": 0.8124774,
+     "x": 2.1754692,
+     "vx": 2.5013786,
+     "vz": -3.8833501
+    },
+    "ground_R": {
+     "t": 0.8759843,
+     "x": 2.3331621,
+     "vx": 2.4642911,
+     "vz": -4.4440713
+    },
+    "flight_time_s": 0.8124774,
+    "min_vx_m_s": 2.5016461,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "note": "this IS the no-spin twin; dz == 0"
+    }
+   }
+  },
+  {
+   "id": "PM001-08",
+   "twin_id": "PM001-07",
+   "inputs": {
+    "v0_m_s": 5.0,
+    "elev_deg": 55.0,
+    "S0": 0.5,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.001,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 70.4225352,
+    "omega0_rpm": 672.485675,
+    "apex": {
+     "t": 0.4097266,
+     "x": 1.1143071,
+     "z": 1.125859,
+     "vx": 2.6169967,
+     "omega_rad_s": 70.4225352,
+     "S": 0.9552935,
+     "Cl": 0.2865881,
+     "F_M_N": 0.0047597,
+     "a_M_m_s2": 0.1903869
+    },
+    "z1p0": {
+     "t": 0.5720578,
+     "x": 1.5351785,
+     "vx": 2.5702312,
+     "vz": -1.5447306
+    },
+    "z0p3": {
+     "t": 0.828681,
+     "x": 2.1861977,
+     "vx": 2.5026753,
+     "vz": -3.8833404
+    },
+    "ground_R": {
+     "t": 0.8922702,
+     "x": 2.3447707,
+     "vx": 2.4846155,
+     "vz": -4.4333259
+    },
+    "flight_time_s": 0.828681,
+    "min_vx_m_s": 2.5028648,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.0170924,
+      "signed_dz_m": 0.0170924,
+      "x_m": 1.3466924,
+      "z_spin_m": 1.0876692,
+      "t_spin_s": 0.499,
+      "common_x_max_m": 2.175213,
+      "at_end_of_common_range": false
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.0617572,
+      "signed_dz_m": 0.0617572,
+      "t_s": 0.812375,
+      "x_spin_m": 2.1453523,
+      "z_spin_m": 0.362155,
+      "common_t_max_s": 0.812375
+     },
+     "dx_at_z1p0_m": 0.0288856,
+     "dx_at_z0p3_m": 0.0107284,
+     "dz_apex_m": 0.0162075
+    }
+   }
+  },
+  {
+   "id": "PM001-09",
+   "twin_id": "PM001-07",
+   "inputs": {
+    "v0_m_s": 5.0,
+    "elev_deg": 55.0,
+    "S0": 1.0,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.0005,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 140.8450704,
+    "omega0_rpm": 1344.9713501,
+    "apex": {
+     "t": 0.4145307,
+     "x": 1.1128254,
+     "z": 1.1384395,
+     "vx": 2.5708552,
+     "omega_rad_s": 140.8450704,
+     "S": 1.9448781,
+     "Cl": 0.35,
+     "F_M_N": 0.0056097,
+     "a_M_m_s2": 0.2243861
+    },
+    "z1p0": {
+     "t": 0.5851569,
+     "x": 1.547446,
+     "vx": 2.5268115,
+     "vz": -1.6151702
+    },
+    "z0p3": {
+     "t": 0.838197,
+     "x": 2.1824757,
+     "vx": 2.5020562,
+     "vz": -3.8855268
+    },
+    "ground_R": {
+     "t": 0.9018382,
+     "x": 2.3417341,
+     "vx": 2.5030638,
+     "vz": -4.4243677
+    },
+    "flight_time_s": 0.838197,
+    "min_vx_m_s": 2.5020288,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.0289948,
+      "signed_dz_m": 0.0289948,
+      "x_m": 1.1825264,
+      "z_spin_m": 1.1349087,
+      "t_spin_s": 0.4416875,
+      "common_x_max_m": 2.175213,
+      "at_end_of_common_range": false
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.0970663,
+      "signed_dz_m": 0.0970663,
+      "t_s": 0.812375,
+      "x_spin_m": 2.117868,
+      "z_spin_m": 0.3974641,
+      "common_t_max_s": 0.812375
+     },
+     "dx_at_z1p0_m": 0.0411531,
+     "dx_at_z0p3_m": 0.0070065,
+     "dz_apex_m": 0.028788
+    }
+   }
+  },
+  {
+   "id": "PM001-10",
+   "twin_id": "PM001-07",
+   "inputs": {
+    "v0_m_s": 5.0,
+    "elev_deg": 55.0,
+    "S0": 2.0,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.001,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 281.6901408,
+    "omega0_rpm": 2689.9427001,
+    "apex": {
+     "t": 0.4147802,
+     "x": 1.1120713,
+     "z": 1.1394298,
+     "vx": 2.567305,
+     "omega_rad_s": 281.6901408,
+     "S": 3.8951352,
+     "Cl": 0.35,
+     "F_M_N": 0.0055942,
+     "a_M_m_s2": 0.2237668
+    },
+    "z1p0": {
+     "t": 0.5860122,
+     "x": 1.5476266,
+     "vx": 2.5232717,
+     "vz": -1.6209374
+    },
+    "z0p3": {
+     "t": 0.8386867,
+     "x": 2.1809008,
+     "vx": 2.4998241,
+     "vz": -3.8872443
+    },
+    "ground_R": {
+     "t": 0.9023223,
+     "x": 2.3401415,
+     "vx": 2.5059653,
+     "vz": -4.4229664
+    },
+    "flight_time_s": 0.8386867,
+    "min_vx_m_s": 2.4989247,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.0299094,
+      "signed_dz_m": 0.0299094,
+      "x_m": 1.1661584,
+      "z_spin_m": 1.1372987,
+      "t_spin_s": 0.435875,
+      "common_x_max_m": 2.175213,
+      "at_end_of_common_range": false
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.0989122,
+      "signed_dz_m": 0.0989122,
+      "t_s": 0.812375,
+      "x_spin_m": 2.1151391,
+      "z_spin_m": 0.3993099,
+      "common_t_max_s": 0.812375
+     },
+     "dx_at_z1p0_m": 0.0413337,
+     "dx_at_z0p3_m": 0.0054316,
+     "dz_apex_m": 0.0297783
+    }
+   }
+  },
+  {
+   "id": "PM001-11",
+   "twin_id": "PM001-07",
+   "inputs": {
+    "v0_m_s": 5.0,
+    "elev_deg": 55.0,
+    "S0": 0.5,
+    "k_spin_1_s": 0.5,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.001,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 70.4225352,
+    "omega0_rpm": 672.485675,
+    "apex": {
+     "t": 0.4089534,
+     "x": 1.1130731,
+     "z": 1.1248068,
+     "vx": 2.6210312,
+     "omega_rad_s": 57.399558,
+     "S": 0.7774361,
+     "Cl": 0.2332308,
+     "F_M_N": 0.0038855,
+     "a_M_m_s2": 0.1554186
+    },
+    "z1p0": {
+     "t": 0.5702765,
+     "x": 1.5318867,
+     "vx": 2.5723431,
+     "vz": -1.5417275
+    },
+    "z0p3": {
+     "t": 0.826662,
+     "x": 2.1812754,
+     "vx": 2.4897999,
+     "vz": -3.8920076
+    },
+    "ground_R": {
+     "t": 0.8900995,
+     "x": 2.3384566,
+     "vx": 2.4653466,
+     "vz": -4.4445907
+    },
+    "flight_time_s": 0.826662,
+    "min_vx_m_s": 2.4900452,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.0156675,
+      "signed_dz_m": 0.0156675,
+      "x_m": 1.2819084,
+      "z_spin_m": 1.1046682,
+      "t_spin_s": 0.473625,
+      "common_x_max_m": 2.175213,
+      "at_end_of_common_range": false
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.0543058,
+      "signed_dz_m": 0.0543058,
+      "t_s": 0.812375,
+      "x_spin_m": 2.145666,
+      "z_spin_m": 0.3547036,
+      "common_t_max_s": 0.812375
+     },
+     "dx_at_z1p0_m": 0.0255938,
+     "dx_at_z0p3_m": 0.0058061,
+     "dz_apex_m": 0.0151552
+    }
+   }
+  },
+  {
+   "id": "PM001-12",
+   "twin_id": "PM001-07",
+   "inputs": {
+    "v0_m_s": 5.0,
+    "elev_deg": 55.0,
+    "S0": 1.0,
+    "k_spin_1_s": 0.5,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.0005,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 140.8450704,
+    "omega0_rpm": 1344.9713501,
+    "apex": {
+     "t": 0.4144489,
+     "x": 1.1129893,
+     "z": 1.1381481,
+     "vx": 2.5719114,
+     "omega_rad_s": 114.4841098,
+     "S": 1.58022,
+     "Cl": 0.35,
+     "F_M_N": 0.0056143,
+     "a_M_m_s2": 0.2245705
+    },
+    "z1p0": {
+     "t": 0.5848965,
+     "x": 1.547335,
+     "vx": 2.5278645,
+     "vz": -1.6134694
+    },
+    "z0p3": {
+     "t": 0.8377396,
+     "x": 2.1807609,
+     "vx": 2.4829894,
+     "vz": -3.8979363
+    },
+    "ground_R": {
+     "t": 0.9011458,
+     "x": 2.3378204,
+     "vx": 2.4709387,
+     "vz": -4.4428443
+    },
+    "flight_time_s": 0.8377396,
+    "min_vx_m_s": 2.4830334,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.0287237,
+      "signed_dz_m": 0.0287237,
+      "x_m": 1.1866132,
+      "z_spin_m": 1.1342116,
+      "t_spin_s": 0.443125,
+      "common_x_max_m": 2.175213,
+      "at_end_of_common_range": false
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.0956651,
+      "signed_dz_m": 0.0956651,
+      "t_s": 0.812375,
+      "x_spin_m": 2.1177223,
+      "z_spin_m": 0.3960629,
+      "common_t_max_s": 0.812375
+     },
+     "dx_at_z1p0_m": 0.0410421,
+     "dx_at_z0p3_m": 0.0052917,
+     "dz_apex_m": 0.0284966
+    }
+   }
+  },
+  {
+   "id": "PM001-13",
+   "twin_id": "PM001-13",
+   "inputs": {
+    "v0_m_s": 7.5,
+    "elev_deg": 70.0,
+    "S0": 0.0,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.001,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 0.0,
+    "omega0_rpm": 0.0,
+    "apex": {
+     "t": 0.6602392,
+     "x": 1.558882,
+     "z": 2.5375617,
+     "vx": 2.2345567,
+     "omega_rad_s": 0.0,
+     "S": 0.0,
+     "Cl": 0.0,
+     "F_M_N": 0.0,
+     "a_M_m_s2": 0.0
+    },
+    "z1p0": {
+     "t": 1.2292833,
+     "x": 2.7792687,
+     "vx": 2.022194,
+     "vz": -5.2679543
+    },
+    "z0p3": {
+     "t": 1.3507002,
+     "x": 3.0205476,
+     "vx": 1.9508531,
+     "vz": -6.2515498
+    },
+    "ground_R": {
+     "t": 1.3919536,
+     "x": 3.100494,
+     "vx": 1.9248829,
+     "vz": -6.5703035
+    },
+    "flight_time_s": 1.3507002,
+    "min_vx_m_s": 1.9512868,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "note": "this IS the no-spin twin; dz == 0"
+    }
+   }
+  },
+  {
+   "id": "PM001-14",
+   "twin_id": "PM001-13",
+   "inputs": {
+    "v0_m_s": 7.5,
+    "elev_deg": 70.0,
+    "S0": 0.5,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.0005,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 105.6338028,
+    "omega0_rpm": 1008.7285126,
+    "apex": {
+     "t": 0.6748225,
+     "x": 1.4853653,
+     "z": 2.5903592,
+     "vx": 2.0094246,
+     "omega_rad_s": 105.6338028,
+     "S": 1.8662059,
+     "Cl": 0.35,
+     "F_M_N": 0.0034271,
+     "a_M_m_s2": 0.1370832
+    },
+    "z1p0": {
+     "t": 1.2588488,
+     "x": 2.6432135,
+     "vx": 1.9790312,
+     "vz": -5.2960671
+    },
+    "z0p3": {
+     "t": 1.3799846,
+     "x": 2.8832445,
+     "vx": 1.9842919,
+     "vz": -6.2503733
+    },
+    "ground_R": {
+     "t": 1.4212736,
+     "x": 2.9652187,
+     "vx": 1.9864911,
+     "vz": -6.5604221
+    },
+    "flight_time_s": 1.3799846,
+    "min_vx_m_s": 1.9753258,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.4160159,
+      "signed_dz_m": -0.4160159,
+      "x_m": 2.883151,
+      "z_spin_m": 0.3002945,
+      "t_spin_s": 1.3799375,
+      "common_x_max_m": 2.883151,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.179741,
+      "signed_dz_m": 0.179741,
+      "t_s": 1.350625,
+      "x_spin_m": 2.8250079,
+      "z_spin_m": 0.4802112,
+      "common_t_max_s": 1.350625
+     },
+     "dx_at_z1p0_m": -0.1360552,
+     "dx_at_z0p3_m": -0.1373031,
+     "dz_apex_m": 0.0527975
+    }
+   }
+  },
+  {
+   "id": "PM001-15",
+   "twin_id": "PM001-13",
+   "inputs": {
+    "v0_m_s": 7.5,
+    "elev_deg": 70.0,
+    "S0": 1.0,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.00025,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 211.2676056,
+    "omega0_rpm": 2017.4570251,
+    "apex": {
+     "t": 0.6799807,
+     "x": 1.4178009,
+     "z": 2.6202003,
+     "vx": 1.874685,
+     "omega_rad_s": 211.2676056,
+     "S": 4.0006721,
+     "Cl": 0.35,
+     "F_M_N": 0.0029829,
+     "a_M_m_s2": 0.1193156
+    },
+    "z1p0": {
+     "t": 1.2693617,
+     "x": 2.5163273,
+     "vx": 1.9167675,
+     "vz": -5.3280051
+    },
+    "z0p3": {
+     "t": 1.390098,
+     "x": 2.7520012,
+     "vx": 1.9922139,
+     "vz": -6.2554297
+    },
+    "ground_R": {
+     "t": 1.4313842,
+     "x": 2.8348829,
+     "vx": 2.0229521,
+     "vz": -6.5562184
+    },
+    "flight_time_s": 1.390098,
+    "min_vx_m_s": 1.8480326,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.770139,
+      "signed_dz_m": -0.770139,
+      "x_m": 2.7519928,
+      "z_spin_m": 0.3000264,
+      "t_spin_s": 1.3900938,
+      "common_x_max_m": 2.7519928,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.2406493,
+      "signed_dz_m": 0.2406493,
+      "t_s": 1.350625,
+      "x_spin_m": 2.6739227,
+      "z_spin_m": 0.5411195,
+      "common_t_max_s": 1.350625
+     },
+     "dx_at_z1p0_m": -0.2629414,
+     "dx_at_z0p3_m": -0.2685464,
+     "dz_apex_m": 0.0826385
+    }
+   }
+  },
+  {
+   "id": "PM001-16",
+   "twin_id": "PM001-13",
+   "inputs": {
+    "v0_m_s": 7.5,
+    "elev_deg": 70.0,
+    "S0": 2.0,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.001,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 422.5352113,
+    "omega0_rpm": 4034.9140502,
+    "apex": {
+     "t": 0.6802733,
+     "x": 1.4115782,
+     "z": 2.6223704,
+     "vx": 1.8648459,
+     "omega_rad_s": 422.5352113,
+     "S": 8.0435599,
+     "Cl": 0.35,
+     "F_M_N": 0.0029517,
+     "a_M_m_s2": 0.1180665
+    },
+    "z1p0": {
+     "t": 1.2700051,
+     "x": 2.5052521,
+     "vx": 1.9081311,
+     "vz": -5.3318909
+    },
+    "z0p3": {
+     "t": 1.3906662,
+     "x": 2.7397601,
+     "vx": 1.9842014,
+     "vz": -6.2587035
+    },
+    "ground_R": {
+     "t": 1.4319338,
+     "x": 2.8223197,
+     "vx": 2.0176185,
+     "vz": -6.5585692
+    },
+    "flight_time_s": 1.3906662,
+    "min_vx_m_s": 1.8386107,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.8010043,
+      "signed_dz_m": -0.8010043,
+      "x_m": 2.7396785,
+      "z_spin_m": 0.3002576,
+      "t_spin_s": 1.390625,
+      "common_x_max_m": 2.7396785,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.2441682,
+      "signed_dz_m": 0.2441682,
+      "t_s": 1.350625,
+      "x_spin_m": 2.6608983,
+      "z_spin_m": 0.5446384,
+      "common_t_max_s": 1.350625
+     },
+     "dx_at_z1p0_m": -0.2740166,
+     "dx_at_z0p3_m": -0.2807875,
+     "dz_apex_m": 0.0848087
+    }
+   }
+  },
+  {
+   "id": "PM001-17",
+   "twin_id": "PM001-13",
+   "inputs": {
+    "v0_m_s": 7.5,
+    "elev_deg": 70.0,
+    "S0": 0.5,
+    "k_spin_1_s": 0.5,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.0005,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 105.6338028,
+    "omega0_rpm": 1008.7285126,
+    "apex": {
+     "t": 0.6736635,
+     "x": 1.4908478,
+     "z": 2.5860989,
+     "vx": 2.0288262,
+     "omega_rad_s": 75.425595,
+     "S": 1.3197822,
+     "Cl": 0.35,
+     "F_M_N": 0.0034936,
+     "a_M_m_s2": 0.1397431
+    },
+    "z1p0": {
+     "t": 1.2557164,
+     "x": 2.6455833,
+     "vx": 1.9340996,
+     "vz": -5.3125073
+    },
+    "z0p3": {
+     "t": 1.3764181,
+     "x": 2.8773243,
+     "vx": 1.9049742,
+     "vz": -6.275641
+    },
+    "ground_R": {
+     "t": 1.4175353,
+     "x": 2.9554263,
+     "vx": 1.8939212,
+     "vz": -6.5887013
+    },
+    "flight_time_s": 1.3764181,
+    "min_vx_m_s": 1.9050837,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.4328836,
+      "signed_dz_m": -0.4328836,
+      "x_m": 2.8772423,
+      "z_spin_m": 0.3002704,
+      "t_spin_s": 1.376375,
+      "common_x_max_m": 2.8772423,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.1588204,
+      "signed_dz_m": 0.1588204,
+      "t_s": 1.350625,
+      "x_spin_m": 2.828103,
+      "z_spin_m": 0.4592906,
+      "common_t_max_s": 1.350625
+     },
+     "dx_at_z1p0_m": -0.1336854,
+     "dx_at_z0p3_m": -0.1432233,
+     "dz_apex_m": 0.0485371
+    }
+   }
+  },
+  {
+   "id": "PM001-18",
+   "twin_id": "PM001-13",
+   "inputs": {
+    "v0_m_s": 7.5,
+    "elev_deg": 70.0,
+    "S0": 1.0,
+    "k_spin_1_s": 0.5,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.0005,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 211.2676056,
+    "omega0_rpm": 2017.4570251,
+    "apex": {
+     "t": 0.6798658,
+     "x": 1.4198669,
+     "z": 2.6194222,
+     "vx": 1.8782589,
+     "omega_rad_s": 150.3841054,
+     "S": 2.8423323,
+     "Cl": 0.35,
+     "F_M_N": 0.0029943,
+     "a_M_m_s2": 0.119771
+    },
+    "z1p0": {
+     "t": 1.2688755,
+     "x": 2.5166989,
+     "vx": 1.8787305,
+     "vz": -5.3415705
+    },
+    "z0p3": {
+     "t": 1.3891508,
+     "x": 2.7433655,
+     "vx": 1.8900226,
+     "vz": -6.2878899
+    },
+    "ground_R": {
+     "t": 1.4302053,
+     "x": 2.8210273,
+     "vx": 1.8932572,
+     "vz": -6.596106
+    },
+    "flight_time_s": 1.3891508,
+    "min_vx_m_s": 1.8514539,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.7919498,
+      "signed_dz_m": -0.7919498,
+      "x_m": 2.7433168,
+      "z_spin_m": 0.300162,
+      "t_spin_s": 1.389125,
+      "common_x_max_m": 2.7433168,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.236091,
+      "signed_dz_m": 0.236091,
+      "t_s": 1.350625,
+      "x_spin_m": 2.6706147,
+      "z_spin_m": 0.5365613,
+      "common_t_max_s": 1.350625
+     },
+     "dx_at_z1p0_m": -0.2625698,
+     "dx_at_z0p3_m": -0.2771821,
+     "dz_apex_m": 0.0818604
+    }
+   }
+  },
+  {
+   "id": "PM001-19",
+   "twin_id": "PM001-19",
+   "inputs": {
+    "v0_m_s": 10.0,
+    "elev_deg": 30.0,
+    "S0": 0.0,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.001,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 0.0,
+    "omega0_rpm": 0.0,
+    "apex": {
+     "t": 0.4613197,
+     "x": 3.6263714,
+     "z": 1.4112703,
+     "vx": 7.1897737,
+     "omega_rad_s": 0.0,
+     "S": 0.0,
+     "Cl": 0.0,
+     "F_M_N": 0.0,
+     "a_M_m_s2": 0.0
+    },
+    "z1p0": {
+     "t": 0.755713,
+     "x": 5.6399535,
+     "vx": 6.5032789,
+     "vz": -2.7482118
+    },
+    "z0p3": {
+     "t": 0.9506158,
+     "x": 6.8653974,
+     "vx": 6.0721303,
+     "vz": -4.4132509
+    },
+    "ground_R": {
+     "t": 1.0075607,
+     "x": 7.2075872,
+     "vx": 5.9460692,
+     "vz": -4.8744171
+    },
+    "flight_time_s": 0.9506158,
+    "min_vx_m_s": 6.0734916,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "note": "this IS the no-spin twin; dz == 0"
+    }
+   }
+  },
+  {
+   "id": "PM001-20",
+   "twin_id": "PM001-19",
+   "inputs": {
+    "v0_m_s": 10.0,
+    "elev_deg": 30.0,
+    "S0": 0.5,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.001,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 140.8450704,
+    "omega0_rpm": 1344.9713501,
+    "apex": {
+     "t": 0.515109,
+     "x": 3.9528894,
+     "z": 1.5410914,
+     "vx": 6.9085255,
+     "omega_rad_s": 140.8450704,
+     "S": 0.7237434,
+     "Cl": 0.217123,
+     "F_M_N": 0.0251298,
+     "a_M_m_s2": 1.0051926
+    },
+    "z1p0": {
+     "t": 0.8717721,
+     "x": 6.287146,
+     "vx": 6.2201452,
+     "vz": -2.9814205
+    },
+    "z0p3": {
+     "t": 1.0604139,
+     "x": 7.4323232,
+     "vx": 5.9263126,
+     "vz": -4.4228908
+    },
+    "ground_R": {
+     "t": 1.1175242,
+     "x": 7.7683805,
+     "vx": 5.842737,
+     "vz": -4.8381554
+    },
+    "flight_time_s": 1.0604139,
+    "min_vx_m_s": 5.9269259,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.384673,
+      "signed_dz_m": 0.384673,
+      "x_m": 6.8645738,
+      "z_spin_m": 0.6852715,
+      "t_spin_s": 0.96575,
+      "common_x_max_m": 6.8646945,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.4404841,
+      "signed_dz_m": 0.4404841,
+      "t_s": 0.9505,
+      "x_spin_m": 6.7718267,
+      "z_spin_m": 0.740995,
+      "common_t_max_s": 0.9505
+     },
+     "dx_at_z1p0_m": 0.6471926,
+     "dx_at_z0p3_m": 0.5669258,
+     "dz_apex_m": 0.1298211
+    }
+   }
+  },
+  {
+   "id": "PM001-21",
+   "twin_id": "PM001-19",
+   "inputs": {
+    "v0_m_s": 10.0,
+    "elev_deg": 30.0,
+    "S0": 1.0,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.00025,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 281.6901408,
+    "omega0_rpm": 2689.9427001,
+    "apex": {
+     "t": 0.565751,
+     "x": 4.2309133,
+     "z": 1.6817424,
+     "vx": 6.6286142,
+     "omega_rad_s": 281.6901408,
+     "S": 1.5086109,
+     "Cl": 0.35,
+     "F_M_N": 0.0372929,
+     "a_M_m_s2": 1.4917162
+    },
+    "z1p0": {
+     "t": 0.9773889,
+     "x": 6.8096045,
+     "vx": 5.9619174,
+     "vz": -3.2473945
+    },
+    "z0p3": {
+     "t": 1.1572176,
+     "x": 7.8636638,
+     "vx": 5.7696327,
+     "vz": -4.5198265
+    },
+    "ground_R": {
+     "t": 1.2133984,
+     "x": 8.186391,
+     "vx": 5.7200845,
+     "vz": -4.8942743
+    },
+    "flight_time_s": 1.1572176,
+    "min_vx_m_s": 5.7698343,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.6691264,
+      "signed_dz_m": 0.6691264,
+      "x_m": 6.8646179,
+      "z_spin_m": 0.9696928,
+      "t_spin_s": 0.986625,
+      "common_x_max_m": 6.8646945,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.7841351,
+      "signed_dz_m": 0.7841351,
+      "t_s": 0.9505,
+      "x_spin_m": 6.6488508,
+      "z_spin_m": 1.0846459,
+      "common_t_max_s": 0.9505
+     },
+     "dx_at_z1p0_m": 1.169651,
+     "dx_at_z0p3_m": 0.9982664,
+     "dz_apex_m": 0.2704721
+    }
+   }
+  },
+  {
+   "id": "PM001-22",
+   "twin_id": "PM001-19",
+   "inputs": {
+    "v0_m_s": 10.0,
+    "elev_deg": 30.0,
+    "S0": 2.0,
+    "k_spin_1_s": 0.0,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.001,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 563.3802817,
+    "omega0_rpm": 5379.8854003,
+    "apex": {
+     "t": 0.5686033,
+     "x": 4.2410389,
+     "z": 1.6959824,
+     "vx": 6.6065121,
+     "omega_rad_s": 563.3802817,
+     "S": 3.027316,
+     "Cl": 0.35,
+     "F_M_N": 0.0370446,
+     "a_M_m_s2": 1.481785
+    },
+    "z1p0": {
+     "t": 0.9843589,
+     "x": 6.8361246,
+     "vx": 5.9394919,
+     "vz": -3.2814233
+    },
+    "z0p3": {
+     "t": 1.1628642,
+     "x": 7.8787875,
+     "vx": 5.7511257,
+     "vz": -4.5436778
+    },
+    "ground_R": {
+     "t": 1.2187738,
+     "x": 8.1989484,
+     "vx": 5.7024983,
+     "vz": -4.9160994
+    },
+    "flight_time_s": 1.1628642,
+    "min_vx_m_s": 5.751916,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.6835661,
+      "signed_dz_m": 0.6835661,
+      "x_m": 6.8644192,
+      "z_spin_m": 0.9842769,
+      "t_spin_s": 0.989125,
+      "common_x_max_m": 6.8646945,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.8063552,
+      "signed_dz_m": 0.8063552,
+      "t_s": 0.9505,
+      "x_spin_m": 6.6343221,
+      "z_spin_m": 1.106866,
+      "common_t_max_s": 0.9505
+     },
+     "dx_at_z1p0_m": 1.1961712,
+     "dx_at_z0p3_m": 1.0133901,
+     "dz_apex_m": 0.2847121
+    }
+   }
+  },
+  {
+   "id": "PM001-23",
+   "twin_id": "PM001-19",
+   "inputs": {
+    "v0_m_s": 10.0,
+    "elev_deg": 30.0,
+    "S0": 0.5,
+    "k_spin_1_s": 0.5,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.001,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 140.8450704,
+    "omega0_rpm": 1344.9713501,
+    "apex": {
+     "t": 0.5083226,
+     "x": 3.9095284,
+     "z": 1.5300111,
+     "vx": 6.938008,
+     "omega_rad_s": 109.2347462,
+     "S": 0.5589261,
+     "Cl": 0.1676778,
+     "F_M_N": 0.019573,
+     "a_M_m_s2": 0.7829209
+    },
+    "z1p0": {
+     "t": 0.8561857,
+     "x": 6.1958178,
+     "vx": 6.2367707,
+     "vz": -3.0004812
+    },
+    "z0p3": {
+     "t": 1.0427999,
+     "x": 7.3287411,
+     "vx": 5.9072983,
+     "vz": -4.4853025
+    },
+    "ground_R": {
+     "t": 1.0990772,
+     "x": 7.6584403,
+     "vx": 5.8097135,
+     "vz": -4.9129191
+    },
+    "flight_time_s": 1.0427999,
+    "min_vx_m_s": 5.9086882,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.3244189,
+      "signed_dz_m": 0.3244189,
+      "x_m": 6.8646353,
+      "z_spin_m": 0.6249727,
+      "t_spin_s": 0.965125,
+      "common_x_max_m": 6.8646945,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.3803476,
+      "signed_dz_m": 0.3803476,
+      "t_s": 0.9505,
+      "x_spin_m": 6.7760698,
+      "z_spin_m": 0.6808584,
+      "common_t_max_s": 0.9505
+     },
+     "dx_at_z1p0_m": 0.5558644,
+     "dx_at_z0p3_m": 0.4633437,
+     "dz_apex_m": 0.1187408
+    }
+   }
+  },
+  {
+   "id": "PM001-24",
+   "twin_id": "PM001-19",
+   "inputs": {
+    "v0_m_s": 10.0,
+    "elev_deg": 30.0,
+    "S0": 1.0,
+    "k_spin_1_s": 0.5,
+    "z0_m": 0.3,
+    "x0_m": 0.0,
+    "spin_axis": [
+     0.0,
+     -1.0,
+     0.0
+    ],
+    "wind_m_s": [
+     0.0,
+     0.0,
+     0.0
+    ]
+   },
+   "outputs": {
+    "dt_final_s": 0.001,
+    "halving_err_m": 0.0,
+    "omega0_rad_s": 281.6901408,
+    "omega0_rpm": 2689.9427001,
+    "apex": {
+     "t": 0.5613637,
+     "x": 4.2078866,
+     "z": 1.6686555,
+     "vx": 6.6538974,
+     "omega_rad_s": 212.7517173,
+     "S": 1.135077,
+     "Cl": 0.3405231,
+     "F_M_N": 0.0365604,
+     "a_M_m_s2": 1.4624177
+    },
+    "z1p0": {
+     "t": 0.9666604,
+     "x": 6.7559766,
+     "vx": 5.9707409,
+     "vz": -3.2541935
+    },
+    "z0p3": {
+     "t": 1.1449772,
+     "x": 7.7992772,
+     "vx": 5.7337471,
+     "vz": -4.5842619
+    },
+    "ground_R": {
+     "t": 1.2002776,
+     "x": 8.1143921,
+     "vx": 5.6628577,
+     "vz": -4.9802736
+    },
+    "flight_time_s": 1.1449772,
+    "min_vx_m_s": 5.7350068,
+    "horizontal_reversal": false,
+    "spin_vs_nospin": {
+     "equal_x": {
+      "max_abs_dz_m": 0.6388063,
+      "signed_dz_m": 0.6388063,
+      "x_m": 6.8645023,
+      "z_spin_m": 0.9394568,
+      "t_spin_s": 0.984875,
+      "common_x_max_m": 6.8646945,
+      "at_end_of_common_range": true
+     },
+     "equal_t": {
+      "max_abs_dz_m": 0.7510758,
+      "signed_dz_m": 0.7510758,
+      "t_s": 0.9505,
+      "x_spin_m": 6.6593056,
+      "z_spin_m": 1.0515867,
+      "common_t_max_s": 0.9505
+     },
+     "dx_at_z1p0_m": 1.1160232,
+     "dx_at_z0p3_m": 0.9338797,
+     "dz_apex_m": 0.2573852
+    }
+   }
+  }
+ ]
+}

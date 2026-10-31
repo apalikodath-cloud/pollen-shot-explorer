@@ -1,0 +1,90 @@
+{
+  "_status": "ALL aerodynamic coefficients are 'assumed (literature-bounded)' until POLLEN is measured (HANDOFF Phase 4). Not POLLEN measurements. See docs/02_aero.md. Written 2026-10-30 by PM-001 aero agent.",
+  "units": "SI (m, s, kg, rad)",
+
+  "rho": {
+    "value": 1.20, "low": 1.00, "high": 1.25, "units": "kg/m^3",
+    "prov": "assumed: 1.20 = dry air ~20 C at sea level (indoor venue); low 1.00 covers ~1600 m altitude venues; high 1.25 covers cold sea-level air. HANDOFF 4A scale check uses 1.225 (ISA 15 C); difference is 2%."
+  },
+  "nu": {
+    "value": 1.5e-5, "low": 1.45e-5, "high": 1.6e-5, "units": "m^2/s",
+    "prov": "assumed: kinematic viscosity of air 15-25 C (standard property tables); only used for Re."
+  },
+  "mass": {
+    "value": 0.02495, "low": 0.0235, "high": 0.0265, "units": "kg",
+    "prov": "value confirmed: AndyMark am-5851_yellow product page, Specifications 'Weight: 0.055 lbs' = 24.95 g (https://andymark.com/products/biobuzz-scoring-elements?variant=47194281148588). low/high assumed (+/-6%; piece-to-piece variation unpublished; manual 9.8 says elements 'may vary'). Note: AndyMark CAD wall (0.07 in) in HDPE gives only ~21.2 g (derived), so real balls are heavier/thicker than CAD. Weigh >=10 balls."
+  },
+  "radius": {
+    "value": 0.0355, "low": 0.0350, "high": 0.0360, "units": "m",
+    "prov": "value confirmed: Competition Manual TU07 sec. 9.8 'approximately 2.8 in. (7.1 cm)' (https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm); AndyMark layout print am-5851_yellow rev 1 (2026-09-11) OD 2.8 in, CAD outer sphere R = 1.40 in = 35.56 mm. low/high assumed: manual says 'not perfectly spherical and may vary in size'."
+  },
+  "geometry_from_cad": {
+    "outer_radius_in": 1.40, "inner_radius_in": 1.33, "wall_in": 0.07, "wall_mm": 1.78,
+    "holes": 26, "hole_diameter_in": 0.44, "hole_diameter_mm": 11.18,
+    "open_area_fraction": 0.16, "hole_to_ball_diameter_ratio": 0.157,
+    "prov": "confirmed (CAD): AndyMark 'am-5851_yellow Pollen.STEP' (SolidWorks 2024, 2026-09-11) parsed: SPHERICAL_SURFACE radii 1.40/1.33 in, 26 through-holes of radius 0.22 in (26 distinct hole directions); layout print shows '.4 (26)' and wall '.07'. open_area_fraction and ratio are derived. CAD is nominal; molded balls differ (see mass)."
+  },
+  "I_b": {
+    "value": 1.98e-5, "low": 1.73e-5, "high": 2.29e-5, "units": "kg m^2",
+    "alpha_I_over_mR2": {"value": 0.630, "low": 0.60, "high": 0.667},
+    "prov": "derived: I_b = alpha*m*R^2. alpha from Monte-Carlo inertia of the AndyMark CAD solid (shell 1.40/1.33 in minus 26 holes): principal values 0.627/0.638/0.638 (near-isotropic, COM offset <0.1 mm); thick-shell formula 0.4*(Ro^5-Ri^5)/(Ro^3-Ri^3)/Ro^2 = 0.634 (1.78 mm wall), 0.629 (2.1 mm wall implied by 24.95 g at HDPE 950 kg/m^3), 0.614 (3.0 mm). value: alpha 0.630, m 24.95 g, R 35.5 mm. low: alpha 0.60 (thicker/uneven wall, seam), m 23.5 g, R 35.0 mm. high: thin-shell 2/3, m 26.5 g, R 36.0 mm. Uniform solid sphere 2/5 is NOT applicable. Measure by pendulum/rolling test."
+  },
+
+  "Re_range_note": "Re = v*D/nu with D = 0.071 m, nu = 1.5e-5: v = 2/3/5/7/9/10 m/s -> Re = 9.5e3 / 1.4e4 / 2.4e4 / 3.3e4 / 4.3e4 / 4.7e4 (derived). This is subcritical for a smooth sphere (drag crisis ~2e5-4e5) and below the usual golf-ball crisis (~5e4-1e5), so a classic drag crisis and the critical-regime 'inverse Magnus' (observed only near the crisis and at S < ~0.5: Kim et al. 2014; Muto et al. 2012) are NOT expected for a smooth body. Caveat: 26 open 11 mm holes are a large disturbance; outdoor 40-hole pickleballs show Cd ~0.30-0.33 at Re ~5e4 (lower than smooth subcritical ~0.47), which hints that perforations can change the boundary-layer state. Indoor 26-hole pickleballs (closest analogue) show Cd ~0.45. Free-flight pickleball data at v0 6.0-11.5 m/s fitted (launcher range 5-13 m/s; research/checks/lindsey2025.md) report positive backspin lift (no reverse Magnus observed for backspin). Reverse Magnus for POLLEN is therefore judged unlikely at S >= 0.5 but NOT excluded; solver should also run Cl = 0 as a floor.",
+
+  "Cd": {
+    "low": 0.35, "nominal": 0.48, "high": 0.65,
+    "prov": "assumed (literature-bounded), constant over Re 1e4-5e4 and S. Basis: indoor 26-hole pickleball free flight mean 0.45 (SD 0.09) and outdoor 40-hole 0.33 (Lindsey 2025); outdoor pickleball 0.30+/-0.02 (Steyn et al. 2025); forward-facing wiffle ball ~0.6 (Rossmann & Rau 2007 as used by Emond et al. 2024); smooth sphere Re 1e4: ~0.47 non-spinning, 0.474 at S=0.2, 0.661 at S=1.0 (Muto et al. 2012 LES table I) - spin RAISES Cd; floorball CFD at Re 1e5: 0.58 for 10 mm holes, 0.72 for 13 mm (Tandjono et al. 2020, numerical, low weight). For high-S shots (S ~ 1) pair high Cl with Cd toward 'high'. Terminal speed at nominal: ~14.6 m/s (derived), so drag is ~0.12 g at 5 m/s and ~0.38 g at 9 m/s - drag dominates Magnus at nominal values."
+  },
+
+  "Cl": {
+    "model": "linear_capped",
+    "formula": "Cl = min(c1*S, Cl_max)",
+    "S_definition": "S = |omega| R / |v_rel|",
+    "valid_S_range": "0 to 2 (caps chosen so no small-S slope is extrapolated beyond S~0.3-1; data above S=1 exist only for smooth spheres)",
+    "sets": {
+      "low":     {"c1": 0.15, "Cl_max": 0.10},
+      "nominal": {"c1": 0.35, "Cl_max": 0.25},
+      "high":    {"c1": 0.80, "Cl_max": 0.40}
+    },
+    "prov": "assumed (literature-bounded); NOT POLLEN measurements; perforated POLLEN != pickleball (HANDOFF 5). low: outdoor-pickleball fit Cl = 0.195 S (Steyn et al. 2025, S 0.03-0.3, large scatter) reduced for possible venting through 16% open area (anecdotal reports that holes reduce lift), cap 0.10 reached at S = 0.67. nominal: pickleball backspin free flight clusters at Cl ~0.2 with weak S dependence (Lindsey 2025, v0 6.0-11.5 m/s fitted (launcher range 5-13 m/s; research/checks/lindsey2025.md)); smooth sphere subcritical Cl 0.17 at S=0.2 and 0.30 at S=1.0 (Muto et al. 2012, Re 1e4, agrees with Tsuji et al. exp.); cap 0.25 reached at S = 0.71. high: smooth-sphere initial slope ~0.8 (0.167/0.2, Muto 2012) and subcritical saturation 0.30-0.37 for S 1-12 (Muto 2012; Zhou et al. 2022; Ruchayosyothin et al. RSM max 0.37); baseball SHS fit 0.09+0.6 S gives 0.39 at S=0.5 (Re > 1e5, different regime); cap 0.40 reached at S = 0.5. Negative (reverse-Magnus) Cl is outside these sets; treat Cl = 0 as an additional pessimistic case."
+  },
+
+  "spin_decay_k": {
+    "low": 0.01, "nominal": 0.05, "high": 0.30, "units": "1/s",
+    "model": "d(omega)/dt = -k*omega (constant k). Physically k ~ pi*rho*beta*R^2*|v|/(alpha*m) (Tavares torque model, C_M = beta*S, as summarized by Nathan), i.e. k scales with speed; constant k is a bounding simplification.",
+    "prov": "derived/assumed: k = pi*rho*beta*R^2*v/(alpha*m) = 0.30*beta*v for POLLEN (rho 1.20, R 0.0355, alpha 0.63, m 0.02495). Golf-ball beta = 0.010-0.012 (Smits & Smith 1994; Tavares et al. 1999; via Nathan 'The Spin Decay of a Baseball') gives k = 0.011-0.033 /s for v = 3-9 m/s. POLLEN has M/R^2 = 19.8 kg/m^2 vs golf 101, so it spins down ~5x faster than a golf ball at the same beta and v. Holes may act as paddles: beta for a perforated shell is UNMEASURED; high assumes beta ~0.1 (8x golf) at 9 m/s -> 0.27 /s. Over a ~1.2 s flight: low ~1%, nominal ~6%, high ~30% spin loss. Measure from two-camera spin counts early vs late in flight."
+  },
+
+  "scale_check_magnus_over_g": {
+    "note": "derived: a_M/g = 0.5*rho*Cl*A*v^2/(m*g), rho 1.20, A = pi*0.0355^2 = 3.959e-3 m^2, m 0.02495 kg, g 9.80665. Rows v [m/s], columns S = 0.5, 1, 2. (HANDOFF check: 5 m/s, Cl 0.20, rho 1.225 -> 0.485 m/s^2 reproduced.)",
+    "S": [0.5, 1.0, 2.0],
+    "low":     {"v3": [0.007, 0.009, 0.009], "v5": [0.018, 0.024, 0.024], "v7": [0.036, 0.048, 0.048], "v9": [0.059, 0.079, 0.079]},
+    "nominal": {"v3": [0.015, 0.022, 0.022], "v5": [0.042, 0.061, 0.061], "v7": [0.083, 0.119, 0.119], "v9": [0.138, 0.197, 0.197]},
+    "high":    {"v3": [0.035, 0.035, 0.035], "v5": [0.097, 0.097, 0.097], "v7": [0.190, 0.190, 0.190], "v9": [0.315, 0.315, 0.315]}
+  },
+
+  "sources": [
+    {"cite": "FIRST, BIOBUZZ Competition Manual TU07 (2026-10-29), sec. 9.8 SCORING ELEMENTS", "url": "https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm", "what_it_gives": "POLLEN ~2.8 in (7.1 cm) Gopher ResisDent polyethylene ball, am-5851_yellow; not perfectly spherical, size varies. No mass, no aero data."},
+    {"cite": "AndyMark, BIOBUZZ Scoring Elements product page + am-5851_yellow Pollen.STEP + layout print (rev 1, 2026-09-11)", "url": "https://andymark.com/products/biobuzz-scoring-elements?variant=47194281148588", "what_it_gives": "Weight 0.055 lb (24.95 g), diameter 2.8 in, polyethylene; CAD: OD 2.80 in, wall 0.07 in, 26 holes of 0.44 in diameter. Used for mass, radius, I_b, hole geometry."},
+    {"cite": "Lindsey C. (2025-05-12), The Physics of Pickleball Aerodynamics and Trajectories: A Revised Model of Lift and Drag, Tennis Warehouse University (web article, not peer reviewed)", "url": "https://twu.tennis-warehouse.com/learning_center/pickleball/pickleball_aerodynamics.php", "what_it_gives": "86 free-flight trajectories, v0 6.0-11.5 m/s fitted (launcher range 5-13 m/s; research/checks/lindsey2025.md), 300 fps stereo: Cd indoor 26-hole 0.45 (SD 0.092), outdoor 40-hole 0.33 (SD 0.083); backspin Cl ~0.2 nearly flat vs S; topspin strongly S-dependent; no backspin reverse Magnus reported. Closest analogue to POLLEN (26 holes)."},
+    {"cite": "Steyn D., Mithrush T., Koentges C., Andrews S., Plourde A. (2025), Executing a Successful Third Shot Drop in Pickleball, SportRxiv preprint; published IJSSC doi 10.1177/17479541251365200", "url": "https://sportrxiv.org/index.php/server/preprint/download/499/1073/997", "what_it_gives": "6 outdoor 40-hole trajectories, Re 4.7e4-6.1e4, S 0.03-0.3: Cd = 0.30 +/- 0.02 (no Re/S dependence), Cl = 0.195 S (fit forced through 0, large scatter). Their Fig. 1 caption (Cl +/-0.12 at S 0.19) is inconsistent with their Eq. 6."},
+    {"cite": "Emond R., Sun Y., Swartz T. (2024), Pickleball Flight Dynamics, IJRSS (arXiv 2409.19000)", "url": "https://doi.org/10.30827/ijrss.32618", "what_it_gives": "No measurements; constant Cd = 0.6 taken from forward-facing wiffle-ball wind-tunnel data (Rossmann & Rau 2007); spin ignored; m 24 g, R 37 mm, rho 1.2."},
+    {"cite": "Rossmann J.S., Rau A. (2007), An experimental study of Wiffle ball aerodynamics, Am. J. Phys. 75(12)", "url": "https://doi.org/10.1119/1.2787013", "what_it_gives": "Wind-tunnel forces on a wiffle ball vs Re and hole orientation; non-spinning side force from one-sided slots ('trapped vortex'); Cd ~0.6 forward-facing (value as quoted by Emond et al.; full text not retrieved)."},
+    {"cite": "Muto M., Tsubokura M., Oshima N. (2012), Negative Magnus lift on a rotating sphere at around the critical Reynolds number, Phys. Fluids 24, 014102", "url": "https://doi.org/10.1063/1.3673571", "what_it_gives": "LES smooth sphere at Re 1e4/2e5/1.14e6, S = 0.2 and 1.0: at Re 1e4 Cd 0.474 (S 0.2), 0.661 (S 1.0); Cl 0.167 (S 0.2), 0.301 (S 1.0); negative lift only in critical regime (Re 2e5, S 0.2: Cl -0.25); experimental negative-Magnus Re ranges Taneda 6e4-5e5, Maccoll 4.6e4-1.1e5, Davies 9e4, all at S < 0.6."},
+    {"cite": "Kim J., Choi H., Park H., Yoo J.Y. (2014), Inverse Magnus effect on a rotating sphere: when and why, J. Fluid Mech. 754 R2", "url": "https://cambridge.org/core/journals/journal-of-fluid-mechanics/article/inverse-magnus-effect-on-a-rotating-sphere-when-and-why/0E9FEF2880AA45C8B12587374C6F10EE", "what_it_gives": "Wind tunnel, Re 0.6e5-2.6e5, S 0-0.5: inverse Magnus tied to asymmetric laminar/turbulent separation near the drag crisis; rough surfaces lower the onset."},
+    {"cite": "Sawicki G.S., Hubbard M., Stronge W.J. (2003) lift model, as discussed in Nathan A.M. (2006/2008) The effect of spin on the flight of a baseball (arXiv physics/0605041; Am. J. Phys. 76, 119)", "url": "https://arxiv.org/abs/physics/0605041", "what_it_gives": "Baseball Cl = 1.5 S (S<0.1), 0.09 + 0.6 S (0.1<S<~0.5), Re > 1e5; upper-bound shape reference only (seamed solid ball, higher Re)."},
+    {"cite": "Cross R., Lindsey C. (2013), Tennis Ball Trajectories: Aerodynamic Drag and Lift in Tennis Shots (TWU), with literature table", "url": "https://twu.tennis-warehouse.com/learning_center/aerodynamics2.php", "what_it_gives": "Tennis ball Cd 0.49-0.52, Cl 0.1-0.3 for S 0.14-0.53 (Re ~6e4-1.3e5); wind-tunnel literature Cl 0.02-0.3 for S <= 0.6. Felt ball; S-saturation context only."},
+    {"cite": "Nathan A.M., The Spin Decay of a Baseball (note), summarizing Smits & Smith (1994) and Tavares et al. (1999) golf spin-decay data", "url": "https://baseball.physics.illinois.edu/spindown-rev1.pdf", "what_it_gives": "Torque model I domega/dt = -R rho A C_M v^2 with C_M = beta S, beta = 0.010-0.012 (golf); golf tau ~19-24 s at 44.7 m/s; tau scales with M/R^2 and 1/v. Basis for spin_decay_k scaling."},
+    {"cite": "Tandjono H., Chai V., Fabianto L., Irwansyah R. (2020), On the aerodynamics drag of floorball, AIP Conf. Proc. 2227, 020021", "url": "https://doi.org/10.1063/5.0000928", "what_it_gives": "Numerical Cd of perforated floorball (similar size/mass/hole count class) at Re 1e5: 0.39/0.51/0.58/0.72 for 6/8/10/13 mm holes; bigger holes -> more drag. Numerical only, low weight."},
+    {"cite": "Ruchayosyothin et al. (2022) RSM rotating sphere, JRAME; Zhou et al. (2022) water tank (as summarized in search abstracts)", "url": "https://doi.nrct.go.th/ListDoi/listDetail/10.14456%2Fjrame.2022.5", "what_it_gives": "Subcritical rotating-sphere Cl saturates ~0.37 at high spin ratio (S up to 5-12). Abstract-level only; used for the 'high' cap."}
+  ],
+
+  "open_questions": [
+    "No measured Cd/Cl/k for POLLEN or any 26-hole 2.8 in ResisDent ball; all values are bounds.",
+    "Does airflow through 16% open area reduce Magnus lift relative to pickleballs (venting) or increase it (internal circulation)? Unknown; spans low vs high set.",
+    "Reverse Magnus not excluded at low S if the holes push the boundary layer toward a critical state at Re ~3e4-5e4; run Cl = 0 floor.",
+    "Real wall thickness and mass spread (CAD 1.78 mm wall gives only ~21 g; spec says 24.95 g).",
+    "Non-spinning (knuckle) orientation-dependent side force, as in wiffle balls, could add scatter at low spin."
+  ]
+}

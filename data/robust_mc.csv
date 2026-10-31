@@ -1,0 +1,65 @@
+# PREDICTED (model output). Aero bounds data/aero_params.json = ASSUMED; HIVE geometry = CAD-derived (tilt 30 confirmed, bounds derived); launcher envelope data/launch_envelope.json = PREDICTED; release-error sets = ASSUMED (src/robustness.py ERR_SETS/PHYS). Not validated by any measured shot.
+# Monte Carlo, exact per-shot classification; Wilson 95 % interval. Scenarios: src/robustness.py mc_scenarios(); defaults ERR_SETS nominal + PHYS. 'transfer' = aim tuned for the nominal aero set, flown with another set; 'retuned' = aim re-optimised for that set.
+aim,case,side,hardware,h,d,v,theta,S_aim,Cl_aim,P_smoothed_kinematic,scenario,n,k_clean,p_clean,wilson_lo,wilson_hi,ygate_sd_m,top_outcomes
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,nominal,1500,455,0.3033,0.2806,0.3271,0.0493,hit:up_roof_outer:545; clean:455; hit:up_floor:214; miss:153
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,tight_release,1500,616,0.4107,0.386,0.4358,0.0401,clean:616; hit:up_roof_outer:460; hit:up_floor:250; hit:up_upper_lip:97
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,loose_release,1500,235,0.1567,0.1392,0.1759,0.0684,hit:up_roof_outer:653; miss:281; clean:235; hit:up_floor:140
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,release_error_only,1500,543,0.362,0.3381,0.3866,0.0277,clean:543; hit:up_roof_outer:479; hit:up_floor:249; miss:94
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,no_wind,1500,522,0.348,0.3243,0.3725,0.0274,clean:522; hit:up_roof_outer:487; hit:up_floor:248; miss:100
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,wind_1.0,1500,166,0.1107,0.0958,0.1275,0.1615,hit:up_roof_outer:523; miss:377; clean:166; hit:side_wall:162
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,hive_tilt_28.5_fixed,1500,370,0.2467,0.2255,0.2691,0.0467,hit:up_roof_outer:640; clean:370; hit:up_floor:213; miss:147
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,hive_tilt_31.5_fixed,1500,474,0.316,0.293,0.34,0.0459,clean:474; hit:up_roof_outer:468; hit:up_floor:261; miss:174
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,sag_open_loop_0to4pct,1500,362,0.2413,0.2204,0.2636,0.0478,hit:up_roof_outer:835; clean:362; hit:up_floor:134; miss:79
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,sag_rapid_fire_0to50pct_drop,1500,356,0.2373,0.2165,0.2595,0.046,hit:up_roof_outer:889; clean:356; hit:up_floor:121; miss:51
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,Cl_low_transfer,1500,146,0.0973,0.0833,0.1134,0.0412,miss:977; hit:up_floor:228; clean:146; hit:up_lower_lip:102
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,Cl_high_transfer,1500,81,0.054,0.0437,0.0666,0.0539,hit:up_roof_outer:1338; clean:81; hit:up_back_wall:30; hit:up_upper_lip:23
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,Cd_low_transfer,1500,422,0.2813,0.2592,0.3046,0.0392,clean:422; miss:349; hit:up_floor:316; hit:up_roof_outer:256
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,Cd_high_transfer,1500,310,0.2067,0.1869,0.2279,0.0583,hit:up_roof_outer:944; clean:310; hit:up_floor:115; hit:up_upper_lip:50
+unfav_best_hood_spin,S1_Clnominal,unfav,hood,0.737,0.81,7.25,79.7,1.0,nominal,0.4094,k_high_transfer,1500,439,0.2927,0.2702,0.3162,0.0467,hit:up_roof_outer:536; clean:439; hit:up_floor:240; miss:158
+unfav_best_hood_spin_retuned_Cllow,S1_Cllow,unfav,hood,0.737,0.81,7.25,80.7,1.0,low,0.4163,Cl_low_retuned,1500,487,0.3247,0.3014,0.3488,0.0473,clean:487; hit:up_roof_outer:478; hit:up_floor:244; miss:152
+unfav_best_hood_spin_retuned_Clhigh,S1_Clhigh,unfav,hood,0.737,0.82,7.0,78.1,1.0,high,0.3958,Cl_high_retuned,1500,404,0.2693,0.2475,0.2924,0.0445,hit:up_roof_outer:551; clean:404; hit:up_floor:255; miss:168
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,nominal,1500,1494,0.996,0.9913,0.9982,0.026,clean:1494; hit:up_lower_lip:3; hit:up_upper_lip:2; hit:up_floor:1
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,tight_release,1500,1500,1.0,0.9974,1.0,0.0115,clean:1500
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,loose_release,1500,1263,0.842,0.8227,0.8596,0.0514,clean:1263; hit:up_lower_lip:61; hit:up_upper_lip:60; hit:up_floor:57
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,release_error_only,1500,1493,0.9953,0.9904,0.9977,0.0258,clean:1493; hit:up_lower_lip:4; hit:up_upper_lip:3
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,no_wind,1500,1494,0.996,0.9913,0.9982,0.0253,clean:1494; hit:up_lower_lip:3; hit:up_upper_lip:3
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,wind_1.0,1500,1480,0.9867,0.9795,0.9914,0.0373,clean:1480; hit:up_floor:13; hit:up_lower_lip:6; hit:up_roof_outer:1
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,hive_tilt_28.5_fixed,1500,1483,0.9887,0.9819,0.9929,0.0259,clean:1483; hit:up_upper_lip:13; hit:up_lower_lip:4
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,hive_tilt_31.5_fixed,1500,1494,0.996,0.9913,0.9982,0.0258,clean:1494; hit:up_floor:3; hit:up_lower_lip:2; hit:up_upper_lip:1
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,sag_open_loop_0to4pct,1500,1489,0.9927,0.9869,0.9959,0.026,clean:1489; hit:up_floor:8; hit:up_lower_lip:2; hit:up_upper_lip:1
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,sag_rapid_fire_0to50pct_drop,1500,1477,0.9847,0.9771,0.9898,0.0253,clean:1477; hit:up_floor:18; hit:up_lower_lip:5
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,Cl_low_transfer,1500,1491,0.994,0.9886,0.9968,0.0259,clean:1491; hit:up_upper_lip:5; hit:up_lower_lip:4
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,Cl_high_transfer,1500,1494,0.996,0.9913,0.9982,0.026,clean:1494; hit:up_upper_lip:3; hit:up_floor:3
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,Cd_low_transfer,1500,1492,0.9947,0.9895,0.9973,0.0256,clean:1492; hit:up_upper_lip:5; hit:up_lower_lip:3
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,Cd_high_transfer,1500,1491,0.994,0.9886,0.9968,0.0269,clean:1491; hit:up_lower_lip:5; hit:up_floor:3; hit:up_upper_lip:1
+fav_best_hood_spin,S1_Clnominal,fav,hood,0.737,0.74,4.3,81.0,1.0,nominal,1.0,k_high_transfer,1500,1492,0.9947,0.9895,0.9973,0.0258,clean:1492; hit:up_upper_lip:6; hit:up_lower_lip:2
+fav_best_hood_spin_retuned_Cllow,S1_Cllow,fav,hood,0.737,0.74,4.3,81.25,1.0,low,1.0,Cl_low_retuned,1500,1499,0.9993,0.9962,0.9999,0.0254,clean:1499; hit:up_roof_outer:1
+fav_best_hood_spin_retuned_Clhigh,S1_Clhigh,fav,hood,0.737,0.75,4.25,80.0,1.0,high,1.0,Cl_high_retuned,1500,1498,0.9987,0.9952,0.9996,0.0254,clean:1498; hit:up_roof_outer:1; hit:up_lower_lip:1
+fav_best_roller_spin,S1_Clnominal,fav,roller,0.737,0.74,4.3,81.0,1.0,nominal,1.0,nominal,1500,1494,0.996,0.9913,0.9982,0.026,clean:1494; hit:up_lower_lip:3; hit:up_upper_lip:2; hit:up_floor:1
+fav_best_roller_spin,S1_Clnominal,fav,roller,0.737,0.74,4.3,81.0,1.0,nominal,1.0,release_error_only,1500,1496,0.9973,0.9932,0.999,0.0251,clean:1496; hit:up_upper_lip:4
+fav_best_roller_spin,S1_Clnominal,fav,roller,0.737,0.74,4.3,81.0,1.0,nominal,1.0,loose_release,1500,1263,0.842,0.8227,0.8596,0.0514,clean:1263; hit:up_lower_lip:61; hit:up_upper_lip:60; hit:up_floor:57
+fav_best_roller_spin,S1_Clnominal,fav,roller,0.737,0.74,4.3,81.0,1.0,nominal,1.0,Cl_low_transfer,1500,1486,0.9907,0.9844,0.9944,0.0265,clean:1486; hit:up_upper_lip:8; hit:up_lower_lip:5; hit:up_roof_outer:1
+fav_best_roller_spin,S1_Clnominal,fav,roller,0.737,0.74,4.3,81.0,1.0,nominal,1.0,Cl_high_transfer,1500,1494,0.996,0.9913,0.9982,0.0263,clean:1494; hit:up_floor:3; hit:up_upper_lip:2; hit:up_lower_lip:1
+fav_best_roller_spin,S1_Clnominal,fav,roller,0.737,0.74,4.3,81.0,1.0,nominal,1.0,sag_rapid_fire_0to50pct_drop,1500,1487,0.9913,0.9852,0.9949,0.0249,clean:1487; hit:up_floor:9; hit:up_lower_lip:2; hit:up_upper_lip:1
+unfav_d1.15_hood_spin,S1_Clnominal,unfav,hood,0.737,1.15,8.35,79.3,1.0,nominal,0.3389,nominal,1500,330,0.22,0.1998,0.2417,0.0666,hit:up_roof_outer:590; clean:330; miss:263; hit:up_floor:213
+unfav_d1.15_hood_spin,S1_Clnominal,unfav,hood,0.737,1.15,8.35,79.3,1.0,nominal,0.3389,release_error_only,1500,496,0.3307,0.3073,0.3549,0.0286,clean:496; hit:up_roof_outer:472; hit:up_floor:249; miss:150
+unfav_d1.15_hood_spin,S1_Clnominal,unfav,hood,0.737,1.15,8.35,79.3,1.0,nominal,0.3389,loose_release,1500,184,0.1227,0.107,0.1402,0.0829,hit:up_roof_outer:629; miss:414; clean:184; hit:up_floor:129
+unfav_d1.15_hood_spin,S1_Clnominal,unfav,hood,0.737,1.15,8.35,79.3,1.0,nominal,0.3389,Cl_low_transfer,1500,63,0.042,0.033,0.0534,0.054,miss:1286; hit:up_floor:86; clean:63; hit:up_lower_lip:53
+unfav_d1.15_hood_spin,S1_Clnominal,unfav,hood,0.737,1.15,8.35,79.3,1.0,nominal,0.3389,Cl_high_transfer,1500,40,0.0267,0.0196,0.0361,0.0776,hit:up_roof_outer:1056; hit:up_back_wall:196; hit:pivot_plate_top:167; clean:40
+unfav_d1.15_hood_spin,S1_Clnominal,unfav,hood,0.737,1.15,8.35,79.3,1.0,nominal,0.3389,sag_rapid_fire_0to50pct_drop,1500,264,0.176,0.1576,0.1961,0.0639,hit:up_roof_outer:830; clean:264; miss:144; hit:up_floor:143
+fav_d1.55_hood_spin,S1_Clnominal,fav,hood,0.737,1.55,4.65,56.25,1.0,nominal,1.0,nominal,1500,1496,0.9973,0.9932,0.999,0.0274,clean:1496; hit:up_floor:3; hit:up_lower_lip:1
+fav_d1.55_hood_spin,S1_Clnominal,fav,hood,0.737,1.55,4.65,56.25,1.0,nominal,1.0,release_error_only,1500,1490,0.9933,0.9878,0.9964,0.027,clean:1490; hit:up_floor:10
+fav_d1.55_hood_spin,S1_Clnominal,fav,hood,0.737,1.55,4.65,56.25,1.0,nominal,1.0,loose_release,1500,1328,0.8853,0.8682,0.9005,0.055,clean:1328; hit:up_floor:94; hit:up_lower_lip:65; hit:up_upper_lip:10
+fav_d1.55_hood_spin,S1_Clnominal,fav,hood,0.737,1.55,4.65,56.25,1.0,nominal,1.0,Cl_low_transfer,1500,1468,0.9787,0.97,0.9848,0.0281,clean:1468; hit:up_floor:28; hit:up_lower_lip:4
+fav_d1.55_hood_spin,S1_Clnominal,fav,hood,0.737,1.55,4.65,56.25,1.0,nominal,1.0,Cl_high_transfer,1500,1496,0.9973,0.9932,0.999,0.0278,clean:1496; hit:up_floor:4
+fav_d1.55_hood_spin,S1_Clnominal,fav,hood,0.737,1.55,4.65,56.25,1.0,nominal,1.0,sag_rapid_fire_0to50pct_drop,1500,1152,0.768,0.746,0.7887,0.0266,clean:1152; hit:up_floor:230; hit:up_lower_lip:118
+fav_d0.80_hood_spin,S1_Clnominal,fav,hood,0.737,0.8,4.1,77.25,1.0,nominal,1.0,nominal,1500,1497,0.998,0.9941,0.9993,0.0256,clean:1497; hit:up_lower_lip:3
+fav_d0.80_hood_spin,S1_Clnominal,fav,hood,0.737,0.8,4.1,77.25,1.0,nominal,1.0,release_error_only,1500,1499,0.9993,0.9962,0.9999,0.0252,clean:1499; hit:up_lower_lip:1
+fav_d0.80_hood_spin,S1_Clnominal,fav,hood,0.737,0.8,4.1,77.25,1.0,nominal,1.0,loose_release,1500,1346,0.8973,0.8809,0.9117,0.0514,clean:1346; hit:up_lower_lip:81; hit:up_floor:34; hit:up_underside:18
+fav_d0.80_hood_spin,S1_Clnominal,fav,hood,0.737,0.8,4.1,77.25,1.0,nominal,1.0,Cl_low_transfer,1500,1494,0.996,0.9913,0.9982,0.0263,clean:1494; hit:up_lower_lip:6
+fav_d0.80_hood_spin,S1_Clnominal,fav,hood,0.737,0.8,4.1,77.25,1.0,nominal,1.0,Cl_high_transfer,1500,1498,0.9987,0.9952,0.9996,0.0259,clean:1498; hit:up_lower_lip:2
+fav_d0.80_hood_spin,S1_Clnominal,fav,hood,0.737,0.8,4.1,77.25,1.0,nominal,1.0,sag_rapid_fire_0to50pct_drop,1500,1481,0.9873,0.9803,0.9919,0.0247,clean:1481; hit:up_floor:15; hit:up_lower_lip:3; hit:up_underside:1
+unfav_best_hood_nospin,drag,unfav,hood,0.737,0.81,7.25,81.4,0.0,none,0.4243,nominal,1500,476,0.3173,0.2943,0.3413,0.0466,hit:up_roof_outer:486; clean:476; hit:up_floor:254; miss:157
+unfav_best_hood_nospin,drag,unfav,hood,0.737,0.81,7.25,81.4,0.0,none,0.4243,release_error_only,1500,617,0.4113,0.3867,0.4364,0.0272,clean:617; hit:up_roof_outer:432; hit:up_floor:235; miss:101
+fav_best_hood_nospin,drag,fav,hood,0.737,0.74,4.3,81.5,0.0,none,1.0,nominal,1500,1491,0.994,0.9886,0.9968,0.0254,clean:1491; hit:up_upper_lip:7; hit:up_lower_lip:2
+fav_best_hood_nospin,drag,fav,hood,0.737,0.74,4.3,81.5,0.0,none,1.0,release_error_only,1500,1494,0.996,0.9913,0.9982,0.0251,clean:1494; hit:up_upper_lip:6

@@ -1,0 +1,658 @@
+\section{Problem setup, HIVE geometry and the clean-entry criterion}
+\label{sec:geometry}
+
+% Sources: src/hive.py, data/hive_geometry.json, docs/01_hive_geometry.md,
+% src/feasibility.py (Geometry.make, evaluate_gate, grid_from_candidates).
+% Every worked number in this section was recomputed by running python against the
+% repository code on 2026-10-30 (hive.Hive.from_json, Hive.classify_path,
+% hive.classify_detail, feasibility.integrate_batch, feasibility.evaluate_gate).
+
+Before any physics of spin can be judged, we need a precise answer to a purely geometric
+question: \emph{what does a ball path have to look like to count as ``in''?} This section sets up
+the coordinate frames, describes the HIVE cross-section that the model uses, defines the
+\emph{clean-entry} test exactly as the code applies it, and derives from the geometry alone how
+steeply the ball must be falling when it arrives from the unfavourable side. Everything later in
+the paper (drag, Magnus lift, the launcher) only changes \emph{which paths} the robot can make;
+this section decides \emph{which paths score}.
+
+\subsection{The question in two dimensions}
+\label{sec:geometry-question}
+
+The target is the upward-facing CELL of the pivoting HIVE at the centre of the field. The HIVE is
+one rigid beam with a box-shaped CELL at each end. It rests on a damper stop, so one CELL points up
+and outward and the other points down and outward. A shot from the side the up CELL faces is
+the \emph{favourable} side. A shot from the other side is the \emph{unfavourable} side: the up CELL's
+roof is between the robot and the mouth. Our question is whether backspin from a single powered
+wheel can bend a POLLEN path enough to score from the unfavourable side.
+
+The model works in the vertical \emph{tipping plane}, the plane in which the CELLS rotate. It
+uses the cross-section of the HIVE at its centre plane. A pure backspin shot fired in that plane
+stays in it, so a two-dimensional (2D) model is enough for centred shots. Off-centre shots and the
+CELL side walls are three-dimensional effects that this section treats only as a stated
+limitation (Section~\ref{sec:geometry-assumptions}).
+
+\subsection{Frames}
+\label{sec:geometry-frames}
+
+\paragraph{HIVE frame.} The origin is on the tile surface directly below the HIVE pivot axis, at
+the HIVE centre plane. The axis $x$ (in \unit{m}) is horizontal and lies in the tipping plane, with
+$+x$ pointing toward the audience side of the field. The axis $z$ (in \unit{m}) points up, and $y$
+(in \unit{m}) runs along the pivot axis. The pivot axis is at height
+\begin{equation}
+  z_p = 1.11633\ \text{\unit{m}}\text{\confirmed},
+  \label{eq:geometry-pivot}
+\end{equation}
+which is $43.95$\,\unit{in}\confirmed{} above the tiles (Competition Manual 9.6.1 and the official
+field CAD). A point in the tipping plane is written $\vect{p} = (x, z)$.
+
+\paragraph{Cell-local frame.} The HIVE body is stored once, in a frame that rotates with it. The
+coordinate $u$ (in \unit{m}) runs along the cell axis, from the pivot outward toward the mouth of
+the CELL that is up; $u > 0$ is the up CELL and $u < 0$ the down CELL. The coordinate $w$ (in
+\unit{m}) is perpendicular to $u$ and points toward the CELL roof. Both CELLS have their roofs on
+the $+w$ side, so the body is mirror-symmetric about $u = 0$. The lateral coordinate $s$ (in
+\unit{m}) runs across the CELL opening; $s = 0$ is the centre plane, the plane used in this paper.
+
+\paragraph{From cell-local to HIVE frame.} Let $\tau$ (in rad, quoted in degrees) be the
+\emph{tilt}, the angle of the cell axis above the horizontal. Let $\sigma \in \{+1, -1\}$ be the
+pose sign: $\sigma = +1$ when the up CELL is on the $+x$ side and $\sigma = -1$ when it is on the
+$-x$ side. The code (\code{Hive.from\_json}, inner function \code{world}) places a cell-local point
+$(u, w)$ in the HIVE frame in two steps. First it rotates by $\tau$:
+\begin{equation}
+  \begin{pmatrix} x' \\ z' - z_p \end{pmatrix}
+  =
+  \begin{pmatrix} \cos\tau & -\sin\tau \\ \sin\tau & \cos\tau \end{pmatrix}
+  \begin{pmatrix} u \\ w \end{pmatrix}.
+  \label{eq:geometry-rotation}
+\end{equation}
+Then it mirrors the horizontal coordinate when the up CELL is on the $-x$ side, $x = \sigma x'$.
+Combining the two steps gives
+\begin{align}
+  x &= \sigma\,(u\cos\tau - w\sin\tau), \label{eq:geometry-world-x}\\
+  z &= z_p + u\sin\tau + w\cos\tau. \label{eq:geometry-world-z}
+\end{align}
+Equations~\eqref{eq:geometry-world-x}--\eqref{eq:geometry-world-z} are used whenever the tilt or the pivot
+height differ from their nominal values. At the nominal pose the code reads pre-computed
+HIVE-frame segments from \code{data/hive\_geometry.json}; these agree with
+\eqref{eq:geometry-world-x}--\eqref{eq:geometry-world-z} to the five decimals stored.
+
+\paragraph{Shot frame.} The flight solver always fires toward $+x$. A shooter standing on the
+$x < 0$ side therefore uses the HIVE frame unchanged. A shooter on the $x > 0$ side fires toward
+$-x$, so the code mirrors the \emph{geometry} ($x \to -x$, \code{Hive.mirrored}) instead of the
+trajectory. In the shot frame the robot releases the ball at
+\begin{equation}
+  \vect{p}_r = (x_r, z_r) = (-d,\; h),
+  \label{eq:geometry-release}
+\end{equation}
+where $d$ (in \unit{m}) is the horizontal distance from the release point to the pivot plane
+$x = 0$, and $h$ (in \unit{m}) is the height of the ball \emph{centre} above the tiles at release.
+
+\subsection{The cross-section and its key points}
+\label{sec:geometry-section}
+
+Table~\ref{tab:geometry-local} lists the cell-local coordinates that set the mouth. All of them come from
+the official field CAD (STEP file, parsed by the project), at the centre plane $s = 0$.
+
+\begin{table}[h]
+  \centering
+  \caption{Cell-local coordinates of the up CELL at $s = 0$ (from \code{body\_local} in
+  \code{data/hive\_geometry.json}).}
+  \label{tab:geometry-local}
+  \begin{tabular}{@{}lll@{}}
+    \toprule
+    Symbol & Meaning & Value \\
+    \midrule
+    $u_M$ & mouth plane (outer rib face) & $0.54508$\,\unit{m}\confirmed \\
+    $u_B$ & back wall (back skin) & $0.23952$\,\unit{m}\confirmed \\
+    $w_F$ & floor (top of the bottom skin) & $-0.03734$\,\unit{m}\confirmed \\
+    $w_C$ & ceiling (roof underside at the pentagon peak) & $0.32004$\,\unit{m}\confirmed \\
+    $w_T$ & roof top (envelope of the rib tops) & $0.33325$\,\unit{m}\confirmed \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Mouth length.} The mouth runs along the line $u = u_M$ from the lower lip
+$(u_M, w_F)$ to the upper lip $(u_M, w_C)$. Its length is
+\begin{equation}
+  L = w_C - w_F = 0.32004 - (-0.03734) = 0.35738\ \text{\unit{m}}\text{\derived}.
+  \label{eq:geometry-mouth-length}
+\end{equation}
+The CELL depth is $u_M - u_B = 0.30556$\,\unit{m}\derived{} (manual: about $12$\,\unit{in}\confirmed).
+
+\paragraph{Worked example: the lips in the HIVE frame.} Take $\sigma = +1$ and
+$\tau = 30^\circ$\confirmed, so $\cos\tau = 0.86603$\derived{} and $\sin\tau = 0.5$\derived.
+For the lower lip, $(u, w) = (0.54508, -0.03734)$, equations
+\eqref{eq:geometry-world-x}--\eqref{eq:geometry-world-z} give
+\begin{align*}
+  x &= 0.54508 \times 0.86603 - (-0.03734)\times 0.5\\
+    &= 0.47205 + 0.01867 = 0.49072\ \text{\unit{m}}\text{\derived},\\
+  z &= 1.11633 + 0.54508 \times 0.5 + (-0.03734)\times 0.86603\\
+    &= 1.11633 + 0.27254 - 0.03234 = 1.35653\ \text{\unit{m}}\text{\derived}.
+\end{align*}
+That is $53.41$\,\unit{in}\derived, inside the Field Acceptance Checklist value of
+$53.5 \pm 0.5$\,\unit{in}\confirmed. Running the same formula in python for the other key points
+gives Table~\ref{tab:geometry-keypoints}.
+
+\begin{table}[h]
+  \centering
+  \caption{Key points of the up CELL, pose \code{pose\_pos}, $\tau = 30^\circ$ (python, \code{hive.py}).}
+  \label{tab:geometry-keypoints}
+  \begin{tabular}{@{}lrrl@{}}
+    \toprule
+    Point & $x$ (\unit{m}) & $z$ (\unit{m}) & Official check \\
+    \midrule
+    Lower lip $(u_M, w_F)$ & $0.49072$\derived & $1.35653$\derived & $53.5$\,\unit{in}\confirmed{} (checklist) \\
+    Upper lip $(u_M, w_C)$ & $0.31203$\derived & $1.66603$\derived & $65.6$\,\unit{in}\confirmed{} (Fig.\ 9-10) \\
+    Roof top at mouth $(u_M, w_T)$ & $0.30543$\derived & $1.67747$\derived & highest point of the HIVE \\
+    Roof top at back $(u_B, w_T)$ & $0.04081$\derived & $1.52469$\derived & -- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Obstacles.} The code treats the HIVE as a set of solid line segments in the $(x, z)$
+plane. Segment $j$ runs from $\vect{a}_j$ to $\vect{b}_j$ (both in \unit{m}). Each pose has
+$16$\derived{} CELL segments (8 per CELL: back wall, roof outer, upper lip, roof inner, floor,
+lower lip, underside, tube top), $4$\derived{} pivot-plate segments, and $9$\derived{} static
+A-frame segments. Four of the A-frame segments are the legs. They slant across the field, so at
+$s = 0$ only their top exists; the file flags them \code{projected}, and the code drops them by
+default (\code{include\_projected=False}). The default obstacle set therefore has
+$25$\derived{} segments ($29$\derived{} with the legs). The A-frame does not rotate with the HIVE.
+
+\subsection{Poses, the mouth normal and the two sides}
+\label{sec:geometry-poses}
+
+\paragraph{Poses.} The HIVE has two resting poses. In \code{pose\_pos} the up CELL is on the
+$+x$ (audience) side, $\sigma = +1$. In \code{pose\_neg} it is on the $-x$ side, $\sigma = -1$.
+\code{pose\_neg} is the exact mirror image ($x \to -x$) of \code{pose\_pos}. Every TIP flips the pose.
+
+\paragraph{Outward normal of the mouth.} The mouth lies on $u = u_M$, so the direction pointing
+out of the CELL through the mouth is the cell-local unit vector $(1, 0)$. Rotating it with
+\eqref{eq:geometry-rotation} gives $(\cos\tau, \sin\tau)$, and the mirror multiplies the $x$ part by
+$\sigma$:
+\begin{equation}
+  \vect{n} = (\sigma\cos\tau,\; \sin\tau).
+  \label{eq:geometry-normal}
+\end{equation}
+This is exactly the code's \code{normal = np.array([sp * ct, st])}. At $\tau = 30^\circ$\confirmed{}
+and $\sigma = +1$, $\vect{n} = (0.86603, 0.5)$\derived: the mouth faces outward and $30^\circ$\derived{}
+above the horizontal. The mouth \emph{line} is perpendicular to $\vect{n}$, and in \code{pose\_pos}
+its direction from lower to upper lip is $\vect{m} = (-\sin\tau, \cos\tau) = (-0.5, 0.86603)$\derived.
+
+\paragraph{Which way is ``in''?} A ball with velocity $\vect{v} = (v_x, v_z)$ (in \unit{m/s})
+is moving into the CELL through the mouth only if its velocity points against the outward normal:
+\begin{equation}
+  \vect{v}\cdot\vect{n} < 0.
+  \label{eq:geometry-inward}
+\end{equation}
+
+\paragraph{Favourable and unfavourable sides.} The \emph{favourable} side is the side the up CELL
+is on (\code{favorable\_side}: \code{"pos"} for \code{pose\_pos}, \code{"neg"} for
+\code{pose\_neg}). A ball fired from there travels toward the pivot, which is roughly
+$-\vect{n}$, so \eqref{eq:geometry-inward} is easy to satisfy. The \emph{unfavourable} side is the
+other one: the ball travels away from the shooter in the same direction as $\vect{n}_x$, so it can
+only satisfy \eqref{eq:geometry-inward} by falling steeply (Section~\ref{sec:geometry-steep}). In the code
+(\code{feasibility.Geometry.make}) the unfavourable case is \code{pose\_pos} used as it is, with the
+shooter at $x = -d$ firing toward $+x$; the favourable case is the same HIVE mirrored. Results for
+\code{pose\_neg} are the exact mirror image and are not computed separately.
+
+\subsection{Tilt and its bounds}
+\label{sec:geometry-tilt}
+
+The nominal tilt is $\tau_0 = 30^\circ$\confirmed: Fig.\ 9-10 of the manual labels it, and the CAD
+base tube measures $30.0^\circ$\confirmed. Real fields differ, so we bound it using the one
+tilt-sensitive number the field checklist controls, the lower-lip height.
+
+\paragraph{Step 1: lip height as a function of tilt.} From \eqref{eq:geometry-world-z} with
+$(u, w) = (u_M, w_F)$:
+\begin{equation}
+  z_{\mathrm{lip}}(\tau) = z_p + u_M\sin\tau + w_F\cos\tau.
+  \label{eq:geometry-zlip}
+\end{equation}
+
+\paragraph{Step 2: sensitivity.} Differentiating \eqref{eq:geometry-zlip} with $z_p$ held fixed,
+\begin{equation}
+  \frac{\mathrm{d}z_{\mathrm{lip}}}{\mathrm{d}\tau} = u_M\cos\tau - w_F\sin\tau .
+  \label{eq:geometry-dzdtau}
+\end{equation}
+Comparing with \eqref{eq:geometry-world-x} shows that this is exactly $x_{\mathrm{lip}}$ for
+$\sigma = +1$: the lip moves up at a rate equal to its horizontal distance from the pivot, as
+expected for a rotation about the pivot. At $\tau_0$ it is $0.49072$\,\unit{m/rad}\derived{} $=
+19.32$\,\unit{in/rad}\derived{} $= 0.3372$\,\unit{in/deg}\derived.
+
+\paragraph{Step 3: invert for the tolerance.} The checklist allows
+$\Delta z_{\mathrm{lip}} = \pm 0.5$\,\unit{in}\confirmed. With the pivot at its nominal height,
+\begin{equation}
+  \Delta\tau \approx \frac{\Delta z_{\mathrm{lip}}}{\mathrm{d}z_{\mathrm{lip}}/\mathrm{d}\tau}
+  = \frac{0.5}{0.3372} = 1.48^\circ\text{\derived} \;\to\; \tau \in [28.5^\circ, 31.5^\circ]\text{\derived}.
+  \label{eq:geometry-tilt-bound}
+\end{equation}
+If the pivot height is also off by the manual's general $\pm 1$\,\unit{in}\confirmed{} tolerance,
+the lip can move $1.5$\,\unit{in}\derived{} for the same checklist reading, giving
+$1.5/0.3372 = 4.45^\circ$\derived, rounded to the wide bounds $[25.5^\circ, 34.5^\circ]$\derived{}
+(\code{low\_wide}, \code{high\_wide}). The code re-poses the body at any tilt with
+\eqref{eq:geometry-world-x}--\eqref{eq:geometry-world-z}; Table~\ref{tab:geometry-tilt} in
+Section~\ref{sec:geometry-steep} shows how the entry requirement moves with $\tau$.
+
+\subsection{Configuration space: inflating the obstacles by the ball radius}
+\label{sec:geometry-cspace}
+
+A real ball touches a wall when its \emph{surface} reaches the wall. It is easier to track one
+point, the ball centre, and grow every obstacle by the ball radius instead. This is the
+\emph{configuration-space} idea, and it is how \code{hive.py} works. The POLLEN radius is
+\begin{equation}
+  R = 0.0355\ \text{\unit{m}}\text{\confirmed}
+  \label{eq:geometry-radius}
+\end{equation}
+(manual 9.8: diameter ``approximately'' $7.1$\,\unit{cm}\confirmed, so about $\pm 1$\,\unit{mm}\assumed{}
+is uncertain).
+
+\paragraph{Distance to one segment.} For a ball centre $\vect{p}$ and segment $j$, the code
+(\code{seg\_point\_dist}) first finds the nearest point's position along the segment and clips it to
+the segment:
+\begin{equation}
+  \lambda_j^\ast = \operatorname{clip}\!\left(
+  \frac{(\vect{p}-\vect{a}_j)\cdot(\vect{b}_j-\vect{a}_j)}{\lVert\vect{b}_j-\vect{a}_j\rVert^2},\;0,\;1\right),
+  \qquad
+  \vect{q}_j = \vect{a}_j + \lambda_j^\ast(\vect{b}_j-\vect{a}_j).
+  \label{eq:geometry-nearest}
+\end{equation}
+The clip is what gives the inflated segment its rounded end caps: beyond an end, the nearest
+point is the end itself. The distance is $\delta_j(\vect{p}) = \lVert\vect{p} - \vect{q}_j\rVert$ (in \unit{m}).
+
+\paragraph{Clearance.} The clearance (in \unit{m}) is the smallest gap between the ball surface and
+any obstacle:
+\begin{equation}
+  c(\vect{p}) = \min_j \delta_j(\vect{p}) - R .
+  \label{eq:geometry-clearance}
+\end{equation}
+The ball is in \emph{contact} when $c(\vect{p}) < 0$ (strictly; $c = 0$ is a graze and not a contact).
+
+\paragraph{Along a path.} A path is a list of centre positions $\vect{p}_0, \vect{p}_1, \dots$ at
+the solver's time steps. The exact classifier (\code{Hive.classify\_path}) tests every \emph{chord}
+$\vect{p}_k\vect{p}_{k+1}$ against every obstacle with the exact segment-to-segment distance
+(\code{seg\_seg\_dist}), so contact between samples is not missed. The sweep
+(\code{evaluate\_gate}) uses a precomputed clearance grid instead (\code{CSpaceRaster}), with cells
+of side $\Delta = 1$\,\unit{mm}\assumed. It looks up the cell containing each sample. Because the
+distance function changes by at most $1$\,\unit{m} per metre moved, the lookup error is at most
+$\Delta/\sqrt{2} = 0.71$\,\unit{mm}\derived.
+
+\subsection{The mouth gate and the inside region}
+\label{sec:geometry-gate}
+
+\paragraph{Inside region.} The code calls a ball centre \emph{inside} the CELL when it lies in the
+quadrilateral $\mathcal{I}$ whose cell-local corners are
+\begin{equation}
+  \mathcal{I}:\quad u \in [\,u_B + R,\; u_M\,], \qquad w \in [\,w_F + R,\; w_C - R\,].
+  \label{eq:geometry-inside}
+\end{equation}
+In words: behind the mouth plane, and at least one radius away from the back wall, the floor and the
+ceiling. It is mapped to the HIVE frame with \eqref{eq:geometry-world-x}--\eqref{eq:geometry-world-z}. Note
+that the edge on the mouth plane is \emph{not} moved in by $R$: the ball counts as inside as soon as
+its centre is behind the mouth plane.
+
+\paragraph{Gate.} The \emph{gate} is the edge of $\mathcal{I}$ that lies on the mouth plane
+(\code{Hive.gate}), ordered low end first:
+\begin{equation}
+  \vect{A} = \mathrm{world}(u_M,\; w_F + R), \qquad \vect{B} = \mathrm{world}(u_M,\; w_C - R),
+  \label{eq:geometry-gate}
+\end{equation}
+where $\mathrm{world}(\cdot)$ is \eqref{eq:geometry-world-x}--\eqref{eq:geometry-world-z}. Its length is
+\begin{equation}
+  L_g = (w_C - R) - (w_F + R) = L - 2R = 0.35738 - 0.071 = 0.28638\ \text{\unit{m}}\text{\derived}.
+  \label{eq:geometry-gate-length}
+\end{equation}
+For \code{pose\_pos} at $\tau = 30^\circ$\confirmed{} the code gives
+$\vect{A} = (0.47298, 1.38728)$\,\unit{m}\derived{} and $\vect{B} = (0.32979, 1.63529)$\,\unit{m}\derived.
+The gate is the window the ball \emph{centre} must pass through; the ball surface then just clears
+the lips.
+
+\subsection{The clean-entry criterion}
+\label{sec:geometry-clean}
+
+\paragraph{Definition.} A path is \emph{clean} when the ball centre crosses the gate
+$\overline{\vect{A}\vect{B}}$ moving inward, \eqref{eq:geometry-inward}, and the clearance
+\eqref{eq:geometry-clearance} stayed non-negative at every earlier point of the path. Contact
+\emph{after} the crossing (for example with the floor) does not change the label; whether such a
+ball stays in is the job of the contact model. The exact classifier returns one of three labels:
+\code{clean}; \code{hit:<name>}, the first obstacle touched before entry; or \code{miss}, when the
+path reaches neither (for example it falls short onto the field).
+
+\paragraph{How the sweep finds gate crossings.} Without wind, drag and Magnus forces do not depend
+on position. So a launch with speed $v$ (in \unit{m/s}), elevation $\theta$ (in degrees) and spin
+gives one path \emph{shape} $\vect{\Pi}(t) = (\Pi_x(t), \Pi_z(t))$ (in \unit{m}, starting at
+$(0,0)$ at time $t = 0$\,\unit{s}), and the release point only shifts it:
+\begin{equation}
+  \vect{p}(t) = \vect{p}_r + \vect{\Pi}(t) = \bigl(-d + \Pi_x(t),\; h + \Pi_z(t)\bigr).
+  \label{eq:geometry-translate}
+\end{equation}
+\code{evaluate\_gate} uses this to avoid re-integrating for every release point. For a fixed $h$,
+it keeps every sample $k$ of every path that satisfies two conditions:
+\begin{align}
+  A_z \le h + \Pi_z(t_k) &\le B_z, \label{eq:geometry-band}\\
+  \dot{\vect{\Pi}}(t_k)\cdot\vect{n} &< 0. \label{eq:geometry-band-inward}
+\end{align}
+The first condition says the sample is at a height where the gate is; the second is
+\eqref{eq:geometry-inward}. Because the gate is a straight, non-horizontal segment, a height fixes a
+unique point on it. Let $s_g$ be the fraction along the gate (0 at $\vect{A}$, 1 at $\vect{B}$):
+\begin{equation}
+  s_g = \frac{h + \Pi_z(t_k) - A_z}{B_z - A_z}, \qquad
+  x_g = A_x + s_g\,(B_x - A_x).
+  \label{eq:geometry-gate-fraction}
+\end{equation}
+Requiring the shifted sample to sit exactly on that gate point, $-d + \Pi_x(t_k) = x_g$, gives the
+one release distance at which this sample enters:
+\begin{equation}
+  d = \Pi_x(t_k) - x_g .
+  \label{eq:geometry-d-from-gate}
+\end{equation}
+Candidates outside the swept range widened by $0.06$\,\unit{m}\assumed{} at each end,
+$d \in [0.49, 1.81]$\,\unit{m}\derived{} (grid $0.55$ to $1.75$\,\unit{m}\assumed), are dropped. Each
+remaining candidate is clean if the raster clearance is $\ge 0$ at every sample from the first one
+whose shifted $x$ has reached the left edge of the raster box up to and including sample $k$
+(samples outside the box count as free). (For a path whose $v_x$ reverses, the check
+starts at the first sample.) Two consecutive clean samples $k, k+1$ of the same path bound a
+continuous interval of clean release distances, and \code{grid\_from\_candidates} marks every grid
+value of $d$ inside it as clean. The exact classifier reaches the same label in a different way:
+the first sample inside $\mathcal{I}$ before any chord with negative clearance. The two agree
+because the only way into $\mathcal{I}$ from outside without contact is through the gate.
+
+% CODE/CODE: evaluate_gate reports the descent angle as atan2(-vz, vx) (signed vx, so it can
+% exceed 90 deg when backspin reverses vx); Hive.classify_path reports atan2(-vz, |vx|).
+% They agree whenever vx > 0 at entry.
+
+\paragraph{Worked example: one shot through the gate.} To check the formulas by hand we use a
+vacuum path (no air at all), so that $\vect{\Pi}(t)$ is a parabola. Air is added in later
+sections. Take $v = 7.0$\,\unit{m/s}\assumed, $\theta = 81.0^\circ$\assumed, $h = 0.737$\,\unit{m}\assumed{}
+and $d = 1.00$\,\unit{m}\assumed, with $g = 9.80665$\,\unit{m/s\textsuperscript{2}}\confirmed{}
+(standard gravity, \code{flight.G\_STANDARD}). Then
+$v_x = v\cos\theta = 1.0950$\,\unit{m/s}\derived{} and $v_{z0} = v\sin\theta = 6.9138$\,\unit{m/s}\derived.
+
+\emph{Step 1: crossings of the mouth line.} The centre is on the mouth line when
+$(\vect{p}(t) - \vect{A})\cdot\vect{n} = 0$. With $\vect{p}(t) = (-d + v_x t,\; h + v_{z0}t - \tfrac12 g t^2)$
+this is a quadratic in $t$:
+\begin{equation}
+  \underbrace{\bigl(-\tfrac12 g\,n_z\bigr)}_{c_2} t^2
+  + \underbrace{\bigl(n_x v_x + n_z v_{z0}\bigr)}_{c_1} t
+  + \underbrace{\bigl(n_x(-d - A_x) + n_z(h - A_z)\bigr)}_{c_0} = 0 .
+  \label{eq:geometry-quadratic}
+\end{equation}
+Its roots are $t_1 = 0.5057$\,\unit{s}\predicted{} and $t_2 = 1.2911$\,\unit{s}\predicted.
+
+\emph{Step 2: test each crossing.} At $t_1$ the ball is still rising
+($v_z = +1.954$\,\unit{m/s}\predicted), $\vect{v}\cdot\vect{n} = +1.926$\,\unit{m/s}\predicted{} (outward),
+and $s_g = 6.42$\predicted{}, far outside $[0, 1]$: the ball passes the extended mouth line high above
+the HIVE. It fails both \eqref{eq:geometry-band} and \eqref{eq:geometry-band-inward}. At $t_2$ the centre is at
+$(0.4138, 1.4897)$\,\unit{m}\predicted, $s_g = 0.413$\predicted{} (inside the gate),
+$v_z = -5.748$\,\unit{m/s}\predicted{} and $\vect{v}\cdot\vect{n} = -1.926$\,\unit{m/s}\predicted{}
+(inward). This is the entry.
+
+\emph{Step 3: no earlier contact.} \code{hive.classify\_detail} on the exact parabola returns
+\code{clean} with a minimum clearance of $30.5$\,\unit{mm}\predicted{} before entry, reached as the
+ball passes the upper lip. The raster sweep (\code{evaluate\_gate} with \code{grid\_from\_candidates}) gives
+$28.3$\,\unit{mm}\predicted{} for the same cell. The difference is not raster error: the grid
+cell at $d = 1.00$\,\unit{m}\assumed{} takes the smaller margin of the two bracketing gate samples, which
+sit at $d = 1.0025$\,\unit{m}\predicted{} and $0.9981$\,\unit{m}\predicted{} (one solver step of $\Delta t = 2$\,\unit{ms}\assumed{}, so
+$v_x\,\Delta t \approx 2.2$\,\unit{mm}\derived{} apart); the exact classifier at
+$d = 1.0025$\,\unit{m}\predicted{} gives $28.0$\,\unit{mm}\predicted.
+% CHECK: re-run 2026-10-30. Raster margins 28.34 / 32.31 mm at d = 1.0025 / 0.9981 m;
+% exact classify_path 27.99 / 32.35 mm. The raster lookup error is <= 0.71 mm either way.
+
+\emph{Step 4: the apex.} The highest point is at $t = v_{z0}/g = 0.705$\,\unit{s}\predicted{},
+$z = h + v_{z0}^2/(2g) = 3.174$\,\unit{m}\predicted. There $v_z = 0$ but the ball is still moving
+sideways at $v_x = 1.095$\,\unit{m/s}\predicted; it is not stationary.
+
+\emph{Step 5: the neighbours.} Keeping $v = 7.0$\,\unit{m/s}\assumed{} and changing only $\theta$:
+$78.0^\circ$\assumed{} is a \code{miss}, $80.5^\circ$\assumed{} is \code{hit:up\_floor}
+(clearance on the first touching chord $-1.6$\,\unit{mm}\predicted), $81.5^\circ$\assumed{} is
+\code{hit:up\_roof\_outer} ($-3.9$\,\unit{mm}\predicted) and $84.0^\circ$\assumed{} is
+\code{hit:pivot\_plate\_top}. The overlap reported at first contact depends on the time step of
+the path samples, so only its sign is meaningful.
+% CHECK: -1.6 / -3.9 mm from flight.simulate (vacuum, dt_max = 1 ms) + classify_detail; the
+% exact parabola sampled at 0.1 ms gives -0.3 / -0.1 mm, at 2 ms -5.5 / -3.9 mm. The earlier
+% draft values (-0.4 / -2.3 mm) were not reproducible.
+In the sweep (\code{evaluate\_gate} with \code{grid\_from\_candidates}), on a sub-grid
+($v$ from $5.0$\,\unit{m/s}\assumed{} to $9.0$\,\unit{m/s}\assumed{} in $0.1$\,\unit{m/s}\assumed{} steps,
+$\theta$ from $60^\circ$\assumed{} to $89.75^\circ$\assumed{} in $0.25^\circ$\assumed{} steps) at this
+$(h, d)$, $82$\predicted{} launches reach the gate and $47$\predicted{} of them are clean; the other
+$35$\predicted{} first touch \code{up\_roof\_outer} ($22$\predicted) or \code{up\_upper\_lip}
+($13$\predicted). The clean launches form a thin diagonal band in the $(v, \theta)$ plane. This is a
+statement about the model in vacuum, not about how often a real launcher would score.
+
+\subsection{Steepness on the unfavourable side: the minimum descent angle}
+\label{sec:geometry-steep}
+
+We now derive, from the geometry alone, how steeply the ball must fall to enter from the
+unfavourable side. Work in the unfavourable shot frame: \code{pose\_pos}, $\sigma = +1$, shooter
+at $x = -d$, ball moving toward $+x$.
+
+\paragraph{Descent angle.} Define the descent angle $\varphi$ (in degrees) of the velocity, measured
+below the horizontal and positive when falling, as the code does:
+\begin{equation}
+  \varphi = \operatorname{atan2}(-v_z,\; v_x), \qquad \vect{v} = \lVert\vect{v}\rVert\,(\cos\varphi,\; -\sin\varphi).
+  \label{eq:geometry-descent}
+\end{equation}
+
+\paragraph{Step 1: the kinematic condition.} Insert \eqref{eq:geometry-descent} and
+\eqref{eq:geometry-normal} into \eqref{eq:geometry-inward}:
+\begin{equation}
+  \vect{v}\cdot\vect{n} = \lVert\vect{v}\rVert\,(\cos\varphi\cos\tau - \sin\varphi\sin\tau)
+  = \lVert\vect{v}\rVert\cos(\varphi + \tau) < 0 .
+  \label{eq:geometry-vdotn}
+\end{equation}
+For a ball still moving toward $+x$ ($-90^\circ < \varphi < 90^\circ$) this needs
+$\varphi + \tau > 90^\circ$, so
+\begin{equation}
+  \varphi > \varphi_{\mathrm{kin}} = 90^\circ - \tau = 60^\circ\text{\derived}.
+  \label{eq:geometry-phi-kin}
+\end{equation}
+This is the ``steeper than $60^\circ$'' rule. It only says the ball is moving into the plane of the
+mouth; it says nothing yet about fitting past the lips. It is convenient to measure the excess
+over this angle,
+\begin{equation}
+  \alpha = \varphi + \tau - 90^\circ ,
+  \label{eq:geometry-alpha}
+\end{equation}
+so that \eqref{eq:geometry-phi-kin} reads $\alpha > 0$.
+
+\paragraph{Step 2: the roof.} The highest point of the HIVE is the roof top at the mouth,
+$\vect{T} = (0.30543, 1.67747)$\,\unit{m}\derived{} (Table~\ref{tab:geometry-keypoints}). Every gate point
+has $x > 0.3298$\,\unit{m}\derived{} and the release has $x = -d < 0$, so the centre must cross the
+vertical line $x = x_T$. At that moment the centre is directly above $\vect{T}$ (below it is inside
+the HIVE), so the clearance \eqref{eq:geometry-clearance} is non-negative only if
+\begin{equation}
+  z(x_T) \ge z_T + R = 1.67747 + 0.0355 = 1.7130\ \text{\unit{m}}\text{\derived}.
+  \label{eq:geometry-roof}
+\end{equation}
+So the path must rise at least $1.7130 - h$ above the release point. In vacuum this needs a vertical
+launch speed of at least $\sqrt{2g(1.7130 - h)}$, which is $4.375$\,\unit{m/s}\derived{} at
+$h = 0.737$\,\unit{m}\assumed. Drag raises this bound; backspin lift can lower it. Both are treated in
+later sections.
+
+\paragraph{Step 3: a straight line near the mouth.} Close to the mouth the path is almost straight.
+In the worked example the ball reaches the gate at $5.85$\,\unit{m/s}\predicted{} and
+$\varphi = 79.2^\circ$\predicted. Under gravity alone its curvature is
+$\kappa = g\cos\varphi/\lVert\vect{v}\rVert^2 = 0.054$\,\unit{m\textsuperscript{-1}}\derived, a radius
+of $18.7$\,\unit{m}\derived. Over a $0.2$\,\unit{m}\assumed{} chord near the mouth the path departs
+from a straight line by about $0.3$\,\unit{mm}\derived. We therefore treat the last part of the path as
+a straight line with descent angle $\varphi$.
+
+\paragraph{Step 4: go to the cell-local frame.} Rotate the direction of motion into the cell-local
+frame with the inverse of \eqref{eq:geometry-rotation}. Using $\varphi + \tau = 90^\circ + \alpha$,
+\begin{equation}
+  \hat{\vect{e}}_{uw}
+  = \bigl(\cos(\varphi+\tau),\; -\sin(\varphi+\tau)\bigr)
+  = (-\sin\alpha,\; -\cos\alpha).
+  \label{eq:geometry-local-dir}
+\end{equation}
+In the CELL's own frame the ball is falling almost parallel to the mouth plane, from the roof side
+toward the floor side, while moving inward at the small rate $\sin\alpha$. Let the centre cross the
+mouth plane at $(u_M, w_c)$, with $w_F + R \le w_c \le w_C - R$ (on the gate). Before the crossing
+the centre was at
+\begin{equation}
+  \bigl(u_M + \lambda\sin\alpha,\; w_c + \lambda\cos\alpha\bigr), \qquad \lambda \ge 0 ,
+  \label{eq:geometry-backray}
+\end{equation}
+with $\lambda$ (in \unit{m}) the distance travelled back along the path. It is outside the mouth
+($u > u_M$) the whole time.
+
+\paragraph{Step 5: clear the upper lip.} The obstacle nearest this ray is the inner corner of the
+upper lip, $\vect{C} = (u_M, w_C)$; the rest of the lip and the roof are further away from it. The
+distance from $\vect{C}$ to the line through $(u_M, w_c)$ in direction \eqref{eq:geometry-local-dir} is
+the length of the cross product of $\vect{C} - (u_M, w_c) = (0,\; w_C - w_c)$ with the unit
+direction:
+\begin{equation}
+  \delta_C = \bigl|\,0\cdot(-\cos\alpha) - (w_C - w_c)(-\sin\alpha)\,\bigr| = (w_C - w_c)\sin\alpha .
+  \label{eq:geometry-dist-upper}
+\end{equation}
+The nearest point lies at $\lambda = (w_C - w_c)\cos\alpha \ge 0$, so it is \emph{before} the
+crossing and counts. The clean test needs $\delta_C \ge R$:
+\begin{equation}
+  w_c \le w_C - \frac{R}{\sin\alpha}.
+  \label{eq:geometry-upper-cond}
+\end{equation}
+
+\paragraph{Step 6: the lower lip does not bind before entry.} For the lower-lip corner
+$\vect{D} = (u_M, w_F)$ the same calculation gives the nearest point at
+$\lambda = (w_F - w_c)\cos\alpha < 0$, which is \emph{after} the crossing. Before the crossing the
+closest the ball gets to $\vect{D}$ is at the crossing itself, $w_c - w_F \ge R$, which the gate
+already guarantees. A ball crossing near the low end may touch the lower lip or floor just after it
+enters, but by the definition in Section~\ref{sec:geometry-clean} it is already in.
+
+\paragraph{Step 7: the minimum descent angle.} A clean straight path exists when
+\eqref{eq:geometry-upper-cond} leaves room above the gate's low end, $w_C - R/\sin\alpha \ge w_F + R$, that is
+$\sin\alpha \ge R/(w_C - w_F - R) = R/(L - R)$. Hence
+\begin{equation}
+  \boxed{\;\varphi > \varphi_{\mathrm{gate}} = 90^\circ - \tau + \arcsin\!\frac{R}{L - R}\;}
+  \label{eq:geometry-phi-gate}
+\end{equation}
+With $R/(L-R) = 0.0355/0.32188 = 0.1103$\derived, $\arcsin(0.1103) = 6.33^\circ$\derived{} and
+$\varphi_{\mathrm{gate}} = 66.33^\circ$\derived{} at $\tau = 30^\circ$\confirmed.
+
+\paragraph{A stricter version: passing both lips.} If we also ask that the ball touch nothing until it
+is completely past the mouth plane, the line must also stay $R$ from $\vect{D}$:
+$\delta_D = (w_c - w_F)\sin\alpha \ge R$. Combined with \eqref{eq:geometry-upper-cond} this needs
+$L\sin\alpha \ge 2R$:
+\begin{equation}
+  \varphi > \varphi_{\mathrm{fit}} = 90^\circ - \tau + \arcsin\!\frac{2R}{L}
+  = 60^\circ + 11.46^\circ = 71.46^\circ\text{\derived}.
+  \label{eq:geometry-phi-fit}
+\end{equation}
+The quantity $L\sin\alpha$ is the width of the mouth as seen along the path. This is the
+``about $71.5^\circ$'' figure in the project documents. The code's clean test is
+\eqref{eq:geometry-phi-gate}, not \eqref{eq:geometry-phi-fit}.
+% CODE/DOC: docs/01_hive_geometry.md section 4 and the "reason" fields of
+% data/hive_geometry.json give > ~71.5 deg (60 + asin(2R/0.3574)) as the minimum descent and
+% a vertical-drop window of 0.108 m (|x| 0.347-0.455 m). That is the both-lips criterion
+% (eq:geometry-phi-fit). The code's clean test (centre crosses the gate before any contact)
+% admits straight paths from 66.33 deg and a vertical-drop window of 0.125 m (x 0.348-0.473 m).
+% docs/03_clean_entry.md section 2.1 attributes clean gate descents below 71.5 deg (down to
+% 68.3 deg) to path curvature; the curvature offset over the mouth is < 1 mm, so the gate
+% definition, not curvature, explains the difference. This paper follows the code.
+
+\paragraph{Window width.} The set of clean straight paths at a given $\alpha$ is
+$w_c \in [\,w_F + R,\; w_C - R/\sin\alpha\,]$. Measured perpendicular to the path, its width (in \unit{m}) is
+\begin{equation}
+  W_\perp(\alpha) = \Bigl(w_C - \frac{R}{\sin\alpha} - w_F - R\Bigr)\sin\alpha = (L - R)\sin\alpha - R .
+  \label{eq:geometry-window}
+\end{equation}
+For a vertical drop, $\varphi = 90^\circ$, so $\alpha = \tau$ and the window is horizontal:
+$W_\perp = 0.32188 \times 0.5 - 0.0355 = 0.1254$\,\unit{m}\derived. Under the stricter both-lips
+rule the same drop leaves $L\sin\tau - 2R = 0.1077$\,\unit{m}\derived. At $\varphi = 70^\circ$\assumed{}
+($\alpha = 10^\circ$) the clean window is only $W_\perp = 0.0204$\,\unit{m}\derived, about $0.29$\derived{}
+ball diameters ($0.57$\derived{} radii).
+
+\paragraph{Worked check against the code.} We fired families of straight lines at the gate with
+\code{Hive.classify\_path} (\code{pose\_pos}, HIVE frame, $400$\assumed{} entry points along the gate per angle)
+and bisected on $\varphi$ for the smallest angle with any clean line. Table~\ref{tab:geometry-tilt} compares
+the result with \eqref{eq:geometry-phi-gate}. The perpendicular widths found at $\varphi = 70^\circ$,
+$72^\circ$ and $90^\circ$ were $0.0202$\predicted, $0.0312$\predicted{} and $0.1249$\,\unit{m}\predicted,
+against $0.0204$\derived, $0.0314$\derived{} and $0.1254$\,\unit{m}\derived{} from
+\eqref{eq:geometry-window}; the small shortfall comes from the discrete entry points, spaced
+$0.72$\,\unit{mm}\derived{} along the gate, so up to one spacing is lost at each end of the window.
+% CHECK: re-run 2026-10-30, (n_clean - 1) x spacing x |sin(gate, path)|; draft had
+% 0.0201 / 0.0310 / 0.1245 m and a "0.5 mm sampling" that does not match 400 points on 0.286 m.
+The vertical drop is clean for $x \in [0.348, 0.4726]$\,\unit{m}\predicted, from one radius right of
+the upper lip ($0.31203 + 0.0355 = 0.3475$\,\unit{m}\derived) to the gate's low end
+($A_x = 0.47298$\,\unit{m}\derived).
+
+\begin{table}[h]
+  \centering
+  \caption{Descent-angle limits on the unfavourable side versus tilt. $\varphi_{\mathrm{kin}}$:
+  \eqref{eq:geometry-phi-kin}; $\varphi_{\mathrm{gate}}$: \eqref{eq:geometry-phi-gate} (the code's criterion);
+  $\varphi_{\mathrm{fit}}$: \eqref{eq:geometry-phi-fit}; ``code'' is the bisection with
+  \code{Hive.classify\_path}; $z_{\mathrm{lip}}$ from the re-posed \code{Hive}.}
+  \label{tab:geometry-tilt}
+  \begin{tabular}{@{}rrrrrr@{}}
+    \toprule
+    $\tau$ & $z_{\mathrm{lip}}$ (\unit{m}) & $\varphi_{\mathrm{kin}}$ & $\varphi_{\mathrm{gate}}$ & code & $\varphi_{\mathrm{fit}}$ \\
+    \midrule
+    $25.5^\circ$\derived & $1.3173$\derived & $64.5^\circ$\derived & $70.83^\circ$\derived & -- & $75.96^\circ$\derived \\
+    $28.5^\circ$\derived & $1.3436$\derived & $61.5^\circ$\derived & $67.83^\circ$\derived & $67.85^\circ$\predicted & $72.96^\circ$\derived \\
+    $30.0^\circ$\confirmed & $1.3565$\derived & $60.0^\circ$\derived & $66.33^\circ$\derived & $66.35^\circ$\predicted & $71.46^\circ$\derived \\
+    $31.5^\circ$\derived & $1.3693$\derived & $58.5^\circ$\derived & $64.83^\circ$\derived & $64.85^\circ$\predicted & $69.96^\circ$\derived \\
+    $34.5^\circ$\derived & $1.3943$\derived & $55.5^\circ$\derived & $61.83^\circ$\derived & -- & $66.96^\circ$\derived \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+A steeper HIVE (larger $\tau$) turns the mouth more toward the sky and lowers every limit one degree
+per degree of tilt. The $\arcsin$ term does not depend on tilt because the CELL itself does not change
+shape. The worked shot of Section~\ref{sec:geometry-clean} entered at $\varphi = 79.21^\circ$\predicted,
+above all three limits at $\tau = 30^\circ$\confirmed.
+
+\subsection{Release point and the robot height limit}
+\label{sec:geometry-release}
+
+The release point \eqref{eq:geometry-release} has two free numbers. The distance $d$ is measured from the
+release point to the pivot plane $x = 0$ (not to the mouth). The field's inner perimeter wall is at
+$|x| = 1.8009$\,\unit{m}\confirmed, so $d$ cannot exceed that. The sweep grid uses
+$d$ from $0.55$\,\unit{m}\assumed{} to $1.75$\,\unit{m}\assumed{} in $0.05$\,\unit{m}\assumed{} steps.
+
+The height $h$ is limited by the robot size rule. Manual rule R105 caps the expanded robot at
+$H_{\max} = 29$\,\unit{in}\confirmed{} $= 0.7366$\,\unit{m}\confirmed{} measured from the field
+surface. The project assumes that the ball centre at release is no higher than this:
+\begin{equation}
+  h \le H_{\max} = 0.7366\ \text{\unit{m}}\text{\assumed},
+  \label{eq:geometry-hmax}
+\end{equation}
+and the sweep uses $h \in \{0.20, 0.35, 0.50, 0.65, 0.737\}$\,\unit{m}\assumed.
+% CODE/DOC: data/hive_geometry.json robot_limits.release_height_note says "ball centre at release
+% <= 0.737 m (ball inside the sizing volume)". If the whole ball had to be inside the volume the
+% centre limit would be 0.7366 - R = 0.701 m. The code (SweepGrid.h) uses h = 0.737 m as the
+% centre height, so this paper follows the code and flags the G416 risk.
+% CHECK: the grid value 0.737 m (feasibility.SweepGrid.h) is H_max = 0.7366 m rounded up by
+% 0.4 mm, so the top grid row sits 0.4 mm above eq:geometry-hmax; negligible but noted.
+If instead the whole ball had to stay inside the sizing volume, the centre limit would be
+$H_{\max} - R = 0.701$\,\unit{m}\derived; the code uses the former. The lowest point of the HIVE (the
+down CELL's lower lip) is at $0.778$\,\unit{m}\derived{}, above the release, so every shot must rise to
+pass over the roof, condition \eqref{eq:geometry-roof}.
+
+\subsection{Assumptions}
+\label{sec:geometry-assumptions}
+
+\begin{itemize}
+  \item The model is 2D, in the HIVE centre plane $s = 0$, where the mouth is tallest. Off-centre the
+        pentagonal roof is lower. For a lateral offset $|s|$, \code{hive.py} lowers the roof segments
+        and the top of the mouth by
+        \begin{equation}
+          \Delta w(s) = (h_0 - h_w)\,\frac{\min(|s|,\, s_{\mathrm{half}})}{s_{\mathrm{half}}},
+          \label{eq:geometry-roof-drop}
+        \end{equation}
+        with peak height $h_0 = 0.3556$\,\unit{m}\confirmed, side-wall height
+        $h_w = 0.19329$\,\unit{m}\confirmed{} and half-width $s_{\mathrm{half}} = 0.254$\,\unit{m}\confirmed.
+        This is a 2D proxy; the side walls themselves are not modelled.
+  \item The obstacles are solid line segments with no thickness of their own. The roof top and the
+        underside are envelopes of the ribs, accurate to about $11$\,\unit{mm}\derived. The ballast screw near
+        each CELL opening and the three preloaded NECTAR are not modelled.
+  \item The four A-frame legs are left out by default, because at $s = 0$ only their tops exist.
+  \item The ball is a rigid sphere of radius $R$; its centre is the tracked point.
+  \item ``Clean'' means the centre crosses the gate inward with no earlier contact (an assumed
+        criterion). Contact after the crossing, and whether the ball then stays in, belongs to the contact
+        model. A planned bank shot off the roof is outside this channel (and is a G417 risk).
+  \item The tilt is a fixed $30^\circ$\confirmed{} rest angle, with $\pm 1.5^\circ$\derived{} and
+        $\pm 4.5^\circ$\derived{} bounds; the HIVE does not move during the shot.
+  \item The descent-angle limits \eqref{eq:geometry-phi-gate} and \eqref{eq:geometry-phi-fit} treat the last few
+        centimetres of the path as straight.
+  \item The release height limit \eqref{eq:geometry-hmax} applies to the ball centre.
+  \item The worked shot is in vacuum and illustrates the method only; its numbers are not a prediction
+        for POLLEN in air.
+\end{itemize}

@@ -1,0 +1,2100 @@
+{
+ "units": "m",
+ "source_note": "INDEPENDENT crosscheck; not derived from data/hive_geometry.json. See crosscheck/geometry/NOTES.md.",
+ "ball_radius": {
+  "value": 0.0355,
+  "prov": "user/HANDOFF: POLLEN 2.8 in dia (AndyMark am-5851); not re-measured here"
+ },
+ "pivot": {
+  "x": 0.0,
+  "z": 1.11633,
+  "prov": "confirmed: CM 9.6.1 'Frame supports 2 pivots with their axis 43.95 in. (111.65 cm) above the TILES' (https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm); CAD pivot bracket origin at 43.950 in. 43.95 in = 1.11633 m (manual's 111.65 cm is rounded)."
+ },
+ "poses": {
+  "pose_neg": {
+   "tilt_deg": {
+    "value": 30.0,
+    "low": 28.88,
+    "high": 31.86,
+    "prov": "confirmed value: CM Fig 9-10 '30 deg' (https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm) and CAD (all HIVE parts at 30.000 deg). low/high derived from Field Acceptance Checklist 1.13 'bottom of each CELL opening is 53.5 +/- 0.50 in above the tiles' (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-check) solved for tilt with the CAD lip point (z'=-21.456, y'=-1.50 in) and pivot 43.95 in; checklist midpoint gives 30.36 deg."
+   },
+   "obstacles": [
+    {
+     "name": "up_cell_lip_front",
+     "p0": [
+      -0.50971,
+      1.32345
+     ],
+     "p1": [
+      -0.49102,
+      1.35583
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_lip_top",
+     "p0": [
+      -0.49102,
+      1.35583
+     ],
+     "p1": [
+      -0.44702,
+      1.33043
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_floor",
+     "p0": [
+      -0.44687,
+      1.33069
+     ],
+     "p1": [
+      -0.22651,
+      1.20346
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_back_skin_inner",
+     "p0": [
+      -0.22651,
+      1.20346
+     ],
+     "p1": [
+      -0.04886,
+      1.51116
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_roof_inner",
+     "p0": [
+      -0.04886,
+      1.51116
+     ],
+     "p1": [
+      -0.31322,
+      1.66378
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_roof_lip_front",
+     "p0": [
+      -0.31322,
+      1.66378
+     ],
+     "p1": [
+      -0.30614,
+      1.67604
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_roof_outer",
+     "p0": [
+      -0.30614,
+      1.67604
+     ],
+     "p1": [
+      -0.04134,
+      1.52315
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_back_outer",
+     "p0": [
+      -0.04134,
+      1.52315
+     ],
+     "p1": [
+      -0.24491,
+      1.17056
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_underside",
+     "p0": [
+      -0.24491,
+      1.17056
+     ],
+     "p1": [
+      -0.50971,
+      1.32345
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_lip_front",
+     "p0": [
+      0.43422,
+      0.77846
+     ],
+     "p1": [
+      0.45292,
+      0.81084
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_lip_top",
+     "p0": [
+      0.45292,
+      0.81084
+     ],
+     "p1": [
+      0.40892,
+      0.83624
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_floor",
+     "p0": [
+      0.40908,
+      0.83651
+     ],
+     "p1": [
+      0.18871,
+      0.96374
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_back_skin_inner",
+     "p0": [
+      0.18871,
+      0.96374
+     ],
+     "p1": [
+      0.36636,
+      1.27143
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_roof_inner",
+     "p0": [
+      0.36636,
+      1.27143
+     ],
+     "p1": [
+      0.63072,
+      1.1188
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_roof_lip_front",
+     "p0": [
+      0.63072,
+      1.1188
+     ],
+     "p1": [
+      0.63779,
+      1.13105
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_roof_outer",
+     "p0": [
+      0.63779,
+      1.13105
+     ],
+     "p1": [
+      0.37299,
+      1.28394
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_back_outer",
+     "p0": [
+      0.37299,
+      1.28394
+     ],
+     "p1": [
+      0.16942,
+      0.93135
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_underside",
+     "p0": [
+      0.16942,
+      0.93135
+     ],
+     "p1": [
+      0.43422,
+      0.77846
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "hub_pivot_bracket_0",
+     "p0": [
+      0.12098,
+      0.99516
+     ],
+     "p1": [
+      0.03716,
+      1.11922
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_1",
+     "p0": [
+      0.03716,
+      1.11922
+     ],
+     "p1": [
+      -0.01608,
+      1.14995
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_2",
+     "p0": [
+      -0.01608,
+      1.14995
+     ],
+     "p1": [
+      -0.16543,
+      1.16051
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_3",
+     "p0": [
+      -0.16543,
+      1.16051
+     ],
+     "p1": [
+      -0.18102,
+      1.1528
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_4",
+     "p0": [
+      -0.18102,
+      1.1528
+     ],
+     "p1": [
+      -0.17498,
+      1.13787
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_5",
+     "p0": [
+      -0.17498,
+      1.13787
+     ],
+     "p1": [
+      0.10614,
+      0.97557
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_6",
+     "p0": [
+      0.10614,
+      0.97557
+     ],
+     "p1": [
+      0.1221,
+      0.97779
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_7",
+     "p0": [
+      0.1221,
+      0.97779
+     ],
+     "p1": [
+      0.12098,
+      0.99516
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_0",
+     "p0": [
+      0.06894,
+      1.02491
+     ],
+     "p1": [
+      0.08063,
+      1.05482
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_1",
+     "p0": [
+      0.08063,
+      1.05482
+     ],
+     "p1": [
+      0.0655,
+      1.06062
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_2",
+     "p0": [
+      0.0655,
+      1.06062
+     ],
+     "p1": [
+      0.05047,
+      1.06608
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_3",
+     "p0": [
+      0.05047,
+      1.06608
+     ],
+     "p1": [
+      0.04425,
+      1.06292
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_4",
+     "p0": [
+      0.04425,
+      1.06292
+     ],
+     "p1": [
+      0.03003,
+      1.04033
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_5",
+     "p0": [
+      0.03003,
+      1.04033
+     ],
+     "p1": [
+      0.03473,
+      1.02765
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_6",
+     "p0": [
+      0.03473,
+      1.02765
+     ],
+     "p1": [
+      0.06218,
+      1.02236
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_7",
+     "p0": [
+      0.06218,
+      1.02236
+     ],
+     "p1": [
+      0.06894,
+      1.02491
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_0",
+     "p0": [
+      -0.11364,
+      1.13032
+     ],
+     "p1": [
+      -0.09359,
+      1.1554
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_1",
+     "p0": [
+      -0.09359,
+      1.1554
+     ],
+     "p1": [
+      -0.081,
+      1.1452
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_2",
+     "p0": [
+      -0.081,
+      1.1452
+     ],
+     "p1": [
+      -0.06876,
+      1.13491
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_3",
+     "p0": [
+      -0.06876,
+      1.13491
+     ],
+     "p1": [
+      -0.06838,
+      1.12794
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_4",
+     "p0": [
+      -0.06838,
+      1.12794
+     ],
+     "p1": [
+      -0.08083,
+      1.10434
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_5",
+     "p0": [
+      -0.08083,
+      1.10434
+     ],
+     "p1": [
+      -0.09417,
+      1.10207
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_6",
+     "p0": [
+      -0.09417,
+      1.10207
+     ],
+     "p1": [
+      -0.11247,
+      1.12319
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_7",
+     "p0": [
+      -0.11247,
+      1.12319
+     ],
+     "p1": [
+      -0.11364,
+      1.13032
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_up_to_hub_0",
+     "p0": [
+      -0.24159,
+      1.17633
+     ],
+     "p1": [
+      -0.13802,
+      1.11654
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_up_to_hub_1",
+     "p0": [
+      -0.13802,
+      1.11654
+     ],
+     "p1": [
+      -0.12532,
+      1.13853
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_up_to_hub_2",
+     "p0": [
+      -0.12532,
+      1.13853
+     ],
+     "p1": [
+      -0.22889,
+      1.19832
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_up_to_hub_3",
+     "p0": [
+      -0.22889,
+      1.19832
+     ],
+     "p1": [
+      -0.24159,
+      1.17633
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_down_to_hub_0",
+     "p0": [
+      0.17275,
+      0.93711
+     ],
+     "p1": [
+      0.06919,
+      0.9969
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_down_to_hub_1",
+     "p0": [
+      0.06919,
+      0.9969
+     ],
+     "p1": [
+      0.08189,
+      1.0189
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_down_to_hub_2",
+     "p0": [
+      0.08189,
+      1.0189
+     ],
+     "p1": [
+      0.18545,
+      0.95911
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_down_to_hub_3",
+     "p0": [
+      0.18545,
+      0.95911
+     ],
+     "p1": [
+      0.17275,
+      0.93711
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_0",
+     "p0": [
+      -0.01092,
+      1.11658
+     ],
+     "p1": [
+      -0.03861,
+      1.01295
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_1",
+     "p0": [
+      -0.03861,
+      1.01295
+     ],
+     "p1": [
+      -0.02057,
+      1.00305
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_2",
+     "p0": [
+      -0.02057,
+      1.00305
+     ],
+     "p1": [
+      0.02057,
+      1.00305
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_3",
+     "p0": [
+      0.02057,
+      1.00305
+     ],
+     "p1": [
+      0.03785,
+      1.01092
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_4",
+     "p0": [
+      0.03785,
+      1.01092
+     ],
+     "p1": [
+      0.03861,
+      1.01295
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_5",
+     "p0": [
+      0.03861,
+      1.01295
+     ],
+     "p1": [
+      0.01092,
+      1.11658
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_6",
+     "p0": [
+      0.01092,
+      1.11658
+     ],
+     "p1": [
+      -0.00051,
+      1.12293
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_7",
+     "p0": [
+      -0.00051,
+      1.12293
+     ],
+     "p1": [
+      -0.01092,
+      1.11658
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_bar_0",
+     "p0": [
+      -0.0127,
+      1.04013
+     ],
+     "p1": [
+      0.0127,
+      1.04013
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_top_bar_1",
+     "p0": [
+      0.0127,
+      1.04013
+     ],
+     "p1": [
+      0.0127,
+      1.06553
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_top_bar_2",
+     "p0": [
+      0.0127,
+      1.06553
+     ],
+     "p1": [
+      -0.0127,
+      1.06553
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_top_bar_3",
+     "p0": [
+      -0.0127,
+      1.06553
+     ],
+     "p1": [
+      -0.0127,
+      1.04013
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_a_0",
+     "p0": [
+      -0.04216,
+      1.01651
+     ],
+     "p1": [
+      -0.10871,
+      0.86665
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_a_1",
+     "p0": [
+      -0.10871,
+      0.86665
+     ],
+     "p1": [
+      -0.10617,
+      0.86538
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_a_2",
+     "p0": [
+      -0.10617,
+      0.86538
+     ],
+     "p1": [
+      -0.03937,
+      1.01524
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_a_3",
+     "p0": [
+      -0.03937,
+      1.01524
+     ],
+     "p1": [
+      -0.04216,
+      1.01651
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_b_0",
+     "p0": [
+      0.04216,
+      1.01651
+     ],
+     "p1": [
+      0.10871,
+      0.86665
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_b_1",
+     "p0": [
+      0.10871,
+      0.86665
+     ],
+     "p1": [
+      0.10617,
+      0.86538
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_b_2",
+     "p0": [
+      0.10617,
+      0.86538
+     ],
+     "p1": [
+      0.03937,
+      1.01524
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_b_3",
+     "p0": [
+      0.03937,
+      1.01524
+     ],
+     "p1": [
+      0.04216,
+      1.01651
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_leg_a_0",
+     "p0": [
+      -0.02311,
+      1.05156
+     ],
+     "p1": [
+      -0.48438,
+      0.01575
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_a_1",
+     "p0": [
+      -0.48438,
+      0.01575
+     ],
+     "p1": [
+      -0.46101,
+      0.00559
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_a_2",
+     "p0": [
+      -0.46101,
+      0.00559
+     ],
+     "p1": [
+      0.0,
+      1.04115
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_a_3",
+     "p0": [
+      0.0,
+      1.04115
+     ],
+     "p1": [
+      -0.02311,
+      1.05156
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_b_0",
+     "p0": [
+      0.0,
+      1.04115
+     ],
+     "p1": [
+      0.46101,
+      0.00559
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_b_1",
+     "p0": [
+      0.46101,
+      0.00559
+     ],
+     "p1": [
+      0.48438,
+      0.01575
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_b_2",
+     "p0": [
+      0.48438,
+      0.01575
+     ],
+     "p1": [
+      0.02311,
+      1.05156
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_b_3",
+     "p0": [
+      0.02311,
+      1.05156
+     ],
+     "p1": [
+      0.0,
+      1.04115
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    }
+   ],
+   "mouth": {
+    "p0": [
+     -0.49102,
+     1.35583
+    ],
+    "p1": [
+     -0.31322,
+     1.66378
+    ],
+    "prov": "derived: mouth plane = outer face of the outer Goal Rib; p0 = lip top, p1 = inner roof apex (cell centre plane)"
+   },
+   "inside": [
+    [
+     -0.47312,
+     1.38683
+    ],
+    [
+     -0.2395,
+     1.25195
+    ],
+    [
+     -0.09735,
+     1.49816
+    ],
+    [
+     -0.33097,
+     1.63304
+    ]
+   ],
+   "inside_prov": "derived: cell interior at the centre plane deflated by ball_radius on floor, roof and Back Skin; mouth edge = mouth plane (ball centre past the mouth plane and in this box = retained). Off-centre planes have a lower roof (see cell_opening_profile).",
+   "favorable_side": "neg",
+   "reason": "The upward CELL sits on the -x side and its mouth faces OUTWARD, away from the pivot: outward normal points -x and 30 deg above horizontal (mouth plane 60 deg from horizontal; floor slopes down toward the Back Skin so a ball that crosses the mouth rolls in). From the -x side a ball moving toward the pivot enters directly. From the other side the ball must clear the roof (outer apex ~1.69 m) and then cross the mouth plane inward, which needs a descent steeper than 60 deg below horizontal just beyond the roof front edge."
+  },
+  "pose_pos": {
+   "tilt_deg": {
+    "value": 30.0,
+    "low": 28.88,
+    "high": 31.86,
+    "prov": "confirmed value: CM Fig 9-10 '30 deg' (https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm) and CAD (all HIVE parts at 30.000 deg). low/high derived from Field Acceptance Checklist 1.13 'bottom of each CELL opening is 53.5 +/- 0.50 in above the tiles' (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-check) solved for tilt with the CAD lip point (z'=-21.456, y'=-1.50 in) and pivot 43.95 in; checklist midpoint gives 30.36 deg."
+   },
+   "obstacles": [
+    {
+     "name": "up_cell_lip_front",
+     "p0": [
+      0.50971,
+      1.32345
+     ],
+     "p1": [
+      0.49102,
+      1.35583
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_lip_top",
+     "p0": [
+      0.49102,
+      1.35583
+     ],
+     "p1": [
+      0.44702,
+      1.33043
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_floor",
+     "p0": [
+      0.44687,
+      1.33069
+     ],
+     "p1": [
+      0.22651,
+      1.20346
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_back_skin_inner",
+     "p0": [
+      0.22651,
+      1.20346
+     ],
+     "p1": [
+      0.04886,
+      1.51116
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_roof_inner",
+     "p0": [
+      0.04886,
+      1.51116
+     ],
+     "p1": [
+      0.31322,
+      1.66378
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_roof_lip_front",
+     "p0": [
+      0.31322,
+      1.66378
+     ],
+     "p1": [
+      0.30614,
+      1.67604
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_roof_outer",
+     "p0": [
+      0.30614,
+      1.67604
+     ],
+     "p1": [
+      0.04134,
+      1.52315
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_back_outer",
+     "p0": [
+      0.04134,
+      1.52315
+     ],
+     "p1": [
+      0.24491,
+      1.17056
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "up_cell_underside",
+     "p0": [
+      0.24491,
+      1.17056
+     ],
+     "p1": [
+      0.50971,
+      1.32345
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_lip_front",
+     "p0": [
+      -0.43422,
+      0.77846
+     ],
+     "p1": [
+      -0.45292,
+      0.81084
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_lip_top",
+     "p0": [
+      -0.45292,
+      0.81084
+     ],
+     "p1": [
+      -0.40892,
+      0.83624
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_floor",
+     "p0": [
+      -0.40908,
+      0.83651
+     ],
+     "p1": [
+      -0.18871,
+      0.96374
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_back_skin_inner",
+     "p0": [
+      -0.18871,
+      0.96374
+     ],
+     "p1": [
+      -0.36636,
+      1.27143
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_roof_inner",
+     "p0": [
+      -0.36636,
+      1.27143
+     ],
+     "p1": [
+      -0.63072,
+      1.1188
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_roof_lip_front",
+     "p0": [
+      -0.63072,
+      1.1188
+     ],
+     "p1": [
+      -0.63779,
+      1.13105
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_roof_outer",
+     "p0": [
+      -0.63779,
+      1.13105
+     ],
+     "p1": [
+      -0.37299,
+      1.28394
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_back_outer",
+     "p0": [
+      -0.37299,
+      1.28394
+     ],
+     "p1": [
+      -0.16942,
+      0.93135
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "down_cell_underside",
+     "p0": [
+      -0.16942,
+      0.93135
+     ],
+     "p1": [
+      -0.43422,
+      0.77846
+     ],
+     "prov": "confirmed+derived: official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py; dims cross-checked vs CM Fig 9-9/9-11; rotated by tilt_deg.value about pivot"
+    },
+    {
+     "name": "hub_pivot_bracket_0",
+     "p0": [
+      -0.12098,
+      0.99516
+     ],
+     "p1": [
+      -0.03716,
+      1.11922
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_1",
+     "p0": [
+      -0.03716,
+      1.11922
+     ],
+     "p1": [
+      0.01608,
+      1.14995
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_2",
+     "p0": [
+      0.01608,
+      1.14995
+     ],
+     "p1": [
+      0.16543,
+      1.16051
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_3",
+     "p0": [
+      0.16543,
+      1.16051
+     ],
+     "p1": [
+      0.18102,
+      1.1528
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_4",
+     "p0": [
+      0.18102,
+      1.1528
+     ],
+     "p1": [
+      0.17498,
+      1.13787
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_5",
+     "p0": [
+      0.17498,
+      1.13787
+     ],
+     "p1": [
+      -0.10614,
+      0.97557
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_6",
+     "p0": [
+      -0.10614,
+      0.97557
+     ],
+     "p1": [
+      -0.1221,
+      0.97779
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_pivot_bracket_7",
+     "p0": [
+      -0.1221,
+      0.97779
+     ],
+     "p1": [
+      -0.12098,
+      0.99516
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_0",
+     "p0": [
+      -0.06894,
+      1.02491
+     ],
+     "p1": [
+      -0.08063,
+      1.05482
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_1",
+     "p0": [
+      -0.08063,
+      1.05482
+     ],
+     "p1": [
+      -0.0655,
+      1.06062
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_2",
+     "p0": [
+      -0.0655,
+      1.06062
+     ],
+     "p1": [
+      -0.05047,
+      1.06608
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_3",
+     "p0": [
+      -0.05047,
+      1.06608
+     ],
+     "p1": [
+      -0.04425,
+      1.06292
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_4",
+     "p0": [
+      -0.04425,
+      1.06292
+     ],
+     "p1": [
+      -0.03003,
+      1.04033
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_5",
+     "p0": [
+      -0.03003,
+      1.04033
+     ],
+     "p1": [
+      -0.03473,
+      1.02765
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_6",
+     "p0": [
+      -0.03473,
+      1.02765
+     ],
+     "p1": [
+      -0.06218,
+      1.02236
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_a_7",
+     "p0": [
+      -0.06218,
+      1.02236
+     ],
+     "p1": [
+      -0.06894,
+      1.02491
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_0",
+     "p0": [
+      0.11364,
+      1.13032
+     ],
+     "p1": [
+      0.09359,
+      1.1554
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_1",
+     "p0": [
+      0.09359,
+      1.1554
+     ],
+     "p1": [
+      0.081,
+      1.1452
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_2",
+     "p0": [
+      0.081,
+      1.1452
+     ],
+     "p1": [
+      0.06876,
+      1.13491
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_3",
+     "p0": [
+      0.06876,
+      1.13491
+     ],
+     "p1": [
+      0.06838,
+      1.12794
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_4",
+     "p0": [
+      0.06838,
+      1.12794
+     ],
+     "p1": [
+      0.08083,
+      1.10434
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_5",
+     "p0": [
+      0.08083,
+      1.10434
+     ],
+     "p1": [
+      0.09417,
+      1.10207
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_6",
+     "p0": [
+      0.09417,
+      1.10207
+     ],
+     "p1": [
+      0.11247,
+      1.12319
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_damper_holder_b_7",
+     "p0": [
+      0.11247,
+      1.12319
+     ],
+     "p1": [
+      0.11364,
+      1.13032
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_up_to_hub_0",
+     "p0": [
+      0.24159,
+      1.17633
+     ],
+     "p1": [
+      0.13802,
+      1.11654
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_up_to_hub_1",
+     "p0": [
+      0.13802,
+      1.11654
+     ],
+     "p1": [
+      0.12532,
+      1.13853
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_up_to_hub_2",
+     "p0": [
+      0.12532,
+      1.13853
+     ],
+     "p1": [
+      0.22889,
+      1.19832
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_up_to_hub_3",
+     "p0": [
+      0.22889,
+      1.19832
+     ],
+     "p1": [
+      0.24159,
+      1.17633
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_down_to_hub_0",
+     "p0": [
+      -0.17275,
+      0.93711
+     ],
+     "p1": [
+      -0.06919,
+      0.9969
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_down_to_hub_1",
+     "p0": [
+      -0.06919,
+      0.9969
+     ],
+     "p1": [
+      -0.08189,
+      1.0189
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_down_to_hub_2",
+     "p0": [
+      -0.08189,
+      1.0189
+     ],
+     "p1": [
+      -0.18545,
+      0.95911
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "hub_base_tube_down_to_hub_3",
+     "p0": [
+      -0.18545,
+      0.95911
+     ],
+     "p1": [
+      -0.17275,
+      0.93711
+     ],
+     "prov": "derived: convex hull of CAD part (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_0",
+     "p0": [
+      0.01092,
+      1.11658
+     ],
+     "p1": [
+      0.03861,
+      1.01295
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_1",
+     "p0": [
+      0.03861,
+      1.01295
+     ],
+     "p1": [
+      0.02057,
+      1.00305
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_2",
+     "p0": [
+      0.02057,
+      1.00305
+     ],
+     "p1": [
+      -0.02057,
+      1.00305
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_3",
+     "p0": [
+      -0.02057,
+      1.00305
+     ],
+     "p1": [
+      -0.03785,
+      1.01092
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_4",
+     "p0": [
+      -0.03785,
+      1.01092
+     ],
+     "p1": [
+      -0.03861,
+      1.01295
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_5",
+     "p0": [
+      -0.03861,
+      1.01295
+     ],
+     "p1": [
+      -0.01092,
+      1.11658
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_6",
+     "p0": [
+      -0.01092,
+      1.11658
+     ],
+     "p1": [
+      0.00051,
+      1.12293
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_corner_7",
+     "p0": [
+      0.00051,
+      1.12293
+     ],
+     "p1": [
+      0.01092,
+      1.11658
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)"
+    },
+    {
+     "name": "frame_top_bar_0",
+     "p0": [
+      0.0127,
+      1.04013
+     ],
+     "p1": [
+      -0.0127,
+      1.04013
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_top_bar_1",
+     "p0": [
+      -0.0127,
+      1.04013
+     ],
+     "p1": [
+      -0.0127,
+      1.06553
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_top_bar_2",
+     "p0": [
+      -0.0127,
+      1.06553
+     ],
+     "p1": [
+      0.0127,
+      1.06553
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_top_bar_3",
+     "p0": [
+      0.0127,
+      1.06553
+     ],
+     "p1": [
+      0.0127,
+      1.04013
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_a_0",
+     "p0": [
+      0.04216,
+      1.01651
+     ],
+     "p1": [
+      0.10871,
+      0.86665
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_a_1",
+     "p0": [
+      0.10871,
+      0.86665
+     ],
+     "p1": [
+      0.10617,
+      0.86538
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_a_2",
+     "p0": [
+      0.10617,
+      0.86538
+     ],
+     "p1": [
+      0.03937,
+      1.01524
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_a_3",
+     "p0": [
+      0.03937,
+      1.01524
+     ],
+     "p1": [
+      0.04216,
+      1.01651
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_b_0",
+     "p0": [
+      -0.04216,
+      1.01651
+     ],
+     "p1": [
+      -0.10871,
+      0.86665
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_b_1",
+     "p0": [
+      -0.10871,
+      0.86665
+     ],
+     "p1": [
+      -0.10617,
+      0.86538
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_b_2",
+     "p0": [
+      -0.10617,
+      0.86538
+     ],
+     "p1": [
+      -0.03937,
+      1.01524
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_acm_panel_b_3",
+     "p0": [
+      -0.03937,
+      1.01524
+     ],
+     "p1": [
+      -0.04216,
+      1.01651
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "spans y = -15.1..15.1 in (top bar -12..12 in), i.e. crosses both HIVE centre planes"
+    },
+    {
+     "name": "frame_leg_a_0",
+     "p0": [
+      0.02311,
+      1.05156
+     ],
+     "p1": [
+      0.48438,
+      0.01575
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_a_1",
+     "p0": [
+      0.48438,
+      0.01575
+     ],
+     "p1": [
+      0.46101,
+      0.00559
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_a_2",
+     "p0": [
+      0.46101,
+      0.00559
+     ],
+     "p1": [
+      -0.0,
+      1.04115
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_a_3",
+     "p0": [
+      -0.0,
+      1.04115
+     ],
+     "p1": [
+      0.02311,
+      1.05156
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_b_0",
+     "p0": [
+      -0.0,
+      1.04115
+     ],
+     "p1": [
+      -0.46101,
+      0.00559
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_b_1",
+     "p0": [
+      -0.46101,
+      0.00559
+     ],
+     "p1": [
+      -0.48438,
+      0.01575
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_b_2",
+     "p0": [
+      -0.48438,
+      0.01575
+     ],
+     "p1": [
+      -0.02311,
+      1.05156
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    },
+    {
+     "name": "frame_leg_b_3",
+     "p0": [
+      -0.02311,
+      1.05156
+     ],
+     "p1": [
+      -0.0,
+      1.04115
+     ],
+     "prov": "derived: convex hull of CAD frame part, fixed in world (official field CAD STEP v26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step), parsed with crosscheck/geometry/cad_tools/step_parse.py)",
+     "note": "3D: leg slopes along y (pivot axis) from y=24.3 in at the foot to 12.3 in at the top; it lies in the cell-centre plane only near the apex. Included as its full projection (conservative)."
+    }
+   ],
+   "mouth": {
+    "p0": [
+     0.49102,
+     1.35583
+    ],
+    "p1": [
+     0.31322,
+     1.66378
+    ],
+    "prov": "derived: mouth plane = outer face of the outer Goal Rib; p0 = lip top, p1 = inner roof apex (cell centre plane)"
+   },
+   "inside": [
+    [
+     0.47312,
+     1.38683
+    ],
+    [
+     0.2395,
+     1.25195
+    ],
+    [
+     0.09735,
+     1.49816
+    ],
+    [
+     0.33097,
+     1.63304
+    ]
+   ],
+   "inside_prov": "derived: cell interior at the centre plane deflated by ball_radius on floor, roof and Back Skin; mouth edge = mouth plane (ball centre past the mouth plane and in this box = retained). Off-centre planes have a lower roof (see cell_opening_profile).",
+   "favorable_side": "pos",
+   "reason": "The upward CELL sits on the +x side and its mouth faces OUTWARD, away from the pivot: outward normal points +x and 30 deg above horizontal (mouth plane 60 deg from horizontal; floor slopes down toward the Back Skin so a ball that crosses the mouth rolls in). From the +x side a ball moving toward the pivot enters directly. From the other side the ball must clear the roof (outer apex ~1.69 m) and then cross the mouth plane inward, which needs a descent steeper than 60 deg below horizontal just beyond the roof front edge."
+  }
+ },
+ "y_extent": {
+  "cell_width": 0.508,
+  "low": 0.508,
+  "high": 0.5133,
+  "prov": "confirmed: CM 9.6.2 + Fig 9-11 opening 'approximately 20 in. (50.8 cm) wide'; CAD inner width between Goal Rib side walls 20.21 in (x 2.65..22.87 in)"
+ },
+ "cell_opening_profile": {
+  "frame": "mouth plane coordinates: u along pivot axis from cell centre, v up from lip top (m)",
+  "polygon": [
+   [
+    -0.254,
+    0.0
+   ],
+   [
+    0.254,
+    0.0
+   ],
+   [
+    0.254,
+    0.1933
+   ],
+   [
+    0.0,
+    0.3556
+   ],
+   [
+    -0.254,
+    0.1933
+   ]
+  ],
+  "prov": "confirmed: CM Fig 9-11 (20 in wide, 7.61 in side-wall height, 14 in at apex); CAD agrees (side wall 7.9-8.0 in to roof start, apex 14.0 in)"
+ },
+ "cell_depth": {
+  "value": 0.3058,
+  "prov": "confirmed: CM Fig 9-9 '12.04 in (30.58 cm)'; CAD mouth plane to Back Skin inner face 12.02 in"
+ },
+ "hive_layout": {
+  "cell_back_to_back": {
+   "value": 0.4785,
+   "prov": "confirmed: CM Fig 9-9 '18.84 in (47.85 cm)' between Back Skins; CAD 18.86 in"
+  },
+  "hive_overall_length": {
+   "value": 1.0899,
+   "prov": "confirmed: CM Fig 9-9 '42.91 in (109.0 cm)'; CAD 42.91 in"
+  },
+  "red_blue_hive_centre_spacing_along_y": {
+   "value": 0.6477,
+   "prov": "confirmed: CM Fig 9-10 '25.5 in (64.75 cm)'; CAD +/-12.758 in"
+  },
+  "top_of_opening_above_tiles": {
+   "value": 1.6662,
+   "prov": "confirmed: CM Fig 9-10 '65.6 in (166.60 cm)'"
+  },
+  "bottom_of_opening_above_tiles": {
+   "value": 1.3589,
+   "low": 1.3462,
+   "high": 1.3716,
+   "prov": "confirmed: CM Fig 9-10 53.5 in (135.90 cm); checklist 1.13 +/-0.50 in"
+  },
+  "bottom_of_hive_above_tiles": {
+   "value": 0.7772,
+   "prov": "confirmed: CM Fig 9-10 '30.6 in (77.70 cm)'"
+  },
+  "frame_base": {
+   "width_along_y": 1.2563,
+   "depth_along_x": 0.9893,
+   "prov": "confirmed: CM 9.6.1/Fig 9-8 (49.46 in wide, 38.95 in deep at base)"
+  }
+ },
+ "field": {
+  "hive_location": "HIVE Structure at the centre of the FIELD (CM 9.6); pivot axes run toward the two ALLIANCE walls; red HIVE on the red-alliance half (y<0 in CAD terms), blue on the blue half; CELLS tip toward the audience and far walls (x in this frame).",
+  "inner_wall_x": {
+   "value": 1.795,
+   "prov": "derived: CAD perimeter glass inner face at +/-70.67 in from field centre; CM 9.2 'approximately 144 in. by 144 in.'"
+  },
+  "robot_height_limit": {
+   "value": 0.7366,
+   "start_config": 0.4572,
+   "prov": "confirmed: CM R105.A 18 x 24 x 29 in tall expansion volume after start; starting configuration 18 x 18 x 18 in"
+  },
+  "shooting_area": "No LAUNCH zone restriction found in the TU07 manual: LAUNCHING into the upward-facing CELL is allowed from anywhere on the FIELD (G417 forbids other HIVE interaction; G409 no catching from a TIPPED HIVE)."
+ },
+ "open_questions": [
+  "Damper state at rest: CAD shows both Blum 970A plungers fully extended (0.49 in exposed) with the contacting tip touching the A-Frame at 30.000 deg, i.e. first contact. Full plunger travel would add up to ~8 deg (lever 3.57 in), which the checklist (53.5 +/- 0.5 in when the damper is fully depressed) does not allow. Real stroke/end stop unverified; tilt bounds here come from the checklist only.",
+  "2D section is the cell-centre plane (most open). The roof drops to 7.61 in above the lip at the side walls (+/-10 in along y); a 3D check should use cell_opening_profile.",
+  "Three NECTAR are preloaded against the Back Skin of each upward CELL at match start (Event Field Setup Guide 11.1); not modelled as obstacles.",
+  "A-Frame legs are 3D-inclined along y; included as full projections (conservative).",
+  "Lip/roof thicknesses are from CAD; plastic part tolerances and skin sag are not published."
+ ]
+}

@@ -1,0 +1,850 @@
+\section{Flight dynamics: drag, Magnus lift and spin decay}
+\label{sec:flight}
+
+% Source of truth: src/flight.py (simulate, _aero, backspin_omega, cl_linear_capped, load_params),
+% plus the fixed-step RK4 copies of the same force model in src/feasibility.py (integrate_batch),
+% src/robustness.py (integrate3d) and src/contact.py (_acc, _rk4, free_flight).
+% Parameter values: research/params_lit.json (the default for new runs; see research/LITERATURE_SYNTHESIS.md).
+% Every worked number below was computed on 2026-10-30 by running the repo code with the system python
+% after fl.set_aero_path(fl.LIT_PARAMS_PATH).
+
+Once POLLEN leaves the shooter, nothing on the robot can change its path any more.
+Three things act on the ball in the air: gravity, air drag and the Magnus force from spin.
+This section derives, step by step, exactly what the flight solver \code{src/flight.py} computes.
+The goal is to answer two practical questions.
+How large is the spin force compared with gravity and drag?
+And does adding more backspin keep helping?
+In this model the answer to the second question is no: above a certain spin the lift coefficient
+stops growing, and extra spin changes nothing.
+
+Every aerodynamic coefficient in this section is a literature bound, not a POLLEN measurement.
+The ranges come from \code{research/params\_lit.json}.
+Pickleball and smooth-sphere data set the bounds, but no one has yet measured drag, lift or spin
+decay on a real POLLEN ball.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Frame, state and parameters}
+\label{sec:flight-frame}
+
+\paragraph{Motivation.}
+Before writing any force we need a coordinate frame and a list of what the solver tracks.
+Sign errors in the Magnus force are the most common bug in spin models, so the frame must be fixed first.
+
+\paragraph{Frame.}
+The world frame is right-handed.
+The axis $x$ is horizontal and points toward the target, $y$ is horizontal and sideways, and $z$ points up.
+The unit vectors are $\hat{\vect{x}}$, $\hat{\vect{y}}$ and $\hat{\vect{z}}$.
+All quantities are in SI units (m, s, kg, rad).
+
+\paragraph{State.}
+The solver integrates a nine-component state: the position of the ball centre $\vect{r}$ (\unit{m}),
+its velocity $\vect{v}$ (\unit{m/s}) and its spin (angular velocity) vector $\vect{\omega}$ (\unit{rad/s}).
+The ball is treated as a rigid sphere of mass $m$ (\unit{kg}) and outer radius $R$ (\unit{m}).
+
+\paragraph{Parameters.}
+Table~\ref{tab:flight-params} lists the physical constants read by \code{load\_params}.
+The acceleration of gravity is $g$ (\unit{m/s\textsuperscript{2}}), the air density is $\rho$ (\unit{kg/m\textsuperscript{3}}) and the
+kinematic viscosity of air is $\nu$ (\unit{m\textsuperscript{2}/s}).
+The frontal (cross-sectional) area of the ball is
+\begin{equation}
+  A = \pi R^2 ,
+  \label{eq:flight-area}
+\end{equation}
+in \unit{m\textsuperscript{2}}.
+With the nominal radius, $A = 3.959\times10^{-3}$\,\unit{m\textsuperscript{2}}\derived.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Physical constants used by the flight solver (\code{research/params\_lit.json}).
+    Only the nominal values of $\rho$, $\nu$, $m$ and $R$ are read by \code{load\_params}; the bounds
+    are used by the robustness sweeps.}
+  \label{tab:flight-params}
+  \small
+  \begin{tabular}{@{}lllll@{}}
+    \toprule
+    Symbol & Meaning & Unit & Nominal & Bounds \\
+    \midrule
+    $g$    & standard gravity & \unit{m/s\textsuperscript{2}} & 9.80665\confirmed & -- \\
+    $\rho$ & air density & \unit{kg/m\textsuperscript{3}} & 1.2\assumed & 1.0\assumed\ to 1.25\assumed \\
+    $\nu$  & kinematic viscosity & \unit{m\textsuperscript{2}/s} & $1.5\times10^{-5}$\assumed & $1.45\times10^{-5}$\assumed\ to $1.6\times10^{-5}$\assumed \\
+    $m$    & ball mass & \unit{kg} & 0.02495\assumed & 0.0235\assumed\ to 0.0275\assumed \\
+    $R$    & outer radius & \unit{m} & 0.0355\confirmed & 0.035\assumed\ to 0.036\assumed \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% Provenance note: m = 24.95 g is the AndyMark listing (0.055 lb), grade C vendor data in params_lit.json,
+% not the official CAD or game manual, so it is tagged \assumed (as in the contact section). The radius
+% 0.0355 m is the manual's "approximately 2.8 in (7.1 cm)", hence \confirmed.
+% Code note: src/flight.py sets AERO_PARAMS_PATH to data/aero_params.json unless the environment variable
+% PM001_AERO_PATH is set. Only the command-line entry points of feasibility.py, robustness.py and contact.py
+% call set_aero_path(LIT_PARAMS_PATH). A bare fl.load_params() or fl.default_params() (and the unit tests
+% test_hive / test_contact) therefore still read the older first-pass file, although DECISIONS.md makes
+% params_lit.json the default for new runs. All numbers in this section use params_lit.json explicitly.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item The world frame is inertial (no Coriolis or centrifugal terms) and the floor is flat.
+  \item The ball is a rigid sphere of fixed $m$ and $R$; it does not deform in flight.
+  \item $\rho$, $\nu$ and $g$ are constant during a shot.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Equations of motion}
+\label{sec:flight-eom}
+
+\paragraph{Motivation.}
+Newton's second law gives the translation; a simple decay law gives the spin.
+The only subtlety is wind: aerodynamic forces depend on how the ball moves \emph{through the air},
+not over the floor.
+
+\paragraph{Air-relative velocity.}
+Let $\vect{u}$ (\unit{m/s}) be the wind velocity.
+The air-relative velocity is
+\begin{equation}
+  \vect{v}_{\mathrm{rel}} = \vect{v} - \vect{u} .
+  \label{eq:flight-vrel}
+\end{equation}
+Both aerodynamic forces below use $\vect{v}_{\mathrm{rel}}$; gravity does not.
+The code accepts a constant $\vect{u}$ or a function $\vect{u}(t,\vect{r})$.
+The default is still air, $\vect{u}=\vect{0}$, so then $\vect{v}_{\mathrm{rel}}=\vect{v}$.
+
+\paragraph{Newton's law and the spin law.}
+Gravity is $m\vect{g}$ with $\vect{g} = -g\,\hat{\vect{z}}$.
+Adding the drag force $\vect{F}_D$ and the Magnus force $\vect{F}_M$ (both in \unit{N}) gives
+\begin{align}
+  \frac{d\vect{r}}{dt} &= \vect{v}, \label{eq:flight-eom-r}\\
+  m\,\frac{d\vect{v}}{dt} &= -m g\,\hat{\vect{z}} + \vect{F}_D(\vect{v}_{\mathrm{rel}}) + \vect{F}_M(\vect{v}_{\mathrm{rel}},\vect{\omega}), \label{eq:flight-eom-v}\\
+  \frac{d\vect{\omega}}{dt} &= -k\,\vect{\omega}. \label{eq:flight-eom-w}
+\end{align}
+Here $k$ (\unit{1/s}) is the spin-decay rate (Section~\ref{sec:flight-decay}).
+In \code{\_make\_rhs} the right-hand side is exactly this:
+the acceleration is $(\vect{F}_D+\vect{F}_M)/m$ with $g$ subtracted from the $z$ component,
+and each spin component is multiplied by $-k$.
+No other torque acts on the ball, so the spin axis never turns.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item The ball is a point mass for translation; only its spin vector is tracked for rotation.
+  \item Buoyancy and the added mass of the surrounding air are neglected.
+    The air displaced by the outer envelope has a mass of $2.25\times10^{-4}$\,\unit{kg}\derived,
+    which is $0.9$\,\%\derived\ of $m$.
+  \item The wind is prescribed; the ball's own wake and the robot's airflow are ignored.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Drag}
+\label{sec:flight-drag}
+
+\paragraph{Motivation.}
+Drag is the largest aerodynamic force on POLLEN for almost every parameter set in this model
+(the one exception, high lift with low drag, is in Section~\ref{sec:flight-scale}).
+It slows the ball and shortens the shot.
+
+\paragraph{Derivation.}
+The dynamic pressure $q$ (\unit{Pa}) is the kinetic energy of the oncoming air per unit volume.
+The drag magnitude is the dynamic pressure times the frontal area times a dimensionless drag coefficient
+$C_d$.
+Drag points straight against the air-relative velocity, so we multiply by the unit vector
+$-\vect{v}_{\mathrm{rel}}/|\vect{v}_{\mathrm{rel}}|$:
+\begin{align}
+  q &= \tfrac12\,\rho\,|\vect{v}_{\mathrm{rel}}|^2, \label{eq:flight-q}\\
+  |\vect{F}_D| &= q\,C_d\,A, \label{eq:flight-FDmag}\\
+  \vect{F}_D &= -|\vect{F}_D|\,\frac{\vect{v}_{\mathrm{rel}}}{|\vect{v}_{\mathrm{rel}}|}
+             = -\tfrac12\,\rho\,C_d\,A\,|\vect{v}_{\mathrm{rel}}|\,\vect{v}_{\mathrm{rel}}. \label{eq:flight-drag}
+\end{align}
+In the last step one factor of $|\vect{v}_{\mathrm{rel}}|$ cancels.
+The form $|\vect{v}_{\mathrm{rel}}|\,\vect{v}_{\mathrm{rel}}$ is what \code{\_aero} computes
+(\code{kd = -q*cd*vmag}, then \code{kd*vx}, \dots; note that the code's variable \code{q} is
+$\tfrac12\rho A$, not the dynamic pressure $q$ of Eq.~\eqref{eq:flight-q}).
+It has no division, so drag goes smoothly to zero as $|\vect{v}_{\mathrm{rel}}|\to 0$.
+
+\paragraph{Values.}
+$C_d$ is constant during a run.
+The bounds are $C_d = 0.33$\assumed\ (low), $0.5$\assumed\ (nominal) and $0.9$\assumed\ (high).
+The low end comes from outdoor pickleball free flight; the high end covers a spinning perforated ball,
+because smooth-sphere data show that spin raises drag.
+The solver also accepts a function $C_d(\mathrm{Re})$ or $C_d(\mathrm{Re},S)$, but no sweep uses one.
+% Code vs params_lit: params_lit.json lists an optional spin term Cd = Cd0 + dCd*min(S/0.6, 1). load_params
+% returns only the constant low/nominal/high value, so that term is not active in any run.
+
+\paragraph{Worked example.}
+Take a launch at $|\vect{v}| = 7$\,\unit{m/s}\assumed\ and elevation $60^\circ$\assumed\ in still air,
+so $\vect{v} = (3.5\assumed, 0, 6.062\derived)$\,\unit{m/s}.
+With the nominal values, $\tfrac12\rho A = 2.3755\times10^{-3}$\,\unit{kg/m}\derived, so
+$|\vect{F}_D| = 2.3755\times10^{-3}\derived \times 0.5\assumed \times 49\derived = 0.0582$\,\unit{N}\derived.
+\code{aero\_forces} returns $\vect{F}_D = (-0.02910, 0, -0.05040)$\,\unit{N}\predicted, which is the
+same magnitude pointing exactly against $\vect{v}$.
+The weight is $mg = 0.2447$\,\unit{N}\derived, so drag is $0.238$\derived\ of the weight at this speed.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item $C_d$ is constant along the path; no Reynolds-number or spin dependence is active.
+  \item No ``knuckle'' side force from the holes is modelled. \code{params\_lit.json} lists a
+    non-Magnus hole force as a scatter source, but the solver does not include it.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Reynolds number and spin parameter}
+\label{sec:flight-Re-S}
+
+\paragraph{Motivation.}
+Two dimensionless numbers describe the flow around a spinning ball.
+The Reynolds number says which flow regime we are in; the spin parameter says how fast the surface
+moves compared with the air.
+
+\paragraph{Reynolds number.}
+With the ball diameter $D = 2R$ (\unit{m}),
+\begin{equation}
+  \mathrm{Re} = \frac{|\vect{v}_{\mathrm{rel}}|\,2R}{\nu}.
+  \label{eq:flight-Re}
+\end{equation}
+For speeds of $2$\assumed, $5$\assumed, $7$\assumed\ and $10$\,\unit{m/s}\assumed\ this gives
+$\mathrm{Re} = 9.47\times10^{3}$\derived, $2.37\times10^{4}$\derived, $3.31\times10^{4}$\derived\
+and $4.73\times10^{4}$\derived.
+This is below the smooth-sphere drag crisis, but it overlaps the band where smooth-sphere lift
+data show a dip (the ``lift crisis'' recorded in \code{params\_lit.json}).
+In the default model $\mathrm{Re}$ is only a diagnostic: $C_d$ is constant and $C_L$ depends on $S$ alone.
+It is reported so that a run can be checked against the range of the literature data.
+
+\paragraph{Spin parameter.}
+A point on the equator of the ball moves at speed $|\vect{\omega}|R$ relative to the centre.
+The spin parameter is the ratio of that surface speed to the airspeed:
+\begin{equation}
+  S = \frac{|\vect{\omega}|\,R}{|\vect{v}_{\mathrm{rel}}|}.
+  \label{eq:flight-S}
+\end{equation}
+$S$ has no units.
+$S = 1$ means the surface speed equals the airspeed, which is what an ideal no-slip hood gives at the exit.
+Note that the code uses the full spin magnitude $|\vect{\omega}|$, not only the part of $\vect{\omega}$
+perpendicular to $\vect{v}_{\mathrm{rel}}$.
+
+\paragraph{Regularisation.}
+Equation~\eqref{eq:flight-S} divides by zero when the ball is at rest relative to the air.
+The code therefore uses
+\begin{equation}
+  S = \frac{|\vect{\omega}|\,R}{\sqrt{|\vect{v}_{\mathrm{rel}}|^2 + \varepsilon_v^2}},
+  \label{eq:flight-S-reg}
+\end{equation}
+with the regularisation speed $\varepsilon_v = 10^{-6}$\,\unit{m/s}\assumed.
+For any airspeed above about $10^{-3}$\,\unit{m/s}\assumed\ the difference is far below measurement accuracy.
+% HANDOFF 4A writes S = |omega| R / max(|v_rel|, eps). The code uses sqrt(|v_rel|^2 + eps^2), as here.
+
+\paragraph{Worked example.}
+For the launch above, an exit spin parameter $S_0 = 1.06$\assumed\ (the nominal hood value in
+\code{params\_lit.json}) needs
+$|\vect{\omega}_0| = S_0|\vect{v}|/R = 1.06\assumed\times 7\assumed/0.0355\confirmed = 209.0$\,\unit{rad/s}\derived,
+which is $1996$\,\unit{rpm}\derived.
+The Reynolds number is $3.31\times10^{4}$\derived.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{The Magnus force}
+\label{sec:flight-magnus}
+
+\paragraph{Motivation.}
+A spinning ball drags the air near its surface around with it.
+The flow is deflected to one side, and the ball is pushed to the other side.
+This sideways push is the Magnus force.
+It is the only way spin changes the flight path in this model.
+
+\paragraph{Magnitude and direction.}
+The Magnus force has the same dynamic-pressure form as drag, with a lift coefficient $C_L$ (no units)
+in place of $C_d$.
+Its direction is perpendicular to both the spin axis and the airflow, given by the cross product
+$\vect{\omega}\times\vect{v}_{\mathrm{rel}}$:
+\begin{align}
+  |\vect{F}_M| &= \tfrac12\,\rho\,C_L\,A\,|\vect{v}_{\mathrm{rel}}|^2, \label{eq:flight-FMmag}\\
+  \hat{\vect{n}}_M &= \frac{\vect{\omega}\times\vect{v}_{\mathrm{rel}}}{|\vect{\omega}\times\vect{v}_{\mathrm{rel}}|}, \label{eq:flight-nM}\\
+  \vect{F}_M &= |\vect{F}_M|\,\hat{\vect{n}}_M
+             = \tfrac12\,\rho\,C_L(S)\,A\,|\vect{v}_{\mathrm{rel}}|^2\,
+               \frac{\vect{\omega}\times\vect{v}_{\mathrm{rel}}}{|\vect{\omega}\times\vect{v}_{\mathrm{rel}}|}. \label{eq:flight-FM}
+\end{align}
+The unit vector $\hat{\vect{n}}_M$ carries only the direction, so the spin rate enters the force
+only through $C_L(S)$.
+This fact matters a great deal in Section~\ref{sec:flight-lift}.
+
+\paragraph{Regularised form used in the code.}
+To keep the direction finite when $\vect{\omega}\times\vect{v}_{\mathrm{rel}}\to\vect{0}$, \code{\_aero}
+computes
+\begin{equation}
+  \vect{F}_M = \tfrac12\,\rho\,C_L(S)\,A\,|\vect{v}_{\mathrm{rel}}|^2\,
+  \frac{\vect{\omega}\times\vect{v}_{\mathrm{rel}}}
+       {\sqrt{|\vect{\omega}\times\vect{v}_{\mathrm{rel}}|^2 + \varepsilon_v^2|\vect{\omega}|^2}} ,
+  \label{eq:flight-FM-reg}
+\end{equation}
+and sets $\vect{F}_M = \vect{0}$ when $\vect{\omega}=\vect{0}$, when $\vect{v}_{\mathrm{rel}}=\vect{0}$
+or when no lift law is given.
+Because of the factor $|\vect{v}_{\mathrm{rel}}|^2$ and the bounded $C_L$, the force vanishes smoothly
+at zero airspeed; there is no fictitious force from the $1/|\vect{v}_{\mathrm{rel}}|$ in $S$.
+
+\paragraph{Magnus does no work in still air.}
+A useful property follows from the cross product.
+For any vectors, $(\vect{\omega}\times\vect{v}_{\mathrm{rel}})\cdot\vect{v}_{\mathrm{rel}} = 0$, so
+\begin{equation}
+  \vect{F}_M\cdot\vect{v}_{\mathrm{rel}} = 0 .
+  \label{eq:flight-FM-perp}
+\end{equation}
+In still air $\vect{v}_{\mathrm{rel}}=\vect{v}$, so the power $\vect{F}_M\cdot\vect{v}$ is zero.
+The Magnus force bends the path but cannot speed the ball up or slow it down.
+Only gravity and drag change the speed.
+
+\paragraph{Worked example.}
+For the launch above ($S_0 = 1.06$\assumed, nominal set, so $C_L = 0.25$\derived; see below),
+\code{aero\_forces} returns $\vect{F}_M = (-0.02520, 0, 0.01455)$\,\unit{N}\predicted\ with
+$|\vect{F}_M| = 0.0291$\,\unit{N}\predicted.
+Check: $2.3755\times10^{-3}\derived\times0.25\derived\times49\derived = 0.0291$\,\unit{N}\derived.
+The dot product with $\vect{v} = (3.5, 0, 6.062)$ is
+$-0.02520\times3.5 + 0.01455\times6.062 = 0.0000$\derived\ (to four decimals), as
+Eq.~\eqref{eq:flight-FM-perp} requires.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item $C_L$ depends on $S$ only, and $S$ uses $|\vect{\omega}|$, not its component perpendicular to
+    $\vect{v}_{\mathrm{rel}}$. For pure backspin in a vertical plane the two are equal.
+  \item The direction rule $\hat{\vect{n}}_M = \operatorname{unit}(\vect{\omega}\times\vect{v}_{\mathrm{rel}})$
+    holds for every $S$: the model has no reverse (negative) Magnus effect.
+    The literature judges reverse Magnus unlikely at POLLEN's Reynolds numbers (the documented
+    negative-lift windows are at $\mathrm{Re} \ge 4.6\times10^{4}$\assumed\ and $S < 0.6$\assumed),
+    but does not exclude it, because no perforated ball has been tested above $S = 0.56$\assumed.
+    % Fixed: the draft said "unlikely at S >= 0.5"; params_lit.json Cl.negative_magnus states the Re and S
+    % windows above instead.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{The lift law and its saturation}
+\label{sec:flight-lift}
+
+\paragraph{Motivation.}
+How $C_L$ grows with spin decides whether more spin helps.
+For POLLEN the shape of $C_L(S)$ is the largest unknown in the whole project.
+
+\paragraph{Linear-capped law.}
+\code{cl\_linear\_capped} implements
+\begin{equation}
+  C_L(S) = \min\bigl(c_1 S,\; C_{L,\max}\bigr), \qquad S \ge 0,
+  \label{eq:flight-cl}
+\end{equation}
+where $c_1$ (no units) is the initial slope and $C_{L,\max}$ (no units) is the ceiling.
+The law rises linearly from zero and then stays flat.
+It has no offset, so $C_L = 0$ when $S = 0$.
+
+\paragraph{Saturation spin.}
+The two branches meet where $c_1 S = C_{L,\max}$.
+Solving for $S$ gives the saturation spin parameter
+\begin{equation}
+  S_{\mathrm{sat}} = \frac{C_{L,\max}}{c_1}.
+  \label{eq:flight-ssat}
+\end{equation}
+For $S \ge S_{\mathrm{sat}}$ the code returns $C_{L,\max}$ exactly
+(\code{return v if v < cl\_max else cl\_max}).
+Table~\ref{tab:flight-clsets} gives the four sets in \code{params\_lit.json}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Lift sets in \code{research/params\_lit.json}. All are literature bounds, not POLLEN
+    measurements. $S_{\mathrm{sat}}$ is from Eq.~\eqref{eq:flight-ssat}.}
+  \label{tab:flight-clsets}
+  \begin{tabular}{@{}lllll@{}}
+    \toprule
+    Set & $c_1$ & $C_{L,\max}$ & $S_{\mathrm{sat}}$ & Basis (summary) \\
+    \midrule
+    floor   & 0.02\assumed & 0.04\assumed & 2.00\derived & pickleball fit, Magnus-only reading \\
+    low     & 0.2\assumed  & 0.15\assumed & 0.75\derived & pickleball slope; smooth-sphere lift dip \\
+    nominal & 0.35\assumed & 0.25\assumed & 0.714\derived & between pickleball and smooth sphere \\
+    high    & 0.8\assumed  & 0.4\assumed  & 0.50\derived & smooth-sphere slope and plateau \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+% Code vs docs: docs/02_aero.md tabulates the older data/aero_params.json low set (c1 0.15, cap 0.10,
+% S_sat 0.67) and has no floor set. params_lit.json (followed here) has low = 0.2/0.15 and floor = 0.02/0.04.
+% docs/02_aero.md section 5 also says "above S ~ 0.5-0.7, extra spin buys nothing under any set"; with
+% params_lit.json that is false for the floor set (S_sat = 2.0) and the low set saturates at 0.75.
+
+\paragraph{How $S$ changes along the path.}
+With constant spin decay (Eq.~\eqref{eq:flight-decay-sol} below) the spin parameter along the path is
+\begin{equation}
+  S(t) = \frac{|\vect{\omega}_0|\,e^{-kt}\,R}{|\vect{v}_{\mathrm{rel}}(t)|}
+       = S_0\,e^{-kt}\,\frac{|\vect{v}_{\mathrm{rel}}(0)|}{|\vect{v}_{\mathrm{rel}}(t)|}.
+  \label{eq:flight-S-t}
+\end{equation}
+The ball slows on the way up, so $S$ \emph{rises} toward the apex even though the spin itself decays.
+In the worked shot below, $S$ grows from $1.06$\assumed\ at launch to $2.53$\predicted\ at the apex and
+falls back to $1.08$\predicted\ at the floor.
+
+\paragraph{Why spin above $S_{\mathrm{sat}}$ changes nothing in this model.}
+Look at where $\vect{\omega}$ enters the equations of motion.
+The translational equation~\eqref{eq:flight-eom-v} depends on $\vect{\omega}$ only through
+(i) $C_L(S)$ and (ii) the unit vector $\hat{\vect{n}}_M$.
+The spin law~\eqref{eq:flight-eom-w} scales $\vect{\omega}$ but never turns it, so $\hat{\vect{n}}_M$
+depends on the spin \emph{direction}, which is fixed at launch, and not on the spin rate.
+Now suppose $S(t) \ge S_{\mathrm{sat}}$ for the whole flight.
+Then $C_L = C_{L,\max}$ at every instant, and the Magnus force becomes
+\begin{equation}
+  \vect{F}_M = \tfrac12\,\rho\,C_{L,\max}\,A\,|\vect{v}_{\mathrm{rel}}|^2\,\hat{\vect{n}}_M
+  \qquad (S \ge S_{\mathrm{sat}}),
+  \label{eq:flight-FM-sat}
+\end{equation}
+which contains no spin rate at all.
+Two launches with the same $\vect{v}_0$ and spin axis but different spin rates, both above
+saturation for the whole flight, therefore obey identical equations from identical initial
+positions and velocities.
+They follow the same path.
+For the same reason the decay rate $k$ has no effect on the path while $S$ stays above $S_{\mathrm{sat}}$.
+
+\textbf{This is a model assumption, not a measured property of POLLEN.}
+The cap was chosen because smooth-sphere and baseball data flatten out and because no data exist for a
+perforated ball at $S \approx 1$ to $2$.
+A real ball might keep gaining lift, might show a dip (the \code{dip\_variant} table in
+\code{params\_lit.json}, which \code{src/flight.py} does not read), and might gain drag with spin,
+which the constant-$C_d$ model leaves out.
+So the model cannot support the claim that more spin always helps, and it does not make that claim.
+
+\paragraph{Worked example.}
+Release from $(0, 0, 0.4)$\,\unit{m}\assumed\ at $7$\,\unit{m/s}\assumed\ and $60^\circ$\assumed,
+nominal set, $k = 0.03$\,\unit{1/s}\assumed.
+Running \code{simulate} with $S_0 = 1.0$\assumed, $1.06$\assumed, $1.5$\assumed\ and $2.0$\assumed\
+gives the same apex at $x = 1.846$\,\unit{m}\predicted, $z = 2.155$\,\unit{m}\predicted\ and the same
+landing point $x = 3.764$\,\unit{m}\predicted.
+The largest position difference between the $S_0 = 1.0$ and $S_0 = 2.0$ paths is
+$0.0$\,\unit{m}\predicted\ in double precision, because the smallest $S$ on the $S_0 = 1.0$ path is
+$1.0$\predicted, already above $S_{\mathrm{sat}} = 0.714$\derived.
+Changing $k$ to $0.005$\assumed\ or $0.15$\,\unit{1/s}\assumed\ also leaves the path unchanged.
+Table~\ref{tab:flight-setfx} compares the sets against the same launch without spin.
+Only the floor set responds to the extra spin: its $S_{\mathrm{sat}} = 2.0$\derived\ lies above
+$S_0 = 1.06$, so with $S_0 = 1.06$ it is below its cap for most of the path (it saturates only near the
+apex, where $S$ peaks at $2.53$\predicted), while with $S_0 = 2.0$ it is capped for the whole flight.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Change caused by backspin relative to the same launch with no spin
+    ($7$\,\unit{m/s}\assumed, $60^\circ$\assumed, release height $0.4$\,\unit{m}\assumed, $C_d = 0.5$\assumed,
+    $k = 0.03$\,\unit{1/s}\assumed). $\Delta z_{\mathrm{apex}}$ is the apex height gain and
+    $\Delta x_{\mathrm{land}}$ the landing-point shift, in cm. One model run per cell; these are model
+    sensitivities, not repeatable test results.}
+  \label{tab:flight-setfx}
+  \begin{tabular}{@{}lllll@{}}
+    \toprule
+    & \multicolumn{2}{c}{$\Delta z_{\mathrm{apex}}$ (cm)} & \multicolumn{2}{c}{$\Delta x_{\mathrm{land}}$ (cm)} \\
+    \cmidrule(lr){2-3}\cmidrule(l){4-5}
+    Set & $S_0{=}1.06$ & $S_0{=}2.0$ & $S_0{=}1.06$ & $S_0{=}2.0$ \\
+    \midrule
+    floor   & $+0.74$\predicted & $+1.06$\predicted & $-0.18$\predicted & $-0.67$\predicted \\
+    low     & $+3.98$\predicted & $+3.98$\predicted & $-2.86$\predicted & $-2.86$\predicted \\
+    nominal & $+6.60$\predicted & $+6.60$\predicted & $-5.29$\predicted & $-5.29$\predicted \\
+    high    & $+10.47$\predicted & $+10.47$\predicted & $-9.72$\predicted & $-9.72$\predicted \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+The landing shift is negative: on this steep shot backspin makes the ball land slightly \emph{shorter}.
+Section~\ref{sec:flight-axis} shows why: while the ball rises, the Magnus force points up \emph{and back}.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item $C_L$ follows Eq.~\eqref{eq:flight-cl} with one of the four sets; no Reynolds-number dependence,
+    no lift dip, no offset.
+  \item The cap $C_{L,\max}$ holds for all $S$ up to the largest value reached in flight
+    (\code{params\_lit.json} gives a valid range of $0$ to $2$\assumed; apex values above that, as in the
+    example, are an extrapolation of the flat cap).
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Spin decay}
+\label{sec:flight-decay}
+
+\paragraph{Motivation.}
+Air friction on the surface slows the spin during flight.
+The model uses the simplest law that captures this.
+
+\paragraph{Derivation.}
+Equation~\eqref{eq:flight-eom-w} acts on each component separately: $d\omega_i/dt = -k\,\omega_i$.
+Separating variables, $d\omega_i/\omega_i = -k\,dt$, and integrating from $0$ to $t$ gives
+$\ln(\omega_i(t)/\omega_{i,0}) = -kt$, so
+\begin{equation}
+  \vect{\omega}(t) = \vect{\omega}_0\,e^{-kt}.
+  \label{eq:flight-decay-sol}
+\end{equation}
+All components shrink by the same factor, so the spin axis stays fixed in space.
+The time for the spin to halve is
+\begin{equation}
+  t_{1/2} = \frac{\ln 2}{k}.
+  \label{eq:flight-halflife}
+\end{equation}
+\code{flight.simulate} and \code{contact.free\_flight} integrate Eq.~\eqref{eq:flight-eom-w} as part of the
+state; \code{feasibility.integrate\_batch} and \code{robustness.integrate3d} use the closed form
+\eqref{eq:flight-decay-sol} directly.
+
+\paragraph{Values.}
+\begin{table}[htbp]
+  \centering
+  \caption{Spin-decay bounds from \code{params\_lit.json} and their effect over a
+    $1.2$\,\unit{s}\assumed\ flight.}
+  \label{tab:flight-decay}
+  \begin{tabular}{@{}llll@{}}
+    \toprule
+    Bound & $k$ (\unit{1/s}) & Spin lost in $1.2$\,\unit{s}\assumed & $t_{1/2}$ (\unit{s}) \\
+    \midrule
+    low     & 0.005\assumed & 0.6\,\%\derived  & 139\derived \\
+    nominal & 0.03\assumed  & 3.5\,\%\derived  & 23.1\derived \\
+    high    & 0.15\assumed  & 16.5\,\%\derived & 4.62\derived \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+% Code vs docs: docs/02_aero.md section 6 quotes the older aero_params.json range k = 0.01/0.05/0.30 1/s
+% and losses of 1/6/30 % over 1.2 s. params_lit.json (followed here) uses 0.005/0.03/0.15 1/s.
+
+\paragraph{Where $k$ comes from (literature model, not in the code).}
+\code{params\_lit.json} records a torque model in which the spin-down torque grows with speed.
+With a moment coefficient $C_M = \beta S$ ($\beta$ has no units), the torque is
+$\tau = -R\,\rho\,A\,C_M\,|\vect{v}|^2$ (\unit{N\,m}).
+The ball's moment of inertia is $I_b = \alpha m R^2$ (\unit{kg\,m\textsuperscript{2}}).
+The shape factor $\alpha$ has no units.
+Substituting $S = |\vect{\omega}|R/|\vect{v}|$ and $A = \pi R^2$ into $I_b\,d|\vect{\omega}|/dt = \tau$:
+\begin{align}
+  \alpha m R^2\,\frac{d|\vect{\omega}|}{dt}
+    &= -R\,\rho\,\pi R^2\,\beta\,\frac{|\vect{\omega}|R}{|\vect{v}|}\,|\vect{v}|^2
+     = -\pi\rho\beta R^4\,|\vect{v}|\,|\vect{\omega}|, \nonumber\\
+  k_{\mathrm{torque}} &= \frac{\pi\,\rho\,\beta\,R^2\,|\vect{v}|}{\alpha\,m}. \label{eq:flight-ktorque}
+\end{align}
+With $\rho = 1.2$\assumed, $R = 0.0355$\confirmed, $\alpha = 0.63$\derived\ and $m = 0.02495$\assumed\
+this is $k_{\mathrm{torque}} = 0.302\,\beta\,|\vect{v}|$\derived.
+The nominal $\beta = 0.02$\assumed\ at $5$\,\unit{m/s}\assumed\ gives $0.030$\,\unit{1/s}\derived, which is
+where the nominal constant $k$ comes from.
+The solver uses a \emph{constant} $k$; the speed-dependent form is not implemented.
+% Code vs params_lit: params_lit.json calls the speed-dependent k "preferred"; src/flight.py only
+% supports a constant spin_decay_k.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item $k$ is constant during a flight, equal to its value near $5$\,\unit{m/s}\assumed.
+  \item No torque turns the spin axis (no gyroscopic or wobble effects).
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{The backspin axis convention}
+\label{sec:flight-axis}
+
+\paragraph{Motivation.}
+``Backspin'' must be turned into a definite vector before the solver can use it.
+\code{backspin\_omega} does this, and a unit test checks that backspin on a ball moving forward
+gives an upward Magnus force.
+
+\paragraph{Definition.}
+For a launch velocity $\vect{v}_0$ and a spin rate $\omega_0$ (\unit{rad/s}; positive for backspin,
+negative for topspin),
+\begin{equation}
+  \vect{\omega}_0 = \omega_0\,\frac{\vect{v}_0\times\hat{\vect{z}}}{|\vect{v}_0\times\hat{\vect{z}}|}.
+  \label{eq:flight-axis}
+\end{equation}
+The axis is horizontal and perpendicular to the vertical plane of motion.
+It is undefined for a vertical launch; the code raises an error then.
+
+\paragraph{Derivation for a shot along $+x$.}
+Write $\vect{v}_0 = (v_0\cos\theta,\,0,\,v_0\sin\theta)$ with elevation $\theta$ (\unit{rad}).
+Using $\vect{a}\times\hat{\vect{z}} = (a_y,\,-a_x,\,0)$,
+\begin{equation}
+  \vect{v}_0\times\hat{\vect{z}} = (0,\,-v_0\cos\theta,\,0)
+  \;\Longrightarrow\;
+  \vect{\omega}_0 = -\,\omega_0\,\hat{\vect{y}} \quad (\cos\theta > 0).
+  \label{eq:flight-axis-x}
+\end{equation}
+So backspin on a ball moving toward $+x$ points along $-y$.
+Now take the cross product with the velocity (still air, so $\vect{v}_{\mathrm{rel}}=\vect{v}$).
+Using $\hat{\vect{y}}\times\hat{\vect{x}} = -\hat{\vect{z}}$ and $\hat{\vect{y}}\times\hat{\vect{z}} = \hat{\vect{x}}$,
+\begin{align}
+  \vect{\omega}_0\times\vect{v}_0
+    &= -\omega_0\,\bigl(v_0\cos\theta\;\hat{\vect{y}}\times\hat{\vect{x}} + v_0\sin\theta\;\hat{\vect{y}}\times\hat{\vect{z}}\bigr)
+     = \omega_0 v_0\,(-\sin\theta,\,0,\,\cos\theta), \nonumber\\
+  \hat{\vect{n}}_M &= (-\sin\theta,\,0,\,\cos\theta) \qquad (\omega_0 > 0). \label{eq:flight-nM-back}
+\end{align}
+This is the flight direction $(\cos\theta, 0, \sin\theta)$ turned by $+90^\circ$ in the $x$--$z$ plane.
+For a level shot ($\theta = 0$) it points straight up, which is the unit-tested convention.
+For a rising ball ($\theta > 0$) it points up \emph{and backward}; for a falling ball it points up and
+forward.
+That is why backspin shortened the steep shot in Table~\ref{tab:flight-setfx}.
+
+\paragraph{Worked example.}
+For $\theta = 60^\circ$\assumed\ and $\omega_0 = 209.0$\,\unit{rad/s}\derived, the code gives
+$\vect{\omega}_0 = (0, -209.0, 0)$\,\unit{rad/s}\derived\ and
+$\hat{\vect{n}}_M = (-0.866, 0, 0.500)$\derived.
+This matches $(-\sin 60^\circ, 0, \cos 60^\circ)$.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item The axis is set once, from $\vect{v}_0$, and stays fixed.
+    If the horizontal velocity ever reversed, the same $\vect{\omega}$ would act as topspin; the code
+    flags such paths with \code{horizontal\_reversal}.
+  \item No sidespin or axis tilt is used in the 2D baseline.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{The 2D reduction}
+\label{sec:flight-2d}
+
+\paragraph{Motivation.}
+Most sweeps run in the vertical $x$--$z$ plane, because 2D runs are far cheaper than 3D runs.
+We now show that pure backspin with no sideways wind keeps the ball in that plane, and derive the
+scalar equations the fast sweeps use.
+
+\paragraph{Derivation.}
+Take $y_0 = 0$, $v_{y,0} = 0$, $u_y = 0$ and $\vect{\omega} = \omega_y\,\hat{\vect{y}}$
+(for backspin toward $+x$, $\omega_y < 0$).
+Write $\vect{v}_{\mathrm{rel}} = (v_x, 0, v_z)$ for its components.
+Then
+\begin{equation}
+  \vect{\omega}\times\vect{v}_{\mathrm{rel}}
+  = (\omega_y v_z - 0,\; 0 - 0,\; 0 - \omega_y v_x)
+  = \omega_y\,(v_z,\,0,\,-v_x),
+  \label{eq:flight-2d-cross}
+\end{equation}
+so $|\vect{\omega}\times\vect{v}_{\mathrm{rel}}| = |\omega_y|\,|\vect{v}_{\mathrm{rel}}|$ and
+\begin{equation}
+  \vect{F}_M = \tfrac12\,\rho\,C_L\,A\,|\vect{v}_{\mathrm{rel}}|\,\operatorname{sgn}(\omega_y)\,(v_z,\,0,\,-v_x).
+  \label{eq:flight-2d-FM}
+\end{equation}
+Neither force has a $y$ component, so $v_y$ stays zero and the ball stays in the plane.
+Define the drag constant $\kappa = \rho A/(2m)$ (\unit{1/m}) and the backspin sign
+$s_b = -\operatorname{sgn}(\omega_y)$ ($s_b = +1$ for backspin toward $+x$).
+Dividing Eq.~\eqref{eq:flight-eom-v} by $m$ and inserting Eqs.~\eqref{eq:flight-drag} and \eqref{eq:flight-2d-FM}:
+\begin{align}
+  \frac{dv_x}{dt} &= -\kappa\,C_d\,|\vect{v}_{\mathrm{rel}}|\,v_x - s_b\,\kappa\,C_L(S)\,|\vect{v}_{\mathrm{rel}}|\,v_z, \label{eq:flight-2d-ax}\\
+  \frac{dv_z}{dt} &= -g - \kappa\,C_d\,|\vect{v}_{\mathrm{rel}}|\,v_z + s_b\,\kappa\,C_L(S)\,|\vect{v}_{\mathrm{rel}}|\,v_x, \label{eq:flight-2d-az}\\
+  \omega_y(t) &= \omega_{y,0}\,e^{-kt}, \qquad S = \frac{|\omega_y|\,R}{|\vect{v}_{\mathrm{rel}}|}. \label{eq:flight-2d-w}
+\end{align}
+These are the equations in \code{feasibility.integrate\_batch} (with $s_b$ given by the sign of the
+signed exit spin parameter $S_0$, positive for backspin) and in \code{contact.\_acc}
+(written with $\omega_y$ directly, backspin negative).
+The nominal value is $\kappa = 0.0952$\,\unit{1/m}\derived.
+% Code note: feasibility.integrate_batch has no wind (v_rel = v) and leaves eps_v out of the Magnus
+% direction denominator (it keeps eps_v only inside S). contact._acc includes eps_v in both. The
+% difference is below 1e-7 m on the worked shot. Sign conventions differ between modules: feasibility
+% uses a signed spin magnitude (> 0 = backspin), contact and flight use omega_y (< 0 = backspin toward +x).
+
+\paragraph{Worked example.}
+At launch ($v_x = 3.5$\assumed, $v_z = 6.062$\,\unit{m/s}\derived, $|\vect{v}| = 7$\,\unit{m/s}\assumed,
+$C_L = 0.25$\derived), the Magnus terms of Eqs.~\eqref{eq:flight-2d-ax}--\eqref{eq:flight-2d-az} are
+$-0.0952\times0.25\times7\times6.062 = -1.010$\,\unit{m/s\textsuperscript{2}}\derived\ in $x$ and
+$+0.0952\times0.25\times7\times3.5 = +0.583$\,\unit{m/s\textsuperscript{2}}\derived\ in $z$.
+Multiplying by $m$ gives $(-0.0252, 0.0146)$\,\unit{N}\derived, the same as the 3D \code{aero\_forces}
+result in Section~\ref{sec:flight-magnus}.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item Pure backspin about a horizontal axis perpendicular to the launch plane.
+  \item No sideways wind and no sideways launch component.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{How large are drag and Magnus compared with gravity?}
+\label{sec:flight-scale}
+
+\paragraph{Motivation.}
+Before trusting any trajectory map it helps to know the size of each force.
+Ratios to $g$ make that easy to read.
+
+\paragraph{Terminal speed.}
+For a ball falling straight down without spin, the speed stops growing when drag balances weight.
+Setting $\tfrac12\rho C_d A v_t^2 = mg$ and solving for the terminal speed $v_t$ (\unit{m/s}):
+\begin{equation}
+  v_t = \sqrt{\frac{2\,m\,g}{\rho\,C_d\,A}}.
+  \label{eq:flight-vt}
+\end{equation}
+For $C_d = 0.33$\assumed, $0.5$\assumed\ and $0.9$\assumed\ this gives
+$v_t = 17.67$\derived, $14.35$\derived\ and $10.70$\,\unit{m/s}\derived.
+% Code vs docs: docs/02_aero.md section 3 quotes 14.6 m/s, computed from the older aero_params.json
+% nominal Cd = 0.48. With params_lit.json Cd = 0.5 it is 14.35 m/s.
+
+\paragraph{Drag and Magnus over $g$.}
+Divide each force magnitude by $mg$ and use Eq.~\eqref{eq:flight-vt} to replace $\rho A/(2m)$ by
+$g/(C_d v_t^2)$:
+\begin{align}
+  \frac{a_D}{g} &= \frac{\rho\,C_d\,A\,|\vect{v}_{\mathrm{rel}}|^2}{2\,m\,g}
+               = \left(\frac{|\vect{v}_{\mathrm{rel}}|}{v_t}\right)^{2}, \label{eq:flight-aD}\\
+  \frac{a_M}{g} &= \frac{\rho\,C_L\,A\,|\vect{v}_{\mathrm{rel}}|^2}{2\,m\,g}
+               = \frac{C_L}{C_d}\left(\frac{|\vect{v}_{\mathrm{rel}}|}{v_t}\right)^{2}, \label{eq:flight-aM}\\
+  \frac{a_M}{a_D} &= \frac{C_L}{C_d}. \label{eq:flight-ratio}
+\end{align}
+Here $a_D$ and $a_M$ (\unit{m/s\textsuperscript{2}}) are the drag and Magnus accelerations.
+Both grow with the square of the airspeed, so both are small near the apex and largest at launch and
+at the end of a long fall.
+Because $C_L \le C_{L,\max} \le 0.4$\assumed\ and $C_d \ge 0.33$\assumed, Magnus is smaller than drag
+for every set except the high-lift, low-drag corner ($0.4/0.33 = 1.2$\derived).
+At the nominal values the ratio is at most $0.25/0.5 = 0.5$\derived.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Accelerations as a fraction of $g$ (nominal $\rho$, $m$, $R$). Drag for the three $C_d$
+    bounds; Magnus at $S = 1$\assumed\ for the four lift sets (only the floor set is below its cap there).}
+  \label{tab:flight-scale}
+  \begin{tabular}{@{}l lll llll@{}}
+    \toprule
+    & \multicolumn{3}{c}{$a_D/g$} & \multicolumn{4}{c}{$a_M/g$ at $S=1$} \\
+    \cmidrule(lr){2-4}\cmidrule(l){5-8}
+    $|\vect{v}_{\mathrm{rel}}|$ (\unit{m/s}) & $C_d$ 0.33 & 0.5 & 0.9 & floor & low & nominal & high \\
+    \midrule
+    3\assumed & 0.029\derived & 0.044\derived & 0.079\derived & 0.002\derived & 0.013\derived & 0.022\derived & 0.035\derived \\
+    5\assumed & 0.080\derived & 0.121\derived & 0.218\derived & 0.005\derived & 0.036\derived & 0.061\derived & 0.097\derived \\
+    7\assumed & 0.157\derived & 0.238\derived & 0.428\derived & 0.010\derived & 0.071\derived & 0.119\derived & 0.190\derived \\
+    9\assumed & 0.260\derived & 0.393\derived & 0.708\derived & 0.016\derived & 0.118\derived & 0.197\derived & 0.315\derived \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{Path bending.}
+What changes the shape of the path is the force component perpendicular to the velocity.
+For a path with local radius of curvature $r_c$ (\unit{m}), the normal acceleration is
+\begin{equation}
+  a_\perp = \frac{|\vect{v}|^2}{r_c}
+  \quad\Longrightarrow\quad
+  r_c = \frac{|\vect{v}|^2}{a_\perp}.
+  \label{eq:flight-curv}
+\end{equation}
+Drag has no normal component.
+Gravity contributes $-g\cos\theta$, and in still air the Magnus force is entirely normal
+(Eq.~\eqref{eq:flight-FM-perp}).
+
+\paragraph{Worked example.}
+At launch ($7$\,\unit{m/s}\assumed, $60^\circ$\assumed, nominal, $S_0 = 1.06$\assumed):
+$a_D/g = 0.238$\derived\ and $a_M/g = 0.119$\derived.
+The normal accelerations are $-4.903$\,\unit{m/s\textsuperscript{2}}\derived\ from gravity and
+$+1.166$\,\unit{m/s\textsuperscript{2}}\derived\ from Magnus, so backspin cancels $24$\,\%\derived\ of the downward
+bending at that moment.
+The radius of curvature grows from $9.99$\derived\ to $13.11$\,\unit{m}\derived.
+At the apex of the same shot ($t = 0.594$\,\unit{s}\predicted), $v_z = 0$ but the ball is still moving
+horizontally at $v_x = 2.885$\,\unit{m/s}\predicted; it is not stationary.
+There $S = 2.53$\predicted\ but $C_L$ is still capped at $0.25$\derived, and the Magnus acceleration is only
+$0.020\,g$\predicted, pointing straight up.
+Spin has its largest effect on the fast parts of the path, not at the apex.
+
+\paragraph{Wind example.}
+A $1$\,\unit{m/s}\assumed\ headwind, $\vect{u} = (-1, 0, 0)$\,\unit{m/s}\assumed, makes
+$\vect{v}_{\mathrm{rel}} = (4.5, 0, 6.062)$\,\unit{m/s}\derived\ with $|\vect{v}_{\mathrm{rel}}| = 7.55$\,\unit{m/s}\derived.
+The spin parameter falls to $S = 0.983$\derived\ (still above $S_{\mathrm{sat}}$), and
+\code{aero\_forces} gives $|\vect{F}_D| = 0.0677$\,\unit{N}\predicted\ and
+$|\vect{F}_M| = 0.0339$\,\unit{N}\predicted, both $16$\,\%\derived\ larger than in still air because
+$|\vect{v}_{\mathrm{rel}}|^2$ grew from $49$\derived\ to $57$\,\unit{m\textsuperscript{2}/s\textsuperscript{2}}\derived.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item The table uses the nominal $\rho$, $m$ and $R$; the bounds of Table~\ref{tab:flight-params}
+    scale every entry by $\rho R^2/m$, which moves it by $-27$\,\%\derived\ to $+14$\,\%\derived.
+  \item The terminal speed is for a non-spinning ball falling vertically; the shots in this project
+    stay well below it.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Numerical integration}
+\label{sec:flight-numerics}
+
+\paragraph{Motivation.}
+Equations~\eqref{eq:flight-eom-r}--\eqref{eq:flight-eom-w} have no closed-form solution once drag and lift
+are both present, so they are integrated numerically.
+The project uses two kinds of integrator, and we need to know that they agree.
+
+\paragraph{Adaptive Runge--Kutta in \code{flight.simulate}.}
+\code{simulate} calls SciPy's \code{solve\_ivp} with the Dormand--Prince 5(4) method (\code{RK45};
+\code{DOP853} is an option).
+At every step the method estimates its own local error $e_i$ for each state component $y_i$ and
+accepts the step only if
+\begin{equation}
+  \sqrt{\frac{1}{9}\sum_{i=1}^{9}\left(\frac{e_i}{a_{\mathrm{tol}} + r_{\mathrm{tol}}\,\max(|y_{n,i}|,|y_{n+1,i}|)}\right)^{2}} \le 1 ,
+  \label{eq:flight-tol}
+\end{equation}
+otherwise it retries with a smaller step.
+The defaults are $r_{\mathrm{tol}} = 10^{-9}$\assumed, $a_{\mathrm{tol}} = 10^{-11}$\assumed\ and a maximum
+step of $10^{-3}$\,\unit{s}\assumed.
+Dense output gives the state at any time.
+Event functions find the apex (first crossing of $v_z$ from positive to negative, non-terminal),
+the floor ($z$ falling through \code{z\_ground}, terminal) and optional planes.
+The apex event records $v_z = 0$ together with the nonzero $v_x$.
+
+\paragraph{Fixed-step RK4 in the sweeps.}
+The sweeps integrate many shots at once with the classical fourth-order Runge--Kutta method.
+For $\dot{\vect{y}} = \vect{f}(t,\vect{y})$ and step $h$ (\unit{s}):
+\begin{align}
+  \vect{k}_1 &= \vect{f}(t_n,\vect{y}_n), \qquad
+  \vect{k}_2 = \vect{f}\bigl(t_n+\tfrac h2,\vect{y}_n+\tfrac h2\vect{k}_1\bigr), \nonumber\\
+  \vect{k}_3 &= \vect{f}\bigl(t_n+\tfrac h2,\vect{y}_n+\tfrac h2\vect{k}_2\bigr), \qquad
+  \vect{k}_4 = \vect{f}(t_n+h,\vect{y}_n+h\vect{k}_3), \nonumber\\
+  \vect{y}_{n+1} &= \vect{y}_n + \tfrac{h}{6}\bigl(\vect{k}_1 + 2\vect{k}_2 + 2\vect{k}_3 + \vect{k}_4\bigr). \label{eq:flight-rk4}
+\end{align}
+\code{feasibility.integrate\_batch} and \code{robustness.integrate3d} write the position update in a
+shorter form.
+Since $d\vect{r}/dt = \vect{v}$, the four position slopes are $\vect{v}_n$,
+$\vect{v}_n+\tfrac h2\vect{a}_1$, $\vect{v}_n+\tfrac h2\vect{a}_2$ and $\vect{v}_n+h\vect{a}_3$, where
+$\vect{a}_j$ are the acceleration stages.
+Inserting them into Eq.~\eqref{eq:flight-rk4}:
+\begin{equation}
+  \vect{r}_{n+1}
+  = \vect{r}_n + \tfrac h6\bigl(6\vect{v}_n + h\vect{a}_1 + h\vect{a}_2 + h\vect{a}_3\bigr)
+  = \vect{r}_n + h\Bigl(\vect{v}_n + \tfrac h6(\vect{a}_1+\vect{a}_2+\vect{a}_3)\Bigr),
+  \label{eq:flight-rk4-pos}
+\end{equation}
+which is exactly the code's \code{x + dt*(vx + dt/6*(a1x + a2x + a3x))}.
+The global error of RK4 scales as
+\begin{equation}
+  \bigl|\vect{r}_h(t) - \vect{r}(t)\bigr| \approx C\,h^{4},
+  \label{eq:flight-rk4-order}
+\end{equation}
+so halving $h$ should cut the error by $2^4 = 16$.
+The sweeps use $h = 2$\,\unit{ms}\assumed\ (\code{integrate\_batch}, \code{integrate3d}) and
+$h = 1$\,\unit{ms}\assumed\ (\code{contact.free\_flight}).
+The two batch integrators store positions in single precision (\code{float32}).
+
+\paragraph{Worked check: do they agree?}
+Take the worked shot ($7$\,\unit{m/s}\assumed, $60^\circ$\assumed, $S_0 = 1.06$\assumed, nominal set,
+$1.2$\,\unit{s}\assumed\ of flight) and use \code{DOP853} with $r_{\mathrm{tol}} = 10^{-12}$\assumed\ as the
+reference.
+\begin{itemize}
+  \item \code{simulate} (RK45, default tolerances): largest position difference
+    $1.1\times10^{-15}$\,\unit{m}\predicted.
+  \item \code{contact.free\_flight} (RK4, double precision), error at $t = 1.2$\,\unit{s}:
+    $9.3\times10^{-11}$\predicted, $5.8\times10^{-12}$\predicted, $3.5\times10^{-13}$\predicted\ and
+    $2.2\times10^{-14}$\,\unit{m}\predicted\ for $h = 8$\assumed, $4$\assumed, $2$\assumed\ and
+    $1$\,\unit{ms}\assumed.
+    Successive ratios are $16.1$\derived, $16.6$\derived\ and $16.0$\derived, as
+    Eq.~\eqref{eq:flight-rk4-order} predicts.
+  \item \code{integrate\_batch} (2D) and \code{integrate3d} (3D), largest position difference:
+    $1.2\times10^{-7}$\,\unit{m}\predicted\ for every step from $8$\assumed\ to $1$\,\unit{ms}\assumed.
+    This floor is the \code{float32} rounding of positions between $2$\derived\ and $4$\,\unit{m}\derived\
+    (spacing $2.4\times10^{-7}$\,\unit{m}\derived, so a rounding error of at most
+    $1.2\times10^{-7}$\,\unit{m}\derived), not truncation error.
+    % Fixed: the draft gave 1.3e-7 m and a spacing of 4.8e-7 m "near 4 m"; this shot (launched from the
+    % origin, as integrate_batch requires) reaches at most 3.54 m in 1.2 s, where the float32 spacing is
+    % 2.4e-7 m. Recomputed 2026-10-30: 1.17e-7 to 1.19e-7 m for h = 8 to 1 ms.
+\end{itemize}
+The unit tests demand agreement better than $10^{-5}$\,\unit{m}\assumed\ (\code{tests/test\_hive.py})
+and $2\times10^{-6}$\,\unit{m}\assumed\ (\code{tests/test\_contact.py}).
+Integration error is therefore at least four orders of magnitude smaller than the millimetre- to
+centimetre-scale differences between lift sets in Table~\ref{tab:flight-setfx}.
+The parameters, not the numerics, limit what the model can say.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item The check is for one smooth free-flight path; contact events are handled separately
+    (Section on contact) and have their own step control.
+  \item Agreement between integrators shows the equations are solved correctly; it says nothing about
+    whether the equations describe a real POLLEN ball.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Summary of modelling assumptions}
+\label{sec:flight-assumptions}
+
+\begin{enumerate}
+  \item Rigid sphere, point-mass translation, inertial frame, flat floor; buoyancy and added mass
+    neglected.
+  \item Forces use the air-relative velocity $\vect{v}-\vect{u}$; the wind is prescribed.
+  \item Drag: $\vect{F}_D = -\tfrac12\rho C_d A|\vect{v}_{\mathrm{rel}}|\vect{v}_{\mathrm{rel}}$
+    with $C_d$ constant per run (bounds $0.33$\assumed\ to $0.9$\assumed); no spin-dependent drag.
+  \item Magnus: direction $\operatorname{unit}(\vect{\omega}\times\vect{v}_{\mathrm{rel}})$, magnitude
+    $\tfrac12\rho C_L A|\vect{v}_{\mathrm{rel}}|^2$; no reverse Magnus, no non-Magnus hole forces.
+  \item Lift law $C_L = \min(c_1 S, C_{L,\max})$, independent of $\mathrm{Re}$. Above
+    $S_{\mathrm{sat}} = C_{L,\max}/c_1$ extra spin changes nothing; this is a model assumption.
+  \item Spin decay $\vect{\omega} = \vect{\omega}_0 e^{-kt}$ with constant $k$; the spin axis is fixed.
+  \item Backspin axis $\operatorname{unit}(\vect{v}_0\times\hat{\vect{z}})$, so pure backspin keeps the
+    ball in the vertical launch plane.
+  \item All aerodynamic coefficients are literature bounds (pickleball and smooth-sphere data), not
+    POLLEN measurements. The worked numbers above are single model runs and say nothing about
+    shot-to-shot repeatability.
+\end{enumerate}

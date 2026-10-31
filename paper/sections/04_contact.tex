@@ -1,0 +1,694 @@
+\section{Contact mechanics: rim and interior bounces}
+\label{sec:contact}
+
+% Source of truth: src/contact.py (impact, impact_batch, spin_kick_direction, ball_props,
+% simulate_batch). Secondary: docs/05_contact.md. Where the two disagree, the text follows the
+% code and a "CODE/DOC" comment records the difference.
+
+\paragraph{Motivation.}
+A ball that clears the HIVE cleanly is only half the story. On the unfavourable side the CELL
+mouth faces away from the shooter, so many shots touch something: the lower lip (the
+\emph{far rim}), the end of the roof (the \emph{near rim}), or the CELL floor just after a clean
+entry. Each touch is a short, hard collision that can change both the ball's velocity and its
+spin. Backspin enters the story here a second time: in the air it bends the path through the
+Magnus force (an earlier section), and at a contact it changes how hard friction grips. This
+section derives, one step at a time, the collision law that \code{src/contact.py} uses
+(functions \code{impact} and \code{impact\_batch}), proves that it never creates energy, works
+out which way backspin pushes the ball at each kind of contact, and explains how
+\code{simulate\_batch} turns many such collisions into one of six outcomes. It ends with the
+model's explanation of why backspin can \emph{lower} retention on the unfavourable side.
+
+Every retention number in this section is a model output (\predicted). The collision
+coefficients for POLLEN on the HIVE skin have never been measured; they are swept over assumed
+ranges.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Frame, contact normal and contact-point velocity}
+\label{sec:contact-frame}
+
+We work in the 2D \emph{shot frame} shared by \code{flight.py}, \code{hive.py} and
+\code{contact.py}: $x$ is horizontal toward the target, $z$ is up, and $y$ completes a
+right-handed set, so $\hat{\vect{x}}\times\hat{\vect{z}} = -\hat{\vect{y}}$. The ball centre is
+$\vect{c}=(x,z)$ in \unit{m}, its velocity is $\vect{v}=(v_x,v_z)$ in \unit{m/s}, and its spin
+is the single scalar $\omega=\omega_y$ in \unit{rad/s} (the spin vector is
+$\vect{\omega}=\omega\,\hat{\vect{y}}$). The ball has mass $m$ (\unit{kg}), radius $R$
+(\unit{m}) and moment of inertia $I$ (\unit{kg\,m\textsuperscript{2}}) about its centre.
+
+\paragraph{Which sign is backspin?}
+For any in-plane velocity, the cross product with a $y$-directed spin is
+\begin{equation}
+  \vect{\omega}\times\vect{v}
+  = \omega\,\hat{\vect{y}}\times\left(v_x\hat{\vect{x}} + v_z\hat{\vect{z}}\right)
+  = \omega\left(v_z,\,-v_x\right),
+  \label{eq:contact-omega-cross-v}
+\end{equation}
+using $\hat{\vect{y}}\times\hat{\vect{x}}=-\hat{\vect{z}}$ and
+$\hat{\vect{y}}\times\hat{\vect{z}}=\hat{\vect{x}}$. For a ball moving toward $+x$
+($v_x>0$, $v_z=0$) the Magnus direction $\vect{\omega}\times\vect{v}=(0,-\omega v_x)$ points up
+only when $\omega<0$. So \textbf{backspin on a $+x$ ball is $\omega<0$}, matching
+\code{flight.backspin\_omega}. The dimensionless spin ratio is
+\begin{equation}
+  S = \frac{|\omega|\,R}{|\vect{v}|},
+  \label{eq:contact-spin-ratio}
+\end{equation}
+and the sweeps build a backspin state from it as $\omega = -S\,|\vect{v}|/R$
+(\code{launch\_states}, \code{incidence\_states}).
+% CODE/DOC: simulate_batch stores first_S = omega R/|v| WITH its sign (negative for backspin),
+% while docs/05 and the CSV headers define S = |omega| R/|v| > 0 for backspin.
+
+\paragraph{Contact normal and tangent.}
+The HIVE section is a list of straight segments (walls, lips, floor, roof). For a ball centre
+$\vect{c}$, let $\vect{q}$ be the closest point on the nearest segment (it may be an end point,
+that is, a corner or edge). A contact exists when $|\vect{c}-\vect{q}|<R$. The code defines
+\begin{equation}
+  \vect{n} = \frac{\vect{c}-\vect{q}}{|\vect{c}-\vect{q}|}
+  \qquad\text{(unit normal, pointing from the obstacle to the ball centre)},
+  \label{eq:contact-normal}
+\end{equation}
+so a flat face and a sharp corner are handled by the same formula. The unit tangent is
+\begin{equation}
+  \vect{t} = \hat{\vect{y}}\times\vect{n}
+  = \hat{\vect{y}}\times\left(n_x\hat{\vect{x}}+n_z\hat{\vect{z}}\right)
+  = \left(n_z,\,-n_x\right),
+  \label{eq:contact-tangent}
+\end{equation}
+which is $\vect{n}$ rotated by $90^\circ$ clockwise in the $x$--$z$ plane. One useful identity
+follows directly: $(\vect{n}\times\vect{t})_y = n_z t_x - n_x t_z = n_z^2+n_x^2 = 1$.
+
+\paragraph{Velocity of the contact point.}
+The point of the ball that touches the obstacle sits at $\vect{r}=-R\,\vect{n}$ from the centre.
+Its velocity is the centre velocity plus the rotational part. Using
+\eqref{eq:contact-omega-cross-v} with $\vect{r}$ in place of $\vect{v}$,
+\begin{align}
+  \vect{v}_c &= \vect{v} + \vect{\omega}\times\vect{r}
+  = \vect{v} + \omega\,(r_z,\,-r_x)
+  = \vect{v} + \omega\,(-R n_z,\; R n_x) \nonumber\\
+  &= \vect{v} - R\,\omega\,\vect{t}.
+  \label{eq:contact-contact-velocity}
+\end{align}
+Projecting on $\vect{n}$ and $\vect{t}$ gives the two numbers the impact law uses:
+\begin{align}
+  v_{cn} &= \vect{v}\cdot\vect{n}
+  && \text{normal approach speed, \unit{m/s}; } v_{cn}<0 \text{ means approaching,}
+  \label{eq:contact-vcn}\\
+  v_{ct} &= \vect{v}\cdot\vect{t} - R\,\omega
+  && \text{slip velocity of the contact point, \unit{m/s}.}
+  \label{eq:contact-vct}
+\end{align}
+Spin appears \emph{only} in $v_{ct}$. This single fact drives everything in
+Section~\ref{sec:contact-kick}.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Ball inertia: the hollow-shell factor \texorpdfstring{$\alpha$}{alpha}}
+\label{sec:contact-alpha}
+
+The code writes the moment of inertia as
+\begin{equation}
+  I = \alpha\, m R^2 ,
+  \label{eq:contact-alpha}
+\end{equation}
+with the dimensionless factor $\alpha$ read from the active parameter file
+(\code{ball\_props}: key \code{I\_b.alpha\_I\_over\_mR2}). POLLEN is a thin perforated
+polyethylene shell, not a solid ball. For a uniform spherical shell with outer radius $R_o$ and
+inner radius $R_i$ (both \unit{m}), subtracting a solid sphere of radius $R_i$ from one of
+radius $R_o$ (each with $I=\tfrac{2}{5}MR^2$ and mass proportional to $R^3$) gives
+\begin{equation}
+  I_{\text{shell}} = \frac{2}{5}\,m\,\frac{R_o^5-R_i^5}{R_o^3-R_i^3}
+  \quad\Longrightarrow\quad
+  \alpha = \frac{2}{5}\,\frac{R_o^5-R_i^5}{\left(R_o^3-R_i^3\right)R_o^2}.
+  \label{eq:contact-shell}
+\end{equation}
+Two limits check the formula. For $R_i\to 0$ (solid ball) $\alpha\to 2/5$. For
+$R_i\to R_o$ (very thin wall) both differences vanish; dividing the derivatives,
+$\tfrac{2}{5}\cdot 5R_o^4/(3R_o^2\cdot R_o^2) = 2/3$:
+\begin{equation}
+  \lim_{R_i\to0}\alpha = \tfrac{2}{5},
+  \qquad
+  \lim_{R_i\to R_o}\alpha = \tfrac{2}{3}.
+  \label{eq:contact-alpha-limits}
+\end{equation}
+
+\paragraph{Worked example.}
+With $R_o=35.5$\,\unit{mm}\confirmed{} and a wall of $1.78$\,\unit{mm}\assumed{},
+\eqref{eq:contact-shell} gives $\alpha=0.634$\derived; with a $2.1$\,\unit{mm}\assumed{} wall,
+$\alpha=0.629$\derived. The model uses $\alpha=0.63$\derived{} with bounds
+$0.60$\assumed{} (thicker or uneven wall, seam) and $0.667$\derived{} (thin-shell limit).
+\code{ball\_props} applies these bounds through $\alpha$ only and keeps $m$ and $R$ nominal:
+$m=24.95$\,\unit{g}\assumed{}, $R=35.5$\,\unit{mm}\confirmed{}, so
+$I=1.981\times10^{-5}$\,\unit{kg\,m\textsuperscript{2}}\derived.
+% CODE/DOC: docs/05 lists m as "confirmed"; research/params_lit.json grades it C (vendor listing,
+% not the manual or official CAD), so it is tagged \assumed here.
+These numbers are the same in \code{research/params\_lit.json} (the current default) and in the
+older \code{data/aero\_params.json}, so the impact law below does not depend on which file is
+active.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{The impact law, step by step}
+\label{sec:contact-law}
+
+\paragraph{Model.}
+The collision is treated as instantaneous: a finite impulse
+$\vect{P}=P_n\vect{n}+P_t\vect{t}$ (\unit{N\,s}) acts at the contact point during a vanishing
+time, so gravity, drag and Magnus do nothing during it. The obstacle is rigid and fixed (the
+HIVE rests on its damper stop). This is the Walton/Brach rigid-body impulse model used by Cross
+and by Allen for bouncing balls.
+
+\paragraph{Step 1: Newton's laws in impulse form.}
+Linear and angular momentum change by the impulse and its moment about the centre:
+\begin{align}
+  m\,\Delta\vect{v} &= \vect{P} = P_n\vect{n} + P_t\vect{t},
+  \label{eq:contact-newton-lin}\\
+  I\,\Delta\omega &= \left(\vect{r}\times\vect{P}\right)_y
+  = -R\left(\vect{n}\times(P_n\vect{n}+P_t\vect{t})\right)_y
+  = -R\,P_t\left(\vect{n}\times\vect{t}\right)_y
+  = -R\,P_t .
+  \label{eq:contact-newton-ang}
+\end{align}
+The normal impulse has no lever arm (it passes through the centre), and
+$(\vect{n}\times\vect{t})_y=1$ from Section~\ref{sec:contact-frame}. This is the \textbf{torque
+sign} used in the code (\code{w2 = w - R*P\_t/I}): a positive tangential impulse (along
+$\vect{t}$) makes $\omega$ more negative.
+
+\paragraph{Step 2: normal impulse from restitution.}
+Taking the $\vect{n}$ component of \eqref{eq:contact-newton-lin}, and noting that $\omega$ does not
+enter $v_{cn}$,
+\begin{equation}
+  v_{cn}' = v_{cn} + \frac{P_n}{m}.
+  \label{eq:contact-normal-update}
+\end{equation}
+The coefficient of restitution $e$ (dimensionless, $0\le e\le1$) is \emph{defined} by
+$v_{cn}'=-e\,v_{cn}$. Substituting into \eqref{eq:contact-normal-update} and solving,
+\begin{equation}
+  P_n =
+  \begin{cases}
+    -(1+e)\,m\,v_{cn}, & v_{cn}<0 \ \text{(approaching)},\\
+    0, & v_{cn}\ge 0 \ \text{(separating: no impulse)}.
+  \end{cases}
+  \label{eq:contact-Pn}
+\end{equation}
+Since $v_{cn}<0$ whenever an impulse acts, $P_n\ge0$: the obstacle can only push.
+
+\paragraph{Step 3: how the tangential impulse changes the slip.}
+The $\vect{t}$ component of \eqref{eq:contact-newton-lin} and \eqref{eq:contact-newton-ang} give
+$\Delta(\vect{v}\cdot\vect{t}) = P_t/m$ and $\Delta\omega=-RP_t/I$. Insert both into
+\eqref{eq:contact-vct}:
+\begin{align}
+  \Delta v_{ct} &= \frac{P_t}{m} - R\left(-\frac{R P_t}{I}\right)
+  = P_t\left(\frac{1}{m}+\frac{R^2}{I}\right)
+  = P_t\left(\frac{1}{m}+\frac{1}{\alpha m}\right)
+  = \frac{P_t}{m_t},
+  \label{eq:contact-slip-change}\\
+  m_t &= \frac{m\,\alpha}{1+\alpha}
+  \qquad\text{(tangential effective mass, \unit{kg}).}
+  \label{eq:contact-mt}
+\end{align}
+The tangential effective mass is smaller than $m$ because a tangential push both slows the
+centre and spins the ball; the two effects add.
+
+\paragraph{Step 4: the grip (``stick'') candidate.}
+If friction is strong enough, the code lets the contact point leave with slip
+$v_{ct}' = -e_t\,v_{ct}$, where $e_t$ (dimensionless, $0\le e_t\le 1$) is the tangential
+restitution. $e_t=0$ means the ball leaves exactly rolling; $e_t>0$ means the slip reverses
+(the ball ``grips and springs back''). From \eqref{eq:contact-slip-change},
+\begin{equation}
+  P_t^{*} = -(1+e_t)\,m_t\,v_{ct}.
+  \label{eq:contact-Pstar}
+\end{equation}
+
+\paragraph{Step 5: Coulomb friction decides stick or slip.}
+Friction cannot exceed $\mu P_n$, with $\mu$ the Coulomb friction coefficient
+(dimensionless). The code chooses
+\begin{equation}
+  P_t =
+  \begin{cases}
+    P_t^{*}, & |P_t^{*}| \le \mu P_n \quad\text{(``stick'', grip regime)},\\
+    -\mu P_n\,\operatorname{sgn}(v_{ct}), & |P_t^{*}| > \mu P_n \quad\text{(``slip'', Coulomb sliding throughout)}.
+  \end{cases}
+  \label{eq:contact-coulomb}
+\end{equation}
+Because $\operatorname{sgn}(P_t^*)=-\operatorname{sgn}(v_{ct})$, the two branches are one
+saturation (``clip'') function of the slip:
+\begin{equation}
+  P_t = -\operatorname{clip}\!\left((1+e_t)\,m_t\,v_{ct},\; -\mu P_n,\; +\mu P_n\right).
+  \label{eq:contact-clip}
+\end{equation}
+Dividing the stick test by $m_t|v_{cn}|$ and using \eqref{eq:contact-Pn} and \eqref{eq:contact-mt}, a
+contact grips when
+\begin{equation}
+  \frac{|v_{ct}|}{|v_{cn}|} \le \frac{\mu\,(1+e)\,(1+\alpha)}{(1+e_t)\,\alpha}.
+  \label{eq:contact-stick-ratio}
+\end{equation}
+% CODE/DOC: the code labels the grip branch "stick" even when e_t > 0, where the contact-point
+% slip reverses rather than stopping; only for e_t = 0 is it true sticking (rolling exit).
+
+\paragraph{Step 6: the post-impact state.}
+Putting the pieces together, \code{impact\_batch} returns
+\begin{align}
+  \vect{v}' &= \vect{v} + \frac{P_n\,\vect{n} + P_t\,\vect{t}}{m},
+  \label{eq:contact-vpost}\\
+  \omega' &= \omega - \frac{R\,P_t}{I},
+  \label{eq:contact-wpost}
+\end{align}
+and, from \eqref{eq:contact-normal-update} and \eqref{eq:contact-slip-change}, the contact-point velocities
+after impact are
+\begin{equation}
+  v_{cn}' = -e\,v_{cn},
+  \qquad
+  v_{ct}' =
+  \begin{cases}
+    -e_t\,v_{ct}, & \text{stick},\\
+    v_{ct} - \mu P_n\,\operatorname{sgn}(v_{ct})/m_t, & \text{slip}.
+  \end{cases}
+  \label{eq:contact-post-contact}
+\end{equation}
+
+\paragraph{Two checks.}
+(i) With $\mu=0$ the clip range shrinks to the single value $0$, so $P_t=0$ and $\omega'=\omega$: a frictionless
+surface cannot change spin. (ii) A ball sliding without spin ($\omega=0$) onto a flat floor
+($\vect{n}=\hat{\vect{z}}$, $\vect{t}=\hat{\vect{x}}$) with enough friction and $e_t=0$ gets
+$P_t=-m_t v_x$, so
+\begin{equation}
+  v_x' = v_x - \frac{m_t}{m}v_x = v_x\left(1-\frac{\alpha}{1+\alpha}\right) = \frac{v_x}{1+\alpha},
+  \label{eq:contact-rolling-limit}
+\end{equation}
+the textbook $5/7$ for a solid sphere ($\alpha=2/5$). Both are checked by the unit tests in the file \code{tests/test\_contact.py}, which also
+confirm that a ball on an incline accelerates at $g\sin\theta/(1+\alpha)$.
+
+\paragraph{Worked example: the CELL floor.}
+For POLLEN, $m_t/m=\alpha/(1+\alpha)=0.3865$\derived{} and $m_t=9.643$\,\unit{g}\derived. Take a
+ball that has just entered the CELL cleanly and meets the floor at speed $v_i=5$\,\unit{m/s}\assumed{}
+descending at $\varphi=76^\circ$\assumed{} below horizontal, so
+$\vect{v}=(1.2096,\,-4.8515)$\,\unit{m/s}\derived. The floor rises toward the mouth at the HIVE
+tilt of $30^\circ$\confirmed, so its normal is $\vect{n}=(-0.5,\,0.866)$\derived{} and
+$\vect{t}=(0.866,\,0.5)$\derived{} (pointing along the floor toward the mouth). Use
+$e=0.6$\assumed, $\mu=0.4$\assumed, $e_t=0$\assumed. Running \code{contact.impact} gives
+Table~\ref{tab:contact-floor}. Backspin $S=1$\assumed{} means $\omega=-140.85$\,\unit{rad/s}\derived.
+The grip limit \eqref{eq:contact-stick-ratio} is $1.656$\derived; both cases are below it and stick.
+
+\begin{table}[ht]
+  \centering
+  \caption{One floor impact computed with \code{contact.impact} (POLLEN, $e=0.6$\assumed,
+  $\mu=0.4$\assumed, $e_t=0$\assumed, $\varphi=76^\circ$\assumed, $v_i=5$\,\unit{m/s}\assumed).}
+  \label{tab:contact-floor}
+  \begin{tabular}{lrr}
+    \toprule
+    Quantity & $S=0$\assumed & $S=1$\assumed \\
+    \midrule
+    $v_{cn}$ (\unit{m/s}) & $-4.806$\derived & $-4.806$\derived \\
+    $v_{ct}$ (\unit{m/s}) & $-1.378$\derived & $3.622$\derived \\
+    $P_n$ (\unit{mN\,s}) & $191.9$\predicted & $191.9$\predicted \\
+    $P_t^{*}$ (\unit{mN\,s}) & $13.3$\predicted & $-34.9$\predicted \\
+    $\mu P_n$ (\unit{mN\,s}) & $76.7$\predicted & $76.7$\predicted \\
+    regime & stick & stick \\
+    $\vect{v}'$ (\unit{m/s}) & $(-2.174,\ 2.075)$\predicted & $(-3.848,\ 1.108)$\predicted \\
+    $\vect{v}'\cdot\vect{t}$ (\unit{m/s}) & $-0.846$\predicted & $-2.778$\predicted \\
+    $\omega'$ (\unit{rad/s}) & $-23.8$\predicted & $-78.3$\predicted \\
+    kinetic energy before $\to$ after (\unit{mJ}) & $311.9\to118.3$\predicted & $508.4\to260.7$\predicted \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Both balls rebound off the floor with the same normal speed $2.884$\,\unit{m/s}\predicted. The
+difference is along the floor: without spin the ball drifts toward the back wall at
+$0.846$\,\unit{m/s}\predicted; with backspin it is driven there at $2.778$\,\unit{m/s}\predicted.
+Section~\ref{sec:contact-why} shows why that matters.
+
+\paragraph{Worked example: a slipping far-rim contact.}
+At the lower-lip corner the normal depends on where the ball touches. Take
+$\vect{n}=(-\sin c,\,\cos c)$ with $c=15^\circ$\assumed, the same incoming
+$\vect{v}$ and $S=1$\assumed, but $\mu=0.2$\assumed. Then $v_{ct}/v_{cn}$ has magnitude
+$0.983$\derived{} against a grip limit of $0.828$\derived, so the contact \emph{slips}:
+$P_t=-\mu P_n=-39.9$\,\unit{mN\,s}\predicted,
+$\vect{v}'=(-2.406,\,2.461)$\,\unit{m/s}\predicted, $\omega'=-69.3$\,\unit{rad/s}\predicted,
+and the contact point still slips at $v_{ct}'=0.774$\,\unit{m/s}\predicted{} as it leaves.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Energy can only be lost}
+\label{sec:contact-energy}
+
+The kinetic energy of the ball (\unit{J}) is
+\begin{equation}
+  T = \tfrac12 m|\vect{v}|^2 + \tfrac12 I\omega^2
+    = \tfrac12 m\,(\vect{v}\cdot\vect{n})^2 + \tfrac12 m\,(\vect{v}\cdot\vect{t})^2 + \tfrac12 I\omega^2,
+  \label{eq:contact-T}
+\end{equation}
+because $\vect{n}$ and $\vect{t}$ are orthonormal.
+
+\paragraph{Proposition.}
+For $0\le e\le 1$, $0\le e_t\le 1$ and $\mu\ge0$, every impact of \eqref{eq:contact-Pn}--\eqref{eq:contact-wpost}
+satisfies $T'\le T$.
+
+\paragraph{Proof.}
+For any quantity, $a'^2-a^2=(a'-a)(a'+a)$. Apply this to each term of \eqref{eq:contact-T}, using
+$\Delta(\vect{v}\cdot\vect{n})=P_n/m$, $\Delta(\vect{v}\cdot\vect{t})=P_t/m$ and
+$\Delta\omega=-RP_t/I$:
+\begin{align}
+  T'-T
+  &= \tfrac12 m\,\frac{P_n}{m}\left(v_{cn}+v_{cn}'\right)
+   + \tfrac12 m\,\frac{P_t}{m}\left(\vect{v}\cdot\vect{t}+\vect{v}'\cdot\vect{t}\right)
+   + \tfrac12 I\left(-\frac{RP_t}{I}\right)\left(\omega+\omega'\right) \nonumber\\
+  &= \underbrace{\tfrac12 P_n\left(v_{cn}+v_{cn}'\right)}_{\Delta T_n}
+   + \underbrace{\tfrac12 P_t\left(v_{ct}+v_{ct}'\right)}_{\Delta T_t},
+  \label{eq:contact-dT-split}
+\end{align}
+where the last two tangential terms combined into the contact-point slip \eqref{eq:contact-vct},
+because $(\vect{v}\cdot\vect{t}-R\omega)+(\vect{v}'\cdot\vect{t}-R\omega')=v_{ct}+v_{ct}'$. For a
+sphere the normal and tangential problems therefore decouple.
+
+\emph{Normal part.} With $v_{cn}'=-ev_{cn}$ and \eqref{eq:contact-Pn},
+\begin{equation}
+  \Delta T_n = \tfrac12\left(-(1+e)m v_{cn}\right)(1-e)\,v_{cn}
+  = -\tfrac12\,(1-e^2)\,m\,v_{cn}^2 \;\le\; 0 .
+  \label{eq:contact-dTn}
+\end{equation}
+
+\emph{Tangential part, stick.} With $P_t=P_t^*$ and $v_{ct}'=-e_tv_{ct}$,
+\begin{equation}
+  \Delta T_t = \tfrac12\left(-(1+e_t)m_t v_{ct}\right)(1-e_t)\,v_{ct}
+  = -\tfrac12\,(1-e_t^2)\,m_t\,v_{ct}^2 \;\le\; 0 .
+  \label{eq:contact-dTt-stick}
+\end{equation}
+
+\emph{Tangential part, slip.} Write $L=\mu P_n\ge0$ and $s=\operatorname{sgn}(v_{ct})$, so
+$P_t=-Ls$ and, from \eqref{eq:contact-post-contact}, $v_{ct}+v_{ct}'=2v_{ct}-Ls/m_t$. Then
+\begin{align}
+  \Delta T_t &= \tfrac12(-Ls)\left(2v_{ct}-\frac{Ls}{m_t}\right)
+  = -L|v_{ct}| + \frac{L^2}{2m_t}
+  = L\left(\frac{L}{2m_t}-|v_{ct}|\right) \nonumber\\
+  &\le L\left(\frac{(1+e_t)|v_{ct}|}{2}-|v_{ct}|\right)
+  = -\tfrac12\,(1-e_t)\,L\,|v_{ct}| \;\le\; 0,
+  \label{eq:contact-dTt-slip}
+\end{align}
+where the inequality uses the slip condition $L<|P_t^*|=(1+e_t)m_t|v_{ct}|$ and $L\ge0$ (it is
+an equality when $L=0$, for example $\mu=0$).
+Adding \eqref{eq:contact-dTn} and \eqref{eq:contact-dTt-stick} or \eqref{eq:contact-dTt-slip} gives
+$T'-T\le0$. \hfill$\square$
+
+\paragraph{Worked check.}
+In Table~\ref{tab:contact-floor} the floor impact removes $193.6$\,\unit{mJ}\predicted{} ($S=0$) and
+$247.7$\,\unit{mJ}\predicted{} ($S=1$). From \eqref{eq:contact-dTn} the normal part alone is
+$\tfrac12(1-0.6^2)\,m\,(4.806)^2=184.4$\,\unit{mJ}\predicted{} in both cases; the rest is
+friction, which is larger with backspin because there is more slip to remove. The slipping
+far-rim example loses $313.0$\,\unit{mJ}\predicted.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Which way does backspin push? The kick direction}
+\label{sec:contact-kick}
+
+Compare two balls that reach the same contact with the same $\vect{v}$ and $\vect{n}$, one
+without spin and one with backspin $\omega=-|\omega|<0$. The normal impulse \eqref{eq:contact-Pn} is
+identical, and by \eqref{eq:contact-vct} the only difference is
+\begin{equation}
+  v_{ct}^{\text{spin}} = v_{ct}^{0} + R|\omega| .
+  \label{eq:contact-vct-shift}
+\end{equation}
+By \eqref{eq:contact-clip}, $P_t$ is a non-increasing function of $v_{ct}$, with slope at most
+$(1+e_t)m_t$ in magnitude and total range $2\mu P_n$. Hence
+\begin{equation}
+  -\min\!\left\{(1+e_t)\,m_t R|\omega|,\; 2\mu P_n\right\}
+  \;\le\; \Delta P_t \equiv P_t^{\text{spin}}-P_t^{0} \;\le\; 0 ,
+  \label{eq:contact-dPt-bound}
+\end{equation}
+and $\Delta P_t=0$ exactly when both balls slide the same way (both on the same flat part of the
+clip). By \eqref{eq:contact-vpost} the difference in outgoing velocity is
+\begin{equation}
+  \vect{v}'^{\,\text{spin}}-\vect{v}'^{\,0} = \frac{\Delta P_t}{m}\,\vect{t}
+  = \frac{|\Delta P_t|}{m}\,\vect{k},
+  \qquad
+  \vect{k} = -\vect{t} = \left(-n_z,\; n_x\right),
+  \label{eq:contact-kick}
+\end{equation}
+which is \code{spin\_kick\_direction}: $\vect{n}$ rotated by $+90^\circ$. Its size is between
+$0$ and $\min\{(1+e_t)m_tR|\omega|,\,2\mu P_n\}/m$.
+% CODE/DOC: the contact.py docstring and docs/05 give the upper bound as m_t R|w|/m. That is the
+% e_t = 0 case only; the code's law gives min((1+e_t) m_t R|w|, 2 mu P_n)/m.
+
+\paragraph{Far rim (lower lip).}
+When the ball's lower-front surface catches the lower-lip corner on the way in, the centre is
+up and to the left of the corner: $\vect{n}=(-\sin c,\,\cos c)$, with $c$ in the corner's cone
+of normals. Then
+\begin{equation}
+  \vect{k} = \left(-\cos c,\; -\sin c\right),
+  \label{eq:contact-kick-far}
+\end{equation}
+which points back toward the shooter and down. The CELL's inward axis is
+$-\vect{n}_{\text{out}}=(-\cos30^\circ,-\sin30^\circ)$, so at $c=30^\circ$\derived{} the kick is
+exactly into the CELL: the ``check'' effect. Repeating the far-rim worked example
+($c=15^\circ$\assumed) with $\mu=0.4$\assumed{} instead of $0.2$\assumed, both runs stick, and the extra velocity is
+$1.93$\,\unit{m/s}\predicted{} along $\vect{k}=(-0.966,\,-0.259)$\derived. The component of
+$\vect{v}'$ along $\vect{n}_{\text{out}}$ changes from $+0.725$\,\unit{m/s}\predicted{} (moving
+away from the mouth) to $-1.142$\,\unit{m/s}\predicted{} (moving into it).
+
+\paragraph{CELL floor.}
+The floor normal $(-\sin30^\circ,\cos30^\circ)$ is the $c=30^\circ$ case of
+\eqref{eq:contact-kick-far}, so the backspin kick on the floor is along the inward axis, toward the
+back wall. In Table~\ref{tab:contact-floor} it adds $1.93$\,\unit{m/s}\predicted{} toward the back wall,
+which equals the stick-case value $m_tR|\omega|/m = 0.3865\times5 = 1.93$\,\unit{m/s}\derived.
+
+\paragraph{Near rim (roof end, upper lip).}
+A ball that strikes the roof-end corner from above or behind (a shot slightly short) has
+$\vect{n}\approx(-\sin a,\cos a)$ and receives the same backward-and-down kick. Geometrically
+that is backward \emph{around the corner}, over the roof, \emph{away} from the mouth, because
+the mouth lies on the $+x$ side of that corner.
+% CODE/DOC: contact.py docstring says the near-rim case is a shot "slightly short"; the table in
+% docs/05 section 1.2 says "slightly long". The geometry (roof end at smaller x than the mouth,
+% ball travelling +x) supports "short", which is used here.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{From one impact to a trajectory}
+\label{sec:contact-sim}
+
+\code{simulate\_batch} advances many balls at once with a fixed-step fourth-order Runge--Kutta
+integrator (step $\Delta t=1$\,\unit{ms}\assumed) using the same drag, Magnus and spin-decay
+model as \code{flight.py}. After each step it looks for a contact:
+\begin{enumerate}
+  \item \textbf{Detection.} If the nearest-segment distance $d=|\vect{c}-\vect{q}|$ at the end
+  of the step satisfies $d<R$, the ball has penetrated.
+  \item \textbf{Locating the contact.} The code bisects the straight chord between the step's
+  start state $\vect{Y}_0$ and end state $\vect{Y}_1$ ($22$\assumed{} halvings) for the
+  largest fraction $f$ that does not penetrate,
+  \begin{equation}
+    f = \max\left\{ f\in[0,1] : d\!\left(\vect{c}_0 + f(\vect{c}_1-\vect{c}_0)\right)\ge R \right\},
+    \qquad \vect{Y}_c = \vect{Y}_0 + f\,(\vect{Y}_1-\vect{Y}_0),
+    \label{eq:contact-bisect}
+  \end{equation}
+  where $\vect{Y}=(x,z,v_x,v_z,\omega)$ and the velocity and spin are interpolated linearly too.
+  \item \textbf{Impact.} \eqref{eq:contact-Pn}--\eqref{eq:contact-wpost} are applied at $\vect{Y}_c$ with
+  \begin{equation}
+    e_{\text{eff}} =
+    \begin{cases}
+      0, & -v_{cn} < V_{\text{rest}},\\
+      e, & \text{otherwise},
+    \end{cases}
+    \qquad V_{\text{rest}} = 0.05\ \text{\unit{m/s}\assumed},
+    \label{eq:contact-eeff}
+  \end{equation}
+  and the rest of the step, $(1-f)$ of what remained, is re-integrated (up to $8$\assumed{}
+  contacts per step).
+  \item \textbf{Slow contacts.} If the approach is slower than $V_{\text{rest}}$, the code skips
+  the bisection: it moves the centre out to distance $R$ along $\vect{n}$ and applies a plastic
+  ($e=0$, $e_t=0$) impulse with Coulomb friction. Repeated micro-impulses of this kind reproduce
+  rolling and sliding on a slope.
+\end{enumerate}
+Contacts approaching faster than $V_{\text{bounce}}=0.10$\,\unit{m/s}\assumed{} are counted as
+``bounces'' in the statistics; this does not change the physics.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Outcome classes and the trapping test}
+\label{sec:contact-outcomes}
+
+\paragraph{Entry.}
+A ball has \emph{entered} the CELL when its centre lies inside the CELL polygon: the cavity
+behind the mouth plane, bounded by the walls moved inward by $1$\,\unit{mm}\assumed. (The code
+builds it by growing \code{hive.py}'s centre region, which keeps $R$ from every wall, outward by
+$R-1$\,\unit{mm}.) On the unfavourable side the mouth's outward normal is
+$\vect{n}_{\text{out}}=(\cos30^\circ,\sin30^\circ)=(0.866,\,0.5)$\derived. A ball moving
+toward $+x$ at speed $|\vect{v}|$ and descent angle $\varphi$ has
+$\vect{v}=|\vect{v}|(\cos\varphi,-\sin\varphi)$, and it can cross the mouth inward only if
+\begin{align}
+  \vect{v}\cdot\vect{n}_{\text{out}} < 0
+  &\iff \cos\varphi\cos30^\circ < \sin\varphi\sin30^\circ \nonumber\\
+  &\iff \tan\varphi > \cot30^\circ
+  \iff \varphi > 60^\circ .
+  \label{eq:contact-entry-angle}
+\end{align}
+So on this side every ball that enters straight from flight (still moving toward $+x$) is
+descending at more than $60^\circ$\derived; only a ball turned back by a contact can enter at a
+shallower angle.
+
+\paragraph{Trapped.}
+Define the energy height (\unit{m}), the total mechanical energy divided by $mg$:
+\begin{equation}
+  H = z + \frac{|\vect{v}|^2}{2g} + \frac{I\omega^2}{2mg}
+    = z + \frac{|\vect{v}|^2 + \alpha R^2\omega^2}{2g},
+  \label{eq:contact-energy-height}
+\end{equation}
+with $g=9.80665$\,\unit{m/s\textsuperscript{2}}\confirmed. Between impacts,
+\begin{equation}
+  \frac{d}{dt}\left(mgH\right)
+  = \vect{v}\cdot\vect{F}_D + \vect{v}\cdot\vect{F}_M - k\,I\omega^2
+  = -\tfrac12\rho C_d A|\vect{v}|^3 + 0 - k\,I\omega^2 \;\le\; 0,
+  \label{eq:contact-dEdt}
+\end{equation}
+because drag $\vect{F}_D$ opposes $\vect{v}$, the Magnus force $\vect{F}_M$ is along
+$\vect{\omega}\times\vect{v}=\omega(v_z,-v_x)$, which is perpendicular to $\vect{v}$, and spin
+decays as $\dot\omega=-k\omega$. (Here $\rho$ is air density in \unit{kg/m\textsuperscript{3}},
+$C_d$ the drag coefficient, $A=\pi R^2$ in \unit{m\textsuperscript{2}}, and $k$ the spin-decay
+rate in \unit{1/s}.) The impacts never add energy (Section~\ref{sec:contact-energy}). So $H$
+never increases. To leave, the centre must cross the mouth plane somewhere on the gate, and the
+lowest point of the gate is $z_{\text{bar}}=1.387$\,\unit{m}\derived{} (the ball resting on the
+floor at the lower lip; the lip crest itself is $1.392$\,\unit{m}\derived). The code therefore
+declares a ball \textbf{trapped} when
+\begin{equation}
+  \vect{c}\in\text{CELL}
+  \quad\text{and}\quad
+  H < z_{\text{bar}} - 10^{-4}\ \text{\unit{m}\assumed}.
+  \label{eq:contact-trapped}
+\end{equation}
+Counting the spin energy as if it could lift the ball makes this test strict (conservative): a
+few slow, spinning balls counted as ``not yet trapped'' would in reality settle.
+% CODE/DOC: docs/05 and the docstring say a trapped ball "can never leave". That is exact for the
+% continuous model; the code's slow-contact and max_iter fallbacks move the centre out to distance
+% R, which can add potential energy of the order of one step's penetration. The 1e-4 m margin in
+% eq. (trapped) is meant to cover this; it is not proven.
+
+\paragraph{Worked example.}
+A ball inside the CELL at $z=1.30$\,\unit{m}\assumed{} moving at $1$\,\unit{m/s}\assumed{}
+without spin has $H=1.30+0.051=1.351$\,\unit{m}\derived{} $<1.387$\,\unit{m}\derived: trapped.
+The same ball spinning at $50$\,\unit{rad/s}\assumed{} adds
+$\alpha R^2\omega^2/(2g)=0.101$\,\unit{m}\derived, so $H=1.452$\,\unit{m}\derived{} and the
+test waits.
+
+\paragraph{The six outcomes.}
+A ball that is outside the CELL with $H<z_{\text{bar}}-10^{-4}$\,\unit{m} can never enter
+(the same argument mirrored) and is resolved at once. A ball also stops when it falls below
+$z=0.70$\,\unit{m}\assumed{} while descending, leaves $|x|<3$\,\unit{m}\assumed, drops below
+$z=0$, or reaches the time limit $t_{\max}$ ($3.5$\,\unit{s}\assumed{} by default;
+$2.0$\,\unit{s}\assumed{} in the incidence sweep). Table~\ref{tab:contact-outcomes} lists the classes
+as the code assigns them.
+
+\begin{table}[ht]
+  \centering
+  \caption{Outcome classes of \code{simulate\_batch} (\code{OUTCOMES}).}
+  \label{tab:contact-outcomes}
+  \begin{tabular}{lp{0.62\linewidth}}
+    \toprule
+    Class & Rule in the code \\
+    \midrule
+    \code{retained\_clean} & First entry had no earlier contact, and the ball is trapped
+      \eqref{eq:contact-trapped}. Later contacts inside the CELL are allowed. \\
+    \code{retained\_contact} & At least one contact before the first entry, then trapped. \\
+    \code{bounced\_out} & Entered at some time, then stopped (fell, left the region, or was
+      locked out) without being trapped. \\
+    \code{blocked} & Touched the HIVE, never entered. Also a ball that starts inside an obstacle, and a ball that touched the HIVE without entering
+      and is still unresolved at $t_{\max}$ (for example resting on the roof). \\
+    \code{miss} & Never touched the HIVE, never entered. \\
+    \code{timeout} & Entered, but neither trapped nor gone at $t_{\max}$; counted as not retained. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Why backspin can reduce retention on this side}
+\label{sec:contact-why}
+
+Section~\ref{sec:contact-kick} shows that backspin has two opposite effects at a contact:
+\begin{itemize}
+  \item at the \textbf{far rim} it kicks a ball that is clipping the lower lip into the CELL
+  (helps);
+  \item on the \textbf{CELL floor}, right after a clean entry, it kicks the ball along the floor
+  toward the back wall (Table~\ref{tab:contact-floor}: $2.78$\,\unit{m/s}\predicted{} versus
+  $0.85$\,\unit{m/s}\predicted). The ball then hits the back-wall/roof corner with more speed
+  and can rebound out through the mouth (hurts).
+\end{itemize}
+On this side clean entries are more common than far-rim clips, so the second effect can win.
+
+\paragraph{Worked example (incidence sweep, one angle).}
+The current default aero file, \code{research/params\_lit.json}, was used with two
+functions of \code{contact.py}: \code{incidence\_states} builds the states and
+\code{simulate\_batch} runs them. Inputs: crossing speed $v_i=5$\,\unit{m/s}\assumed, descent
+$\varphi=76^\circ$\assumed, $e=0.6$\assumed, $\mu=0.4$\assumed, $e_t=0$\assumed, and gate
+coordinate $s$ from $-0.10$\,\unit{m}\assumed{} to $0.45$\,\unit{m}\assumed{} in
+$5$\,\unit{mm}\assumed{} steps ($s=0$ is the far rim; the gate is $0.286$\,\unit{m}\derived{}
+long). The crossing state is identical for every $S$, so the table isolates the collision effect
+of spin. Widths are the total length of $s$ giving each outcome.
+
+\begin{table}[ht]
+  \centering
+  \caption{Outcome widths (\unit{mm}) along the gate, $\varphi=76^\circ$\assumed,
+  $v_i=5$\,\unit{m/s}\assumed, $e=0.6$\assumed, $\mu=0.4$\assumed.}
+  \label{tab:contact-widths}
+  \begin{tabular}{lrrrrr}
+    \toprule
+         & retained & retained & bounced & of which, & \\
+    $S$  & clean    & contact  & out     & clean entry & blocked \\
+    \midrule
+    $0$\assumed   & $190$\predicted & $40$\predicted & $0$\predicted   & $0$\predicted   & $325$\predicted \\
+    $0.5$\assumed & $190$\predicted & $55$\predicted & $0$\predicted   & $0$\predicted   & $310$\predicted \\
+    $1$\assumed   & $0$\predicted   & $70$\predicted & $195$\predicted & $190$\predicted & $290$\predicted \\
+    $2$\assumed   & $0$\predicted   & $40$\predicted & $235$\predicted & $190$\predicted & $280$\predicted \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Both effects are visible. Contact-assisted retention grows from $40$\,\unit{mm}\predicted{} at
+$S=0$ to $70$\,\unit{mm}\predicted{} at $S=1$ (the far-rim check), but every clean entry at this
+angle bounces out at $S=1$ (the floor kick), so total retention drops from
+$230$\,\unit{mm}\predicted{} to $70$\,\unit{mm}\predicted. $S=0.5$ is neutral to slightly
+positive here, and $S=2$ is worse than $S=1$. A single ball crossing at $s=0.15$\,\unit{m}\assumed{}
+shows the mechanism: with $S=0$ it hits the floor (approach speed
+$5.03$\,\unit{m/s}\predicted), makes $5$\predicted{} contacts and is retained cleanly; with
+$S=1$ it makes $3$\predicted{} contacts and bounces out.
+
+\paragraph{What the full sweeps add.}
+The published sweeps in \code{docs/05\_contact.md} were run with the older
+\code{data/aero\_params.json} (the contact parameters $m$, $R$, $\alpha$ are identical in both
+files; the aero sets differ). Averaged over descent angles $64$--$86^\circ$\assumed{} at
+$e=0.6$\assumed{} and $\mu=0.4$\assumed, the best retention probability for an assumed $20$\,\unit{mm}\assumed{}
+Gaussian aim scatter falls from $0.89$\predicted{} ($S=0$) to $0.86$\predicted{} ($S=0.5$),
+$0.72$\predicted{} ($S=1$) and $0.57$\predicted{} ($S=2$). In controlled first-contact pairs,
+backspin $S=1$ raises the retained fraction of far-rim clips from $0.36$\predicted{} to
+$0.60$\predicted{} but lowers that of floor contacts after a clean entry from
+$1.00$\predicted{} to $0.086$\predicted. Two cautions keep this from becoming a slogan:
+\begin{itemize}
+  \item \textbf{More spin is not always better, and not always worse.} The penalty depends
+  strongly on $e$: in the full launch sweep (launch height $0.737$\,\unit{m}\assumed, distance $0.90$\,\unit{m}\assumed) at $e=0.3$\assumed{} backspin $S=1$ only ties no
+  spin (tight-scatter probability $0.85$\predicted{} versus $0.81$\predicted, within noise),
+  while at $e=0.6$\assumed{} it falls to $0.48$\predicted{} versus $0.79$\predicted. In the
+  air, too, the lift coefficient saturates in this model ($C_l=\min(c_1S,\,C_{l,\max})$), so
+  extra spin stops adding curvature.
+  \item \textbf{These are model probabilities}, not measured hit rates. One successful shot on a
+  real HIVE would say nothing about repeatability; many shots per setting are needed.
+\end{itemize}
+% CODE/DOC: docs/05 section 1.4 gives the Part B launch elevation grid as 66-89.75 deg; the code
+% (_launch_grid) now starts at 60 deg (review 2026-10-30 #7). docs/05 also says the aero sets come
+% from data/aero_params.json; the contact.py CLI default is research/params_lit.json, but
+% flight.AERO_PARAMS_PATH (used when contact.py is imported without set_aero_path or
+% PM001_AERO_PATH) still defaults to data/aero_params.json.
+
+% ---------------------------------------------------------------------------------------------
+\subsection{What is assumed}
+\label{sec:contact-assumptions}
+
+\begin{itemize}
+  \item \textbf{Contact coefficients.} $e$, $\mu$ and $e_t$ for POLLEN on the HIVE skin are
+  unmeasured. The sweeps use $e$ from $0.3$\assumed{} to $0.8$\assumed, $\mu$ from
+  $0.2$\assumed{} to $0.8$\assumed, and $e_t=0$\assumed{} with a spot check at
+  $0.3$\assumed. Pickleball and smooth-sphere literature values only set these ranges; they are
+  not POLLEN measurements. $e$ is the most important unknown.
+  \item \textbf{Constant coefficients.} $e$ does not depend on impact speed (real plastic balls
+  usually lose restitution at higher speed).
+  \item \textbf{Rigid sphere, rigid obstacle.} The ball is a smooth rigid sphere with
+  $I=\alpha mR^2$, $\alpha=0.63$\derived; perforations catching on edges, shell deformation,
+  panel compliance and HIVE motion are not modelled. The HIVE rests on its damper stop.
+  \item \textbf{Instantaneous impact.} Gravity and aerodynamics act only between impacts.
+  \item \textbf{2D centre plane.} One section through the HIVE; no side walls, off-centre
+  entries, sidespin or tilted spin axes.
+  \item \textbf{Empty CELL.} The preloaded NECTAR against the back skin is not modelled; it
+  could absorb back-wall rebounds and soften the floor-kick penalty.
+  \item \textbf{Numerics.} Step $1$\,\unit{ms}\assumed, $22$\assumed{} bisection halvings,
+  $V_{\text{rest}}=0.05$\,\unit{m/s}\assumed, trap margin $10^{-4}$\,\unit{m}\assumed.
+  \item \textbf{Geometry.} The HIVE section comes from the official CAD with the $30^\circ$\confirmed{}
+  tilt; landmarks such as $z_{\text{bar}}$ are derived from it.
+  \item \textbf{Unfavourable side only.} The favourable side was not swept for contact.
+\end{itemize}

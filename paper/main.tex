@@ -1,0 +1,468 @@
+% PM-001 (FTC Team 207): backspin entry of POLLEN into the up-facing HIVE CELL.
+% Assembled paper. The section files in sections/ hold the derivations; this file holds the
+% preamble, the provenance macros, the abstract, the introduction, the notation table, the
+% figures, the limitations and the references.
+% The code in src/*.py is the source of truth for every equation in this paper.
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{../figures/}}
+
+% ---------------------------------------------------------------------------------------------
+% Provenance tags. Every number in the paper carries exactly one of them.
+%   \confirmed  [C]  official CAD or competition manual
+%   \assumed    [A]  assumed or swept value
+%   \derived    [D]  derived from other values by arithmetic or geometry
+%   \predicted  [P]  model output
+%   \userval    [U]  value given by the team
+% The tags work in text and in math mode.
+\makeatletter
+\DeclareRobustCommand{\provtag}[1]{%
+  \ifmmode\text{\provtag@text{#1}}\else\provtag@text{#1}\fi}
+\newcommand{\provtag@text}[1]{%
+  \textsuperscript{\textsf{\upshape\scriptsize\color@grey[#1]}}}
+% Grey without the xcolor package: use the PDF fill-colour operator through \pdfliteral when it
+% exists, otherwise print the tag in black.
+\ifx\pdfliteral\@undefined
+  \newcommand{\color@grey}[1]{#1}
+\else
+  \newcommand{\color@grey}[1]{\pdfliteral{0.45 g}#1\pdfliteral{0 g}}
+\fi
+\makeatother
+\DeclareRobustCommand{\confirmed}{\provtag{C}}
+\DeclareRobustCommand{\assumed}{\provtag{A}}
+\DeclareRobustCommand{\derived}{\provtag{D}}
+\DeclareRobustCommand{\predicted}{\provtag{P}}
+\DeclareRobustCommand{\userval}{\provtag{U}}
+
+% Bold vector, upright unit, monospace code name.
+\newcommand{\vect}[1]{\bm{#1}}
+% \unit{m/s}: upright text. Directly after an inline-math number ("$3$\unit{m}") it inserts the
+% thin space itself; after "\," or a space it adds nothing, so "$3$\,\unit{m}" and "(\unit{m})"
+% print with one thin space and with none respectively.
+\DeclareRobustCommand{\unit}[1]{%
+  \ifmmode\text{\upshape #1}%
+  \else
+    \ifnum\lastnodetype=10 \,\fi
+    \textup{#1}%
+  \fi}
+% Inside \code an escaped underscore allows a line break after it, so long function and
+% file names do not run into the margin.
+\DeclareRobustCommand{\code}[1]{{\def\_{\textunderscore\allowbreak}\texttt{#1}}}
+
+% Paragraphs with long unbreakable names may set a loose line rather than run into the margin.
+\emergencystretch=6em
+
+\title{Backspin Entry of POLLEN into the HIVE CELL:\\ Model Equations and Derivations}
+\author{FTC Team 207 Critical Mass, PM-001}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+We derive, step by step, the equations of a model that asks whether a single powered
+98\,\unit{mm}\userval{} flywheel, with a fixed curved hood or an optional passive upper roller, can
+put enough backspin on POLLEN (a perforated polyethylene ball of diameter about
+71\,\unit{mm}\confirmed{} and mass about 25\,\unit{g}\assumed{} from the vendor listing \cite{andymark}) to make it enter the upward-facing
+CELL of the pivoting HIVE from the unfavourable side, where the CELL roof stands between the robot
+and the mouth. The model has five parts: the HIVE cross-section and an exact clean-entry test, a
+flight model with drag, a capped Magnus lift and spin decay, a launcher contact model, a rigid-body
+rim and interior collision law, and a robustness layer that turns entry windows into a shooter
+specification. Every equation matches what the code in \code{src/} computes.
+
+\emph{Every result in this paper is a model prediction.} No aerodynamic or contact property of
+POLLEN has been measured: drag, spin lift, spin decay, restitution and friction are all bounded
+from pickleball and smooth-sphere literature, which are not POLLEN measurements. Within those
+bounds the model predicts that a clean far-side entry is physically possible, but only with a
+tight shot-to-shot repeatability (about $\pm0.075$\,\unit{m/s}\predicted{} in exit speed and
+$\pm0.15^\circ$\predicted{} in elevation) after the wheel speed has been tuned on the field.
+Backspin shifts the clean window to other speeds and angles rather than being required for it:
+no-spin shots have clean windows of their own, and more spin is not always better, because the lift
+coefficient saturates in this model and backspin can lower retention after a contact.
+\end{abstract}
+
+\tableofcontents
+
+% =============================================================================================
+\section{Introduction}
+\label{sec:intro}
+
+\paragraph{The game question.}
+In the FTC BIOBUZZ game the centre HIVE is a rigid beam with a box-shaped CELL at each end. It
+rotates about a horizontal pivot axis between two stable tipped positions, and only one CELL faces
+upward at a time. Teams LAUNCH POLLEN into that upward-facing CELL to make the HIVE tip
+\cite{manual,gameres}. From one side of the field the CELL mouth faces the robot (the
+\emph{favourable} side). From the other side the CELL roof is between the robot and the mouth (the
+\emph{unfavourable} side), and an ordinary lob has to fall very steeply to get in.
+
+The team has seen backspinning POLLEN behave in a way that seemed to help on the unfavourable
+side. The proposed mechanism is a high arc with strong backspin whose path is reshaped by the
+Magnus force. One point needs care from the start: at the apex of the arc only the vertical
+velocity is zero, $v_z=0$; the ball keeps its horizontal speed, and spin gives it no sudden new
+push there. The Magnus force acts during the whole flight and depends on the spin and the
+air-relative velocity together. Whether it helps is therefore a trajectory-and-clearance
+calculation, which is what this paper sets up.
+
+\paragraph{Two hypotheses.}
+The team reported two effects, and we keep them apart:
+\begin{itemize}
+  \item[(A)] \textbf{Air-only clean entry.} A backspinning ball follows a Magnus-shaped flight that
+    passes over the roof and enters the CELL without touching any part of the HIVE.
+  \item[(B)] \textbf{Magnus flight plus a rim contact.} The ball flies a Magnus-shaped path, touches
+    the CELL rim or interior, and the spin-dependent collision redirects it into the CELL (or out of
+    it).
+\end{itemize}
+Neither hypothesis is assumed to be true. Sections~\ref{sec:geometry}--\ref{sec:flight} and
+\ref{sec:robust_spec} test (A); Section~\ref{sec:contact} tests (B); Section~\ref{sec:launcher}
+asks which exit states a single powered wheel can actually produce.
+
+\paragraph{How to read the numbers.}
+Every number carries one grey tag that says where it comes from:
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  Tag & Macro & Meaning \\
+  \midrule
+  \confirmed & \texttt{\char92 confirmed} & official CAD or competition manual \\
+  \assumed   & \texttt{\char92 assumed}   & assumed, chosen or swept value \\
+  \derived   & \texttt{\char92 derived}   & computed from other values by arithmetic or geometry \\
+  \predicted & \texttt{\char92 predicted} & output of the model (a prediction, not a measurement) \\
+  \userval   & \texttt{\char92 userval}   & value given by the team \\
+  \bottomrule
+\end{tabular}
+\end{center}
+The aerodynamic and contact bounds come from pickleball and smooth-sphere work
+\cite{emond2024,steyn2025,vanwyk2026}, collected in the project literature synthesis
+\cite{litsynth}; the launcher model starts from the flywheel analysis of \cite{brettle}.
+Every worked example was computed by running the repository code. The code is the source of
+truth: where a project document disagrees with the code, the text follows the code and the
+source file carries a comment recording the difference. Aerodynamic parameter ranges come from
+\code{research/params\_lit.json}, the current default; the older first-pass set
+\code{data/aero\_params.json} is named only where a result was produced with it.
+
+\paragraph{What the paper does not claim.}
+It does not claim that more backspin is always better, that a dual-powered-wheel shooter is
+needed, or that a single successful shot shows repeatability. The literature coefficients for
+pickleballs and smooth spheres are used only as bounds.
+
+% ---------------------------------------------------------------------------------------------
+\subsection*{Notation}
+\addcontentsline{toc}{subsection}{Notation}
+
+Tables~\ref{tab:notation-1}--\ref{tab:notation-4} list each symbol with the meaning it
+has where it first appears. Units are SI unless stated. Some letters are reused later with a local
+meaning; those reuses are listed below and are always defined again at their first use in the
+section concerned.
+
+\begin{table}[p]
+\centering
+\small
+\caption{Notation, part 1 of 4: HIVE geometry and the clean-entry test (Section~\ref{sec:geometry}).}
+\label{tab:notation-1}
+\begin{tabular}{@{}p{0.24\linewidth}p{0.56\linewidth}p{0.14\linewidth}@{}}
+  \toprule
+  Symbol & Meaning & Units \\
+  \midrule
+  $x$ & HIVE-frame horizontal coordinate in the tipping plane, $+x$ toward the audience; origin on the tile below the pivot axis & m \\
+  $z$ & HIVE-frame vertical coordinate above the tiles & m \\
+  $y$ & coordinate along the pivot axis & m \\
+  $\vect{p}=(x,z)$ & point or ball-centre position in the tipping plane & m \\
+  $z_p$ & pivot-axis height above the tiles ($1.11633$\confirmed) & m \\
+  $u$ & cell-local coordinate along the cell axis, toward the up-CELL mouth & m \\
+  $w$ & cell-local coordinate perpendicular to $u$, toward the CELL roof & m \\
+  $s$ & lateral coordinate across the CELL opening (zero on the centre plane) & m \\
+  $\tau$ & HIVE tilt: angle of the cell axis above horizontal (nominal $30^\circ$\confirmed) & rad (quoted in deg) \\
+  $\sigma$ & pose sign, $+1$ for \code{pose\_pos}, $-1$ for \code{pose\_neg} & -- \\
+  $\vect{p}_r=(-d,h)$ & release point of the ball centre in the shot frame & m \\
+  $d$ & horizontal distance from the release point to the pivot plane $x=0$ & m \\
+  $h$ & ball-centre height above the tiles at release & m \\
+  $u_M$ & cell-local mouth plane ($0.54508$\confirmed) & m \\
+  $u_B$ & cell-local back wall ($0.23952$\confirmed) & m \\
+  $w_F$ & cell-local floor, lower lip ($-0.03734$\confirmed) & m \\
+  $w_C$ & cell-local ceiling, upper lip; roof underside at the peak ($0.32004$\confirmed) & m \\
+  $w_T$ & cell-local roof-top envelope ($0.33325$\confirmed) & m \\
+  $L$ & mouth length $w_C-w_F$ ($0.35738$\derived) & m \\
+  $\vect{a}_j,\vect{b}_j$ & end points of obstacle segment $j$ & m \\
+  $\vect{n}$ & outward unit normal of the mouth, $(\sigma\cos\tau,\ \sin\tau)$ & -- \\
+  $\vect{m}$ & unit direction of the mouth line from the lower to the upper lip & -- \\
+  $\vect{v}=(v_x,v_z)$ & ball velocity & m/s \\
+  $z_{\mathrm{lip}}(\tau)$ & lower-lip height as a function of tilt & m \\
+  $\Delta z_{\mathrm{lip}},\ \Delta\tau$ & checklist lip-height tolerance and the resulting tilt tolerance & in; deg \\
+  $R$ & POLLEN radius ($0.0355$\confirmed) & m \\
+  $\lambda_j^\ast$ & clipped fraction along segment $j$ of the nearest point to $\vect{p}$ & -- \\
+  $\vect{q}_j$ & nearest point on segment $j$ to $\vect{p}$ & m \\
+  $\delta_j(\vect{p})$ & distance from $\vect{p}$ to segment $j$ & m \\
+  $c(\vect{p})$ & clearance: minimum distance to the obstacles minus $R$; contact if and only if $c<0$ & m \\
+  $\Delta$ & C-space raster cell size ($1$\,\unit{mm}\assumed) & m \\
+  $\mathcal{I}$ & inside region of the CELL (a quadrilateral in $u,w$) & m (region) \\
+  $\vect{A},\vect{B}$ & low and high ends of the gate (mouth-plane edge of the inside region) & m \\
+  $L_g$ & gate length $L-2R$ ($0.28638$\derived) & m \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[p]
+\centering
+\small
+\caption{Notation, part 2 of 4: Section~\ref{sec:geometry}, continued: paths, crossing and descent angle.}
+\label{tab:notation-2}
+\begin{tabular}{@{}p{0.24\linewidth}p{0.56\linewidth}p{0.14\linewidth}@{}}
+  \toprule
+  Symbol & Meaning & Units \\
+  \midrule
+  $v$ & launch speed & m/s \\
+  $\theta$ & launch elevation angle & deg \\
+  $t$ & time since release & s \\
+  $\vect{\Pi}(t)=(\Pi_x,\Pi_z)$ & path shape relative to the release point (translation-invariant without wind) & m \\
+  $t_k$ & time of solver sample $k$ & s \\
+  $s_g$ & fraction along the gate from $\vect{A}$ ($0$) to $\vect{B}$ ($1$) & -- \\
+  $x_g$ & $x$ of the gate point at the sample height & m \\
+  $g$ & standard gravity ($9.80665$\confirmed) & m/s\textsuperscript{2} \\
+  $v_{z0}$ & initial vertical launch speed & m/s \\
+  $c_2,c_1,c_0$ & coefficients of the mouth-line crossing quadratic & m/s\textsuperscript{2}, m/s, m \\
+  $t_1,t_2$ & roots of the mouth-line crossing quadratic & s \\
+  $\varphi$ & descent angle of the velocity below horizontal, $\operatorname{atan2}(-v_z,v_x)$ & deg \\
+  $\varphi_{\mathrm{kin}}$ & kinematic minimum descent angle $90^\circ-\tau$ & deg \\
+  $\alpha$ & excess descent angle $\varphi+\tau-90^\circ$ & deg \\
+  $\vect{T}=(x_T,z_T)$ & roof top at the mouth, the highest HIVE point & m \\
+  $\kappa$ & path curvature under gravity, $g\cos\varphi/|\vect{v}|^2$ & 1/m \\
+  $\hat{\vect{e}}_{uw}$ & unit direction of motion in the cell-local frame, $(-\sin\alpha,-\cos\alpha)$ & -- \\
+  $w_c$ & cell-local $w$ at which the centre crosses the mouth plane & m \\
+  $\lambda$ & distance travelled back along the path from the crossing & m \\
+  $\vect{C},\vect{D}$ & upper-lip and lower-lip inner corners $(u_M,w_C)$, $(u_M,w_F)$ & m \\
+  $\delta_C,\delta_D$ & distance of the straight path line from the upper and lower lip corner & m \\
+  $\varphi_{\mathrm{gate}}$ & minimum descent angle for a clean straight path under the code's gate criterion ($66.33^\circ$\derived{} at $30^\circ$\confirmed{} tilt) & deg \\
+  $\varphi_{\mathrm{fit}}$ & stricter both-lips minimum descent angle ($71.46^\circ$\derived{} at $30^\circ$\confirmed{} tilt) & deg \\
+  $W_\perp(\alpha)$ & width of the clean straight-path window, measured perpendicular to the path & m \\
+  $H_{\max}$ & R105 robot height limit ($0.7366$\confirmed) & m \\
+  $\Delta w(s)$ & roof drop for lateral offset $s$ (2D proxy of the pentagon roof) & m \\
+  $h_0,h_w,s_{\mathrm{half}}$ & pentagon peak height, side-wall height and half-width used in the roof drop & m \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[p]
+\centering
+\small
+\caption{Notation, part 3 of 4: Flight dynamics (Section~\ref{sec:flight}).}
+\label{tab:notation-3}
+\begin{tabular}{@{}p{0.24\linewidth}p{0.56\linewidth}p{0.14\linewidth}@{}}
+  \toprule
+  Symbol & Meaning & Units \\
+  \midrule
+  $x,\,y,\,z;\ \hat{\vect{x}},\hat{\vect{y}},\hat{\vect{z}}$ & world frame: $x$ horizontal toward the target, $y$ sideways, $z$ up; unit vectors & m; unit vectors -- \\
+  $\vect{r}$ & ball-centre position & m \\
+  $\vect{\omega}$ & spin (angular velocity) vector & rad/s \\
+  $\vect{\omega}_0,\ \omega_0$ & launch spin vector; signed launch spin rate (positive = backspin) used by \code{backspin\_omega} & rad/s \\
+  $\omega_y$ & $y$ component of spin in the 2D reduction (negative = backspin toward $+x$) & rad/s \\
+  $m$ & ball mass & kg \\
+  $D=2R$ & ball diameter & m \\
+  $\rho$ & air density & kg/m\textsuperscript{3} \\
+  $\nu$ & kinematic viscosity of air & m\textsuperscript{2}/s \\
+  $A=\pi R^2$ & frontal (cross-sectional) area & m\textsuperscript{2} \\
+  $\vect{u}$ & wind velocity & m/s \\
+  $\vect{v}_{\mathrm{rel}}=\vect{v}-\vect{u}$ & air-relative velocity & m/s \\
+  $\vect{F}_D$ & drag force & N \\
+  $\vect{F}_M$ & Magnus force & N \\
+  $q$ & dynamic pressure $\tfrac12\rho|\vect{v}_{\mathrm{rel}}|^2$ & Pa \\
+  $C_d$ & drag coefficient (constant per run) & -- \\
+  $C_L$ & lift (Magnus) coefficient, a function of $S$ & -- \\
+  $C_{L,\max}$ & lift-coefficient ceiling & -- \\
+  $S$ & spin parameter $|\vect{\omega}|R/|\vect{v}_{\mathrm{rel}}|$ & -- \\
+  $S_0$ & spin parameter at launch (signed in \code{feasibility.py}, $>0$ = backspin) & -- \\
+  $S_{\mathrm{sat}}=C_{L,\max}/c_1$ & saturation spin parameter above which $C_L$ is capped & -- \\
+  $\varepsilon_v$ & regularisation speed ($10^{-6}$\assumed) in $S$ and in the Magnus direction & m/s \\
+  $\mathrm{Re}$ & Reynolds number $|\vect{v}_{\mathrm{rel}}|\,2R/\nu$ (diagnostic only) & -- \\
+  $\hat{\vect{n}}_M$ & Magnus direction, the unit vector of $\vect{\omega}\times\vect{v}_{\mathrm{rel}}$ & -- \\
+  $k$ & spin-decay rate & 1/s \\
+  $t_{1/2}$ & spin half-life $\ln2/k$ & s \\
+  $v_0$ & launch speed & m/s \\
+  $C_M=\beta S$ & spin-down moment coefficient (literature model, not in the code) & -- \\
+  $\beta$ & spin-down moment slope (literature model) & -- \\
+  $I_b=\alpha mR^2$ & ball moment of inertia & kg\,m\textsuperscript{2} \\
+  $k_{\mathrm{torque}}$ & speed-dependent decay rate from the torque model (not implemented) & 1/s \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[p]
+\centering
+\small
+\caption{Notation, part 4 of 4: Section~\ref{sec:flight}, continued, and Sections~\ref{sec:launcher}--\ref{sec:robust_spec}.}
+\label{tab:notation-4}
+\begin{tabular}{@{}p{0.24\linewidth}p{0.56\linewidth}p{0.14\linewidth}@{}}
+  \toprule
+  Symbol & Meaning & Units \\
+  \midrule
+  $s_b$ & backspin sign, $-\operatorname{sgn}(\omega_y)$, $+1$ for backspin toward $+x$ & -- \\
+  $v_t$ & terminal speed $\sqrt{2mg/(\rho C_d A)}$ & m/s \\
+  $a_D,\ a_M$ & drag and Magnus accelerations & m/s\textsuperscript{2} \\
+  $a_\perp$ & acceleration normal to the velocity & m/s\textsuperscript{2} \\
+  $r_c$ & local radius of curvature of the path & m \\
+  $\Delta z_{\mathrm{apex}},\ \Delta x_{\mathrm{land}}$ & apex-height gain and landing-point shift caused by spin, compared with no spin & m (tabulated in cm) \\
+  $\vect{y},\ \vect{f},\ \vect{k}_1,\dots,\vect{k}_4$ & generic ODE state, right-hand side, RK4 stages & state units; stages per s \\
+  $\vect{a}_1,\vect{a}_2,\vect{a}_3$ & acceleration stages in the position form of RK4 & m/s\textsuperscript{2} \\
+  $r_{\mathrm{tol}},\ a_{\mathrm{tol}}$ & relative and absolute tolerances of \code{solve\_ivp} & --; state units \\
+  $e_i$ & local error estimate of state component $i$ & state units \\
+  $C$ & RK4 global-error constant & m/s\textsuperscript{4} \\
+  \midrule
+  $n$ & flywheel speed (Section~\ref{sec:launcher}) & rev/min \\
+  $\Omega$ & flywheel angular velocity, positive when the wheel surface at the contact moves forward & rad/s \\
+  $\Omega_t$ & passive-roller angular velocity, positive when its surface at the contact moves forward & rad/s \\
+  $R_w$ & flywheel radius & m \\
+  $e$ & coefficient of restitution of a contact (Section~\ref{sec:contact}) & -- \\
+  $e_t$ & tangential restitution coefficient & -- \\
+  $\mu$ & Coulomb friction coefficient of a contact & -- \\
+  $\psi$ & shot azimuth away from the tipping plane (Section~\ref{sec:robust_spec}) & deg or rad \\
+  $\hat p$ & estimated success rate $k/n$ from $k$ successes in $n$ shots & -- \\
+  \bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Reused letters.}
+The alphabet is small, so a few letters change meaning between sections. Each is redefined at its
+first use there:
+$c_1$ is also the initial slope of the linear-capped lift law (Section~\ref{sec:flight});
+$\kappa$ is also the drag constant $\rho A/(2m)$ (\unit{1/m}) of the 2D flight equations;
+$\alpha$ is also the moment-of-inertia shape factor in $I_b=\alpha mR^2$ (Sections~\ref{sec:flight}
+and \ref{sec:contact});
+$\tau$ is also the spin-down torque of the literature model (\unit{N\,m}) and, in
+Section~\ref{sec:robust_spec}, the hood-angle tolerance (\unit{deg});
+$h$ is also the integration step size (\unit{s});
+$\theta$ is also the local flight-path angle in the curvature example of Section~\ref{sec:flight};
+in Section~\ref{sec:launcher}, $x$ is the arc length travelled by the ball centre along the contact
+path, $v$ the ball-centre speed along it, $s$ the ball's absolute spin rate (positive = backspin),
+$u$ the wheel surface speed and $D=2R_w$ the wheel diameter;
+in Section~\ref{sec:contact}, $s$ is the coordinate along the gate ($s=0$ at the far rim);
+in Section~\ref{sec:robust_spec}, $\beta$ is the HIVE tilt and $\varepsilon_v$ a relative speed
+error (dimensionless).
+
+% =============================================================================================
+\clearpage
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.78\linewidth]{hive_section_pose_pos.png}
+  \caption{HIVE tipping-plane section in \code{pose\_pos} at the $30^\circ$\confirmed{} tilt
+    (bounds $28.5$--$31.5^\circ$\derived), centre plane $s=0$. Blue: HIVE body (rotates about the
+    pivot at $z_p=1.1163$\,\unit{m}\confirmed); grey: static A-frame (dashed legs are projected from
+    3D); orange: mouth line and its outward normal $\vect{n}$; shaded: inside region $\mathcal{I}$
+    for the ball centre; dotted circle: POLLEN with $R=0.0355$\,\unit{m}\confirmed. The geometry is
+    derived from the official CAD (Section~\ref{sec:geometry}); it is not a model prediction. In
+    this pose the favourable side is on the right; an unfavourable-side shot comes from the left and
+    must clear the roof.}
+  \label{fig:hive-section}
+\end{figure}
+
+\input{sections/01_geometry}
+\input{sections/02_flight}
+\input{sections/03_launcher}
+\input{sections/04_contact}
+
+\begin{figure}[tbp]
+  \centering
+  \includegraphics[width=0.9\linewidth]{spec_windows_h737_d075.png}
+  \caption{PREDICTED clean-entry cells in the (launch elevation, exit speed) plane for an
+    unfavourable-side shot from release height $h=0.737$\,\unit{m}\assumed{} and distance
+    $d=0.75$\,\unit{m}\assumed{} with backspin $S=1.0$\assumed. Each colour is one aerodynamic or
+    tilt condition from \code{research/params\_lit.json} (nominal, $C_d$ and lift bounds, fast spin
+    decay) or the tilt bounds $28.5^\circ$\derived{} and $31.5^\circ$\derived. The clean bands of the
+    different conditions do not overlap in one common cell (Eq.~\eqref{eq:robust_spec-robust}), which
+    is why the specification relies on tuning the wheel speed on the field
+    (Section~\ref{sec:robust_spec-hood}). All cells are model output, not measurements.}
+  \label{fig:spec-windows}
+\end{figure}
+
+\input{sections/05_robust_spec}
+\input{sections/06_whole_field}
+
+% =============================================================================================
+\section{Limitations and what to measure}
+\label{sec:limits}
+
+Every result above is a prediction of a model whose most important inputs have never been measured
+on POLLEN. The model is useful for deciding \emph{what to build and what to measure first}; it is not
+evidence that the shot works. The prototype test plan in \code{docs/07\_test\_plan.md} turns the list
+below into concrete tests with pass and fail lines.
+
+\begin{itemize}
+  \item \textbf{Shot scatter.} The clean window on the unfavourable side is narrow: the largest clean
+    square found is about $\pm0.075$\,\unit{m/s}\predicted{} by $\pm0.15^\circ$\predicted. Whether a
+    real shooter repeats that well is the deciding question for hypothesis (A). It must be measured
+    as the standard deviation of exit speed and elevation over many shots at one setting, with the
+    wheel-speed sag from rapid fire and battery voltage logged alongside.
+  \item \textbf{The ratio $v/u$.} The exit speed as a fraction of the wheel surface speed depends on
+    the hood friction, the compression and the ball; the model does not treat $v=u/2$ as universal.
+    It sets the wheel speed needed for a target exit speed and must be measured on the built shooter.
+  \item \textbf{Exit spin parameter $S$.} The spin the hood or roller actually puts on the ball sets
+    where the clean band sits. It can be read from high-speed video of a striped ball.
+  \item \textbf{Drag $C_d$ and spin lift.} The literature allows $C_d$ and the lift law to vary over a
+    range that moves the clean band by more than its width. Because POLLEN is perforated, its spin lift
+    may be well below the smooth-sphere value. Full-flight video tracking at two spin levels pins both.
+    In this model the lift coefficient saturates, so more spin past saturation does not add curvature.
+  \item \textbf{Contact restitution $e$ and friction $\mu$.} Retention after a rim or floor contact
+    (hypothesis B) depends mostly on $e$, and backspin can raise or lower it. Drop and spin tests on a
+    sample of the HIVE wall material give $e$ and $\mu$.
+  \item \textbf{Real HIVE tilt.} The $30^\circ$\confirmed{} tilt comes from the official CAD and the
+    manual figure, and the field acceptance tolerance gives $28.5$--$31.5^\circ$\derived. The tilt of
+    the real field element, resting on its damper stop, should be measured, because it moves the
+    minimum descent angle one-for-one.
+  \item \textbf{Geometry and sideways effects.} The precomputed maps use one section through the HIVE
+    centre plane. The live solver flies the oblique shot against the 3D cell with side walls and the
+    pentagon roof (Section~\ref{sec:field-cell3d}). Sideways drafts, robot motion and a spin axis tilted by
+    turning are options (Section~\ref{sec:field-move}), but launcher sidespin and exit skew are still not
+    modelled (Section~\ref{sec:field-missing}).
+  \item \textbf{One shot is not a rate.} A success rate must be reported with a Wilson interval from
+    many shots (Section~\ref{sec:robust_spec-wilson}). A single good shot on a real HIVE says nothing
+    about repeatability.
+\end{itemize}
+
+When these measurements come back, the model is re-run with the measured $v/u$, $S$, $C_d$, spin
+lift, $e$ and $\mu$, and the predicted scoring rate is compared with the measured one.
+
+% =============================================================================================
+\begin{thebibliography}{9}
+
+\bibitem{manual}
+FIRST, \emph{BIOBUZZ Competition Manual}, Team Update TU07, 29 October 2026.
+\url{https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm}
+
+\bibitem{gameres}
+FIRST, \emph{FTC game resources}.
+\url{https://ftc-resources.firstinspires.org/ftc/game}
+
+\bibitem{andymark}
+AndyMark, \emph{BIOBUZZ scoring elements} (POLLEN, SKU am-5851\_yellow).
+\url{https://andymark.com/products/biobuzz-scoring-elements?variant=47194281148588}
+
+\bibitem{brettle}
+D.~Brettle, \emph{Flywheel Shooter Analysis}, Carlmont Robotics notebook.
+\url{https://docs.carlmontrobotics.org/jupyter_notebooks/files/FlywheelShooter.html}
+
+\bibitem{emond2024}
+Emond, Sun and Swartz, ``Pickleball flight dynamics,'' \emph{International Journal of Racket
+Sports Science}, 2024. \url{https://doi.org/10.30827/ijrss.32618}
+
+\bibitem{steyn2025}
+Steyn et al., ``Third shot drop in pickleball,'' \emph{International Journal of Sports Science
+\& Coaching}, 2025. \url{https://doi.org/10.1177/17479541251365200}
+
+\bibitem{vanwyk2026}
+Van Wyk, Smith and Lyu, ``Pickleball ball mechanical behaviour,'' \emph{ISEA}, 2026.
+\url{https://doi.org/10.7273/000008181}
+
+\bibitem{litsynth}
+PM-001, \emph{Literature synthesis: backspin on POLLEN}, \code{research/LITERATURE\_SYNTHESIS.md},
+2026 (parameter ranges in \code{research/params\_lit.json}).
+
+\end{thebibliography}
+
+\end{document}

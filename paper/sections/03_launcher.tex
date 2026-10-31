@@ -1,0 +1,745 @@
+\section{Single-flywheel launcher: exit speed and spin}
+\label{sec:launcher}
+
+% Source of truth: src/launcher.py (simulate_shot, hood_ideal, brettle_ratio, brettle_omega_f,
+% frictionless_top_limit, roller_rolling_state, roller_coast, recovery_time) and
+% src/shooter_spec.py (wheel_rpm, spin_rpm, V_OVER_U). Numbers below were recomputed by running
+% that code with the system python on 2026-10-30; data/launch_envelope.json holds the stored envelope.
+
+The flight sections take the exit state of the ball as an input: an exit speed $v$ and a spin
+parameter $S$. This section asks the opposite question. Given \emph{one} powered 98\,\unit{mm}\userval{}
+flywheel with either a fixed curved hood or one passive (unpowered) upper roller, which pairs
+$(v,S)$ can the launcher actually produce, how fast must the wheel turn, and what does one shot cost
+the wheel? Everything here follows \code{src/launcher.py}. The model is uncalibrated: no POLLEN has been
+measured on a launcher yet, so every simulated output is a prediction.
+
+\subsection{Frames, sign conventions and the wheel surface speed}
+\label{sec:launcher:frames}
+
+The model is planar and one-dimensional along the contact path. Let $x$ be the arc length travelled by
+the ball centre along the path (\unit{m}), positive in the direction of travel, and let $z$ point away from
+the wheel. The state is
+\begin{itemize}
+  \item $v$: speed of the ball centre along the path (\unit{m/s}), positive forward;
+  \item $s$: absolute angular velocity of the ball (\unit{rad/s}), positive for \emph{backspin}, i.e.\ the
+        wheel-side point of the ball moves forward relative to the centre and the hood-side point moves
+        backward;
+  \item $\Omega$: flywheel angular velocity (\unit{rad/s}), positive when the wheel surface at the contact
+        moves forward;
+  \item $\Omega_t$: passive-roller angular velocity (\unit{rad/s}), positive when the roller surface at the
+        contact moves forward (a ``counter-rotating'' roller).
+\end{itemize}
+Wheel speeds enter and leave the code in revolutions per minute, $n$ (\unit{rev/min}), and are
+converted with
+\begin{equation}
+  \Omega = \frac{2\pi}{60}\,n .
+  \label{eq:launcher-rpm}
+\end{equation}
+The wheel has radius $R_w$ (\unit{m}) and diameter $D = 2R_w$. A point on its rim moves at
+\begin{equation}
+  u = R_w\,\Omega = \frac{D}{2}\cdot\frac{2\pi n}{60} = \frac{\pi D\, n}{60},
+  \label{eq:launcher-u}
+\end{equation}
+which is the \emph{wheel surface speed} (\unit{m/s}). The spin parameter used by every other section is
+defined with the \emph{nominal} ball radius $R_b$ (\unit{m}),
+\begin{equation}
+  S = \frac{s\,R_b}{v},
+  \label{eq:launcher-S}
+\end{equation}
+so $S=1$ means the ball's nominal surface turns as fast as its centre moves.
+
+\paragraph{Worked example.} With $D = 0.098$\,\unit{m}\userval{} and $n = 3000$\,\unit{rev/min}\assumed,
+\eqref{eq:launcher-rpm} gives $\Omega = 314.16$\,\unit{rad/s}\derived{} and \eqref{eq:launcher-u} gives
+$u = \pi(0.098)(3000)/60 = 15.39$\,\unit{m/s}\derived.
+
+\paragraph{Parameters.} Table~\ref{tab:launcher-params} lists the defaults of \code{PARAMS} and of the
+dataclasses \code{Ball}, \code{Wheel}, \code{Contact}, \code{Hood} and \code{Roller}.
+
+\begin{table}[ht]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+Symbol & Meaning & Default & Range used \\
+\midrule
+$m$ & ball mass & 0.025\,\unit{kg}\confirmed & 0.0245--0.0255\,\unit{kg}\assumed \\
+$R_b$ & nominal ball radius & 0.0355\,\unit{m}\confirmed & -- \\
+$k_I$ & ball inertia factor, $I_b = k_I m R_b^2$ & 0.63\assumed & 0.55--0.667\assumed \\
+$R_w$ & flywheel radius & 0.049\,\unit{m}\userval & -- \\
+$I_w$ & flywheel + steel flywheel inertia & $2.65\times10^{-4}$\,\unit{kg\,m$^2$}\assumed & $0.5$--$5\times10^{-4}$\,\unit{kg\,m$^2$}\assumed \\
+$\mu_w$ & friction, wheel tread on ball & 0.8\assumed & 0.5--1.2\assumed \\
+$\mu_t$ & friction, hood or roller on ball & 0.3\assumed{} (hood), 0.8\assumed{} (roller) & 0.05--1.0\assumed \\
+$\delta$ & diametral compression at the gap & 0.004\,\unit{m}\userval & 0.002--0.008\,\unit{m}\assumed \\
+$k_n$ & linear diametral stiffness, $N = k_n\delta$ & 4000\,\unit{N/m}\assumed & 1500--10000\,\unit{N/m}\assumed \\
+$\lambda$ & share of $\delta$ that shrinks the rolling radius & 1\assumed & 0--1\assumed \\
+$c_{rr}$ & rolling-hysteresis lever arm / $r_c$ & 0.02\assumed & 0--0.06\assumed \\
+$\theta$ & hood wrap angle & $90^\circ$\assumed & $45$--$150^\circ$\assumed \\
+$v_{in}$ & feed speed into the contact (no spin) & 0.5\,\unit{m/s}\assumed & 0.2--1.5\,\unit{m/s}\assumed \\
+$R_t$ & roller radius & 0.024\,\unit{m}\assumed & 0.0125--0.050\,\unit{m}\assumed \\
+$I_t$ & roller inertia & $1\times10^{-5}$\,\unit{kg\,m$^2$}\assumed & $10^{-6}$--$2\times10^{-4}$\,\unit{kg\,m$^2$}\assumed \\
+$\tau_c$ & roller bearing Coulomb torque & $5\times10^{-4}$\,\unit{N\,m}\assumed & 0--$3\times10^{-3}$\,\unit{N\,m}\assumed \\
+$c_v$ & roller viscous drag coefficient & $1\times10^{-6}$\,\unit{N\,m\,s}\assumed & 0--$10^{-5}$\,\unit{N\,m\,s}\assumed \\
+$\Delta t_{shot}$ & time between shots & 0.5\,\unit{s}\assumed & 0.25--1.5\,\unit{s}\assumed \\
+$n_{free}$, $\tau_s$ & goBILDA 5203 1:1 free speed, stall torque & 6000\,\unit{rev/min}\confirmed, 0.144\,\unit{N\,m}\confirmed & -- \\
+\bottomrule
+\end{tabular}
+\caption{Launcher inputs and their provenance (\code{src/launcher.py}, \code{PARAMS}).}
+\label{tab:launcher-params}
+\end{table}
+
+\subsection{Contact kinematics: where the ball touches and how fast that point moves}
+\label{sec:launcher:kinematics}
+
+\paragraph{Motivation.} Friction acts on the \emph{surface} of the ball, so everything depends on how fast
+the two touching points move compared with the wheel and the hood.
+
+\paragraph{Ball inertia.} The ball is a hollow perforated shell. The code writes its moment of inertia
+about a diameter as
+\begin{equation}
+  I_b = k_I\, m\, R_b^2 ,
+  \label{eq:launcher-Ib}
+\end{equation}
+with $k_I$ dimensionless ($k_I = 2/3$ for a thin shell, $2/5$ for a solid sphere) and $I_b$ in
+\unit{kg\,m$^2$}.
+
+\paragraph{Effective rolling radius.} The ball is squeezed by $\delta$ (diametral, \unit{m}) between the
+wheel and the hood. The code assumes a fraction $\lambda$ of that squeeze shortens the lever arm from the
+ball centre to each contact, shared equally between the two contacts:
+\begin{equation}
+  r_c = R_b - \lambda\,\frac{\delta}{2}.
+  \label{eq:launcher-rc}
+\end{equation}
+$\lambda = 1$ puts all of the squeeze in the ball; $\lambda = 0$ is rigid-radius rolling on a flattened
+patch.
+
+\paragraph{Velocity of the two contact points.} Use a right-handed frame $(\hat{x},\hat{y},\hat{z})$ with
+$\hat{x}$ forward and $\hat{z}$ away from the wheel. With the sign convention above, backspin $s>0$ is the
+angular-velocity vector $\vect{\omega} = -s\,\hat{y}$. The wheel contact sits at
+$\vect{r}_w = -r_c\hat{z}$ from the ball centre and the hood (or roller) contact at
+$\vect{r}_t = +r_c\hat{z}$. Rigid-body kinematics, $\vect{v}_P = \vect{v}_c + \vect{\omega}\times\vect{r}_P$,
+gives
+\begin{align}
+  \vect{v}_{P,w} &= v\hat{x} + (-s\hat{y})\times(-r_c\hat{z}) = (v + s\,r_c)\,\hat{x}, \label{eq:launcher-vpw}\\
+  \vect{v}_{P,t} &= v\hat{x} + (-s\hat{y})\times(+r_c\hat{z}) = (v - s\,r_c)\,\hat{x}, \label{eq:launcher-vpt}
+\end{align}
+using $\hat{y}\times\hat{z} = \hat{x}$. For a hood concentric with the wheel both contact normals pass
+through the ball centre and the wheel axis, so the same two expressions hold along the curved path, with
+$x$ measured along the arc.
+
+\paragraph{Slip velocities.} The code defines slip as \emph{surface speed minus ball-point speed}:
+\begin{align}
+  \sigma_w &= R_w\Omega - (v + s\,r_c), \label{eq:launcher-slipw}\\
+  \sigma_t &= R_t\Omega_t - (v - s\,r_c), \qquad (\text{hood: } R_t\Omega_t \equiv 0). \label{eq:launcher-slipt}
+\end{align}
+$\sigma > 0$ means the surface runs ahead of the ball, so its friction pushes the ball \emph{forward}.
+
+\paragraph{Worked example.} With $R_b = 0.0355$\,\unit{m}\confirmed, $\delta = 0.004$\,\unit{m}\userval{} and
+$\lambda = 1$\assumed, \eqref{eq:launcher-rc} gives $r_c = 0.0355 - 0.002 = 0.0335$\,\unit{m}\derived. With
+$m = 0.025$\,\unit{kg}\confirmed{} and $k_I = 0.63$\assumed, \eqref{eq:launcher-Ib} gives
+$I_b = 0.63\times0.025\times0.0355^2 = 1.985\times10^{-5}$\,\unit{kg\,m$^2$}\derived.
+
+\subsection{The ideal hood and where ``$v = u/2$'' comes from}
+\label{sec:launcher:ideal}
+
+\paragraph{Motivation.} The most quoted rule of thumb for a hooded flywheel is that the ball leaves at
+half the wheel surface speed. This subsection derives it, so that the conditions it needs are visible.
+
+Assume rolling without slip at \emph{both} contacts at the moment of exit, a fixed hood, and a wheel speed
+$\Omega_f$ at exit. Setting $\sigma_t = 0$ and $\sigma_w = 0$ in
+\eqref{eq:launcher-slipw}--\eqref{eq:launcher-slipt}:
+\begin{align}
+  0 &= v - s\,r_c, \label{eq:launcher-rollhood}\\
+  R_w\Omega_f &= v + s\,r_c. \label{eq:launcher-rollwheel}
+\end{align}
+Adding the two equations eliminates $s$: $R_w\Omega_f = 2v$. Subtracting them eliminates $v$:
+$R_w\Omega_f = 2 s r_c$. Hence
+\begin{equation}
+  v = \frac{R_w\,\Omega_f}{2}, \qquad s = \frac{v}{r_c}, \qquad
+  S = \frac{s R_b}{v} = \frac{R_b}{r_c}.
+  \label{eq:launcher-ideal}
+\end{equation}
+Three things are hidden in \eqref{eq:launcher-ideal}. (i) $\Omega_f$ is the wheel speed \emph{at exit}, which
+is lower than the speed before the shot (Section~\ref{sec:launcher:drop}). (ii) Both contacts must have
+stopped slipping, which needs enough friction and enough contact length
+(Section~\ref{sec:launcher:grip}). (iii) The compression does not change $v$ but does raise $S$ above 1.
+The code function \code{hood\_ideal} uses the rigid case $r_c = R_b$ (so $S = 1$).
+% CODE vs DOC: docs/04_launcher.md section 2 writes omega_ball = v/r_c and S = R_b/r_c for the ideal hood;
+% src/launcher.py hood_ideal() uses omega = v/R_b (S = 1, rigid). The compressed rolling state S = R_b/r_c
+% is what simulate_shot() reaches; both are shown here.
+
+\paragraph{Worked example.} At $n = 3000$\,\unit{rev/min}\assumed{} with no wheel slow-down
+($\Omega_f = 314.16$\,\unit{rad/s}\derived), $v = 0.049\times314.16/2 = 7.70$\,\unit{m/s}\derived{} and
+$s = v/R_b = 216.8$\,\unit{rad/s}\derived{} (2070\,\unit{rev/min}\derived). With $\delta = 4$\,\unit{mm}\userval,
+$S = 0.0355/0.0335 = 1.060$\derived.
+
+\subsection{Equations of motion during contact}
+\label{sec:launcher:eom}
+
+\paragraph{Motivation.} Real contacts slip, the wheel slows, and the hood pushes back. The code integrates
+these effects through the whole contact rather than assuming the ideal state.
+
+\paragraph{Momentum and angular momentum.} Let $F_w$ and $F_t$ (\unit{N}) be the friction forces \emph{on
+the ball} at the wheel and the top contact, positive forward. $M_{w}$ and $M_{t}$ (\unit{N\,m}) are the
+rolling-hysteresis moments on the ball (backspin-positive), $\tau_m$ the motor torque at the wheel shaft and
+$\tau_b$ the roller bearing drag (both \unit{N\,m}). The code integrates
+\begin{align}
+  m\,\dot v &= F_w + F_t, \label{eq:launcher-eom_v}\\
+  I_b\,\dot s &= r_c\,(F_w - F_t) + M_w + M_t, \label{eq:launcher-eom_s}\\
+  I_w\,\dot\Omega &= -R_w F_w + \tau_m(\Omega) + M_w, \label{eq:launcher-eom_W}\\
+  I_t\,\dot\Omega_t &= -R_t F_t - \tau_b(\Omega_t) - M_t \quad\text{(roller only)}. \label{eq:launcher-eom_Wt}
+\end{align}
+Each line is Newton's law for one body. In \eqref{eq:launcher-eom_s} a forward force at the wheel contact
+(below the centre) adds backspin and a forward force at the top contact removes it, each with lever arm
+$r_c$. In \eqref{eq:launcher-eom_W} the reaction $-F_w$ acts on the wheel rim at radius $R_w$. In the code the
+hysteresis reaction on the wheel is \code{-Mw\_wheel} with \code{Mw\_wheel = -Mw\_ball}, which is the
+$+M_w$ written here; in \eqref{eq:launcher-eom_Wt}, \code{+Mt\_roll} $= -M_t$.
+
+\paragraph{Normal loads on a concentric hood.} The ball is pressed by the same squeeze at both contacts,
+$N_0 = k_n\delta$. Its centre moves on a circle of radius
+\begin{equation}
+  \rho = R_w + r_c
+  \label{eq:launcher-rho}
+\end{equation}
+about the wheel axis. The wheel pushes the ball outward with $N_w$ and the hood pushes it inward with $N_t$,
+so the net inward force must supply the centripetal acceleration and the sum stays at $2k_n\delta$:
+\begin{equation}
+  N_t - N_w = \frac{m v^2}{\rho}, \qquad N_t + N_w = 2k_n\delta
+  \;\;\Longrightarrow\;\;
+  N_w = k_n\delta - \frac{m v^2}{2\rho}, \quad N_t = k_n\delta + \frac{m v^2}{2\rho}.
+  \label{eq:launcher-Nhood}
+\end{equation}
+If $N_w$ would become negative the code sets $N_w = 0$, puts the whole centripetal load on the hood,
+$N_t = m v^2/\rho$, and raises the flag \code{lost\_wheel\_contact}. The wheel loses contact when
+$v^2 > 2\rho k_n\delta/m$. The normal loads use $v$ at the start of each step.
+
+\paragraph{Normal load in a roller nip.} The ball centre travels straight through the gap between the
+wheel and the roller. At offset $x$ from the narrowest point, the distance from the wheel axis to the ball
+centre is $\sqrt{(R_w+R_b)^2 + x^2} \approx (R_w+R_b) + x^2/[2(R_w+R_b)]$, so the overlap with the wheel
+shrinks by $x^2/[2(R_w+R_b)]$; the same holds for the roller with $R_t$. The remaining squeeze and load are
+\begin{equation}
+  \delta(x) = \delta - \frac{\kappa}{2}x^2, \qquad
+  \kappa = \frac{1}{R_w + R_b} + \frac{1}{R_t + R_b}, \qquad
+  N_w = N_t = k_n \max\!\big(\delta(x),0\big),
+  \label{eq:launcher-Nnip}
+\end{equation}
+with $\kappa$ in \unit{1/m}. The load vanishes at $\delta(x) = 0$, so the contact runs over
+\begin{equation}
+  -x_h \le x \le x_h, \qquad x_h = \sqrt{2\delta/\kappa}.
+  \label{eq:launcher-xh}
+\end{equation}
+The roller path has no centripetal term. The hood path runs from $x=0$ to $x_{end} = \theta\rho$
+(with $\theta$ in \unit{rad}).
+
+\paragraph{Hysteresis, motor and bearing.} The ball is not a perfect spring. The code applies a rolling
+resistance moment $e = c_{rr}\, r_c\, N$ at each contact that opposes the relative rotation of the ball and
+the surface, smoothed with $\varepsilon = 1$\,\unit{rad/s}\assumed:
+\begin{equation}
+  M_w = -c_{rr} r_c N_w \tanh\!\frac{s + \Omega}{\varepsilon}, \qquad
+  M_t = -c_{rr} r_c N_t \tanh\!\frac{s - \Omega_t}{\varepsilon}\quad(\Omega_t \equiv 0 \text{ for the hood}).
+  \label{eq:launcher-hyst}
+\end{equation}
+The ball and the wheel turn in opposite senses when the ball has backspin, so their relative rotation is
+$s+\Omega$. The motor is a linear DC torque--speed line referred to the wheel shaft (gear ratio $G$ =
+motor revolutions per wheel revolution, $V/V_0$ = applied voltage over 12\,\unit{V}\confirmed,
+$\omega_{free} = 2\pi n_{free}/60$):
+\begin{equation}
+  \tau_m(\Omega) = G\,\tau_s\left(\frac{V}{V_0} - \frac{G\,\Omega}{\omega_{free}}\right),
+  \label{eq:launcher-motor}
+\end{equation}
+and the default is $\tau_m = 0$ (the wheel \emph{coasts} through the contact, as in Brettle's analysis).
+The roller bearing drag is
+\begin{equation}
+  \tau_b(\Omega_t) = \tau_c \tanh\!\frac{\Omega_t}{0.5\,\text{rad/s}} + c_v\,\Omega_t .
+  \label{eq:launcher-bearing}
+\end{equation}
+
+\paragraph{Stick or slip: one step of the solver.} Coulomb's law says $|F_w| \le \mu_w N_w$ and
+$|F_t| \le \mu_t N_t$, with equality while the contact slides. The code advances by $\Delta t = 10^{-5}$\,\unit{s}\assumed{}
+with forces held constant over the step and chooses $F_w, F_t$ so that the slips \emph{at the end} of the
+step obey Coulomb's law. Differentiate \eqref{eq:launcher-slipw} and substitute
+\eqref{eq:launcher-eom_v}--\eqref{eq:launcher-eom_W}:
+\begin{equation}
+  \dot\sigma_w = R_w\dot\Omega - \dot v - r_c\dot s
+  = b_w - \Big(\tfrac{R_w^2}{I_w} + \tfrac{1}{m} + \tfrac{r_c^2}{I_b}\Big)F_w
+         - \Big(\tfrac{1}{m} - \tfrac{r_c^2}{I_b}\Big)F_t ,
+  \label{eq:launcher-sigdot_w}
+\end{equation}
+where $b_w = R_w\dot\Omega_0 - r_c\dot s_0$ collects the force-free parts
+($\dot\Omega_0 = (\tau_m + M_w)/I_w$, $\dot s_0 = (M_w + M_t)/I_b$). The same steps for
+\eqref{eq:launcher-slipt} give $\dot\sigma_t = b_t - (\tfrac1m - \tfrac{r_c^2}{I_b})F_w -
+(\tfrac{R_t^2}{I_t} + \tfrac1m + \tfrac{r_c^2}{I_b})F_t$ with $b_t = R_t\dot\Omega_{t,0} + r_c\dot s_0$
+(the $R_t^2/I_t$ and $R_t\dot\Omega_{t,0}$ terms are zero for a hood). After one step,
+\begin{gather}
+  \bm{\sigma}^{+} = \Delta t\,\big(\mathbf{q} - \mathbf{A}\mathbf{F}\big),\qquad
+  \mathbf{q} = \frac{\bm{\sigma}}{\Delta t} + \mathbf{b}, \nonumber\\
+  \mathbf{A} = \begin{pmatrix}
+     \frac{R_w^2}{I_w} + \frac1m + \frac{r_c^2}{I_b} & \frac1m - \frac{r_c^2}{I_b}\\[2pt]
+     \frac1m - \frac{r_c^2}{I_b} & \frac{R_t^2}{I_t} + \frac1m + \frac{r_c^2}{I_b}
+  \end{pmatrix}.
+  \label{eq:launcher-lcp}
+\end{gather}
+Each contact $i$ must be in one of three modes:
+\begin{equation}
+  \begin{aligned}
+  &\text{stick:} && \sigma_i^{+} = 0, && |F_i| \le \mu_i N_i;\\
+  &\text{slide forward:} && F_i = +\mu_i N_i, && \sigma_i^{+} \ge 0;\\
+  &\text{slide backward:} && F_i = -\mu_i N_i, && \sigma_i^{+} \le 0 .
+  \end{aligned}
+  \label{eq:launcher-modes}
+\end{equation}
+$\mathbf{A}$ is symmetric positive definite, so the friction forces that satisfy these conditions are unique;
+\code{\_solve\_friction} enumerates the $3\times3 = 9$ mode pairs and keeps the first consistent one. The state is then updated with the constant forces,
+$v^{+} = v + \Delta t(F_w + F_t)/m$ and likewise for $s,\Omega,\Omega_t$, and the path position with the
+mid-step speed, $x^{+} = x + \Delta t\,(v + v^{+})/2$. The shot ends when $x \ge x_{end}$
+(\code{exited}), or is declared stalled if $v \le 0$ after 0.01\,\unit{s}\assumed, or stops at
+$t_{max} = 0.25$\,\unit{s}\assumed. Gravity along the path is not modelled.
+
+\paragraph{Energy ledger.} With constant forces in a step, the work done is exactly force times mid-step
+velocity, so the code's ledger closes to round-off:
+\begin{equation}
+  \underbrace{\tfrac12 I_w(\Omega_0^2 - \Omega^2)}_{\text{wheel KE lost}} + W_m
+  = \Delta KE_{ball} + \Delta KE_{roller} + E_{f,w} + E_{f,t} + E_{hyst} + E_{bear},
+  \label{eq:launcher-ledger}
+\end{equation}
+where $W_m = \sum \tau_m\bar\Omega\Delta t$, $E_{f,i} = \sum F_i\,\bar\sigma_i\,\Delta t \ge 0$ is the sliding
+loss, $E_{hyst} = -\sum[M_w(\bar s + \bar\Omega) + M_t(\bar s - \bar\Omega_t)]\Delta t$ and
+$E_{bear} = \sum\tau_b\bar\Omega_t\Delta t$ (bars = mid-step values; all in \unit{J}).
+
+\paragraph{Worked example (nominal hood, 3000\,\unit{rev/min}).} \code{hood\_model(3000)} with the
+defaults of Table~\ref{tab:launcher-params}:
+$\rho = 0.049 + 0.0335 = 0.0825$\,\unit{m}\derived, path length $\theta\rho = (\pi/2)(0.0825) = 0.1296$\,\unit{m}\derived,
+$N_0 = 4000\times0.004 = 16$\,\unit{N}\derived. The ball leaves after 24.6\,\unit{ms}\predicted{} with
+$v = 6.996$\,\unit{m/s}\predicted, $s = 208.8$\,\unit{rad/s}\predicted{} (1994\,\unit{rev/min}\predicted),
+$S = 1.0597$\predicted{} and both slips zero at exit. The wheel ends at
+2726.9\,\unit{rev/min}\predicted{}, and $R_w\Omega_f/2 = 0.049\times285.56/2 = 6.996$\,\unit{m/s}\derived{}
+matches $v$, as \eqref{eq:launcher-ideal} requires for a rolling exit.
+% CODE vs DOC: docs/04_launcher.md section 3.1 gives the 90 deg hood contact length as ~131 mm; the code
+% path is theta*(R_w + r_c) = 129.6 mm (r_c = 33.5 mm). Nip: 2*x_h = 33.4 mm, doc ~34 mm (agrees).
+
+\subsection{Why a fixed hood gives backspin, and the band of $S$}
+\label{sec:launcher:Sband}
+
+\paragraph{Motivation.} The hood does not \emph{create} backspin. The wheel does. The hood mainly decides
+how much of it survives. Two limiting cases bracket every hood shot.
+
+\paragraph{Limit 1: frictionless top.} Let only the wheel push ($F_t = 0$, $c_{rr} = 0$), with the ball fed
+at $v_{in}$ without spin. Dividing \eqref{eq:launcher-eom_s} by \eqref{eq:launcher-eom_v},
+\begin{equation}
+  \frac{I_b\,\mathrm{d}s}{m\,\mathrm{d}v} = r_c
+  \;\;\Longrightarrow\;\;
+  s = \frac{m r_c}{I_b}\,(v - v_{in})
+  \;\;\Longrightarrow\;\;
+  S = \underbrace{\frac{m\,r_c R_b}{I_b}}_{S_\infty}\left(1 - \frac{v_{in}}{v}\right),
+  \label{eq:launcher-Sinf}
+\end{equation}
+and using \eqref{eq:launcher-Ib}, $S_\infty = (r_c/R_b)/k_I$. This is \code{frictionless\_top\_limit}; the code
+function returns $S_\infty$, the value for a ball that starts at rest.
+
+\paragraph{Which way does the hood rub?} In the same frictionless case the hood-side point moves at
+\begin{equation}
+  v - s\,r_c = v - \frac{m r_c^2}{I_b}(v - v_{in}) \approx v\,(1 - \beta), \qquad
+  \beta \equiv \frac{m r_c^2}{I_b} = \frac{(r_c/R_b)^2}{k_I},
+  \label{eq:launcher-beta}
+\end{equation}
+for $v \gg v_{in}$. For a hollow ball $\beta > 1$, so the hood-side point moves \emph{backward}, $\sigma_t =
+-(v - s r_c) > 0$, and a real hood's friction acts \emph{forward} on the ball ($F_t > 0$). By
+\eqref{eq:launcher-eom_s} a forward $F_t$ \emph{removes} backspin and by \eqref{eq:launcher-eom_v} it adds
+speed. The hood therefore pulls $S$ down from $S_\infty$ toward the rolling value.
+% CODE vs DOC: docs/04 section 3.3 says the hood-side point moves backward "because k_I < 1". In the code
+% the condition is beta = m r_c^2 / I_b > 1, i.e. k_I < (r_c/R_b)^2 (= 0.890 at delta = 4 mm, lambda = 1).
+
+\paragraph{Limit 2: rolling on the hood.} If hood friction is high enough or the wrap long enough, the hood
+contact sticks and \eqref{eq:launcher-rollhood} holds, so $S = R_b/r_c$ exactly as in
+\eqref{eq:launcher-ideal}. For a slow feed, therefore,
+\begin{equation}
+  \frac{R_b}{r_c} \;\le\; S \;\le\; S_\infty\left(1 - \frac{v_{in}}{v}\right) \;<\; S_\infty .
+  \label{eq:launcher-Sband}
+\end{equation}
+The unit test \code{test\_hood\_S\_bounds} checks $1 \le S\,r_c/R_b \le S_\infty r_c/R_b$ over hood friction
+and wrap, for a ball fed from rest ($v_{in} = 0$) with $c_{rr} = 0$.
+% CODE vs DOC: docs/04 section 2 item 1 gives the hood-slip band as "between 1 and m r_c R_b / I_b"; the code's
+% lower bound is the compressed rolling value R_b/r_c (>1), and the upper bound is reduced by (1 - v_in/v).
+
+\paragraph{Worked example.} With the nominal values, $\beta = 0.8905/0.63 = 1.4135$\derived{} and
+$S_\infty = 0.9437/0.63 = 1.498$\derived. Running the code with $\mu_t = 0$, $c_{rr} = 0$ at
+3000\,\unit{rev/min}\assumed:
+from rest ($v_{in} = 0$) it returns $S = 1.4979$\predicted, equal to $S_\infty$; with
+$v_{in} = 0.5$\,\unit{m/s}\assumed{} it returns $v = 6.142$\,\unit{m/s}\predicted{} and
+$S = 1.3759$\predicted, and \eqref{eq:launcher-Sinf} gives $1.498\,(1 - 0.5/6.142) = 1.3759$\derived.
+The rolling value depends only on the squeeze:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+$\delta$ & 2\,\unit{mm}\assumed & 4\,\unit{mm}\userval & 8\,\unit{mm}\assumed \\
+\midrule
+$S = R_b/r_c$ ($\lambda = 1$\assumed) & 1.029\derived & 1.060\derived & 1.127\derived \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{The band in the parameter box.} \code{reachable\_S\_summary} sweeps the fixed hood over
+$k_I \in [0.55, 0.667]$\assumed, $\mu_t \in [0.05, 1.0]$\assumed, $\theta \in [45^\circ, 150^\circ]$\assumed,
+$\delta \in [2, 8]$\,\unit{mm}\assumed{} and $k_n \in [1.5, 10]$\,\unit{N/mm}\assumed{} at
+3000\,\unit{rev/min}\assumed{} (405\derived{} cases). It finds $S$ from 1.029\predicted{} to
+1.274\predicted{} and $v$ from 3.18\predicted{} to 7.05\,\unit{m/s}\predicted. A grippy or long hood sits at
+the bottom of this band; only a slick, short hood moves toward the top.
+
+\paragraph{$S < 1$ from a fixed hood.} Equation \eqref{eq:launcher-Sband} assumed a slow feed. If the ball
+\emph{enters} already moving with little spin and leaves before hood friction rolls it up, the factor
+$(1 - v_{in}/v)$ and the unfinished approach to rolling can push $S$ below 1. The stored envelope at
+3000\,\unit{rev/min}\assumed{} gives $S = 0.643$\predicted{} for $\theta = 45^\circ$\assumed,
+$\mu_t = 0.05$\assumed, $v_{in} = 5$\,\unit{m/s}\assumed. Running the code for $\theta = 20^\circ$\assumed,
+$\mu_t = 0.05$\assumed, $v_{in} = 4$\,\unit{m/s}\assumed{} gives $S = 0.575$\predicted.
+This needs a fast pre-accelerating feeder and is sensitive to every friction value, so it is not a
+design recommendation.
+% CODE vs DOC: docs/04 section 3.3 says "20 deg wrap, mu_h 0.05, v_in 4 m/s gives S 0.49". Running
+% hood_model(3000, wrap_deg=20, Contact(mu_top=0.05), v_in=4.0) gives S = 0.575 (v = 5.99 m/s);
+% S = 0.489 in data/launch_envelope.json belongs to wrap 20 deg, mu_hood 0.10, v_in 5.0 m/s.
+
+\subsection{Rolling and grip-limited regimes}
+\label{sec:launcher:grip}
+
+\paragraph{Motivation.} Above some wheel speed, turning the wheel faster stops making the ball faster.
+This is the most important practical limit of a single-wheel hood, and it follows directly from Coulomb
+friction in \eqref{eq:launcher-modes}.
+
+\paragraph{Wheel sliding, hood sticking.} Suppose the wheel contact slides forward,
+$F_w = \mu_w N_w$, while the hood sticks ($v = s r_c$, so $\dot v = r_c \dot s$), with $c_{rr} = 0$. Write
+\eqref{eq:launcher-eom_s} as $(I_b/r_c^2)\,\dot v = F_w - F_t$ and add it to \eqref{eq:launcher-eom_v}:
+\begin{equation}
+  \Big(m + \frac{I_b}{r_c^2}\Big)\dot v = 2F_w
+  \;\;\Longrightarrow\;\;
+  m_{eff}\,\dot v = F_w, \qquad m_{eff} = \frac{1}{2}\Big(m + \frac{I_b}{r_c^2}\Big).
+  \label{eq:launcher-meff}
+\end{equation}
+Putting $\dot v = F_w/m_{eff}$ back into \eqref{eq:launcher-eom_v} gives the hood force
+\begin{equation}
+  F_t = \frac{m}{m_{eff}}F_w - F_w = \frac{\beta - 1}{\beta + 1}\,F_w ,
+  \label{eq:launcher-Ft}
+\end{equation}
+which is forward for $\beta > 1$, as found above. The hood keeps sticking only while
+$|F_t| \le \mu_t N_t$.
+
+\paragraph{The speed cap.} Along the path $\dot v = v\,\mathrm{d}v/\mathrm{d}x$, so with $w = v^2$ and the
+hood load \eqref{eq:launcher-Nhood},
+\begin{equation}
+  \frac{\mathrm{d}w}{\mathrm{d}x} = \frac{2\mu_w}{m_{eff}}\Big(k_n\delta - \frac{m\,w}{2\rho}\Big)
+  = \mathcal{A} - \mathcal{B}w, \qquad
+  \mathcal{A} = \frac{2\mu_w k_n\delta}{m_{eff}},\quad \mathcal{B} = \frac{\mu_w m}{m_{eff}\,\rho}.
+  \label{eq:launcher-wode}
+\end{equation}
+This linear equation has the solution, from $w(0) = v_{in}^2$ to $x = \theta\rho$,
+\begin{equation}
+  v_{cap}^2 = w_\infty - \big(w_\infty - v_{in}^2\big)\,e^{-\mathcal{B}\theta\rho}, \qquad
+  w_\infty = \frac{\mathcal{A}}{\mathcal{B}} = \frac{2\rho k_n\delta}{m}, \qquad
+  \mathcal{B}\theta\rho = \mu_w\theta\,\frac{2\beta}{1+\beta}.
+  \label{eq:launcher-vcap}
+\end{equation}
+Nothing in \eqref{eq:launcher-vcap} depends on the wheel speed: once the wheel still slips at exit, the exit
+speed is fixed by $\mu_w$, $k_n\delta$, the wrap and the ball inertia. $w_\infty$ is exactly the speed at
+which the wheel would lose contact. The rpm independence is what \code{test\_grip\_limited\_speed\_independent\_of\_rpm}
+checks.
+
+\paragraph{Where the regimes meet.} The wheel catches up with the ball (rolling exit) if
+$R_w\Omega_f/2 \le v_{cap}$. Using \eqref{eq:launcher-brettle} from Section~\ref{sec:launcher:drop} for
+$\Omega_f$, the crossover wheel speed is
+\begin{equation}
+  \Omega_i^{*} = a\,\frac{2v_{cap}}{R_w} - \frac{R_w m v_{in}}{2I_w}.
+  \label{eq:launcher-crossover}
+\end{equation}
+
+\paragraph{Worked example.} Nominal hood: $I_b/r_c^2 = 0.017687$\,\unit{kg}\derived, so
+$m_{eff} = 0.021343$\,\unit{kg}\derived; $w_\infty = 2(0.0825)(16)/0.025 = 105.6$\,\unit{m$^2$/s$^2$}\derived{}
+($\sqrt{w_\infty} = 10.28$\,\unit{m/s}\derived); $\mathcal{B}\theta\rho = 0.8(\pi/2)(1.1713) = 1.472$\derived;
+$e^{-1.472} = 0.2295$\derived. Then $v_{cap}^2 = 105.6 - (105.6 - 0.25)(0.2295) = 81.42$\,\unit{m$^2$/s$^2$}\derived, so
+$v_{cap} = 9.02$\,\unit{m/s}\derived. The code with $c_{rr} = 0$ at 5000 and 6000\,\unit{rev/min}\assumed{}
+returns 9.021\,\unit{m/s}\predicted{} for both; the small difference is the short initial hood slip that
+\eqref{eq:launcher-vcap} ignores. With the default $c_{rr} = 0.02$\assumed{} the stored envelope gives
+8.909\,\unit{m/s}\predicted{} from 4000\assumed{} to 6000\,\unit{rev/min}\assumed. The stick check holds:
+$(\beta-1)/(\beta+1)\,\mu_w N_w = 0.171\times0.8\,N_w = 0.137\,N_w \le 0.3\,N_t$\derived{} since $N_t \ge N_w$.
+Equation \eqref{eq:launcher-crossover} gives $\Omega_i^{*} = 402.7$\,\unit{rad/s}\derived{}
+(3845\,\unit{rev/min}\derived{}); the envelope (default $c_{rr}$) is still rolling at 3500\assumed{} and slipping at 4000\,\unit{rev/min}\assumed{}
+(predicted regimes).
+For a softer ball, $k_n = 1500$\,\unit{N/m}\assumed, the code caps at 5.45\,\unit{m/s}\predicted.
+
+\paragraph{Roller nip cap.} In a nip the load is the parabola \eqref{eq:launcher-Nnip} with no centripetal
+term. For a top surface that does not move (a very heavy roller, the same $m_{eff}$), integrating
+$\mathrm{d}w/\mathrm{d}x = 2\mu_w N_w/m_{eff}$ over $[-x_h, x_h]$ with
+$\int_{-x_h}^{x_h}(\delta - \tfrac{\kappa}{2}x^2)\,\mathrm{d}x = \tfrac43\delta x_h$ gives
+\begin{equation}
+  v_{cap,nip}^2 = v_{in}^2 + \frac{8\,\mu_w k_n\,\delta\,x_h}{3\,m_{eff}} .
+  \label{eq:launcher-vnip}
+\end{equation}
+With $R_t = 0.024$\,\unit{m}\assumed, $\kappa = 28.64$\,\unit{1/m}\derived{} and
+$x_h = 0.01671$\,\unit{m}\derived{} (a 33.4\,\unit{mm}\derived{} contact against 129.6\,\unit{mm}\derived{} for the
+hood), \eqref{eq:launcher-vnip} gives $v_{cap,nip} = 5.19$\,\unit{m/s}\derived. The code with a fixed-like
+roller and $c_{rr} = 0$ gives 5.18\,\unit{m/s}\predicted; the nominal roller ($I_t = 10^{-5}$\,\unit{kg\,m$^2$}\assumed)
+caps at 5.03\,\unit{m/s}\predicted{} from 2500\,\unit{rev/min}\predicted{} upward. The short nip is why a roller is
+grip-limited much earlier than a $90^\circ$\assumed{} hood.
+
+\subsection{The ratio $v/u$, and why $v = u/2$ is not universal}
+\label{sec:launcher:vu}
+
+\paragraph{Motivation.} Teams set the wheel speed, not the exit speed. The link between them is the
+speed ratio
+\begin{equation}
+  \eta_v \equiv \frac{v}{u_0} = \frac{v}{R_w\Omega_i},
+  \label{eq:launcher-etav}
+\end{equation}
+where $u_0$ and $\Omega_i$ are the surface speed and wheel speed \emph{before} the shot.
+
+\paragraph{Rolling regime.} From \eqref{eq:launcher-ideal} and \eqref{eq:launcher-brettle} (with $c_{rr} = 0$),
+\begin{equation}
+  \eta_v = \frac{\Omega_f}{2\Omega_i}
+         = \frac{1}{2a}\left(1 + \frac{R_w m v_{in}}{2 I_w \Omega_i}\right) < \frac12 ,
+  \label{eq:launcher-etav_roll}
+\end{equation}
+because $a > 1$ and the feed term is small ($R_w m v_{in}/(2I_w) < (a-1)\,\Omega_i$, i.e.\ above about
+12\,\unit{rad/s}\derived{} here): the wheel has slowed by the time the ball rolls off it.
+
+\paragraph{Grip-limited regime.} $v = v_{cap}$ is fixed, so $\eta_v = 60\,v_{cap}/(\pi D n)$ falls as
+$1/n$.
+
+\paragraph{Other losses.} Hysteresis \eqref{eq:launcher-hyst} lowers $\eta_v$ further. Effects that the code
+does \emph{not} include would also lower it: tread compression (an effective wheel radius below $R_w$),
+non-diametral contacts, a hood that converges, and frame kick.
+% CODE vs DOC: docs/04 section 2 item 2 says the tread also compresses so the effective R_w is R_w - delta_w;
+% src/launcher.py keeps R_w fixed and puts all squeeze into the ball radius through lambda.
+
+\paragraph{Worked example.} With $c_{rr} = 0$ at 3000\,\unit{rev/min}\assumed,
+\eqref{eq:launcher-etav_roll} gives $(1 + 1.156/314.16)/(2\times1.0967) = 0.4576$\derived; the code gives
+0.4576\predicted. With the defaults the code gives the ratios below; at 6000\,\unit{rev/min}\assumed{} the ratio is
+barely more than half of the ideal 0.5\derived.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccccccc@{}}
+\toprule
+$n$ [\unit{rev/min}] & 1000\assumed & 2000\assumed & 3000\assumed & 3500\assumed & 4000\assumed & 5000\assumed & 6000\assumed \\
+\midrule
+$v$ [\unit{m/s}] & 2.239\predicted & 4.640\predicted & 6.996\predicted & 8.169\predicted & 8.909\predicted & 8.909\predicted & 8.909\predicted \\
+$\eta_v = v/u_0$ & 0.436\predicted & 0.452\predicted & 0.454\predicted & 0.455\predicted & 0.434\predicted & 0.347\predicted & 0.289\predicted \\
+regime & \multicolumn{4}{c}{rolling exit} & \multicolumn{3}{c}{wheel slipping at exit} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Literature band.} Because nothing has been measured on POLLEN, the design work uses a band from
+\code{research/params\_lit.json} (\code{launcher.v\_over\_surface\_speed}, grade C): low
+0.30\assumed, nominal 0.42\assumed, high 0.50\assumed. These come from slow-motion and forum estimates on
+other balls and from the rigid ideal; they are literature bounds, not POLLEN measurements. The code adds
+0.25\assumed{} (\code{V\_OVER\_U} in \code{src/shooter\_spec.py}) from a multi-roller table-tennis machine
+whose measured ratio, about 0.48\assumed{} of the \emph{mean} roller speed, maps to about 0.24--0.25\derived{} of $u_0$ for a
+hood (\code{research/EXTRA\_SOURCES.md}). The PM-001 model's own nominal hood, 0.436--0.455\predicted{} below the grip
+limit, sits on the optimistic side of that band.
+% NOTE: src/shooter_spec.py comments the 0.25 value as "Sakai & Kitade 2017 low end"; research/EXTRA_SOURCES.md
+% (row launcher.v_over_surface_speed) says it is a CALC mapping of eta ~0.48-0.51 (relative to mean roller
+% surface speed) to v/u_w for a hood, not a measured low end.
+
+\subsection{Flywheel slow-down and energy per shot}
+\label{sec:launcher:drop}
+
+\paragraph{Motivation.} A coasting wheel gives up speed to the ball. That drop sets $\Omega_f$ in
+\eqref{eq:launcher-ideal}, the recovery time between shots, and how much of the motor's work reaches the ball.
+
+\paragraph{Impulse bookkeeping.} Integrate \eqref{eq:launcher-eom_v}--\eqref{eq:launcher-eom_W} over the
+contact with $\tau_m = 0$, $c_{rr} = 0$ and define the friction impulses
+$J_w = \int F_w\,\mathrm{d}t$, $J_t = \int F_t\,\mathrm{d}t$ (\unit{N\,s}):
+\begin{equation}
+  m(v - v_{in}) = J_w + J_t, \qquad \frac{I_b s}{r_c} = J_w - J_t, \qquad
+  I_w(\Omega_i - \Omega_f) = R_w J_w .
+  \label{eq:launcher-impulse}
+\end{equation}
+Adding the first two eliminates the unknown hood impulse:
+\begin{equation}
+  m(v - v_{in}) + \frac{I_b s}{r_c} + \frac{2 I_w(\Omega_f - \Omega_i)}{R_w} = 0 ,
+  \label{eq:launcher-momhood}
+\end{equation}
+which \code{test\_generalised\_momentum\_hood} checks to $10^{-9}$.
+
+\paragraph{Generalised Brettle drop.} For a rolling exit, $v = s r_c = R_w\Omega_f/2$. Then
+$J_w = \tfrac12[m(v - v_{in}) + I_b v/r_c^2]$, and the wheel equation in \eqref{eq:launcher-impulse} becomes
+\begin{equation}
+  I_w\Omega_i - I_w\Omega_f = \frac{R_w}{2}\left[\Big(m + \frac{I_b}{r_c^2}\Big)\frac{R_w\Omega_f}{2} - m v_{in}\right].
+  \label{eq:launcher-brettlestep}
+\end{equation}
+Collecting the $\Omega_f$ terms and dividing by $I_w$:
+\begin{equation}
+  \Omega_f = \frac{\Omega_i + \dfrac{R_w m v_{in}}{2 I_w}}{a}, \qquad
+  a = 1 + \frac{R_w^2\,(m + I_b/r_c^2)}{4 I_w},
+  \label{eq:launcher-brettle}
+\end{equation}
+which is \code{brettle\_omega\_f} and \code{brettle\_ratio}. For $r_c = R_b$ and $v_{in} = 0$, using
+\eqref{eq:launcher-Ib}, $a = 1 + (1 + k_I)\,m R_w^2/(4 I_w)$, Brettle's published ratio. The drop per shot is
+$\Delta n = n_i - n_f$.
+
+\paragraph{Grip-limited drop.} If the wheel still slips at exit, the hood still sticks, so $s = v_{cap}/r_c$
+and the same $J_w$ applies with $v = v_{cap}$:
+\begin{equation}
+  \Delta\Omega = \frac{R_w}{2 I_w}\Big[m(v_{cap} - v_{in}) + \frac{I_b\,v_{cap}}{r_c^2}\Big],
+  \label{eq:launcher-dropgrip}
+\end{equation}
+which is also independent of wheel speed.
+
+\paragraph{Efficiency.} With $v_{in} = 0$, the ball's kinetic energy at a rolling exit is
+$\tfrac12(m + I_b/r_c^2)v^2 = \tfrac12 I_w\Omega_f^2\,(a - 1)$ (substitute $v = R_w\Omega_f/2$ and the
+definition of $a$). The wheel loses $\tfrac12 I_w(\Omega_i^2 - \Omega_f^2) = \tfrac12 I_w\Omega_f^2(a^2 - 1)$.
+Their ratio is
+\begin{equation}
+  \eta = \frac{KE_{ball}}{\Delta KE_{wheel}} = \frac{a - 1}{a^2 - 1} = \frac{1}{a + 1} < \frac12 .
+  \label{eq:launcher-eta}
+\end{equation}
+The rest, $a$ times the ball's energy, is lost to sliding at the contacts while the ball spins up (in the
+nominal run below almost all of it at the wheel).
+
+\paragraph{Recovery.} After the shot the motor \eqref{eq:launcher-motor} at full voltage refills the wheel:
+$I_w\dot\Omega = T_0(1 - \Omega/\Omega_{free})$ with $T_0 = G\tau_s V/V_0$ and
+$\Omega_{free} = (V/V_0)\,\omega_{free}/G$. Separating variables,
+\begin{equation}
+  t_{rec} = \tau_{mw}\ln\frac{\Omega_{free} - \Omega_{start}}{\Omega_{free} - \Omega_{target}}, \qquad
+  \tau_{mw} = \frac{I_w\Omega_{free}}{T_0},
+  \label{eq:launcher-recovery}
+\end{equation}
+infinite when $\Omega_{target} \ge \Omega_{free}$ (\code{recovery\_time}; no current limit, no controller lag,
+no rotor inertia).
+
+\paragraph{Worked example.} Rigid Brettle case: $a = 1 + 0.049^2(0.025 + 0.01575)/(4\times2.65\times10^{-4}) =
+1.0923$\derived, a drop of $1 - 1/a = 8.45$\,\%\derived{}, i.e.\ 253.5\,\unit{rev/min}\derived{} at
+3000\,\unit{rev/min}\assumed{} (the \code{hood\_ideal\_brettle} row). With $r_c = 0.0335$\,\unit{m}\derived,
+$a = 1.0967$\derived; adding $v_{in} = 0.5$\,\unit{m/s}\assumed, \eqref{eq:launcher-brettle} gives
+$n_f = 2745.6$\,\unit{rev/min}\derived{}, a drop of 254.4\,\unit{rev/min}\derived, and the code with
+$c_{rr} = 0$ gives 254.43\,\unit{rev/min}\predicted. With hysteresis the nominal drop is
+273.1\,\unit{rev/min}\predicted. In the grip-limited regime \eqref{eq:launcher-dropgrip} with
+$v_{cap} = 9.021$\,\unit{m/s}\predicted{} gives 328.9\,\unit{rev/min}\derived{} (code, $c_{rr}=0$:
+328.9\,\unit{rev/min}\predicted; default: 343.6\,\unit{rev/min}\predicted).
+Equation \eqref{eq:launcher-eta} gives $\eta = 1/2.0967 = 0.477$\derived. The nominal ledger at
+3000\,\unit{rev/min}: wheel loses 2.273\,\unit{J}\predicted, the ball gains 1.042\,\unit{J}\predicted{}
+($\eta = 0.458$\predicted), wheel-side sliding 1.093\,\unit{J}\predicted, hood sliding
+0.0009\,\unit{J}\predicted, hysteresis 0.137\,\unit{J}\predicted; the residual is zero to the printed digits.
+Recovery with the goBILDA 5203 1:1\confirmed{} at 12\,\unit{V}\confirmed:$\Omega_{free} = 628.3$\,\unit{rad/s}\derived,
+$\tau_{mw} = 2.65\times10^{-4}\times628.3/0.144 = 1.156$\,\unit{s}\derived,
+$\Omega_{start} = 314.16 - 28.60 = 285.56$\,\unit{rad/s}\derived, so
+$t_{rec} = 1.156\ln(342.76/314.16) = 0.101$\,\unit{s}\derived. Holding full voltage \emph{during} contact
+instead of coasting gives 7.153\,\unit{m/s}\predicted{} instead of 6.996\,\unit{m/s}\predicted{} at
+3000\,\unit{rev/min}\assumed, and adds nothing in the grip-limited regime.
+
+\subsection{The passive upper roller}
+\label{sec:launcher:roller}
+
+\paragraph{Motivation.} A common idea is that a free top roller ``spins up and reduces the spin
+difference''. The model tests that with the roller equation \eqref{eq:launcher-eom_Wt}.
+
+\paragraph{Rolling state with a moving top surface.} Let $u_w = R_w\Omega$ and $u_t = R_t\Omega_t$ be the
+two surface speeds (forward positive). Rolling at both contacts means $\sigma_w = \sigma_t = 0$:
+$u_w = v + s r_c$ and $u_t = v - s r_c$. Adding and subtracting,
+\begin{equation}
+  v = \frac{u_w + u_t}{2}, \qquad s = \frac{u_w - u_t}{2 r_c}, \qquad
+  S = \frac{R_b}{r_c}\cdot\frac{u_w - u_t}{u_w + u_t},
+  \label{eq:launcher-rollerstate}
+\end{equation}
+which is \code{roller\_rolling\_state}. A fixed hood is $u_t = 0$. $S$ drops below $R_b/r_c$ only if the top
+surface moves \emph{forward} ($u_t > 0$).
+
+\paragraph{Which way the passive roller turns.} By \eqref{eq:launcher-beta}, for a slow feed the ball's top
+point moves backward, so it drags the roller to $\Omega_t < 0$, i.e.\ $u_t < 0$, and
+\eqref{eq:launcher-rollerstate} gives $S > R_b/r_c$. This needs $v \gg v_{in}$: at
+1000\,\unit{rev/min}\assumed{} the 0.5\,\unit{m/s}\assumed{} feed is a large part of the exit speed, the nominal
+roller is spun \emph{forward} ($+8.25$\,\unit{rad/s}\predicted) and $S = 0.974$\predicted; the backward drag
+appears from about 2000\,\unit{rev/min}\predicted{} upward. The two inertia limits are: a very heavy roller at rest
+behaves like a fixed hood ($S \to R_b/r_c$), and a massless frictionless roller transmits no force, giving
+\eqref{eq:launcher-Sinf} (checked by \code{test\_massless\_roller\_equals\_frictionless\_top}).
+
+\paragraph{Between shots.} The roller keeps its exit speed and coasts for $\Delta t_{shot}$ under
+$I_t\dot\Omega_t = -\tau_b(\Omega_t)$ (\code{roller\_coast}, 1\,\unit{ms}\assumed{} explicit steps, set to zero
+if the sign would flip).
+
+\paragraph{Worked example.} At 2000\,\unit{rev/min}\assumed{} the nominal roller exits rolling at both
+contacts with $u_w = 9.375$\,\unit{m/s}\predicted{} and $u_t = -0.166$\,\unit{m/s}\predicted. Equation
+\eqref{eq:launcher-rollerstate} gives $v = 4.605$\,\unit{m/s}\derived{} and
+$S = 1.0597\times9.541/9.210 = 1.098$\derived, matching the simulated $S = 1.0978$\predicted. At
+3000\,\unit{rev/min} it is grip-limited: $v = 5.029$\,\unit{m/s}\predicted, $S = 1.107$\predicted, roller at
+$-89.9$\,\unit{rev/min}\predicted{} ($-9.41$\,\unit{rad/s}\predicted). Coasting: the bearing torque is about
+$5\times10^{-4} + 10^{-6}\times9.41 = 5.09\times10^{-4}$\,\unit{N\,m}\derived, a deceleration of
+50.9\,\unit{rad/s$^2$}\derived, so the roller stops in about 0.19\,\unit{s}\derived{} $< 0.5$\,\unit{s}\assumed.
+Every shot of a burst therefore starts from rest, and the stored \code{roller\_nominal\_steady} rows equal
+\code{roller\_nominal\_rest}.
+
+\paragraph{Roller band.} Over $I_t \in [10^{-6}, 2\times10^{-4}]$\,\unit{kg\,m$^2$}\assumed,
+$R_t \in [12.5, 50]$\,\unit{mm}\assumed, bearing torque 0--$3\times10^{-3}$\,\unit{N\,m}\assumed{} and
+$\delta \in \{4, 8\}$\,\unit{mm}\assumed{} (shots 1--3 of a burst, 216\derived{} cases) the code finds
+$S$ from 1.060\predicted{} to 1.242\predicted{} and $v$ from 4.86\predicted{} to 7.09\,\unit{m/s}\predicted{} at
+3000\,\unit{rev/min}\assumed. With a fast feed the roller is spun forward: a light roller
+($I_t = 2\times10^{-6}$\,\unit{kg\,m$^2$}\assumed) gives $S = 0.921$\predicted{} at $v_{in} = 2$\,\unit{m/s}\assumed{}
+and 0.674\predicted{} at 4\,\unit{m/s}\assumed. So the passive roller, fed slowly at a working wheel speed, slightly \emph{raises} $S$ and
+costs exit speed; it does not reduce spin.
+% NOTE: research/params_lit.json launcher.S_exit_passive_roller.vs_PM001 quotes the PM-001 envelope as
+% "0.91-1.24"; data/launch_envelope.json reachable_S_summary.roller gives 1.06-1.242 (slow feed). The 0.91
+% value is the fast-feed case (v_in = 2 m/s), listed separately.
+
+\subsection{Inverse problem: wheel speed for a target exit speed}
+\label{sec:launcher:inverse}
+
+\paragraph{Motivation.} The trajectory sections give a target exit speed $v$. The team needs a wheel
+speed. Inverting \eqref{eq:launcher-etav} with \eqref{eq:launcher-u}:
+\begin{equation}
+  u_0 = \frac{v}{\eta_v}
+  \;\;\Longrightarrow\;\;
+  n = \frac{60\,u_0}{\pi D} = \frac{60\,v}{\eta_v\,\pi D},
+  \label{eq:launcher-inverse}
+\end{equation}
+which is \code{wheel\_rpm} in \code{src/shooter\_spec.py}. It is rounded to a whole rpm and
+evaluated at
+$\eta_v \in \{0.25, 0.30, 0.42, 0.50\}$\assumed. The matching ball spin for a design $S$ follows from
+\eqref{eq:launcher-S}: $n_{ball} = |S|\,v\,60/(2\pi R_b)$ (\code{spin\_rpm}).
+
+\paragraph{Worked example.} For the exit-speed band 6.5--9.0\,\unit{m/s}\predicted{} of the shooter
+specification:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+target $v$ & $\eta_v = 0.25$\assumed & $0.30$\assumed & $0.42$\assumed & $0.50$\assumed \\
+\midrule
+6.5\,\unit{m/s}\predicted & 5067\,\unit{rev/min}\derived & 4222\derived & 3016\derived & 2533\derived \\
+7.0\,\unit{m/s}\predicted & 5457\derived & 4547\derived & 3248\derived & 2728\derived \\
+9.0\,\unit{m/s}\predicted & 7016\derived & 5847\derived & 4176\derived & 3508\derived \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+For example $n = 60\times9.0/(0.25\,\pi\times0.098) = 7016$\,\unit{rev/min}\derived. Two checks against the
+forward model. First, 7016\,\unit{rev/min}\derived{} is above the 6000\,\unit{rev/min}\confirmed{} free speed of a 1:1
+motor, so the 0.25 case needs a step-up drive or a different motor. Second, the inverse
+\eqref{eq:launcher-inverse} assumes a constant $\eta_v$, which only holds in the rolling regime. The nominal
+hood of Section~\ref{sec:launcher:grip} cannot reach 9.0\,\unit{m/s}\predicted{} at \emph{any} wheel speed (cap
+8.91\,\unit{m/s}\predicted); a higher cap needs more grip, more squeeze or a stiffer ball, which is what
+measuring $\mu_w$, $k_n$ and $\eta_v$ is for. Spin for $S = 1$ at 7.0\,\unit{m/s}\predicted: 1883\,\unit{rev/min}\derived.
+% CODE vs DOC: docs/08_shooter_spec.md quotes 3020-4180 / 4220-5850 / 5070-7020 / 2530-3510 rpm for
+% 6.5-9.0 m/s; shooter_spec.wheel_rpm gives 3016-4176 / 4222-5847 / 5067-7016 / 2533-3508 (doc rounded to 10 rpm).
+
+\subsection{Assumptions}
+\label{sec:launcher:assumptions}
+
+\begin{itemize}
+  \item Planar, one-dimensional contact path: a hood concentric with the wheel (uniform gap) or a straight
+        pass through a two-cylinder nip. No converging hood, entry ramp, off-axis contact, sidespin or frame
+        kick.
+  \item Linear normal law $N = k_n\delta$ with an unmeasured $k_n$; a real hollow shell is non-linear and can
+        buckle. The squeeze shortens the rolling radius by $\lambda\delta/2$ with unknown $\lambda$; the tread is
+        rigid and $R_w$ is fixed.
+  \item Constant Coulomb coefficients $\mu_w$, $\mu_t$ (no dependence on slip speed, heat or wear); none is
+        measured on POLLEN.
+  \item Rolling hysteresis as a moment $c_{rr} r_c N$ smoothed with $\tanh$; $c_{rr}$ is a guess.
+  \item The ball enters with speed $v_{in}$ and no spin; gravity along the path is ignored.
+  \item The wheel coasts during contact unless a motor is given; the motor is a linear torque--speed line
+        with no current limit, controller lag or rotor inertia.
+  \item Ball mass, radius and inertia vary between pieces only through the parameter boxes; $k_I$ is derived
+        from a uniform shell, not measured.
+  \item The speed ratios $\eta_v$ used in the inverse problem are literature bounds from other balls and
+        launchers, not POLLEN measurements.
+  \item Every simulated value in this section is a prediction of an uncalibrated model. A single test shot
+        would not establish repeatability; the calibration needs repeated shots at several wheel speeds.
+\end{itemize}

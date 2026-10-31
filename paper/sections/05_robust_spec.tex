@@ -1,0 +1,933 @@
+\section{From windows to requirements: robustness, Monte Carlo and the shooter specification}
+\label{sec:robust_spec}
+
+% Source of truth: src/shooter_spec.py (grid, variants, best_square, fixed_elev, describe,
+% spec_rows, longest_run, tunable_rows, wheel_rpm, spin_rpm), src/robustness.py (wilson,
+% integrate3d, backspin_axis, mc_shots, mc_scenarios, smooth_prob, best_over_hw,
+% lateral_factor, wind_drift_sd, position_prob, clean_masks) and src/feasibility.py
+% (integrate_batch, evaluate_gate, grid_from_candidates).
+% Every worked number below was computed on 2026-10-30 with the system python against the
+% repo code. Spec-grid numbers use research/params_lit.json (shooter_spec.py always loads it).
+% The Monte Carlo numbers in data/robust_mc.csv and data/robust_map_*.csv were produced with the
+% older data/aero_params.json (their CSV headers say so); see the comments in
+% Section~\ref{sec:robust_spec-mc}.
+
+The earlier sections give, for one release state, a yes-or-no answer: does the ball enter the
+upward-facing CELL of the HIVE cleanly or not?
+A shooter, though, is not a single release state.
+Its exit speed and its angle scatter from shot to shot, the ball's mass and its aerodynamic
+coefficients are only known to within literature bounds, and the HIVE itself sits on the field
+with a tolerance.
+This section turns the yes-or-no windows into numbers a CAD designer can build to.
+It goes in five steps:
+(i) sample the clean window on a grid;
+(ii) find the largest clean square in that grid and read it as a $\pm$ tolerance;
+(iii) ask which hood angle stays usable when the aerodynamics change and the team re-tunes only
+the wheel speed;
+(iv) smooth the window with Gaussian release errors, and run a full three-dimensional Monte Carlo
+with per-shot physics, wind and HIVE pose, scored with a Wilson interval;
+(v) convert the result into wheel and ball rpm and a CAD card.
+
+All targets at the end of this section are model outputs, so they carry \predicted.
+They are design targets to be checked on the field, not measured performance.
+
+Throughout, the frame is the one of Section~\ref{sec:flight}: $x$ is horizontal toward the HIVE,
+$y$ is horizontal and sideways, and $z$ points up.
+The shot comes from the unfavourable side: the ball has to pass over the roof of the HIVE and then
+drop into the CELL, whose mouth faces outward and upward at the tilt angle
+$\beta = 30^\circ$\confirmed\ (Competition Manual figure and official CAD).
+
+% ---------------------------------------------------------------------------------------------
+\subsection{The clean window on a grid}
+\label{sec:robust_spec-grid}
+
+\paragraph{Motivation.}
+The flight solver answers ``clean or not'' for one release state.
+To talk about tolerances we need that answer on a regular grid of release states, so that
+neighbouring cells can be compared.
+
+\paragraph{Release state.}
+A shot is released from horizontal distance $d$ (\unit{m}) before the HIVE pivot plane and at
+height $h$ (\unit{m}) above the tiles, with exit speed $v$ (\unit{m/s}), elevation angle
+$\theta$ (\unit{deg}, above horizontal) and spin parameter $S$ (dimensionless, $S=\omega R/|\vect{v}|$
+with ball radius $R$ in \unit{m} and spin rate $\omega$ in \unit{rad/s}).
+In two dimensions there is no wind, so the forces depend only on the velocity and the spin, not on
+the position.
+The solver \code{integrate\_batch} therefore integrates each path once from the origin, giving
+$\vect{r}_0(t;v,\theta,S)$, and translates it:
+\begin{equation}
+  \vect{r}(t;h,d,v,\theta,S) = \vect{r}_0(t;v,\theta,S) + (-d,\; h)^{\mathsf T}.
+  \label{eq:robust_spec-translate}
+\end{equation}
+This is exact because the right-hand side of the equations of motion contains no position
+(it depends on the velocity and, through the spin decay, on the time since release only).
+One integration serves every $(h,d)$ pair, which is what makes a dense grid affordable.
+
+\paragraph{Clean indicator.}
+Let $\vect{n}_{\mathrm{out}}$ be the outward unit normal of the CELL mouth (dimensionless) and let
+$c(t)$ (\unit{m}) be the raster clearance between the ball surface and the nearest HIVE part.
+Following \code{evaluate\_gate}, a path is clean when it crosses the mouth edge (the gate segment
+between the two lips) at a time $t_g$ (\unit{s}), moving inward, without touching anything on the
+way in:
+\begin{equation}
+  M(h,d,v,\theta) =
+  \begin{cases}
+    1, & \text{if } \exists\, t_g:\ \vect{r}(t_g)\in\text{gate},\ \
+         \vect{v}(t_g)\cdot\vect{n}_{\mathrm{out}} < 0,\ \ c_{\min}(t_g) \ge 0, \\
+    0, & \text{otherwise,}
+  \end{cases}
+  \label{eq:robust_spec-mask}
+\end{equation}
+where $c_{\min}(t_g)=\min_{t_{\mathrm{box}}\le t\le t_g} c(t)$ (\unit{m}) and $t_{\mathrm{box}}$ (\unit{s})
+is the time the ball enters the raster box around the HIVE.
+
+\paragraph{Grid.}
+The specification grid of \code{shooter\_spec.grid} is
+\begin{equation}
+  v_i = v_{\min} + i\,\Delta v,\qquad \theta_j = \theta_{\min} + j\,\Delta\theta ,
+  \label{eq:robust_spec-grid}
+\end{equation}
+with $v_{\min}=5.0$\,\unit{m/s}\assumed, $\Delta v = 0.05$\,\unit{m/s}\assumed\ and 111\derived\ speeds up
+to 10.5\,\unit{m/s}\assumed; $\theta_{\min}=62^\circ$\assumed, $\Delta\theta=0.1^\circ$\assumed\ and
+261\derived\ elevations up to $88^\circ$\assumed.
+The release heights are 0.20, 0.35, 0.50, 0.65 and 0.737\,\unit{m}\assumed, and distances run from
+0.60\,\unit{m}\assumed\ to 1.75\,\unit{m}\assumed\ in steps of 0.05\,\unit{m}\assumed\ (24\derived\ values).
+The spin values are $S\in\{0, 0.5, 1.0, 1.5, -1.0\}$\assumed, where negative $S$ is topspin.
+
+The flight solver returns candidate distances $d_k$ (\unit{m}) at which a path hits the gate.
+\code{grid\_from\_candidates} marks a grid distance $d$ clean only if two candidates at consecutive
+time samples $k$, $k+1$ of the same path are both clean and bracket it:
+\begin{equation}
+  M(d) = 1 \iff \exists k:\ M(d_k)=M(d_{k+1})=1,\ \ \min(d_k,d_{k+1}) \le d \le \max(d_k,d_{k+1}).
+  \label{eq:robust_spec-dcell}
+\end{equation}
+This is conservative: a clean point that is isolated between two dirty neighbours is not counted.
+
+\paragraph{Worked example.}
+Table~\ref{tab:robust_spec-nclean} lists the number of clean $(v,\theta)$ cells
+$N(h,d)=\sum_{i,j}M(h,d,v_i,\theta_j)$ for the nominal aerodynamic set of
+\code{research/params\_lit.json}.
+At $d\le0.70$\,\unit{m}\assumed\ no cell is clean at the heights
+$h=0.50$ to $0.737$\,\unit{m}\assumed: the ball cannot both clear the roof and descend steeply enough
+into the mouth from that close.
+The count peaks near $d=0.80$\,\unit{m}\predicted\ and then falls slowly with distance.
+At $d=0.75$\,\unit{m}\assumed\ the window shrinks with height: 369\predicted\ cells at
+$h=0.737$\,\unit{m}\assumed, 295\predicted\ at 0.65\,\unit{m}\assumed\ and 170\predicted\ at
+0.50\,\unit{m}\assumed\ (no spin).
+For $S=1$ at $h=0.50$\,\unit{m}\assumed\ the cell count at $d=0.75$\,\unit{m}\assumed\ is already
+0\predicted.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Clean cells on the $111\times261$ speed--elevation grid at $h=0.737$\,\unit{m}, nominal
+    aerodynamics (\code{research/params\_lit.json}).}
+  \label{tab:robust_spec-nclean}
+  \begin{tabular}{@{}lrrrrrrr@{}}
+    \toprule
+    $d$ (\unit{m}) & 0.75 & 0.80 & 0.85 & 0.90 & 1.15 & 1.50 & 1.75 \\
+    \midrule
+    $N$, $S=0$ & 369\predicted & 457\predicted & 445\predicted & 429\predicted & 355\predicted & 288\predicted & 244\predicted \\
+    $N$, $S=1$ & 303\predicted & 418\predicted & 410\predicted & 398\predicted & 321\predicted & 249\predicted & 214\predicted \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Backspin does not make the window larger here: $S=1$ has fewer clean cells than $S=0$ at every
+distance in the table.
+The case $S=1.5$ gives exactly the same window as $S=1.0$, because the lift coefficient has
+already saturated (Section~\ref{sec:flight}): with the nominal set, $C_L = \min(c_1 S, C_{L,\max})$ stops
+growing at $S_{\mathrm{sat}} = C_{L,\max}/c_1 = 0.25/0.35 = 0.714$\derived.
+More spin above that adds nothing.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item The 2D model has no wind and no sideways motion; azimuth is added in
+    Section~\ref{sec:robust_spec-azimuth}.
+  \item A grid cell is a point sample; nothing is claimed about the space between grid points.
+  \item The aerodynamic coefficients are literature bounds from pickleball and smooth-sphere data,
+    not POLLEN measurements.
+  \item The HIVE tilt is the nominal $30^\circ$\confirmed\ unless a variant says otherwise.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{The largest clean square and the $\pm$ tolerance}
+\label{sec:robust_spec-square}
+
+\paragraph{Motivation.}
+A shooter set to $(v_c,\theta_c)$ that actually fires anywhere in
+$[v_c-\delta_v, v_c+\delta_v]\times[\theta_c-\delta_\theta,\theta_c+\delta_\theta]$ is clean every time
+only if that whole box is clean.
+The largest all-clean $k\times k$ block of cells is therefore the best repeatability target the
+window allows.
+\code{best\_square} finds it in $O(N_v N_\theta)$ work per size using a prefix sum.
+
+\paragraph{Prefix sum.}
+Let $M_{ij}\in\{0,1\}$ be the mask on the $N_v\times N_\theta$ grid for fixed $(h,d,S)$.
+Define the two-dimensional prefix sum (a count, dimensionless)
+\begin{equation}
+  P_{ij} = \sum_{i'=0}^{i-1}\sum_{j'=0}^{j-1} M_{i'j'},\qquad P_{0j}=P_{i0}=0 .
+  \label{eq:robust_spec-prefix}
+\end{equation}
+
+\paragraph{Block sum, step by step.}
+The number of clean cells in the $k\times k$ block whose lower corner is $(i_0,j_0)$ is
+$B_k(i_0,j_0)=\sum_{i=i_0}^{i_0+k-1}\sum_{j=j_0}^{j_0+k-1}M_{ij}$.
+The sum $P_{i_0+k,\,j_0+k}$ covers the rectangle $[0,i_0+k)\times[0,j_0+k)$.
+Subtracting $P_{i_0,\,j_0+k}$ removes the rows below $i_0$, and subtracting $P_{i_0+k,\,j_0}$ removes the
+columns left of $j_0$.
+The corner $[0,i_0)\times[0,j_0)$ has now been removed twice, so it is added back once
+(inclusion--exclusion):
+\begin{equation}
+  B_k(i_0,j_0) = P_{i_0+k,\,j_0+k} - P_{i_0,\,j_0+k} - P_{i_0+k,\,j_0} + P_{i_0,\,j_0}.
+  \label{eq:robust_spec-block}
+\end{equation}
+Because each $M_{ij}\le1$, the block is all clean exactly when its count is the largest possible:
+\begin{equation}
+  \text{block clean} \iff B_k(i_0,j_0) = k^2 .
+  \label{eq:robust_spec-allclean}
+\end{equation}
+
+\paragraph{Monotone search.}
+Every $k\times k$ clean block contains a $(k-1)\times(k-1)$ clean block, so if no block of size $k$
+exists, none of a larger size exists either.
+The code increases $k$ from 1 and stops at the first size with no hit:
+\begin{equation}
+  k^\ast = \max\{k:\ \exists (i_0,j_0),\ B_k(i_0,j_0)=k^2\}.
+  \label{eq:robust_spec-kstar}
+\end{equation}
+When several blocks of size $k^\ast$ exist, the code keeps the one whose lower corner is closest (in
+index units) to the centroid $(\bar\imath,\bar\jmath)$ of the lower corners of all hits (the same as
+comparing block centres, since every centre is the corner shifted by $(k^\ast-1)/2$), which keeps the
+choice away from the edge of a cluster:
+\begin{equation}
+  (i_0,j_0) = \arg\min_{\text{hits}} \Big[\big(i_0-\bar\imath\big)^2
+              + \big(j_0-\bar\jmath\big)^2\Big].
+  \label{eq:robust_spec-tie}
+\end{equation}
+
+\paragraph{Centre and tolerance.}
+The $k$ cell centres of the block span $k-1$ grid steps.
+The set point is the middle of that span, and the half-span is the tolerance:
+\begin{align}
+  v_c &= v_{\min} + \Big(i_0+\frac{k^\ast-1}{2}\Big)\Delta v, &
+  \theta_c &= \theta_{\min} + \Big(j_0+\frac{k^\ast-1}{2}\Big)\Delta\theta,
+  \label{eq:robust_spec-centre}\\
+  \delta_v &= \frac{k^\ast-1}{2}\,\Delta v, &
+  \delta_\theta &= \frac{k^\ast-1}{2}\,\Delta\theta .
+  \label{eq:robust_spec-tol}
+\end{align}
+Here $v_c$ and $\delta_v$ are in \unit{m/s}, $\theta_c$ and $\delta_\theta$ in degrees.
+A single clean cell ($k^\ast=1$) gives a zero tolerance: the set point works only if the shooter is
+perfect.
+
+\paragraph{Worked example.}
+At $h=0.737$\,\unit{m}\assumed, $d=0.75$\,\unit{m}\assumed\ and $S=0$\assumed, nominal aerodynamics,
+the search ends at $k^\ast=4$\predicted\ with $(i_0,j_0)=(78,223)$\predicted.
+Then
+$v_c = 5.0 + (78+1.5)(0.05) = 8.975$\,\unit{m/s}\predicted\ and
+$\theta_c = 62 + (223+1.5)(0.1) = 84.45^\circ$\predicted, with
+$\delta_v = 1.5\times0.05 = 0.075$\,\unit{m/s}\derived\ and
+$\delta_\theta = 1.5\times0.1 = 0.15^\circ$\derived.
+The smallest raster clearance inside the block is only 0.2\,\unit{mm}\predicted.
+For $S=0.5$\assumed\ the square is also $k^\ast=4$\predicted\ at (9.275\,\unit{m/s}\predicted,
+$82.45^\circ$\predicted); for $S=1.0$\assumed\ it is $k^\ast=4$\predicted\ at
+(9.025\,\unit{m/s}\predicted, $81.95^\circ$\predicted).
+Over every unfavourable-side row of the sweep with $S\in\{0,0.5,1\}$, the square sizes are
+$k^\ast=4$ in 16\predicted\ rows, $k^\ast=3$ in 251\predicted, $k^\ast=2$ in 40\predicted,
+$k^\ast=1$ in 1\predicted\ and empty in 52\predicted.
+No row reaches $k^\ast=5$.
+So $\pm0.075$\,\unit{m/s}\predicted\ and $\pm0.15^\circ$\predicted\ is the best repeatability the grid
+admits anywhere, and it holds for one set of aerodynamic coefficients only.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item A square block in index space is used; with $\Delta v=0.05$\,\unit{m/s}\assumed\ and
+    $\Delta\theta=0.1^\circ$\assumed\ this fixes the aspect ratio of the tolerance box.
+  \item Cleanliness is checked only at the cell centres of the block.
+  \item One aerodynamic set, one tilt and one $(h,d)$ at a time.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Many conditions: the robust intersection and the field-tuned hood}
+\label{sec:robust_spec-hood}
+
+\paragraph{Motivation.}
+The square above is for the nominal coefficients.
+On the field the drag and lift of a real POLLEN, and the HIVE tilt, can be anywhere inside their
+bounds.
+A fixed hood fixes the elevation angle; the wheel speed is the one thing the team can tune at the
+field.
+This subsection asks which hood angle leaves a usable speed under every condition.
+
+\paragraph{Conditions.}
+A condition $c$ is one aerodynamic variant combined with one HIVE tilt.
+\code{shooter\_spec.variants} gives the nominal set and the drag bounds (Cd\_low, Cd\_high); for
+$S\ne0$ it adds the lift bounds (Cl\_low, Cl\_high) and fast spin decay (k\_high).
+The tilts are $28.5^\circ$\derived, $30^\circ$\confirmed\ and $31.5^\circ$\derived\ (the field
+acceptance lip-height tolerance).
+That gives $3\times3=9$\derived\ conditions for $S=0$ and $6\times3=18$\derived\ for $S\ne0$.
+Each condition has its own mask $M_c(v_i,\theta_j)$.
+
+\paragraph{Robust intersection.}
+The strictest requirement is a single $(v,\theta)$ that is clean in every condition:
+\begin{equation}
+  M_{\mathrm{rob}}(v_i,\theta_j) = \prod_{c} M_c(v_i,\theta_j).
+  \label{eq:robust_spec-robust}
+\end{equation}
+On the unfavourable side this mask is empty in every one of the 600\predicted\ rows of
+\code{data/spec\_robust.csv}: no single speed and angle works for all drag, lift and tilt bounds at
+once.
+This is why the specification must rely on field tuning.
+
+\paragraph{Elevation band.}
+A real hood angle is set to within $\pm\tau$ (\unit{deg}).
+With $n_b=\mathrm{round}(\tau/\Delta\theta)$ (cells), a speed cell is usable at hood index $j$ only if
+it is clean at every elevation in the band:
+\begin{equation}
+  G_c(v_i,j) = \prod_{|j'-j|\le n_b} M_c(v_i,\theta_{j'}),\qquad n_b\le j< N_\theta-n_b .
+  \label{eq:robust_spec-band}
+\end{equation}
+
+\paragraph{Longest run.}
+For fixed $j$, \code{longest\_run} scans $G_c(\cdot,j)$ along the speed axis.
+With the run length $L_i = (L_{i-1}+1)\,G_c(v_i,j)$, $L_{-1}=0$, the longest run and its centre (a
+speed index, possibly a half integer) are
+\begin{equation}
+  n_c(j) = \max_i L_i,\qquad
+  \hat\imath_c(j) = \arg\max_i L_i - \frac{n_c(j)-1}{2}.
+  \label{eq:robust_spec-run}
+\end{equation}
+The nominal-only fixed-hood value in \code{describe} uses only the nominal condition and picks the $j$
+with the longest run (ties broken by the larger worst-case clearance), with set speed
+$(v_{\mathrm{lo}}+v_{\mathrm{hi}})/2$ and tolerance $(v_{\mathrm{hi}}-v_{\mathrm{lo}})/2$ over that run.
+
+\paragraph{Field-tuned hood.}
+\code{tunable\_rows} lets each condition use its own speed.
+The hood is feasible at index $j$ if every condition has at least one usable speed run.
+The guaranteed run length is the worst one,
+\begin{equation}
+  w(j) = \min_c n_c(j),\qquad \text{feasible}\iff w(j)>0 ,
+  \label{eq:robust_spec-wmin}
+\end{equation}
+and the spread of the run centres measures how far the team may have to re-tune,
+$\Sigma(j) = \max_c \hat\imath_c(j) - \min_c \hat\imath_c(j)$ (cells; $\Delta v\,\Sigma(j)$ in \unit{m/s}).
+The code ranks hood indices by a lexicographic score (run length first, small spread second; the
+spread is at most $N_v-1=110$ cells, so the factor 1000 keeps the run length dominant):
+\begin{equation}
+  j^\ast = \arg\max_j \Big[1000\,w(j) - \Sigma(j)\Big].
+  \label{eq:robust_spec-score}
+\end{equation}
+The reported tuning range and the speed tolerance that every condition keeps at the chosen hood are
+\begin{equation}
+  v_{\mathrm{tune}}\in\Big[v_{\min}+\Delta v\min_c\hat\imath_c(j^\ast),\
+                          v_{\min}+\Delta v\max_c\hat\imath_c(j^\ast)\Big],\qquad
+  \delta_{v,\mathrm{tune}} = \frac{w(j^\ast)-1}{2}\,\Delta v .
+  \label{eq:robust_spec-tune}
+\end{equation}
+Note that the masks are not intersected here: Eq.~\eqref{eq:robust_spec-wmin} needs a run to exist in each
+condition separately, and the runs may sit at different speeds.
+% Code/doc difference: the task wording speaks of masks "intersected over conditions". The code
+% (tunable_rows) takes min_c of run lengths with per-condition speeds; the true intersection is
+% spec_rows / spec_robust.csv, and it is empty. This text follows the code.
+
+\paragraph{Worked example.}
+At $h=0.737$\,\unit{m}\assumed\ and $d=0.75$\,\unit{m}\assumed\ with $\tau=0.2^\circ$\assumed\
+($n_b=2$\derived):
+\begin{itemize}
+  \item No spin: the hood is $\theta_{\mathrm{hood}}=80.8^\circ$\predicted.
+    The nine run centres lie between 6.65\,\unit{m/s}\predicted\ (Cd\_low) and
+    7.35\,\unit{m/s}\predicted\ (Cd\_high); the nominal-drag centres are
+    6.825--6.9\,\unit{m/s}\predicted.
+    The worst run is $w=1$\predicted\ cell, so $\delta_{v,\mathrm{tune}}=0$\derived: each condition has
+    exactly one tuned speed that works.
+  \item Backspin $S\in\{0.5,1.0,1.5\}$: no hood index is feasible at $\tau=0.2^\circ$\assumed.
+    With $\tau=0.1^\circ$\assumed\ ($n_b=1$\derived) the hood is feasible at $80.3^\circ$\predicted\
+    ($S=0.5$) and $80.4^\circ$\predicted\ ($S=1.0$) with $w=2$\predicted, i.e.\
+    $\delta_{v,\mathrm{tune}}=0.025$\,\unit{m/s}\derived.
+  \item With $\tau=0.5^\circ$\assumed\ no row of the sweep is feasible for any spin.
+\end{itemize}
+Without the band ($\tau=0$), every condition has clean speeds at the backspin hood $80.5^\circ$\predicted\
+(conditions of $S=0.5$ and $S=1$ together);
+the lowest clean speed per condition ranges from 6.9\,\unit{m/s}\predicted\ to 8.9\,\unit{m/s}\predicted\
+(the high-lift bound needs the most speed).
+For no spin at $80.8^\circ$\predicted\ the union of the nine clean speed sets is
+6.6--7.45\,\unit{m/s}\predicted.
+An exit speed range of about 6.5--9.0\,\unit{m/s}\predicted\ therefore contains a clean speed for
+every condition at the chosen hood.
+The nominal-only fixed hood of \code{describe} at $\tau=0.2^\circ$\assumed\ is $82.8^\circ$\predicted\
+for no spin (7.75--7.8\,\unit{m/s}\predicted) and $80.5^\circ$\predicted\ for $S=0.5$ and $S=1$; at
+$\tau=0.5^\circ$\assumed\ it finds none.
+% Code/doc difference: docs/08_shooter_spec.md says a fixed hood at +-0.2 deg shrinks the window to
+% a single 0.05 m/s cell. In the code this holds for S = 0 only; for backspin tunable_rows finds no
+% feasible hood at +-0.2 deg (only at +-0.1 deg).
+% Code/doc difference: docs/08 "about 81 deg (no spin)" matches the tunable hood 80.8 deg; the
+% nominal-only hood02 value for S = 0 is 82.8 deg.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item The team can re-tune wheel speed at the field but not the hood angle.
+  \item The conditions are the corners of the literature bounds, not a measured distribution.
+  \item Topspin ($S=-1$\assumed) is feasible at $\tau=0.2^\circ$\assumed\ in the sweep
+    (for example $81.6^\circ$\predicted, 6.4--7.05\,\unit{m/s}\predicted) but is not the chosen
+    configuration.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Release errors as a Gaussian blur}
+\label{sec:robust_spec-smooth}
+
+\paragraph{Motivation.}
+The square and the band treat the tolerance as a hard box.
+Real release errors are random, so the right question is the probability of a clean shot when the
+shooter aims at a cell.
+For independent Gaussian errors this probability is the clean mask blurred by a Gaussian.
+
+\paragraph{Expectation as convolution.}
+Let the actual distance, speed and elevation be $d+\delta_d$, $v(1+\varepsilon_v)$ and
+$\theta+\delta_\theta$, with $\delta_d\sim\mathcal N(0,\sigma_d^2)$ (\unit{m}),
+$\varepsilon_v\sim\mathcal N(0,\sigma_{v,\mathrm{rel}}^2)$ (dimensionless) and
+$\delta_\theta\sim\mathcal N(0,\sigma_\theta^2)$ (\unit{deg}), all independent.
+The probability of a clean shot is
+\begin{equation}
+  p(d,v,\theta) = \mathbb E\big[M(d+\delta_d,\ v(1+\varepsilon_v),\ \theta+\delta_\theta)\big].
+  \label{eq:robust_spec-expect}
+\end{equation}
+Near a reference speed $v_{\mathrm{ref}}$ (\unit{m/s}) the speed error is
+$v\varepsilon_v\approx v_{\mathrm{ref}}\varepsilon_v$, an additive error of standard deviation
+$\sigma_v = \sigma_{v,\mathrm{rel}}v_{\mathrm{ref}}$ (\unit{m/s}).
+Writing the expectation as an integral against the product density $\phi$ gives a convolution:
+\begin{equation}
+  \begin{split}
+  p(d,v,\theta) &= \iiint M(d',v',\theta')\,
+  \phi_{\sigma_d}(d'-d)\,\phi_{\sigma_v}(v'-v)\,\phi_{\sigma_\theta}(\theta'-\theta)\,
+  \mathrm dd'\,\mathrm dv'\,\mathrm d\theta'\\
+  &= (M*\phi)(d,v,\theta).
+  \end{split}
+  \label{eq:robust_spec-conv}
+\end{equation}
+On the grid, \code{smooth\_prob} evaluates this with \code{scipy.ndimage.gaussian\_filter}, whose
+widths are in cells:
+\begin{equation}
+  s_d = \frac{\sigma_d}{\Delta d},\qquad s_v = \frac{\sigma_{v,\mathrm{rel}}\,v_{\mathrm{ref}}}{\Delta v},\qquad
+  s_\theta = \frac{\sigma_\theta}{\Delta\theta}.
+  \label{eq:robust_spec-sigcells}
+\end{equation}
+Cells outside the grid count as dirty (\code{mode="constant"}, value 0) and the kernel is cut at
+$3\sigma$.
+The speed width is applied piecewise: the mask is filtered three times and each speed row keeps the
+result for its nearest reference speed,
+\begin{equation}
+  v_{\mathrm{ref}}(v_i) = \arg\min_{r\in\{3.5,\,6.0,\,8.5\}} |v_i-r| .
+  \label{eq:robust_spec-vref}
+\end{equation}
+The reference speeds 3.5, 6.0 and 8.5\,\unit{m/s}\assumed\ are code constants.
+The best aim at each distance, for a launcher that cannot exceed $v_{\mathrm{cap}}$ (\unit{m/s}), is
+\begin{equation}
+  P_{\mathrm{kin}}(d) = \max_{v_i\le v_{\mathrm{cap}},\ \theta_j} p(d,v_i,\theta_j).
+  \label{eq:robust_spec-pkin}
+\end{equation}
+
+\paragraph{Error sets.}
+The release error sets of \code{ERR\_SETS} are design assumptions, not measurements.
+Listed as $\sigma_{v,\mathrm{rel}}$, $\sigma_\theta$, $\sigma_d$, they are:
+tight 0.005\assumed, $0.15^\circ$\assumed, 0.010\,\unit{m}\assumed;
+nominal 0.015\assumed, $0.40^\circ$\assumed, 0.025\,\unit{m}\assumed;
+loose 0.030\assumed, $0.80^\circ$\assumed, 0.050\,\unit{m}\assumed.
+The azimuth and lateral spreads $\sigma_\psi$, $\sigma_y$ are $0.25^\circ$\assumed, 0.010\,\unit{m}\assumed\
+(tight), $0.50^\circ$\assumed, 0.025\,\unit{m}\assumed\ (nominal) and $1.00^\circ$\assumed,
+0.050\,\unit{m}\assumed\ (loose).
+
+\paragraph{Worked example.}
+On the spec grid ($\Delta d = 0.05$\,\unit{m}\assumed) with the nominal errors,
+$s_d = 0.025/0.05 = 0.5$\derived\ cells, $s_\theta = 0.40/0.1 = 4.0$\derived\ cells and
+$s_v = 0.015\times6.0/0.05 = 1.8$\derived\ cells near 6\,\unit{m/s} (1.05\derived\ near 3.5 and
+2.55\derived\ near 8.5\,\unit{m/s}).
+At $h=0.737$\,\unit{m}\assumed\ the best smoothed probability with no spin is
+0.419\predicted\ at $d=0.75$\,\unit{m}\assumed\ (aim 7.1\,\unit{m/s}\predicted, $81.4^\circ$\predicted),
+0.426\predicted\ at $d=0.80$\,\unit{m}\assumed\ (7.15\,\unit{m/s}\predicted, $81.2^\circ$\predicted) and
+0.364\predicted\ at $d=1.15$\,\unit{m}\assumed.
+With $S=1$ it is 0.423\predicted\ at $d=0.75$\,\unit{m}\assumed\ (7.2\,\unit{m/s}\predicted,
+$79.9^\circ$\predicted) and 0.418\predicted\ at $d=0.80$\,\unit{m}\assumed\ (7.25\,\unit{m/s}\predicted,
+$79.7^\circ$\predicted).
+Two points stand out.
+First, the smoothed optimum sits near $80$--$81^\circ$, not at the $84.45^\circ$ square of
+Section~\ref{sec:robust_spec-square}: a blur of $4$ cells in elevation rewards the part of the window that is
+deep in elevation, while the square rewards the part that is wide in both directions.
+Second, even the best aim is clean only about four times in ten with nominal release errors.
+On the robustness grid of \code{robustness.py} ($\Delta d=0.01$\,\unit{m}\assumed) the same errors give
+$s_d=2.5$\derived\ cells.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item Errors in $d$, $v$ and $\theta$ are Gaussian, independent and the same for every shot.
+  \item The relative speed error is approximated by three fixed additive widths.
+  \item The mask is for one aerodynamic condition; physical spread is added in Section~\ref{sec:robust_spec-mc}.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Azimuth: why the in-plane distance scales with $\cos\psi$}
+\label{sec:robust_spec-azimuth}
+
+\paragraph{Motivation.}
+A robot that is not square to the HIVE shoots at an azimuth $\psi$ (\unit{deg} or \unit{rad}) away
+from the $x$ axis.
+Re-running the 3D solver for every azimuth would be expensive.
+\code{clean\_masks} instead reuses the 2D paths and scales their horizontal coordinate and velocity
+by $\cos\psi$.
+This subsection shows why that is exact in still air.
+
+\paragraph{Rotation about the vertical.}
+Let
+\begin{equation}
+  \mathsf R_\psi = \begin{pmatrix}\cos\psi & -\sin\psi & 0\\ \sin\psi & \cos\psi & 0\\ 0&0&1\end{pmatrix}
+  \label{eq:robust_spec-Rz}
+\end{equation}
+be the rotation by $\psi$ about $\hat{\vect z}$.
+It preserves lengths, $|\mathsf R_\psi\vect a| = |\vect a|$, it commutes with the cross product,
+$(\mathsf R_\psi\vect a)\times(\mathsf R_\psi\vect b) = \mathsf R_\psi(\vect a\times\vect b)$ (true for
+every proper rotation), and it leaves the vertical unchanged, $\mathsf R_\psi\hat{\vect z}=\hat{\vect z}$.
+
+\paragraph{The acceleration is equivariant.}
+In still air the 3D acceleration of \code{integrate3d} is
+\begin{equation}
+  \vect a(\vect v,\vect\omega) = -q\,C_D\,|\vect v|\,\vect v
+  + q\,C_L(S)\,|\vect v|^2\,\frac{\vect\omega\times\vect v}{|\vect\omega\times\vect v|} - g\,\hat{\vect z},
+  \qquad q=\frac{\rho\pi R^2}{2m},
+  \label{eq:robust_spec-acc3d}
+\end{equation}
+with air density $\rho$ (\unit{kg/m\textsuperscript{3}}), ball mass $m$ (\unit{kg}), drag and lift coefficients
+$C_D$, $C_L$ (dimensionless), $q$ in \unit{1/m} and $g$ in \unit{m/s\textsuperscript{2}}.
+(The code regularises the two denominators with $\varepsilon=10^{-6}$\assumed; this does not affect the
+argument.)
+The spin parameter $S=|\vect\omega|R/|\vect v|$ is a ratio of lengths, so it is unchanged by the
+rotation.
+Applying the three properties term by term:
+\begin{equation}
+  \vect a(\mathsf R_\psi\vect v,\mathsf R_\psi\vect\omega)
+  = -qC_D|\vect v|\,\mathsf R_\psi\vect v
+  + qC_L|\vect v|^2\,\frac{\mathsf R_\psi(\vect\omega\times\vect v)}{|\vect\omega\times\vect v|}
+  - g\,\mathsf R_\psi\hat{\vect z}
+  = \mathsf R_\psi\,\vect a(\vect v,\vect\omega).
+  \label{eq:robust_spec-equiv}
+\end{equation}
+The spin decays as $\vect\omega(t)=\vect\omega_0e^{-kt}$ about a fixed axis, with decay rate
+$k$ (\unit{1/s}), so the rotated spin stays the rotated spin at all times.
+
+\paragraph{The backspin axis rotates with the shot.}
+The launch direction is $\hat{\vect v}_0 = (\cos\theta\cos\psi,\ \cos\theta\sin\psi,\ \sin\theta)$ and
+\code{backspin\_axis} takes the unit vector along $\hat{\vect v}_0\times\hat{\vect z}$:
+\begin{equation}
+  \begin{split}
+  \hat{\vect v}_0\times\hat{\vect z} &= (\cos\theta\sin\psi,\ -\cos\theta\cos\psi,\ 0),\\
+  \hat{\vect e}_\omega &= (\sin\psi,\ -\cos\psi,\ 0) = \mathsf R_\psi(0,-1,0)^{\mathsf T}.
+  \end{split}
+  \label{eq:robust_spec-axis}
+\end{equation}
+At $\psi=0$ this is $-\hat{\vect y}$, and $(-\hat{\vect y})\times(v_x,0,v_z)=(-v_z,0,v_x)$, which is
+the 2D Magnus direction of Section~\ref{sec:flight}.
+
+\paragraph{The path rotates rigidly.}
+Let $\vect r_2(t)=(x(t),0,z(t))$ be the 2D path launched at $\psi=0$.
+By Eqs.~\eqref{eq:robust_spec-equiv}--\eqref{eq:robust_spec-axis}, $\mathsf R_\psi\vect r_2(t)$ satisfies the same
+equation of motion as the 3D path launched at $\psi$, from the rotated initial state.
+Solutions of an ODE with a Lipschitz right-hand side are unique, so
+\begin{equation}
+  \vect r_3(t) = \mathsf R_\psi\,\vect r_2(t) = \big(x(t)\cos\psi,\ x(t)\sin\psi,\ z(t)\big).
+  \label{eq:robust_spec-proj}
+\end{equation}
+The HIVE cross-section does not change along the pivot axis $y$ (inside the CELL width), so only the
+$x$--$z$ projection matters for the clean test.
+That projection keeps $z$ and scales the horizontal coordinate and velocity:
+\begin{equation}
+  X(t) = x(t)\cos\psi,\qquad V_X(t) = v_x(t)\cos\psi,\qquad Z(t)=z(t),\qquad V_Z(t)=v_z(t),
+  \label{eq:robust_spec-projX}
+\end{equation}
+which is exactly what \code{clean\_masks} applies before the gate test.
+Wind breaks the argument: with $\vect v_r = \vect v-\vect w$ and a fixed wind $\vect w$ (\unit{m/s}),
+$\mathsf R_\psi\vect w\ne\vect w$ in general, so the 3D Monte Carlo integrates with wind directly.
+
+\paragraph{Azimuth from the lateral offset.}
+A shot aimed at lateral offset $y$ (\unit{m}) from the CELL centre reaches the gate plane at
+horizontal distance $d\pm x_g$, where $x_g=0.401$\,\unit{m}\derived\ is the gate position in the HIVE
+frame.
+The robustness maps use
+\begin{equation}
+  \psi = \arctan\frac{|y|}{d\pm x_g},\qquad
+  s_{\mathrm{eff}} = \min(0.3\tan\psi,\ 0.2)\ \unit{m},
+  \label{eq:robust_spec-psi}
+\end{equation}
+with azimuth bins $0^\circ$ to $60^\circ$\assumed\ in $10^\circ$\assumed\ steps; $s_{\mathrm{eff}}$ is an
+assumed effective sideways shift of the mouth seen at an angle (coefficients 0.3\assumed\ and
+0.2\,\unit{m}\assumed).
+
+\paragraph{Lateral factor.}
+The sideways miss at the gate is $e_y$ (\unit{m}).
+An azimuth error $\delta_\psi\sim\mathcal N(0,\sigma_\psi^2)$ (\unit{rad}) over a lever arm
+$L=\sqrt{(d\pm x_g)^2+y^2}$ (\unit{m}, the horizontal release-to-gate distance used by
+\code{position\_prob}; $L=d+x_g$ for an unfavourable shot with $y=0$) moves the ball by
+$L\tan\delta_\psi\approx L\delta_\psi$.
+Adding a lateral release error $\sigma_y$ (\unit{m}) and a wind drift $\sigma_{\mathrm{dr}}$ (\unit{m}),
+all independent and Gaussian, the variances add:
+\begin{equation}
+  \sigma_{\mathrm{lat}}^2 = (L\sigma_\psi)^2 + \sigma_y^2 + \sigma_{\mathrm{dr}}^2 .
+  \label{eq:robust_spec-latsig}
+\end{equation}
+The ball fits if $|e_y|<w_{\mathrm{lat}}$, with half-width $w_{\mathrm{lat}}$ (\unit{m}).
+For $e_y\sim\mathcal N(0,\sigma_{\mathrm{lat}}^2)$, substituting $u=e/(\sqrt2\sigma_{\mathrm{lat}})$,
+\begin{equation}
+  \begin{split}
+  \Pr(|e_y|<w_{\mathrm{lat}})
+  &= \int_{-w_{\mathrm{lat}}}^{w_{\mathrm{lat}}}\frac{e^{-e^2/(2\sigma_{\mathrm{lat}}^2)}}{\sqrt{2\pi}\,\sigma_{\mathrm{lat}}}\,\mathrm de
+  = \frac{2}{\sqrt\pi}\int_0^{w_{\mathrm{lat}}/(\sqrt2\sigma_{\mathrm{lat}})}e^{-u^2}\mathrm du\\
+  &= \operatorname{erf}\!\Big(\frac{w_{\mathrm{lat}}}{\sqrt2\,\sigma_{\mathrm{lat}}}\Big).
+  \end{split}
+  \label{eq:robust_spec-erf}
+\end{equation}
+\code{position\_prob} combines it with the kinematic probability, treating the two as independent:
+\begin{equation}
+  P_{\mathrm{pos}}(d,\psi) = P_{\mathrm{kin}}(d,\psi)\,\operatorname{erf}\!\Big(\frac{w_{\mathrm{lat}}}{\sqrt2\,\sigma_{\mathrm{lat}}}\Big).
+  \label{eq:robust_spec-ppos}
+\end{equation}
+The code uses $w_{\mathrm{lat}} = 0.10$\,\unit{m}\assumed\ (low), 0.15\,\unit{m}\assumed\ (primary) and
+0.2185\,\unit{m}\derived\ (high, the CELL half-width 0.254\,\unit{m}\confirmed\ minus $R$).
+
+\paragraph{Worked example.}
+For the 3D path with params\_lit nominal aerodynamics, $v=7.25$\,\unit{m/s}\assumed,
+$\theta=79.7^\circ$\assumed, $S=1$\assumed\ and $\psi=30^\circ$\assumed, the backspin axis is
+$(0.5,-0.866,0)$\derived.
+Comparing \code{integrate3d} with the 2D solution rotated by Eq.~\eqref{eq:robust_spec-proj}, the largest
+differences are $1.1\times10^{-7}$\,\unit{m}\predicted\ in $x$, $1.1\times10^{-16}$\,\unit{m}\predicted\ in
+$y$ and 0\predicted\ in $z$: the projection is exact to round-off.
+On this path the apex is 2.339\,\unit{m}\predicted\ above the release point; there $v_z=0$ but the ball
+still moves horizontally at $v_x=0.903$\,\unit{m/s}\predicted, so it is not at rest at the apex.
+
+For the lateral factor take $d=0.81$\,\unit{m}\assumed, so $L=0.81+0.401=1.211$\,\unit{m}\derived, and the
+nominal $\sigma_\psi=0.5^\circ=0.00873$\,\unit{rad}\assumed\ and $\sigma_y=0.025$\,\unit{m}\assumed.
+Then $L\sigma_\psi=0.0106$\,\unit{m}\derived\ and, without wind,
+$\sigma_{\mathrm{lat}}=\sqrt{0.0106^2+0.025^2}=0.0271$\,\unit{m}\derived; the factor is
+1.000\derived\ for $w_{\mathrm{lat}}=0.15$\,\unit{m}\assumed.
+With the wind drift $\sigma_{\mathrm{dr}}=0.0615$\,\unit{m}\derived\ from \code{wind\_drift\_sd}
+(module-default coefficients \code{data/aero\_params.json}; 0.0634\,\unit{m}\derived\ with
+\code{research/params\_lit.json}),
+$\sigma_{\mathrm{lat}}=0.0672$\,\unit{m}\derived\ and the factor drops to
+$\operatorname{erf}(0.15/(\sqrt2\cdot0.0672))=0.974$\derived, or 0.863\derived\ for
+$w_{\mathrm{lat}}=0.10$\,\unit{m}\assumed.
+Sideways aim is a small loss next to the in-plane window.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item Still air for the projection; wind enters only through $\sigma_{\mathrm{dr}}$ and the 3D Monte Carlo.
+  \item The HIVE section is uniform along the pivot axis across the CELL width.
+  \item Lateral and in-plane outcomes are independent in Eq.~\eqref{eq:robust_spec-ppos}.
+  \item Azimuth bins stop at $60^\circ$\assumed\ (\code{PSI\_MAX}).
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{Three-dimensional Monte Carlo}
+\label{sec:robust_spec-mc}
+
+\paragraph{Motivation.}
+The blur of Section~\ref{sec:robust_spec-smooth} covers release errors in one aerodynamic condition.
+A real match mixes everything at once: release errors, ball-to-ball spread, unknown coefficients,
+air movement and the HIVE pose.
+\code{mc\_shots} draws all of these per shot and flies each shot in 3D.
+
+\paragraph{Per-shot sampling.}
+Each shot $n$ draws independent standard normals $\varepsilon_{1},\varepsilon_2,\dots\sim\mathcal N(0,1)$.
+The release state is
+\begin{align}
+  v &= v_{\mathrm{aim}}(1+\sigma_{v,\mathrm{rel}}\varepsilon_1)(1+b) - \frac{\partial v}{\partial n_w}\,\Delta n_w\,f,
+  \label{eq:robust_spec-mc-v}\\
+  \theta &= \theta_{\mathrm{aim}}+\sigma_\theta\varepsilon_2,\qquad \psi = \sigma_\psi\varepsilon_3,
+  \label{eq:robust_spec-mc-ang}\\
+  \vect r_0 &= \big(-(d+\sigma_d\varepsilon_4),\ \sigma_y\varepsilon_5,\ h+\sigma_h\varepsilon_6\big),
+  \label{eq:robust_spec-mc-pos}
+\end{align}
+where $b$ (dimensionless) is a uniform speed bias used by the battery-sag scenarios,
+$\partial v/\partial n_w$ (\unit{m/s} per rpm) is the launcher-curve slope, $\Delta n_w$ (rpm) the
+wheel-speed drop after a shot and $f$ a uniform recovery-deficit fraction for the rapid-fire
+scenarios; in the nominal scenario $b=f=0$.
+The release-height error is $\sigma_h = 0.005$\,\unit{m}\assumed.
+The ball and the air are drawn as
+\begin{equation}
+  \begin{aligned}
+    m &= \operatorname{clip}(\bar m+\sigma_m\varepsilon_7,\ m_{\mathrm{lo}},m_{\mathrm{hi}}), &
+    R &= \operatorname{clip}(\bar R+\sigma_R\varepsilon_8,\ R_{\mathrm{lo}},R_{\mathrm{hi}}),\\
+    C_D &= \bar C_D(1+0.05\,\varepsilon_9), &
+    (c_1,C_{L,\max}) &= (\bar c_1,\bar C_{L,\max})(1+0.10\,\varepsilon_{10}),\\
+    \vect w &= \sigma_w(\varepsilon_{11},\varepsilon_{12},0), &
+    S &\sim\mathcal U(S_{\mathrm{lo}},S_{\mathrm{hi}}),
+  \end{aligned}
+  \label{eq:robust_spec-mc-phys}
+\end{equation}
+with $\sigma_m=0.5$\,\unit{g}\assumed, $\sigma_R=0.25$\,\unit{mm}\assumed, the coefficient spreads
+5\,\%\assumed\ and 10\,\%\assumed\ (one factor shared by $c_1$ and $C_{L,\max}$, so $S_{\mathrm{sat}}$
+does not move), a wind of $\sigma_w=0.30$\,\unit{m/s}\assumed\ per horizontal component held constant
+during the shot, and a spin parameter uniform on $[1.03, 1.27]$\predicted\ (the contact model's hood
+band); the release-error-only scenario fixes $S=1.0597$\predicted.
+The HIVE is drawn per shot with tilt $\beta=\operatorname{clip}(30^\circ+0.75^\circ\varepsilon_{13},\
+28.5^\circ, 31.5^\circ)$ (spread $0.75^\circ$\assumed, clipped to the derived tilt bounds), pivot height
+$1.11633$\,\unit{m}\confirmed\ with spread 0.005\,\unit{m}\assumed\ clipped to
+1.09093--1.14173\,\unit{m}\confirmed\ (the manual's $\pm1$\,in field tolerance), and an $x$ offset of
+spread 0.01\,\unit{m}\assumed.
+The initial spin is backspin about the rotated axis of Eq.~\eqref{eq:robust_spec-axis}:
+\begin{equation}
+  \vect\omega_0 = \hat{\vect e}_\omega(\psi)\,\frac{S\,v}{R}.
+  \label{eq:robust_spec-mc-omega}
+\end{equation}
+The path is integrated with Eq.~\eqref{eq:robust_spec-acc3d} using the relative velocity
+$\vect v_r=\vect v-\vect w$.
+
+\paragraph{Scoring one shot.}
+Where the path (with $x$ measured from the drawn HIVE position) last crosses the gate plane
+$x=x_g$ between samples $k$ and $k+1$, the lateral position is interpolated linearly:
+\begin{equation}
+  y_g = y_k + (y_{k+1}-y_k)\,\frac{x_g-x_k}{x_{k+1}-x_k}.
+  \label{eq:robust_spec-yg}
+\end{equation}
+If $|y_g| > w_{\mathrm{cell}}-R$, with CELL half-width $w_{\mathrm{cell}}=0.254$\,\unit{m}\confirmed,
+the shot hits a side wall (or misses when it never crosses the plane).
+Otherwise a HIVE with the drawn tilt, pivot height and ball radius, offset sideways by $|y_g|$, runs
+\code{classify\_path} on the in-plane path.
+The shot counts as clean only if the outcome is \code{clean}.
+Out of $n$ shots, $k$ are clean, and the point estimate is
+\begin{equation}
+  \hat p = \frac{k}{n}.
+  \label{eq:robust_spec-phat}
+\end{equation}
+
+\paragraph{Worked example.}
+The stored run \code{data/robust\_mc.csv} aims at $d=0.81$\,\unit{m}\predicted,
+$v=7.25$\,\unit{m/s}\predicted, $\theta=79.7^\circ$\predicted\ with backspin and $n=1500$\assumed\ shots
+per scenario.
+Its nominal scenario has $k=455$\predicted, $\hat p=0.303$\predicted, Wilson interval
+$[0.281, 0.327]$\derived, and a gate-lateral spread of 0.049\,\unit{m}\predicted.
+The other scenarios (all at $n=1500$\assumed):
+\begin{itemize}
+  \item release errors only (fixed physics, no wind): $\hat p=0.362$\predicted;
+  \item tight release errors: 0.411\predicted; loose: 0.157\predicted;
+  \item wind $\sigma_w=1.0$\,\unit{m/s}\assumed: 0.111\predicted;
+  \item true lift at the low or high bound while the aim was tuned for nominal lift:
+    0.097\predicted\ and 0.054\predicted; re-tuned for low lift ($\theta=80.7^\circ$\predicted):
+    0.325\predicted;
+  \item the no-spin twin aimed at $81.4^\circ$\predicted: 0.317\predicted\ $[0.294, 0.341]$\derived;
+  \item the favourable side for comparison: 0.996\predicted.
+\end{itemize}
+The spin and no-spin intervals overlap, so at this aim backspin gives no measurable gain.
+Using the wrong lift coefficient costs far more than the release scatter, which is why the
+specification relies on tuning at the field.
+A fresh run of 400\assumed\ shots with seed 1000\assumed\ and the same code gives
+$k=110$\predicted, $\hat p=0.275$\predicted, Wilson $[0.234, 0.321]$\derived; it overlaps the stored
+result.
+The two most common failures there are the outer roof (147\predicted\ shots) and the floor
+(62\predicted).
+% Code/doc difference: docs/06_required_vs_achievable.md and the robust_mc / robust_map CSVs were
+% produced with data/aero_params.json (older first-pass set). The robustness CLI default is now
+% research/params_lit.json, but data/params_lit/ is empty: no params_lit rerun exists. The numbers
+% above are the aero_params.json results.
+% Code/doc difference: flight.AERO_PARAMS_PATH (module level) still defaults to
+% data/aero_params.json unless PM001_AERO_PATH is set, so code that imports robustness without the
+% CLI gets the old set. The 400-shot rerun above used that module default to match the CSV.
+% Code/doc difference: docs/06 says the mass is clipped to 23.5-26.5 g (aero_params.json); the
+% params_lit upper bound is 27.5 g.
+These Monte Carlo results were computed with the older first-pass coefficient file
+\code{data/aero\_params.json}; a rerun with \code{research/params\_lit.json} has not been made.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item All spreads in Eqs.~\eqref{eq:robust_spec-mc-v}--\eqref{eq:robust_spec-mc-phys} are assumed, independent and
+    Gaussian or uniform; none is measured on the robot.
+  \item The wind is constant during one shot and horizontal.
+  \item The aerodynamic coefficients are literature bounds, not POLLEN measurements.
+  \item Shots are independent trials, which Section~\ref{sec:robust_spec-wilson} needs.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{How sure is a success rate? The Wilson interval}
+\label{sec:robust_spec-wilson}
+
+\paragraph{Motivation.}
+A rate of $k$ clean shots out of $n$ is itself random.
+The simple interval $\hat p\pm z\sqrt{\hat p(1-\hat p)/n}$ fails badly for small $n$ or for
+$\hat p$ near 0 or 1: for one clean shot out of one it gives $[1,1]$.
+\code{wilson} uses the score interval instead, which is the right tool for field tests.
+
+\paragraph{Derivation.}
+For $n$ independent shots with true probability $p$, $k$ is binomial, and for moderate $n$
+\begin{equation}
+  \frac{\hat p-p}{\sqrt{p(1-p)/n}}\approx\mathcal N(0,1).
+  \label{eq:robust_spec-wilson-z}
+\end{equation}
+The Wilson interval is the set of $p$ for which this score is within $\pm z$, where
+$z=\Phi^{-1}(0.975)=1.959964$\derived\ for 95\,\%.
+Note that the variance uses the unknown $p$, not $\hat p$.
+The boundary satisfies
+\begin{equation}
+  (\hat p-p)^2 = \frac{z^2}{n}\,p(1-p).
+  \label{eq:robust_spec-wilson-quad}
+\end{equation}
+Expanding both sides and collecting powers of $p$ gives a quadratic:
+\begin{equation}
+  \Big(1+\frac{z^2}{n}\Big)p^2 - \Big(2\hat p+\frac{z^2}{n}\Big)p + \hat p^2 = 0 .
+  \label{eq:robust_spec-wilson-poly}
+\end{equation}
+Its discriminant simplifies as
+\begin{equation}
+  \Big(2\hat p+\frac{z^2}{n}\Big)^2 - 4\Big(1+\frac{z^2}{n}\Big)\hat p^2
+  = \frac{4z^2}{n}\hat p(1-\hat p) + \frac{z^4}{n^2}
+  = 4z^2\Big(\frac{\hat p(1-\hat p)}{n}+\frac{z^2}{4n^2}\Big),
+  \label{eq:robust_spec-wilson-disc}
+\end{equation}
+and the two roots, divided top and bottom by 2, are the interval:
+\begin{equation}
+  p_\pm = \frac{\hat p + \dfrac{z^2}{2n} \pm z\sqrt{\dfrac{\hat p(1-\hat p)}{n}+\dfrac{z^2}{4n^2}}}{1+\dfrac{z^2}{n}} .
+  \label{eq:robust_spec-wilson}
+\end{equation}
+The code clips both ends to $[0,1]$.
+The centre $(\hat p+z^2/2n)/(1+z^2/n)$ is pulled toward $1/2$, and the width never collapses to
+zero, even at $\hat p = 0$ or 1.
+
+\paragraph{Worked example.}
+For $k=455$\predicted\ of $n=1500$\assumed: $\hat p=0.3033$\derived, $z^2/n=0.00256$\derived, and
+Eq.~\eqref{eq:robust_spec-wilson} gives $[0.2806, 0.3271]$\derived.
+For $\hat p = 0.5$ the half-width is 0.263\derived\ at $n=10$, 0.201\derived\ at $n=20$,
+0.096\derived\ at $n=100$ and 0.025\derived\ at $n=1500$.
+One clean shot out of one gives $[0.207, 1]$\derived: a single shot proves only that the clean rate is
+probably above about one in five, and says nothing about repeatability.
+Zero clean shots out of 20 still allows a rate up to 0.161\derived.
+A field test that should separate a 30\,\% shooter from a 50\,\% one therefore needs on the order of
+100 shots per setting, not a handful.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item Shots are independent with a common probability (no warm-up drift).
+  \item The normal approximation in Eq.~\eqref{eq:robust_spec-wilson-z}; the Wilson form keeps good coverage
+    down to small $n$.
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{From exit speed to wheel and ball rpm}
+\label{sec:robust_spec-rpm}
+
+\paragraph{Motivation.}
+The CAD designer chooses a motor and gear ratio, so the speed requirement must be stated as a wheel
+rpm, and the spin requirement as a ball rpm.
+
+\paragraph{Wheel rpm.}
+A wheel of diameter $D$ (\unit{m}) turning at $n_w$ (rpm) has surface speed
+$u=\pi D\,n_w/60$ (\unit{m/s}).
+The exit speed of the ball is a fraction $r=v/u$ (dimensionless) of the surface speed.
+Solving for the wheel speed:
+\begin{equation}
+  n_w = \frac{60\,v}{r\,\pi D}.
+  \label{eq:robust_spec-wheel}
+\end{equation}
+This is \code{wheel\_rpm}.
+The ratio $r$ is not universal.
+With a single powered wheel against a fixed hood the ball rolls on the hood, and the simple
+rolling picture gives $r=1/2$; slip, compression and a moving upper roller change it.
+The code tabulates $r\in\{0.25, 0.30, 0.42, 0.50\}$\assumed\ (grade C), and the contact model of
+the previous section is the place where $r$ is predicted.
+
+\paragraph{Ball rpm.}
+From $S=\omega R/v$, the spin rate is $\omega=Sv/R$ (\unit{rad/s}); converting with
+$1\,\text{rev}=2\pi$\,\unit{rad} and $1\,\text{min}=60$\,\unit{s},
+\begin{equation}
+  n_b = \frac{S\,v}{R}\cdot\frac{60}{2\pi}.
+  \label{eq:robust_spec-spinrpm}
+\end{equation}
+This is \code{spin\_rpm}.
+There is no point in asking for spin far above $S_{\mathrm{sat}}$: the lift coefficient saturates
+and $S=1.5$ gives the same window as $S=1.0$ (Section~\ref{sec:robust_spec-grid}).
+
+\paragraph{Worked example.}
+With $D=0.098$\,\unit{m}\userval\ and $R=0.0355$\,\unit{m}\confirmed\ (the manual's ball diameter of
+about 7.1\,\unit{cm}):
+\begin{itemize}
+  \item $v=6.5$\,\unit{m/s}\predicted:
+    $n_w = 60\times6.5/(0.25\,\pi\,0.098) = 5067$\derived\ rpm at $r=0.25$\assumed, and
+    4222\derived, 3016\derived, 2533\derived\ rpm at $r=0.30$, 0.42, 0.50.
+  \item $v=9.0$\,\unit{m/s}\predicted: 7016\derived, 5847\derived, 4176\derived, 3508\derived\ rpm.
+  \item $v=7.0$\,\unit{m/s}\predicted: 5457\derived, 4547\derived, 3248\derived, 2728\derived\ rpm.
+  \item Ball spin: $S=0.5$\assumed\ at 6.5\,\unit{m/s} is
+    $n_b=0.5\times6.5/0.0355\times60/(2\pi)=874$\derived\ rpm; $S=1$\assumed\ at 7.0\,\unit{m/s} is
+    1883\derived\ rpm and at 9.0\,\unit{m/s} is 2421\derived\ rpm.
+\end{itemize}
+The full exit-speed band 6.5--9.0\,\unit{m/s} therefore asks for anything from about 2500 to 7000 rpm
+at the wheel depending on $r$; measuring $r$ on the first prototype narrows this to one gear choice.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item $r$ is constant over the speed range for a given shooter build.
+  \item The wheel speed does not drop during the shot (the drop is a Monte Carlo scenario, Eq.~\eqref{eq:robust_spec-mc-v}).
+\end{itemize}
+
+% ---------------------------------------------------------------------------------------------
+\subsection{The shooter specification card}
+\label{sec:robust_spec-card}
+
+\paragraph{Motivation.}
+The final step collects the results above into the few numbers the CAD designer needs.
+Each target traces back to an equation and a worked example of this section.
+All of them are model outputs.
+
+\begin{table}[htbp]
+  \centering
+  \caption{CAD-card targets for the unfavourable-side shot (single powered 98\,mm wheel, fixed hood).
+    All targets are model predictions to be confirmed on the field.}
+  \label{tab:robust_spec-card}
+  \begin{tabular}{@{}p{0.24\linewidth}p{0.26\linewidth}p{0.42\linewidth}@{}}
+    \toprule
+    Quantity & Target & Where it comes from \\
+    \midrule
+    Release height $h$ & 0.65--0.737\,\unit{m}\predicted & Table~\ref{tab:robust_spec-nclean}; window shrinks below 0.65\,\unit{m}\predicted \\
+    Distance $d$ & 0.75--0.85\,\unit{m}\predicted & no clean cell at $d\le0.70$\,\unit{m}\predicted; peak near 0.80\,\unit{m}\predicted \\
+    Hood angle, no spin & about $81^\circ$\predicted & Eq.~\eqref{eq:robust_spec-score}: $80.8^\circ$\predicted\ at $\tau=0.2^\circ$\assumed \\
+    Hood angle, backspin & 80--80.5$^\circ$\predicted & Eq.~\eqref{eq:robust_spec-score} at $\tau=0.1^\circ$\assumed; nominal band hood \\
+    Exit speed range & 6.5--9.0\,\unit{m/s}\predicted & every condition has a clean speed (Sec.~\ref{sec:robust_spec-hood}) \\
+    Speed repeatability & $\pm0.075$\,\unit{m/s}\predicted & Eq.~\eqref{eq:robust_spec-tol}, $k^\ast=4$\predicted \\
+    Angle repeatability & $\pm0.15^\circ$\predicted & Eq.~\eqref{eq:robust_spec-tol}, $k^\ast=4$\predicted \\
+    Wheel speed & about 2500--7000 rpm\predicted & Eq.~\eqref{eq:robust_spec-wheel}, depends on $r$ \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\paragraph{How to read the card.}
+\begin{itemize}
+  \item \emph{Height and distance.}
+    The window opens at $d\approx0.75$\,\unit{m}\predicted\ and is largest near 0.80\,\unit{m}\predicted;
+    beyond 0.85\,\unit{m} it shrinks slowly.
+    Lower release heights shrink it quickly (Table~\ref{tab:robust_spec-nclean} and the $h$ comparison in
+    Section~\ref{sec:robust_spec-grid}).
+  \item \emph{Hood angle.}
+    The hood is chosen so that, for every drag, lift and tilt corner, some tuned wheel speed is clean
+    (Eq.~\eqref{eq:robust_spec-wmin}).
+    The backspin hood is slightly flatter than the no-spin hood, but backspin does not enlarge the
+    window and its hood needs a tighter angle tolerance ($\pm0.1^\circ$ instead of $\pm0.2^\circ$).
+  \item \emph{Exit speed.}
+    The range is a tuning range, not a tolerance: the team sets one speed at the field and keeps it.
+  \item \emph{Repeatability.}
+    The $\pm0.075$\,\unit{m/s} and $\pm0.15^\circ$ figures are the largest clean square anywhere in
+    the sweep (Section~\ref{sec:robust_spec-square}) for one set of coefficients.
+    They are a target for shot-to-shot scatter, roughly the tight release set of the Monte Carlo
+    ($\sigma_\theta=0.15^\circ$\assumed), which raises the modelled clean rate from 0.30\predicted\ to
+    0.41\predicted.
+    They are not a guarantee of clean entry under every condition.
+\end{itemize}
+% Code/doc difference: docs/08 puts the repeatability +-0.075 m/s and +-0.15 deg on the card next to
+% the ~81 deg hood. In the code these come from the nominal-aero best square at (8.975 m/s,
+% 84.45 deg), S = 0, h = 0.737 m, d = 0.75 m, not at the ~81 deg hood and not robust over conditions;
+% at the field-tuned hood (tunable_rows, tau = 0.2 deg) the guaranteed speed tolerance is 0.
+% Code/doc difference: the backspin hood 80-80.5 deg matches the nominal-only hood (80.5 deg,
+% fixed_elev at +-0.2 deg) and the field-tuned hood at +-0.1 deg (80.3-80.4 deg); at +-0.2 deg the
+% field-tuned search finds no backspin hood.
+
+\paragraph{Assumptions.}
+\begin{itemize}
+  \item A single powered wheel with a fixed hood (an optional passive upper roller changes $r$ and
+    the spin, not the geometry of the window).
+  \item The coefficient ranges of \code{research/params\_lit.json} for the spec grid; the Monte Carlo
+    rates were computed with \code{data/aero\_params.json}.
+  \item No claim here is based on a single test shot; field confirmation needs a Wilson interval
+    from many shots (Section~\ref{sec:robust_spec-wilson}).
+\end{itemize}
