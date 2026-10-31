@@ -85,7 +85,7 @@ code { font-family: var(--mono); font-size: 12px; }
 .wrap > * { min-width: 0; }
 html, body { overflow-x: hidden; }
 .pill { max-width: 100%; white-space: normal; }
-@media (max-width: 520px) { .legend { display: none; } h1 { font-size: 24px; } #win { aspect-ratio: 4 / 3; } .stage { min-height: 340px; } .hud { right: 8px; left: 8px; } }
+@media (max-width: 520px) { .legend { display: none; } h1 { font-size: 24px; } #win { aspect-ratio: 4 / 3; } .stage { min-height: 340px; } .hud { right: 8px; left: 8px; } .hud > .note { display: none; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 .modeseg { margin-left: auto; } .modeseg button { flex: 0 1 auto; padding: 6px 12px; }
 #fmap { aspect-ratio: 1; touch-action: none; cursor: crosshair; } #fwin { aspect-ratio: 16 / 10; }
@@ -93,15 +93,66 @@ html, body { overflow-x: hidden; }
 .fleg i { display: inline-block; width: 12px; height: 12px; vertical-align: -2px; margin-right: 5px; border: 1px solid var(--line); border-radius: 2px; }
 .warn { color: #f4a43c; font-size: 12.5px; margin: 0; } .warn { white-space: pre-line; } .warn:empty { display: none; }
 @media (max-width: 520px) { #fwin { aspect-ratio: 4 / 3; } .modeseg { margin-left: 0; } }
+/* Robot view */
+.rtop { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 960px) { .rtop { grid-template-columns: minmax(0, 1fr); } }
+#rmap { aspect-ratio: 1; touch-action: none; cursor: grab; max-width: 680px; margin: 0 auto; }
+#rmap:focus-visible { outline: 2px solid var(--pollen); outline-offset: 2px; }
+#rwin { aspect-ratio: 16 / 10; }
+#rsec .chart { align-content: start; }
+.rhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.rsolve { font: 12px var(--mono); color: var(--pollen); } .rsolve:empty { display: none; }
+.rres { display: grid; gap: 12px; transition: opacity .2s; }
+.rres.stale { opacity: .4; filter: grayscale(1); }
+.big { border-left: 3px solid var(--pollen); padding: 2px 0 2px 10px; display: grid; gap: 2px; min-width: 0; }
+.big.none { border-left-color: var(--miss); }
+.big .bl { font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.big .bl i { font: 500 10px var(--mono); font-style: normal; color: var(--bg); background: var(--muted); padding: 1px 5px; border-radius: 3px; margin-left: 6px; letter-spacing: .04em; vertical-align: 1px; }
+.big .bv { font: 700 30px/1.1 var(--display); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.big .bv small { font: 500 16px var(--display); color: var(--muted); }
+.big .bs { font-size: 12.5px; } .big .bt { font-size: 12.5px; color: var(--twin); }
+.big .bk { font-size: 12px; color: var(--muted); border-top: 1px dashed var(--line); padding-top: 3px; margin-top: 2px; }
+.big .bk b { color: var(--fg); font-weight: 600; }
+.rstats { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); } .rstats dd { overflow-wrap: anywhere; }
+.xy { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } .xy label { display: grid; gap: 3px; font-size: 12.5px; color: var(--muted); }
+input[type=number] { width: 100%; box-sizing: border-box; font: 13px var(--mono); color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 5px 6px; }
+@media (max-width: 520px) { #rwin { aspect-ratio: 4 / 3; } .big .bv { font-size: 26px; } }
 </style>
 
 <div class="wrap">
   <header>
     <h1><b>POLLEN</b> Shot Explorer</h1>
     <span class="tag">Predicted · not measured</span>
-    <div class="seg modeseg" id="mode-seg" role="group" aria-label="View"><button type="button" data-v="plane">Single plane</button><button type="button" data-v="field">Field: every position</button></div>
-    <p class="sub">Every launch that drops POLLEN into the upward CELL without touching the HIVE, from the PM-001 model (Team 207 Critical Mass). Set the robot's distance, release height, hood angle, wheel rpm and backspin; the green fan is every clean shot from that spot.</p>
+    <div class="seg modeseg" id="mode-seg" role="group" aria-label="View"><button type="button" data-v="robot">Robot</button><button type="button" data-v="plane">Single plane</button><button type="button" data-v="field">Field map</button></div>
+    <p class="sub" id="sub">Every launch that drops POLLEN into the upward CELL without touching the HIVE, from the PM-001 model (Team 207 Critical Mass). Set the robot's distance, release height, hood angle, wheel rpm and backspin; the green fan is every clean shot from that spot.</p>
   </header>
+
+  <div class="rtop" id="rtop" hidden>
+    <div class="rail">
+    <section class="chart" aria-labelledby="h-rmap">
+      <h3 id="h-rmap">Field: place and turn the robot</h3>
+      <p id="rmap-cap"></p>
+      <canvas id="rmap" tabindex="0" role="img" aria-label="Top-down field. Drag the robot to move it, drag its round handle to turn it. Arrow keys move, Q and E turn."></canvas>
+      <div class="fleg" id="rmap-leg"></div>
+    </section>
+      <section class="card" aria-labelledby="h-rrob">
+        <h2 id="h-rrob">Robot</h2>
+        <p class="note">Drag the robot on the map, drag the round handle to turn it, or click the map to jump there. With the map focused: arrows move 1 cm (Shift 5 cm), Q / E turn 5° (Shift 1°). The turret aims at the up cell by itself.</p>
+        <div class="xy"><label>x (m, + toward the near side) <input id="rx" type="number" step="0.01"></label><label>y (m) <input id="ry" type="number" step="0.01"></label></div>
+        <div class="row"><label for="rhd">Heading of the chassis front (0° = +x) <output id="rhd-o"></output></label><input id="rhd" type="range" min="-180" max="180" step="1"></div>
+        <div class="row"><label>Turret travel</label><div class="seg" id="rtrav-seg"></div></div>
+        <div class="btns"><button class="btn" id="rface" type="button">Face the cell</button></div>
+      </section>
+    </div>
+    <div class="rail">
+      <section class="card" aria-labelledby="h-rout">
+        <div class="rhead"><h2 id="h-rout">At this spot</h2><span class="rsolve" id="rsolve"></span></div>
+        <dl class="stats rstats" id="rpose"></dl>
+        <p class="warn" id="rwarn"></p>
+        <div class="rres" id="rres"></div>
+      </section>
+    </div>
+  </div>
 
   <div class="main">
     <div class="stage">
@@ -118,7 +169,7 @@ html, body { overflow-x: hidden; }
         <div class="legend">
           <span><i style="background:var(--pollen)"></i>your shot</span>
           <span><i style="background:var(--twin)"></i>no-spin twin (same speed, angle)</span>
-          <span><i style="background:var(--clean)"></i>every clean shot from here</span>
+          <span id="leg-fan"><i style="background:var(--clean)"></i>every clean shot from here</span>
           <span><i style="background:var(--hit)"></i>contact point</span>
         </div>
       </div>
@@ -193,6 +244,31 @@ html, body { overflow-x: hidden; }
         <p class="note">Angles are shown two ways: from horizontal and from vertical (90 minus that). Bearing ψ is measured off the HIVE vertical tipping plane (holds the HIVE cross-section, perpendicular to the pivot axis). PREDICTED, not measured.</p>
       </section>
     </div>
+    <div class="rail" id="rrail" hidden>
+      <section class="card" aria-labelledby="h-rsh">
+        <h2 id="h-rsh">Shooter</h2>
+        <div class="row"><label for="rh">Release height (ball centre) <output id="rh-o"></output></label><input id="rh" type="range" min="0.2" max="0.737" step="0.001">
+          <p class="note">0.20 to 0.737 m: the exported model range, used as the ASSUMED robot height limit.</p></div>
+        <div class="row"><label>Backspin S = ωR/v</label><div class="seg" id="rs-seg"></div></div>
+        <div class="row"><label>Grip: exit speed ÷ wheel surface speed (ASSUMED)</label><div class="seg" id="rvu-seg"></div></div>
+        <div class="row"><label for="raero">Air: drag and spin lift (ASSUMED literature, not POLLEN measurements)</label><select id="raero"></select></div>
+      </section>
+      <section class="card" aria-labelledby="h-rshow">
+        <h2 id="h-rshow">Show</h2>
+        <div class="checks">
+          <label><input type="checkbox" id="rc-twin" checked> No-spin twin (S = 0, same rpm and angle)</label>
+          <label><input type="checkbox" id="rc-heat"> Heatmap under the field (precomputed)</label>
+          <label><input type="checkbox" id="rc-slow" checked> Slow motion (¼ speed)</label>
+        </div>
+        <div class="btns">
+          <button class="btn primary" id="rfire" type="button">Fire</button>
+          <button class="btn" id="rmf" type="button">Most forgiving</button>
+          <button class="btn" id="rminrpm" type="button">Min-rpm shot (with tolerance)</button>
+          <button class="btn" id="rminang" type="button">Min-angle shot (with tolerance)</button>
+        </div>
+        <p class="note">More backspin is not always better: spin lift is capped, so past a point extra spin adds little. Every backspin result is shown next to its no-spin twin.</p>
+      </section>
+    </div>
   </div>
 
   <div class="charts" id="plane-charts">
@@ -223,17 +299,42 @@ html, body { overflow-x: hidden; }
     </section>
   </div>
 
+  <div class="charts" id="rsec" hidden>
+    <section class="chart" aria-labelledby="h-rwin">
+      <h3 id="h-rwin">Shot window at this spot (live)</h3>
+      <p id="rwin-cap"></p>
+      <canvas id="rwin" role="img" aria-label="Live clean window at the robot's spot: hood angle against wheel rpm"></canvas>
+      <div class="fleg" id="rwin-leg"></div>
+    </section>
+    <section class="chart" aria-labelledby="h-rshot">
+      <h3 id="h-rshot">Selected shot</h3>
+      <p>Replayed in your browser at this exact spot, height and heading. PREDICTED, not measured.</p>
+      <dl class="stats rstats" id="rshot"></dl>
+      <p class="note" id="rnote"></p>
+    </section>
+  </div>
+
   <footer>
-    <p><b>What this is.</b> The squares and the green fan come straight from the PM-001 model grid (<code>src/shooter_spec.py</code>: 111 speeds × 261 angles × 24 distances × 5 heights per case). Each shot is a 2D flight in the HIVE's tipping plane, through the centre of the cell, with drag, spin lift capped at a maximum, and spin decay. The paths drawn here are re-flown in your browser with the same equations. The HIVE section is from the official field CAD; tilt 30° is confirmed.</p>
-    <p><b>What it is not.</b> No POLLEN drag, spin lift, bounce or launcher grip has been measured. The air cases are literature ranges (pickleball and smooth-sphere data), not POLLEN facts. A shot that touches the HIVE stops here; a bounce can still score (see docs/05). The second HIVE and the A-frame legs are drawn for context only. One clean simulated shot says nothing about repeatability: the tolerance shown is how far speed and angle can drift and still go in.</p>
+    <p><b>What this is.</b> Three views of one PREDICTED model (PM-001, Team 207 Critical Mass). <b>Robot</b> (the default): put a 0.457 m robot anywhere on the field at any heading, give it a turret, set the release height, backspin and grip, and the page solves the clean-entry window for that exact spot live in your browser (a background worker runs the same flight model), then gives the minimum wheel rpm, the minimum hood angle and the most forgiving shot, each beside its no-spin twin. <b>Single plane</b>: the original model grid (<code>src/shooter_spec.py</code>: 111 speeds × 261 angles × 24 distances × 5 heights per case) for a shot straight down the HIVE tipping plane. <b>Field map</b>: the precomputed windows for every 0.05 m grid position (<code>data/field</code>). Air resistance is included in all three: quadratic drag (Cd), Magnus spin lift capped at a maximum, and spin decay during the flight. Those coefficients are ASSUMED literature values, not POLLEN measurements. The HIVE section is from the official field CAD; tilt 30° is confirmed.</p>
+    <p><b>What it is not.</b> No POLLEN drag, spin lift, bounce or launcher grip has been measured. The air cases are literature ranges (pickleball and smooth-sphere data), not POLLEN facts. A shot that touches the HIVE stops here; a bounce can still score (see docs/05). The second HIVE and the A-frame legs are drawn for context only. One clean simulated shot says nothing about repeatability: the tolerance shown is how far speed and angle can drift and still go in. In the Robot view the release point is the robot centre at your height and the turret is assumed to aim exactly (ASSUMED); the cell side walls are not modelled, so windows from a bearing of 35.57° or more are optimistic.</p>
     <p id="prov"></p>
   </footer>
 </div>
 <div class="tip" id="tip" hidden></div>
 
+<script>
+// test hook: any uncaught error or console.error lands on <body data-js-error> for headless checks
+(function () {
+  const note = t => { try { const b = document.body; b.dataset.jsError = (b.dataset.jsError ? b.dataset.jsError + " | " : "") + String(t).slice(0, 300); } catch (_) { /* ignore */ } };
+  window.addEventListener("error", e => { if (e && e.message) note(e.message); });
+  window.addEventListener("unhandledrejection", e => note("unhandled: " + (e.reason && e.reason.message || e.reason)));
+  const ce = console.error.bind(console);
+  console.error = function () { note(Array.prototype.map.call(arguments, a => a && a.message || a).join(" ")); ce.apply(null, arguments); };
+})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script>
+<script id="js-physics">
 // Shot physics for the 3D explorer: a line-for-line port of src/feasibility.py integrate_batch
 // (fixed-step RK4, drag + capped Magnus + exponential spin decay, planar shot toward +x) and of
 // src/hive.py Hive.classify_path (ball centre vs obstacles inflated by R; clean = enters the
@@ -381,6 +482,659 @@ html, body { overflow-x: hidden; }
 })(typeof self !== "undefined" ? self : this);
 
 </script>
+<script id="js-solver">
+// Live shot solver for the whole-field explorer (PM-009). UMD like physics.js: module.exports in
+// node, self.PollenSolver in a browser or Web Worker. No DOM. Depends only on PollenPhysics: in a
+// page or worker load physics.js first (worker: importScripts("physics.js", "solver.js")).
+// API: pose(x, y, meta), sectionFor(side, psi, meta), solve(q, onProgress), shot(q, v, theta),
+// rpm(v, vu), vFromRpm(rpm, vu), ballSpinRpm(v, S). meta = data/field/index.json (parsed).
+// solve() grid order: v-major, index = iv * th.length + ith (theta fastest); minRpm = lowest clean v
+// (it can sit on a narrow island: show thetaLo..thetaHi with it); twin = same solve with S = 0, c1 = 0.
+//
+// Model = exactly the PM-005 oblique model (FIELD_DATA.md, src/robustness.py "score from anywhere"):
+// planar flight in the vertical plane of the bearing (spin axis perpendicular to it, no sideways
+// Magnus), projected on the HIVE shot axis (X, VX scaled by cos psi), classified on the HIVE section
+// at the ASSUMED lateral offset s_eff(psi) = min(0.3 tan psi, 0.2). Air drag (Cd) and capped Magnus
+// lift with exponential spin decay are included; their coefficients are ASSUMED (literature, not
+// POLLEN measurements). Every window is PREDICTED (model output), not a hit probability.
+//
+// Continuous pose and release height: nothing is snapped to the export grid. Sections between the
+// exported offsets are linearly interpolated, which is exact up to the 1e-5 m rounding of the export:
+// src/hive.py _roof_drop lowers the roof linearly in |s| and the section is affine in that drop.
+(function (root) {
+  "use strict";
+  const P = (typeof module !== "undefined" && module.exports && typeof require === "function")
+    ? require("./physics.js") : root.PollenPhysics;
+
+  // ---- field constants: same values as viz/explorer/export_field.py (field frame, pose_pos)
+  const X_WALL = 1.8009, Y_LO = -1.8009 + 0.3236, Y_HI = 1.8009 + 0.3236;
+  const BASE_X = 0.4945, BASE_Y = [-0.628 + 0.3236, 0.628 + 0.3236];
+  const OTHER_HIVE_Y = [0.39, 0.90];
+  const X_GATE = 0.401;            // up-cell gate centre at (+0.401, 0) seen from both sides
+  const WHEEL_D = 0.098;           // wheel diameter (m) for rpm conversion
+  const R_BALL = 0.0355;
+  const Z_STOP_REL = 0.4;          // integrator stop height above release (export_field.py, z_stop)
+
+  function deg(r) { return r * 180 / Math.PI; }
+  function rad(d) { return d * Math.PI / 180; }
+  function gridMeta(meta) {
+    const g = (meta && meta.grid) || {};
+    const d = g.d || [0.55, 1.75];
+    return { dLo: d[0] - 0.025, dHi: d[d.length - 1] + 0.025,
+             psiModel: g.psi_max_model !== undefined ? g.psi_max_model : 60,
+             psiExport: g.psi_max_export !== undefined ? g.psi_max_export : 75,
+             psiStep: g.psi && g.psi.length > 1 ? g.psi[1] - g.psi[0] : 5,
+             psiWall: g.psi_side_wall !== undefined ? g.psi_side_wall : 35.57,
+             h: g.h || [0.2, 0.35, 0.5, 0.65, 0.737] };
+  }
+
+  // ---------------------------------------------------------------- pose
+  // psi sign: + when the release point has y > 0 (side of the aim line); the model uses |psi|.
+  function pose(x, y, meta) {
+    const gm = gridMeta(meta), notes = [];
+    const side = x > 0 ? "fav" : "unfav", d = Math.abs(x);
+    const Lh = side === "fav" ? Math.max(d - X_GATE, 1e-3) : d + X_GATE;
+    const psiAbs = deg(Math.atan2(Math.abs(y), Lh));
+    const psi = y < 0 ? -psiAbs : psiAbs;
+    const aim = [X_GATE, 0];
+    const bearingDeg = deg(Math.atan2(aim[1] - y, aim[0] - x));
+    // sight line from the release point to the HIVE centre (0, 0) crosses the other HIVE footprint
+    // (|x| < BASE_X, y in OTHER_HIVE_Y): ASSUMED footprint, same 201-sample test as the export
+    let otherHive = false;
+    for (let i = 0; i <= 200 && !otherHive; i++) {
+      const t = i / 200, px = x * t, py = y * t;
+      if (Math.abs(px) < BASE_X && py > OTHER_HIVE_Y[0] && py < OTHER_HIVE_Y[1]) otherHive = true;
+    }
+    const inField = Math.abs(x) <= X_WALL && y >= Y_LO && y <= Y_HI;
+    const aframe = Math.abs(x) < BASE_X + 0.05 && y > BASE_Y[0] - 0.05 && y < BASE_Y[1] + 0.05;
+    let status = "ok";
+    if (!inField) { status = "illegal"; notes.push("outside the field walls"); }
+    else if (aframe) { status = "illegal"; notes.push("inside the A-frame base zone (illegal release position)"); }
+    else if (d < gm.dLo - 1e-9 || d > gm.dHi + 1e-9) {
+      status = "beyond_model";
+      notes.push("distance d = " + d.toFixed(3) + " m is outside the validated table " + gm.dLo.toFixed(3) +
+                 ".." + gm.dHi.toFixed(3) + " m: live model still runs, not checked against the export");
+    } else if (psiAbs > gm.psiExport + gm.psiStep / 2) {
+      status = "beyond_model";
+      notes.push("bearing psi " + psiAbs.toFixed(1) + " deg is beyond the exported 75 deg: ASSUMED extrapolation");
+    } else if (psiAbs > gm.psiModel) {
+      status = "psi_extrapolated";
+      notes.push("psi above " + gm.psiModel + " deg: robustness.py treats this as infeasible; ASSUMED extrapolation");
+    }
+    const sideWallRisk = psiAbs >= gm.psiWall;
+    if (sideWallRisk) notes.push("psi >= " + gm.psiWall + " deg: straight-line estimate puts the ball against a cell side wall (not modelled); window is optimistic");
+    if (otherHive) notes.push("sight line crosses the other HIVE footprint (ASSUMED; not modelled as an obstacle)");
+    return { ok: status !== "illegal", status: status, side: side, d: d, Lh: Lh, psi: psi,
+             sideWallRisk: sideWallRisk, otherHive: otherHive, aim: aim, bearingDeg: bearingDeg,
+             sEff: P.sEff(psiAbs), notes: notes };
+  }
+
+  // ---------------------------------------------------------------- sections
+  // Linear interpolation in s_eff between the two neighbouring exported sections of that side
+  // (exact: see header). An exact match returns the exported section itself.
+  const secCache = typeof WeakMap !== "undefined" ? new WeakMap() : null;
+  function sideSections(meta, side) {
+    let per = secCache && secCache.get(meta);
+    if (!per) { per = {}; if (secCache) secCache.set(meta, per); }
+    if (!per[side]) {
+      const list = [];
+      for (const k of Object.keys(meta.sections)) {
+        const m = /^(unfav|fav)_s([0-9.eE+-]+)$/.exec(k);
+        if (m && m[1] === side) list.push({ s: parseFloat(m[2]), key: k, sec: meta.sections[k] });
+      }
+      list.sort(function (a, b) { return a.s - b.s; });
+      per[side] = { list: list, cache: {} };
+    }
+    return per[side];
+  }
+  function lerpArr(a, b, t) {
+    return a.map(function (p, i) { return [p[0] + t * (b[i][0] - p[0]), p[1] + t * (b[i][1] - p[1])]; });
+  }
+  function sectionFor(side, psiDeg, meta) {
+    const s = P.sEff(Math.abs(psiDeg)), ss = sideSections(meta, side), list = ss.list;
+    if (!list.length) throw new Error("no sections for side " + side);
+    const ck = s.toFixed(7);
+    if (ss.cache[ck]) return ss.cache[ck];
+    let out;
+    for (const e of list) if (Math.abs(e.s - s) < 5e-5) { out = Object.assign({}, e.sec, { s: s, key: e.key, how: "exported" }); break; }
+    if (!out) {
+      let i = 0;
+      while (i < list.length - 2 && list[i + 1].s < s) i++;
+      const a = list[i], b = list[i + 1], t = (s - a.s) / (b.s - a.s);
+      out = { names: a.sec.names, P0: lerpArr(a.sec.P0, b.sec.P0, t), P1: lerpArr(a.sec.P1, b.sec.P1, t),
+              inside: lerpArr(a.sec.inside, b.sec.inside, t), gate: lerpArr(a.sec.gate, b.sec.gate, t),
+              normal: a.sec.normal, s: s, key: a.key + "~" + b.key,
+              how: "interpolated in s_eff between " + a.key + " and " + b.key + " (exact: roof drop linear in s)" };
+    }
+    ss.cache[ck] = out;
+    return out;
+  }
+
+  // ---------------------------------------------------------------- fused fast path
+  // Prepared section: flat obstacle arrays + per-obstacle bounding boxes + the classify() bbox.
+  function prepSection(sec) {
+    if (sec._prep) return sec._prep;
+    const ns = sec.P0.length, ob = new Float64Array(ns * 8);
+    let bx0 = Infinity, bx1 = -Infinity, bz0 = Infinity, bz1 = -Infinity;
+    for (let j = 0; j < ns; j++) {
+      const a = sec.P0[j], b = sec.P1[j];
+      ob[8 * j] = a[0]; ob[8 * j + 1] = a[1]; ob[8 * j + 2] = b[0]; ob[8 * j + 3] = b[1];
+      ob[8 * j + 4] = Math.min(a[0], b[0]); ob[8 * j + 5] = Math.max(a[0], b[0]);
+      ob[8 * j + 6] = Math.min(a[1], b[1]); ob[8 * j + 7] = Math.max(a[1], b[1]);
+      bx0 = Math.min(bx0, a[0], b[0]); bx1 = Math.max(bx1, a[0], b[0]);
+      bz0 = Math.min(bz0, a[1], b[1]); bz1 = Math.max(bz1, a[1], b[1]);
+    }
+    let izMin = Infinity;
+    for (const q of sec.inside) {
+      bx0 = Math.min(bx0, q[0]); bx1 = Math.max(bx1, q[0]); bz0 = Math.min(bz0, q[1]); bz1 = Math.max(bz1, q[1]);
+      izMin = Math.min(izMin, q[1]);
+    }
+    const gt = sec.gate;
+    const pr = { ns: ns, ob: ob, bx0: bx0, bx1: bx1, bz0: bz0, bz1: bz1, izMin: izMin, inside: sec.inside,
+                 g0x: gt[0][0], g0z: gt[0][1], g1x: gt[1][0], g1z: gt[1][1] };
+    Object.defineProperty(sec, "_prep", { value: pr, enumerable: false });
+    return pr;
+  }
+
+  function zStopFor(h, pr) {
+    // relative stop height: the export's 0.4 m, lowered if needed so the stop stays below the cell
+    // (a stop anywhere below the inside polygon cannot change clean / not clean)
+    return Math.min(Z_STOP_REL, pr.izMin - 0.05 - h);
+  }
+
+  // One shot: integrate (physics.js integrate, RK4, same arithmetic) and classify on the fly
+  // (physics.js classify on X*cos(psi)). Returns 1 clean / 0 not; out[0] = minClear, out[1] = entry
+  // angle (deg, NaN if none), out[2] = code (1 clean, 2 hit, 3 miss, 4 miss: descending past the HIVE),
+  // out[3] = closest approach of the ball centre to the gate segment (m; only points inside the box,
+  // used to decide which in-between hood-angle rows are worth evaluating). Early exits only when the rest
+  // of the path provably cannot change the result (checked against physics.js in tests).
+  function fastShot(v, thDeg, cps, S0, p, pr, d, h, zStop, out, dt, tMax) {
+    dt = dt || 2e-3; tMax = tMax || 3.0;
+    const th = thDeg * Math.PI / 180, R = p.radius;
+    const q = 0.5 * p.rho * Math.PI * R * R / p.mass, cd = p.Cd, g = p.g || 9.80665;
+    const w0 = S0 * v / R, sgn = Math.sign(w0), aw0 = Math.abs(w0);
+    const useM = p.c1 > 0 && S0 !== 0 && p.rho > 0;
+    const k = p.k || 0, c1 = p.c1, clmax = p.clmax;
+    const ns = pr.ns, ob = pr.ob, inside = pr.inside, Rb = R;
+    const m = Rb + 0.2, bx0 = pr.bx0 - m, bx1 = pr.bx1 + m, bz0 = pr.bz0 - m, bz1 = pr.bz1 + m;
+    // x-exit is safe when lift can never beat gravity (speed^2 <= v^2 + 2 g max(0, -zStop)) and
+    // the spin is backspin or zero: then once descending past the box the ball never comes back
+    const vmax2 = v * v + 2 * g * Math.max(0, -zStop);
+    const xExitOK = !useM || (sgn >= 0 && q * clmax * vmax2 < g);
+    const nT = Math.ceil(tMax / dt) + 1;
+    let x = 0, z = 0, vx = v * Math.cos(th), vz = v * Math.sin(th), t = 0;
+    let pX = 0, pZ = 0, ppX = 0, ppZ = 0;            // points n-1 and n-2 (shot-axis X, rel. z)
+    let minC = Infinity, gNear = Infinity;
+    const gx0 = pr.g0x, gz0 = pr.g0z, gdx = pr.g1x - pr.g0x, gdz = pr.g1z - pr.g0z, gden = gdx * gdx + gdz * gdz;
+    out[3] = Infinity;
+    for (let n = 1; n < nT; n++) {
+      // ---- RK4 step (identical arithmetic to physics.js integrate/acc)
+      let a1x, a1z, a2x, a2z, a3x, a3z, a4x, a4z;
+      {
+        let ux = vx, uz = vz, tt = t;
+        let sp = Math.sqrt(ux * ux + uz * uz);
+        a1x = -q * cd * sp * ux; a1z = -q * cd * sp * uz - g;
+        if (useM) { const w = aw0 * Math.exp(-k * tt), S = w * R / Math.sqrt(sp * sp + 1e-12), Cl = Math.min(c1 * S, clmax), f = q * Cl * sp * sgn; a1x -= f * uz; a1z += f * ux; }
+        ux = vx + dt / 2 * a1x; uz = vz + dt / 2 * a1z; tt = t + dt / 2;
+        sp = Math.sqrt(ux * ux + uz * uz);
+        a2x = -q * cd * sp * ux; a2z = -q * cd * sp * uz - g;
+        if (useM) { const w = aw0 * Math.exp(-k * tt), S = w * R / Math.sqrt(sp * sp + 1e-12), Cl = Math.min(c1 * S, clmax), f = q * Cl * sp * sgn; a2x -= f * uz; a2z += f * ux; }
+        ux = vx + dt / 2 * a2x; uz = vz + dt / 2 * a2z;
+        sp = Math.sqrt(ux * ux + uz * uz);
+        a3x = -q * cd * sp * ux; a3z = -q * cd * sp * uz - g;
+        if (useM) { const w = aw0 * Math.exp(-k * tt), S = w * R / Math.sqrt(sp * sp + 1e-12), Cl = Math.min(c1 * S, clmax), f = q * Cl * sp * sgn; a3x -= f * uz; a3z += f * ux; }
+        ux = vx + dt * a3x; uz = vz + dt * a3z; tt = t + dt;
+        sp = Math.sqrt(ux * ux + uz * uz);
+        a4x = -q * cd * sp * ux; a4z = -q * cd * sp * uz - g;
+        if (useM) { const w = aw0 * Math.exp(-k * tt), S = w * R / Math.sqrt(sp * sp + 1e-12), Cl = Math.min(c1 * S, clmax), f = q * Cl * sp * sgn; a4x -= f * uz; a4z += f * ux; }
+      }
+      x += dt * (vx + dt / 6 * (a1x + a2x + a3x));
+      z += dt * (vz + dt / 6 * (a1z + a2z + a3z));
+      vx += dt / 6 * (a1x + 2 * a2x + 2 * a3x + a4x);
+      vz += dt / 6 * (a1z + 2 * a2z + 2 * a3z + a4z);
+      t += dt;
+      const cX = x * cps;
+      // ---- classify segment i = n-1 (points n-1 -> n), as physics.js classify
+      const i = n - 1;
+      const ax = pX - d, az = pZ + h, bx = cX - d, bz = z + h;
+      const sx0 = ax < bx ? ax : bx, sx1 = ax < bx ? bx : ax, sz0 = az < bz ? az : bz, sz1 = az < bz ? bz : az;
+      if (!(sx1 < bx0 || sx0 > bx1 || sz1 < bz0 || sz0 > bz1)) {
+        {
+          let tg = ((bx - gx0) * gdx + (bz - gz0) * gdz) / gden;
+          tg = tg < 0 ? 0 : tg > 1 ? 1 : tg;
+          const ex = bx - gx0 - tg * gdx, ez = bz - gz0 - tg * gdz, e = ex * ex + ez * ez;
+          if (e < gNear) { gNear = e; out[3] = Math.sqrt(e); }
+        }
+        if (i > 0 && P.insideConvex(ax, az, inside)) {
+          const dvx = pX - ppX, dvz = pZ - ppZ;
+          out[0] = minC; out[1] = Math.atan2(-dvz, Math.abs(dvx) + 1e-300) * 180 / Math.PI; out[2] = 1;
+          return 1;
+        }
+        let best = Infinity;
+        const lim = minC + Rb;
+        for (let j = 0; j < ns; j++) {
+          const o = 8 * j;
+          // box lower bound: skip obstacles that cannot lower minClear (exact)
+          const ddx = ob[o + 4] > sx1 ? ob[o + 4] - sx1 : (sx0 > ob[o + 5] ? sx0 - ob[o + 5] : 0);
+          const ddz = ob[o + 6] > sz1 ? ob[o + 6] - sz1 : (sz0 > ob[o + 7] ? sz0 - ob[o + 7] : 0);
+          if (ddx * ddx + ddz * ddz >= lim * lim && ddx + ddz > 0) continue;
+          const dd = P.segSeg(ax, az, bx, bz, ob[o], ob[o + 1], ob[o + 2], ob[o + 3]);
+          if (dd < best) best = dd;
+        }
+        if (best - Rb < minC) minC = best - Rb;
+        if (best - Rb < 0) { out[0] = minC; out[1] = NaN; out[2] = 2; return 0; }
+      } else if (xExitOK && vz < 0 && vx > 0 && bx > bx1) {
+        out[0] = minC; out[1] = NaN; out[2] = 4; return 0;     // past the HIVE, descending: miss
+      }
+      ppX = pX; ppZ = pZ; pX = cX; pZ = z;
+      if (z < zStop && vz < 0) break;
+    }
+    if (P.insideConvex(pX - d, pZ + h, inside)) { out[0] = minC; out[1] = NaN; out[2] = 1; return 1; }
+    out[0] = minC; out[1] = NaN; out[2] = 3; return 0;
+  }
+
+  // ---------------------------------------------------------------- helpers
+  function rpm(v, vu) { return v / vu / (Math.PI * WHEEL_D) * 60; }
+  function vFromRpm(r, vu) { return r / 60 * (Math.PI * WHEEL_D) * vu; }
+  function ballSpinRpm(v, S) { return Math.abs(S) * v / R_BALL * 60 / (2 * Math.PI); }
+  function now() { return (typeof performance !== "undefined" && performance.now) ? performance.now() : Date.now(); }
+  function twinParams(p) { return Object.assign({}, p, { c1: 0 }); }
+  function range(lo, hi, st) {
+    const n = Math.max(1, Math.floor((hi - lo) / st + 1e-9) + 1), a = new Float64Array(n);
+    for (let i = 0; i < n; i++) a[i] = Math.round((lo + i * st) * 1e6) / 1e6;
+    return a;
+  }
+
+  function context(q) {
+    const ps = pose(q.x, q.y, q.meta);
+    const sec = sectionFor(ps.side, ps.psi, q.meta), pr = prepSection(sec);
+    const cps = Math.cos(rad(Math.abs(ps.psi)));
+    return { ps: ps, sec: sec, pr: pr, cps: cps, zStop: zStopFor(q.h, pr) };
+  }
+
+  // largest all-clean k x k square (grid cells), like shooter_spec.best_square
+  function bestSquare(clean, nTh, nV) {
+    // clean is v-major: idx = iv * nTh + ith
+    const dp = new Int32Array(nV * nTh);
+    let bk = 0, bi = -1, bj = -1;
+    for (let i = 0; i < nV; i++) for (let j = 0; j < nTh; j++) {
+      const o = i * nTh + j;
+      if (!clean[o]) continue;
+      dp[o] = (i && j) ? 1 + Math.min(dp[o - nTh], dp[o - 1], dp[o - nTh - 1]) : 1;
+      if (dp[o] > bk) { bk = dp[o]; bi = i - bk + 1; bj = j - bk + 1; }
+    }
+    return { k: bk, i0: bi, j0: bj };
+  }
+
+  // ---------------------------------------------------------------- solve
+  function solveOne(q, S, p, ctx, onProgress, pFrom, pTo) {
+    const t0 = now();
+    const vR = q.vRange || [2, 16], tR = q.thRange || [15, 89.5];
+    // far-side windows are narrow in theta (a few tenths of a degree): finer coarse step there
+    const dv = q.dv || 0.1, dth = q.dth || (ctx.ps.side === "unfav" ? 0.1 : 0.25);
+    const V = range(vR[0], vR[1], dv), TH = range(tR[0], tR[1], dth);
+    const nV = V.length, nTh = TH.length, N = nV * nTh;
+    const clean = new Uint8Array(N), margin = new Float32Array(N).fill(NaN), entry = new Float32Array(N).fill(NaN);
+    const evald = new Uint8Array(N);
+    const out = [0, 0, 0, 0], d = ctx.ps.d, h = q.h, pr = ctx.pr, cps = ctx.cps, zs = ctx.zStop;
+    let nShots = 0;
+    function shot(v, th) { nShots++; return fastShot(v, th, cps, S, p, pr, d, h, zs, out); }
+    // apex bound (lift <= q*clmax*v^2 while rising): skip v whose apex cannot reach the inside polygon
+    const qq = 0.5 * p.rho * Math.PI * p.radius * p.radius / p.mass, g = p.g || 9.80665;
+    const dzNeed = pr.izMin - h;
+    let count = 0;
+    const gate = new Float32Array(N).fill(Infinity), rowDone = new Uint8Array(nTh);
+    function doRow(it, want) {
+      rowDone[it] = 1;
+      const th = TH[it], st = Math.sin(rad(th));
+      let overRun = 0;
+      for (let iv = 0; iv < nV; iv++) {
+        if (want && !want(iv)) continue;
+        const v = V[iv], o = iv * nTh + it;
+        const gEff = g - (p.c1 > 0 && S !== 0 ? qq * p.clmax * v * v : 0);
+        if (dzNeed > 0 && gEff > 0 && (v * st) * (v * st) / (2 * gEff) < dzNeed) continue;   // cannot rise to the cell
+        evald[o] = 1;
+        const c = shot(v, th);
+        clean[o] = c; margin[o] = out[0]; entry[o] = out[1]; gate[o] = out[3];
+        if (c) count++;
+        // the ball flew over the whole HIVE box and came down past it: at this hood angle a faster
+        // shot flies higher and farther still, so stop the row after 4 such shots in a row
+        if (!want && out[2] === 4 && !isFinite(out[0])) { if (++overRun >= 4) break; }
+        else overRun = 0;
+      }
+    }
+    // pass 1: every stride-th hood-angle row (about 0.5 deg apart) plus the last row, all v
+    const stride = q.prune === false ? 1 : Math.max(1, Math.round((q.coarseDth || 0.5) / dth));
+    const nearGate = q.nearGate || 0.12, vPad = q.vPad || 3;
+    for (let it = 0; it < nTh; it += stride) doRow(it, null);
+    if (!rowDone[nTh - 1]) doRow(nTh - 1, null);
+    if (onProgress) onProgress(pFrom + (pTo - pFrom) * 0.5);
+    // pass 2: rows in between, only cells whose neighbouring pass-1 rows passed within nearGate of
+    // the gate at a v within vPad cells (a clean shot passes through the gate; the pruning is
+    // checked against the unpruned grid in tests/js_solver_check.js)
+    for (let it = 0; it < nTh; it++) {
+      if (rowDone[it]) continue;
+      let a = it, b = it;
+      while (a > 0 && !rowDone[a]) a--;
+      while (b < nTh - 1 && !rowDone[b]) b++;
+      const near = new Uint8Array(nV);
+      let any = false;
+      for (let iv = 0; iv < nV; iv++) {
+        if (gate[iv * nTh + a] < nearGate || gate[iv * nTh + b] < nearGate) {
+          any = true;
+          for (let k = Math.max(0, iv - vPad); k <= Math.min(nV - 1, iv + vPad); k++) near[k] = 1;
+        }
+      }
+      if (any) doRow(it, function (iv) { return near[iv] === 1; });
+      else rowDone[it] = 2;
+    }
+    if (onProgress) onProgress(pFrom + (pTo - pFrom) * 0.8);
+    const res = { grid: { v: V, th: TH, clean: clean, margin: margin, entry: entry, evaluated: evald, rowEvaluated: rowDone,
+                          order: "v-major: index = iv * th.length + ith (theta fastest)", dv: dv, dth: dth },
+                  count: count, minRpm: null, minAngle: null, minRpmTol: null, minAngleTol: null, mostForgiving: null };
+    function info(v, th) { const c = shot(v, th); return { c: c, margin: out[0], entry: out[1], code: out[2] }; }
+    if (count && q.refine !== false) refine(res, q, shot, info);
+    else if (count) coarseOnly(res);
+    if (count) {
+      const bs = bestSquare(clean, nTh, nV);
+      if (bs.k) {
+        const ci = bs.i0 + (bs.k >> 1), cj = bs.j0 + (bs.k >> 1), o = ci * nTh + cj;
+        res.mostForgiving = { v: V[ci], theta: TH[cj], rpm: rpm(V[ci], q.vu), margin: margin[o], entryAngle: entry[o],
+                              k: bs.k, tolV: (bs.k - 1) / 2 * dv, tolTheta: (bs.k - 1) / 2 * dth };
+      }
+    }
+    if (res.minRpm) Object.assign(res.minRpm, { rpm: rpm(res.minRpm.v, q.vu), ballSpinRpm: ballSpinRpm(res.minRpm.v, S) });
+    if (res.mostForgiving) res.mostForgiving.ballSpinRpm = ballSpinRpm(res.mostForgiving.v, S);
+    if (res.minAngle) Object.assign(res.minAngle, { rpmLo: rpm(res.minAngle.vLo, q.vu), rpmHi: rpm(res.minAngle.vHi, q.vu) });
+    if (res.minRpmTol) Object.assign(res.minRpmTol, { rpm: rpm(res.minRpmTol.v, q.vu), ballSpinRpm: ballSpinRpm(res.minRpmTol.v, S) });
+    if (res.minAngleTol) Object.assign(res.minAngleTol, { rpm: rpm(res.minAngleTol.v, q.vu), rpmLo: rpm(res.minAngleTol.vLo, q.vu),
+                                                          rpmHi: rpm(res.minAngleTol.vHi, q.vu), ballSpinRpm: ballSpinRpm(res.minAngleTol.v, S) });
+    res.S = S; res.params = p; res.shots = nShots; res.ms = now() - t0;
+    return res;
+  }
+
+  function coarseOnly(res) {
+    const g = res.grid, nTh = g.th.length;
+    for (let iv = 0; iv < g.v.length && !res.minRpm; iv++) {
+      let lo = Infinity, hi = -Infinity;
+      for (let it = 0; it < nTh; it++) if (g.clean[iv * nTh + it]) { lo = Math.min(lo, g.th[it]); hi = Math.max(hi, g.th[it]); }
+      if (lo <= hi) res.minRpm = { v: g.v[iv], thetaLo: lo, thetaHi: hi, refined: false };
+    }
+    for (let it = 0; it < nTh && !res.minAngle; it++) {
+      let lo = Infinity, hi = -Infinity;
+      for (let iv = 0; iv < g.v.length; iv++) if (g.clean[iv * nTh + it]) { lo = Math.min(lo, g.v[iv]); hi = Math.max(hi, g.v[iv]); }
+      if (lo <= hi) res.minAngle = { theta: g.th[it], vLo: lo, vHi: hi, refined: false };
+    }
+  }
+
+  // ENVELOPE: walk outward from a clean point in steps of st until 3 non-clean steps in a row (each
+  // way); returns [lo, hi] of the clean values seen. It can contain hits (gaps up to 2 steps and any
+  // hole narrower than st): it is NOT a clean interval. cleanFrac() samples how much of it is clean.
+  function spanScan(fn, c, st, lo, hi) {
+    let a = c, b = c;
+    for (const dir of [-1, 1]) {
+      let miss = 0;
+      for (let k = 1; miss < 3; k++) {
+        const x = c + dir * k * st;
+        if (x < lo - 1e-9 || x > hi + 1e-9) break;
+        if (fn(x)) { miss = 0; if (dir < 0) a = x; else b = x; } else miss++;
+      }
+    }
+    return [a, b];
+  }
+  function cleanFrac(fn, a, b, st, maxN) {
+    if (!(b > a)) return 1;
+    const n = Math.min(maxN || 400, Math.max(2, Math.round((b - a) / st) + 1));
+    let k = 0;
+    for (let i = 0; i < n; i++) if (fn(a + (b - a) * i / (n - 1))) k++;
+    return k / n;
+  }
+  // CONTINUOUS RUN: from a point where ok(c) holds, step outward by st while ok holds (no gaps), then
+  // bisect the first failing step to tol. Continuous only at the sampling step st (narrower holes can
+  // hide between samples). maxSteps caps each side; a capped side is flagged.
+  function cleanRun(ok, c, st, lo, hi, tol, maxSteps) {
+    const e = [c, c], capped = [false, false];
+    for (let k = 0; k < 2; k++) {
+      const dir = k ? 1 : -1;
+      let last = c, x = null, n = 0;
+      for (;;) {
+        const t = last + dir * st;
+        if (t < lo - 1e-9 || t > hi + 1e-9) break;
+        if (!ok(t)) { x = t; break; }
+        last = t;
+        if (++n >= (maxSteps || 400)) { capped[k] = true; break; }
+      }
+      if (x !== null) { let a = last, b = x; while (Math.abs(b - a) > tol) { const m = (a + b) / 2; if (ok(m)) a = m; else b = m; } last = a; }
+      e[k] = last;
+    }
+    return { lo: e[0], hi: e[1], capped: capped[0] || capped[1] };
+  }
+
+  // Refinement near the clean-window edges. Every refinement shot is recorded, so minRpm.v is the
+  // lowest clean v seen anywhere and minAngle.theta the lowest clean theta seen anywhere.
+  //  1. rows/columns at 1/5 of the coarse step around the coarse minimum: first clean value, bisected
+  //  2. local pattern search around the best point (theta steps 0.025 deg / v steps 0.01 m/s)
+  //  3. span at the minimum: walk outward until 3 non-clean steps
+  function refine(res, q, shot0, info) {
+    const g = res.grid, V = g.v, TH = g.th, nV = V.length, nTh = TH.length, dv = g.dv, dth = g.dth;
+    const fv = 0.02, fth = 0.1, vTol = 0.01, thTol = 0.025;
+    let mv = { v: Infinity, th: NaN }, mt = { v: NaN, th: Infinity };
+    function shot(v, th) {
+      const c = shot0(v, th);
+      if (c) {
+        if (v < mv.v || (v === mv.v && th < mv.th)) mv = { v: v, th: th };
+        if (th < mt.th || (th === mt.th && v < mt.v)) mt = { v: v, th: th };
+      }
+      return c;
+    }
+    for (let iv = 0; iv < nV; iv++) for (let it = 0; it < nTh; it++) if (g.clean[iv * nTh + it]) {
+      if (V[iv] < mv.v) mv = { v: V[iv], th: TH[it] };
+      if (TH[it] < mt.th || (TH[it] === mt.th && V[iv] < mt.v)) mt = { v: V[iv], th: TH[it] };
+    }
+    const r4 = function (x) { return Math.round(x * 1e4) / 1e4; };
+    // first clean v at angle th, scanning up from vFrom in steps st, bisected to vTol
+    function firstV(th, vFrom, vTo, st) {
+      let lo = vFrom;
+      for (let v = vFrom + st; v <= vTo + 1e-9; v += st) {
+        if (shot(v, th)) { let hi = v; while (hi - lo > vTol) { const m = (lo + hi) / 2; if (shot(m, th)) hi = m; else lo = m; } return hi; }
+        lo = v;
+      }
+      return NaN;
+    }
+    function firstTh(v, tFrom, tTo, st) {
+      let lo = tFrom;
+      for (let th = tFrom + st; th <= tTo + 1e-9; th += st) {
+        if (shot(v, th)) { let hi = th; while (hi - lo > thTol) { const m = (lo + hi) / 2; if (shot(v, m)) hi = m; else lo = m; } return hi; }
+        lo = th;
+      }
+      return NaN;
+    }
+    // ---- 1. minimum v: thetas around every coarse row clean at the two lowest clean v columns
+    const iv0 = Math.round((mv.v - V[0]) / dv);
+    const thSet = new Set();
+    for (let it = 0; it < nTh; it++) {
+      if (!(g.clean[iv0 * nTh + it] || (iv0 + 1 < nV && g.clean[(iv0 + 1) * nTh + it]))) continue;
+      for (let k = -5; k <= 5; k++) { const th = r4(TH[it] + k * dth / 5); if (th >= TH[0] - 1e-9 && th <= TH[nTh - 1] + 1e-9) thSet.add(th); }
+    }
+    for (const th of thSet) firstV(th, Math.max(V[0] - dv, mv.v - dv), mv.v, fv * 2.5);
+    // ---- 1b. minimum theta: v columns around every coarse column clean at the two lowest clean rows
+    const it0 = Math.round((mt.th - TH[0]) / dth);
+    const vSet = new Set();
+    for (let iv = 0; iv < nV; iv++) {
+      if (!(g.clean[iv * nTh + it0] || (it0 + 1 < nTh && g.clean[iv * nTh + it0 + 1]))) continue;
+      for (let k = -5; k <= 5; k++) { const v = r4(V[iv] + k * dv / 5); if (v >= V[0] - 1e-9 && v <= V[nV - 1] + 1e-9) vSet.add(v); }
+    }
+    for (const v of vSet) firstTh(v, Math.max(TH[0] - dth, mt.th - dth), mt.th, fth);
+    // ---- 2. local pattern search (repeat while it improves, at most 3 rounds)
+    for (let round = 0; round < 3; round++) {
+      const before = mv.v;
+      const c = mv;
+      for (let k = -8; k <= 8; k++) {
+        const th = r4(c.th + k * thTol);
+        if (k === 0 || th < TH[0] - 1e-9 || th > TH[nTh - 1] + 1e-9) continue;
+        firstV(th, c.v - 0.1, c.v - vTol, fv);
+      }
+      if (!(mv.v < before - 1e-9)) break;
+    }
+    for (let round = 0; round < 3; round++) {
+      const before = mt.th;
+      const c = mt;
+      for (let k = -8; k <= 8; k++) {
+        const v = r4(c.v + k * vTol);
+        if (k === 0 || v < V[0] - 1e-9 || v > V[nV - 1] + 1e-9) continue;
+        firstTh(v, c.th - 0.2, c.th - thTol, 0.05);
+      }
+      if (!(mt.th < before - 1e-9)) break;
+    }
+    // ---- 3. at each minimum: clearance and entry angle there, the continuous clean run through it
+    // (sampled at 0.01 deg / 0.005 m/s, edges bisected) and the sampled envelope with its clean fraction
+    const bv = mv, bt = mt, iR = info(bv.v, bv.th), iA = info(bt.v, bt.th);
+    const fT = function (th) { return shot0(bv.v, th) === 1; }, fV = function (v) { return shot0(v, bt.th) === 1; };
+    const rT = cleanRun(fT, bv.th, 0.01, TH[0], TH[nTh - 1], 0.002, 600);
+    const rV = cleanRun(fV, bt.v, 0.005, V[0], V[nV - 1], 0.001, 2000);
+    const ts = spanScan(fT, bv.th, thTol * 2, TH[0], TH[nTh - 1]);
+    const vs = spanScan(fV, bt.v, fv, V[0], V[nV - 1]);
+    const vEdge = Math.min(dv, 0.05);
+    const tol = Object.assign({}, TOL, q.tol || {});
+    res.tol = tol;
+    res.minRpm = { v: bv.v, theta: bv.th, margin: iR.margin, entryAngle: iR.entry,
+                   runLo: rT.lo, runHi: rT.hi, run: rT.hi - rT.lo,
+                   thetaLo: ts[0], thetaHi: ts[1], envelopeCleanFrac: cleanFrac(fT, ts[0], ts[1], 0.01),
+                   knifeEdge: rT.hi - rT.lo < tol.theta || !(iR.margin >= tol.margin), refined: true,
+                   searchStep: { v: vTol, theta: thTol }, atRangeEdge: bv.v <= V[0] + vEdge };
+    res.minAngle = { theta: bt.th, v: bt.v, margin: iA.margin, entryAngle: iA.entry,
+                     runLo: rV.lo, runHi: rV.hi, run: rV.hi - rV.lo,
+                     vLo: vs[0], vHi: vs[1], envelopeCleanFrac: cleanFrac(fV, vs[0], vs[1], 0.005),
+                     knifeEdge: rV.hi - rV.lo < tol.v || !(iA.margin >= tol.margin), refined: true,
+                     searchStep: { v: fv, theta: thTol },
+                     atRangeEdge: bt.th <= TH[0] + 0.05 || vs[1] >= V[nV - 1] - vEdge || vs[0] <= V[0] + vEdge };
+    // ---- 4. tolerant minima (ASSUMED tolerance, q.tol overrides): the lowest v whose hood-angle run is
+    // clean with clearance >= margin over at least tol.theta, and the lowest hood angle whose speed run is
+    // clean with clearance >= margin over at least tol.v. Found by search (coarse cells, then a fine scan
+    // below the first qualifying column / row): the lowest one the search found, not a proven minimum.
+    res.minRpmTol = tolMin(g, info, tol, "v");
+    res.minAngleTol = tolMin(g, info, tol, "theta");
+  }
+
+  // ASSUMED shooter tolerance for the "tolerant" minima: a continuous clean hood-angle run of 0.2 deg
+  // (about +-0.1 deg), or a speed run of 0.1 m/s (about +-0.05 m/s), with at least 2 mm clearance throughout
+  const TOL = { theta: 0.2, v: 0.1, margin: 0.002 };
+
+  function tolMin(g, info, tol, axis) {
+    const V = g.v, TH = g.th, nV = V.length, nTh = TH.length;
+    const byV = axis === "v";
+    const need = byV ? tol.theta : tol.v, st = byV ? 0.01 : 0.005;
+    const lo = byV ? TH[0] : V[0], hi = byV ? TH[nTh - 1] : V[nV - 1];
+    const r4 = function (x) { return Math.round(x * 1e4) / 1e4; };
+    // a = the fixed value (v when axis is "v"), x = the scanned value (theta when axis is "v")
+    function ok(a, x) { const r = byV ? info(a, x) : info(x, a); return r.c === 1 && r.margin >= tol.margin; }
+    function bestRun(a, cands) {
+      let best = null; const seen = [];
+      for (const x of cands) {
+        if (seen.some(function (s) { return x >= s.lo - 1e-9 && x <= s.hi + 1e-9; })) continue;
+        if (!ok(a, x)) continue;
+        const r = cleanRun(function (t) { return ok(a, t); }, x, st, lo, hi, st / 4, Math.ceil(need / st) + 5);
+        seen.push(r);
+        if (r.hi - r.lo >= need - 1e-9 && (!best || r.hi - r.lo > best.hi - best.lo)) best = r;
+      }
+      return best;
+    }
+    function mk(a, r) {
+      const c = r4((r.lo + r.hi) / 2), ic = byV ? info(a, c) : info(c, a);
+      return byV ? { v: a, theta: c, thetaLo: r.lo, thetaHi: r.hi, run: r.hi - r.lo, runCapped: r.capped, margin: ic.margin, entryAngle: ic.entry }
+                 : { theta: a, v: c, vLo: r.lo, vHi: r.hi, run: r.hi - r.lo, runCapped: r.capped, margin: ic.margin, entryAngle: ic.entry };
+    }
+    const nA = byV ? nV : nTh, A = byV ? V : TH, X = byV ? TH : V;
+    const cell = function (ia, ix) { return byV ? g.clean[ia * nTh + ix] : g.clean[ix * nTh + ia]; };
+    for (let ia = 0; ia < nA; ia++) {
+      const cands = [];
+      for (let ix = 0; ix < X.length; ix++) if (cell(ia, ix)) cands.push(X[ix]);
+      if (!cands.length) continue;
+      const run = bestRun(A[ia], cands);
+      if (!run) continue;
+      // fine scan between the previous coarse step (theta: the 0.5 deg pass-1 spacing) and this one
+      const c = (run.lo + run.hi) / 2, fc = [], fs = byV ? 0.05 : 0.02;
+      for (let k = -20; k <= 20; k++) fc.push(r4(c + k * fs));
+      const aStep = byV ? 0.02 : 0.05, back = byV ? g.dv : Math.max(g.dth, 0.5);
+      for (let a = r4(A[ia] - back + aStep); a < A[ia] - 1e-9; a = r4(a + aStep)) {
+        if (a < A[0] - 1e-9) continue;
+        const r2 = bestRun(a, fc);
+        if (r2) return mk(a, r2);
+      }
+      return mk(A[ia], run);
+    }
+    return null;
+  }
+
+  const LABELS = {
+    window: "PREDICTED (model output: clean air-only entry, not a hit probability; no repeatability claim)",
+    aero: "ASSUMED (literature drag/Magnus coefficients, not POLLEN measurements)",
+    drag: "included: quadratic drag Cd (ASSUMED) + capped Magnus lift with spin decay (ASSUMED)",
+    section: "HIVE section at tilt 30 CONFIRMED (official CAD); lateral offset s_eff ASSUMED",
+    psi_gt_60: "ASSUMED extrapolation",
+    side_walls: "NOT modelled (optimistic from psi 35.57 deg)",
+    pose: "user", height: "user", spin: "user (S = surface spin ratio)", vu: "user/ASSUMED grip v/u",
+    rpm: "derived: wheel rpm = v / (v/u) / (pi * 0.098 m) * 60",
+    minRpm: "PREDICTED knife edge: lowest clean v the search found (search step 0.01 m/s); the window edge carries about 0.1 deg of path-sampling (2 ms) noise, so it can move with resolution",
+    minAngle: "PREDICTED knife edge: lowest clean hood angle the search found (search step 0.025 deg); same edge noise",
+    minRpmTol: "PREDICTED with an ASSUMED shooter tolerance: lowest v whose continuous clean hood-angle run (0.01 deg sampling) is at least tol.theta wide with clearance >= tol.margin at every sample (it can dip about 1 mm between samples)",
+    minAngleTol: "PREDICTED with an ASSUMED shooter tolerance: lowest hood angle whose continuous clean speed run (0.005 m/s sampling) is at least tol.v wide with clearance >= tol.margin at every sample (path-sampling noise lets it dip about 1 mm between samples)",
+    run: "continuous clean run through the point (runLo..runHi), sampled at 0.01 deg / 0.005 m/s, edges bisected",
+    envelope: "envelope (thetaLo..thetaHi, vLo..vHi): outermost clean samples, can contain hits; envelopeCleanFrac = clean share at 0.01 deg / 0.005 m/s",
+    twin: "no-spin twin (S = 0, same params, c1 = 0)",
+  };
+
+  function solve(q, onProgress) {
+    const t0 = now();
+    const ctx = context(q);
+    if (!ctx.ps.ok) {
+      return { pose: ctx.ps, grid: null, count: 0, minRpm: null, minAngle: null, mostForgiving: null,
+               twin: null, ms: now() - t0, labels: LABELS, section: null };
+    }
+    const S = q.S || 0;
+    const main = solveOne(q, S, q.params, ctx, onProgress, 0, 0.5);
+    const twin = solveOne(q, 0, twinParams(q.params), ctx, onProgress, 0.5, 1.0);
+    twin.labels = LABELS; twin.pose = ctx.ps; twin.isTwin = true;
+    const notes = ctx.ps.notes.slice();
+    const gm = gridMeta(q.meta);
+    if (q.h < gm.h[0] - 1e-9 || q.h > gm.h[gm.h.length - 1] + 1e-9)
+      notes.push("release height " + q.h.toFixed(3) + " m is outside the exported 0.20..0.737 m (ASSUMED robot limit); live model still runs");
+    if (onProgress) onProgress(1);
+    return Object.assign(main, { pose: ctx.ps, twin: twin, ms: now() - t0, labels: LABELS, notes: notes,
+      section: { key: ctx.sec.key, how: ctx.sec.how, sEff: ctx.sec.s }, h: q.h });
+  }
+
+  // one shot plus its twin, mapped to field coordinates for drawing
+  function shot(q, v, theta) {
+    const ctx = context(q), ps = ctx.ps;
+    const ux = Math.cos(rad(ps.bearingDeg)), uy = Math.sin(rad(ps.bearingDeg));
+    function one(S, p) {
+      const zs = Math.min(ctx.zStop, -q.h);   // draw to the floor; classification unaffected below the cell
+      const path = P.integrateOblique(v, theta, ps.psi, S, p, 2e-3, 3.0, zs);
+      const cls = P.classifyOblique(path, ctx.sec, ps.d, q.h, p.radius);
+      const n = path.n, fx = new Float64Array(n), fy = new Float64Array(n), fz = new Float64Array(n);
+      const c = Math.cos(rad(ps.psi)), sn = Math.sin(rad(ps.psi));
+      for (let i = 0; i < n; i++) {
+        const s = path.X[i] * c + path.Y[i] * sn;        // along-bearing ground range
+        fx[i] = q.x + s * ux; fy[i] = q.y + s * uy; fz[i] = q.h + path.Z[i];
+      }
+      return { path: { x: fx, y: fy, z: fz, n: n, dt: path.dt }, cls: cls, S: S };
+    }
+    const main = one(q.S || 0, q.params), twin = one(0, twinParams(q.params));
+    return { path: main.path, cls: main.cls, twin: twin, pose: ps, section: ctx.sec.key,
+             rpm: rpm(v, q.vu), ballSpinRpm: ballSpinRpm(v, q.S || 0), labels: LABELS };
+  }
+
+  const api = { pose: pose, sectionFor: sectionFor, solve: solve, shot: shot, rpm: rpm, vFromRpm: vFromRpm,
+    ballSpinRpm: ballSpinRpm, labels: LABELS, tol: TOL,
+    _fastShot: fastShot, _prepSection: prepSection, _zStopFor: zStopFor, _context: context,
+    constants: { X_WALL: X_WALL, Y_LO: Y_LO, Y_HI: Y_HI, BASE_X: BASE_X, BASE_Y: BASE_Y, X_GATE: X_GATE,
+                 WHEEL_D: WHEEL_D, R_BALL: R_BALL, Z_STOP_REL: Z_STOP_REL } };
+  if (typeof module !== "undefined" && module.exports) module.exports = api;
+  else root.PollenSolver = api;
+})(typeof self !== "undefined" ? self : this);
+
+</script>
 <script>
 (function () {
 "use strict";
@@ -392,6 +1146,7 @@ const AERO_NAMES = { nominal: "Nominal (literature middle)", Cd_low: "Low drag (
 const SPIN_LABEL = { "0": "none", "0.5": "0.5", "1": "1.0", "1.5": "1.5", "-1": "−1 top" };
 
 let IDX, G, NH, ND, NV, NT;
+let MODE = null;   // "robot" (default) | "plane" | "field"; set by setMode
 const st = { d: 0.75, ih: 4, side: "unfav", theta: 80.5, rpm: 3700, vu: 0.42, S: 1.0, aero: "nominal", tilt: "30",
              fan: true, all: false, twin: true, slow: true };
 const fileCache = new Map();
@@ -821,6 +1576,7 @@ function refresh(opts) {   // coalesce bursts (slider drags) into one run per an
   if (first) requestAnimationFrame(() => { const o = pending; pending = null; doRefresh(o).catch(e => console.error(e)); });
 }
 async function doRefresh(opts) {
+  if (MODE !== "plane") return;
   opts = opts || {};
   const tok = ++refreshToken;
   // only the nominal air case has the tilt bounds and the near side; fall back if needed
@@ -914,6 +1670,7 @@ function pickBest(here) {
 
 // ---------------------------------------------------------------- camera + render loop
 function view(name) {
+  if (MODE === "robot") { rView(name); return; }
   const h = G ? G.h[st.ih] : 0.7, mid = W(-st.d / 2 + 0.2, 0, 1.0);
   const V = {
     side: [W(-st.d / 2 + 0.2, -3.6, 1.1), mid],
@@ -932,14 +1689,18 @@ function resize() {
 let roPending = false;
 new ResizeObserver(() => {
   if (roPending) return; roPending = true;
-  requestAnimationFrame(() => { roPending = false; resize(); if (F.on) { if (F.ready) { F.layer = null; fieldSchedule(); } } else if (curSlice) { drawWindow(); loadCase(curCase().files[geomKey()].file).then(drawStand).catch(() => {}); } });
+  requestAnimationFrame(() => { roPending = false; resize(); if (MODE === "robot") { if (R.ready) { R.heatLayer = null; rDrawAll(); } } else if (F.on) { if (F.ready) { F.layer = null; fieldSchedule(); } } else if (curSlice) { drawWindow(); loadCase(curCase().files[geomKey()].file).then(drawStand).catch(() => {}); } });
 }).observe(document.body);
 function loop(now) {
   requestAnimationFrame(loop);
   controls.update();
-  if (anim && shot && !F.on) {
+  if (anim && shot && MODE === "plane") {
     const t = (now - anim.t0) / 1000 * (st.slow ? 0.25 : 1);
     if (placeBalls(t)) anim = null;
+  }
+  if (R.anim && MODE === "robot") {
+    const t = (now - R.anim.t0) / 1000 * (R.slow ? 0.25 : 1);
+    if (rPlaceBalls(t)) R.anim = null;
   }
   if (robot.userData.wheel) robot.userData.wheel.rotation.y += 0.25;
   renderer.render(scene, camera);
@@ -1303,30 +2064,626 @@ function fieldInit() {
   fsync();
   F.ready = true;
 }
-const PLANE_OBJS = () => [robot, shotGroup, fanGroup, standGroup, ball, twinBall, hitMark, twinHitMark];
-async function setMode(m) {
-  const field = m === "field";
-  syncSeg($("mode-seg"), () => m);
-  if (field === F.on) return;
-  if (field) {
-    F.on = true; anim = null; F.saved = { side: st.side, tilt: st.tilt };
-    $("prail").hidden = true; $("plane-charts").hidden = true; $("frail").hidden = false; $("fsec").hidden = false;
-    PLANE_OBJS().forEach(o => { o.visible = false; }); fieldGroup.visible = true; $("verdict").innerHTML = "";
-    try { await loadFI(); if (!F.ready) fieldInit(); if (!F.on) return; } catch (e) {
-      F.on = false; $("frail").hidden = true; $("fsec").hidden = true; $("prail").hidden = false; $("plane-charts").hidden = false;
-      PLANE_OBJS().forEach(o => { o.visible = true; }); fieldGroup.visible = false; syncSeg($("mode-seg"), () => "plane");
-      $("loading").hidden = false; $("loading").textContent = "Field data not found (" + e.message + "). Showing the single-plane view.";
-      setTimeout(() => { $("loading").hidden = true; }, 4000); F.fiP = null; setTest({ view: "error", error: e.message }); refresh(); return;
+// ---------------------------------------------------------------- ROBOT view (default): any spot, any heading, any height, a turret
+// The clean-entry window at the exact spot is solved live by solver.js (inlined, run in a Web Worker built from the page's own
+// <script id="js-physics"> + <script id="js-solver"> text). Results are PREDICTED; the air model (drag Cd, capped Magnus lift,
+// spin decay) uses ASSUMED literature coefficients. Field frame (pose_pos): x along the shot axis, HIVE pivot plane at x = 0,
+// far / unfavourable side x < 0, near / favourable side x > 0, up-cell gate at (+0.401, 0).
+const R = { on: false, ready: false, x: -1.0, y: 0.2, heading: 0, travel: "360", h: 0.737, S: 1.0, vu: 0.42, aero: "nominal",
+            heat: false, twin: true, slow: true, pick: null, sel: null, res: null, resKey: "", solving: false, progress: 0,
+            pose: null, shot: null, anim: null, meta: null, winGeom: null, heatMD: null, heatLayer: null, err: null };
+const robotGroup = new THREE.Group(); scene.add(robotGroup); robotGroup.visible = false;
+const rDyn = new THREE.Group(); robotGroup.add(rDyn);
+const rBall = new THREE.Mesh(new THREE.SphereGeometry(0.0355, 32, 20), new THREE.MeshStandardMaterial({ map: ballTex, roughness: 0.55 }));
+rBall.castShadow = true; robotGroup.add(rBall);
+const rTwinBall = new THREE.Mesh(new THREE.SphereGeometry(0.0355, 20, 14), new THREE.MeshStandardMaterial({ color: 0xa9b4bf, transparent: true, opacity: 0.55 }));
+robotGroup.add(rTwinBall);
+// robot view draws in true field coordinates: the scene is mirrored (scale z = -1) in this view so that the page's
+// existing floor / HIVE / other-HIVE frame (page y = -field y) reads the right way round; WF places a field point.
+const WF = (x, y, z) => W(x, -y, z);
+const WR = (x, y, z) => W(x, y, z);   // camera positions (cameras are not mirrored)
+const RHALF = 0.2285, HANDLE = 0.36, X_GATE = 0.401, WHEEL_D = 0.098;
+const TRAVEL = [["360", "360°"], ["180", "±180°"], ["90", "±90°"], ["45", "±45°"], ["0", "fixed"]];
+const PS = () => window.PollenSolver;
+const wrap180 = a => { a = ((a + 180) % 360 + 360) % 360 - 180; return a === -180 ? 180 : a; };
+const rKey = () => [R.x.toFixed(4), R.y.toFixed(4), R.h.toFixed(4), R.S, R.aero].join("|");
+const rCase = () => fCase(R.S, R.aero) || fCase(R.S, "nominal");
+const rpmOf = v => v / R.vu / (Math.PI * WHEEL_D) * 60;
+const vOfRpm = r => r / 60 * Math.PI * WHEEL_D * R.vu;
+const spinRpm = v => Math.abs(R.S) * v / IDX.ball_radius * 60 / (2 * Math.PI);
+const fmtAng = t => `${t.toFixed(1)}° from horizontal · ${(90 - t).toFixed(1)}° from vertical`;
+const inch = m => (m / 0.0254).toFixed(1) + " in";
+const esc = t => String(t).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+function rQuery() { return { x: R.x, y: R.y, h: R.h, S: R.S, vu: R.vu, params: rCase().params }; }
+function rClamp() {
+  const C = PS().constants, m = RHALF;
+  R.x = Math.max(-C.X_WALL + m, Math.min(C.X_WALL - m, R.x));
+  R.y = Math.max(C.Y_LO + m, Math.min(C.Y_HI - m, R.y));
+  R.x = Math.round(R.x * 1e4) / 1e4; R.y = Math.round(R.y * 1e4) / 1e4;
+}
+function rTurret() {   // yaw the turret needs, relative to the chassis front (+ = left / counter-clockwise)
+  const ps = R.pose; if (!ps) return null;
+  const yaw = wrap180(ps.bearingDeg - R.heading);
+  const lim = R.travel === "0" ? 0 : Math.min(180, +R.travel), tol = R.travel === "0" ? 0.5 : 1e-6;
+  const ok = Math.abs(yaw) <= lim + tol;
+  return { yaw, ok, lim, yawDraw: ok ? yaw : Math.sign(yaw) * lim, turn: ok ? 0 : Math.abs(yaw) - lim,
+           dir: yaw > 0 ? "left (counter-clockwise)" : "right (clockwise)" };
+}
+
+// ---- live solve in a worker (falls back to the main thread if a worker cannot start)
+const RW = { w: null, url: null, busy: false, id: 0, key: "", timer: 0, fallback: false };
+const WORKER_TAIL = "\n;var META=null;self.onmessage=function(e){var m=e.data;if(m.meta){META=m.meta;return;}" +
+  "try{var q=m.q;q.meta=META;var r=self.PollenSolver.solve(q,function(p){self.postMessage({id:m.id,progress:p});});" +
+  "[r.grid,r.twin&&r.twin.grid].forEach(function(g){if(g){delete g.evaluated;delete g.rowEvaluated;}});" +
+  "self.postMessage({id:m.id,res:r});}catch(err){self.postMessage({id:m.id,error:String(err&&err.message||err)});}};";
+function rWorker() {
+  if (RW.w) return RW.w;
+  if (!RW.url) {
+    const a = $("js-physics"), b = $("js-solver");
+    if (!a || !b || typeof Worker === "undefined" || typeof Blob === "undefined") throw new Error("no inline solver source");
+    RW.url = URL.createObjectURL(new Blob([a.textContent, "\n", b.textContent, WORKER_TAIL], { type: "text/javascript" }));
+  }
+  const w = new Worker(RW.url);
+  w.onmessage = e => rOnMsg(e.data);
+  w.onerror = e => { if (e.preventDefault) e.preventDefault(); RW.w = null; RW.busy = false; RW.fallback = true; rSolveNow(); };
+  w.postMessage({ meta: R.meta });
+  RW.w = w; return w;
+}
+function rSchedule(delay) {
+  R.solving = true; R.progress = 0; rSolvingLabel();
+  clearTimeout(RW.timer); RW.timer = setTimeout(rSolveNow, delay == null ? 180 : delay);
+}
+function rSolveNow() {
+  const id = ++RW.id, q = rQuery(); RW.key = rKey();
+  if (!RW.fallback) {
+    try {
+      if (RW.busy && RW.w) { RW.w.terminate(); RW.w = null; }   // a newer request replaces the one in flight
+      const w = rWorker(); RW.busy = true; w.postMessage({ id, q }); return;
+    } catch (e) { RW.fallback = true; RW.w = null; }
+  }
+  setTimeout(() => {   // main-thread fallback: blocks the page for about a second
+    if (id !== RW.id) return;
+    try { rOnMsg({ id, res: PS().solve(Object.assign(q, { meta: R.meta })) }); } catch (e) { rOnMsg({ id, error: String(e.message || e) }); }
+  }, 30);
+}
+function rOnMsg(m) {
+  if (!m || m.id !== RW.id) return;
+  if (m.progress != null && !m.res && !m.error) { R.progress = m.progress; rSolvingLabel(); return; }
+  RW.busy = false; R.solving = false;
+  if (m.error) { R.err = m.error; console.error("robot view solve failed: " + m.error); rDrawAll(); return; }
+  R.err = null; R.res = m.res; R.resKey = RW.key;
+  rShotUpdate(); rDrawAll(); rFire();
+}
+function rSolvingLabel() { $("rsolve").textContent = R.solving ? `solving… ${Math.round(R.progress * 100)}%` : ""; $("rres").classList.toggle("stale", rStale()); }
+const rStale = () => R.solving || !R.res || R.resKey !== rKey();
+
+// ---- the selected shot (default: most forgiving) replayed at this spot, in field coordinates
+const rEnd = (p, c) => c.result === "hit" ? c.i : c.result === "clean" ? Math.min(p.n - 1, c.i + 12) : p.n - 1;
+function rShotUpdate() {
+  R.shot = null; R.sel = null;
+  const res = R.res;
+  if (!res || !res.pose || !res.pose.ok || R.resKey !== rKey()) return;
+  let sel = R.pick;
+  if (!sel && res.mostForgiving) sel = { v: res.mostForgiving.v, theta: res.mostForgiving.theta, src: "mf" };
+  if (!sel && res.minRpm) sel = { v: res.minRpm.v, theta: res.minRpm.theta, src: "minRpm" };
+  if (!sel) return;
+  R.sel = sel;
+  const s = PS().shot(Object.assign(rQuery(), { meta: R.meta }), sel.v, sel.theta);
+  s.end = rEnd(s.path, s.cls); s.twin.end = rEnd(s.twin.path, s.twin.cls);
+  R.shot = s;
+}
+function rPick(src) {
+  const res = R.res; if (!res || rStale()) return;
+  let m = src === "mf" ? res.mostForgiving : src === "minRpm" ? res.minRpmTol : res.minAngleTol;
+  if (!m && src !== "mf") { m = src === "minRpm" ? res.minRpm : res.minAngle; src += "Knife"; }
+  if (!m) return;
+  R.pick = { v: m.v, theta: m.theta, src }; rShotUpdate(); rDrawAll(); rFire();
+}
+function rFire() { R.anim = R.shot ? { t0: performance.now() } : null; if (!R.anim) rPlaceBalls(1e9); }
+const rAxis = new THREE.Vector3();
+function rPlaceBalls(t) {
+  const s = R.shot;
+  if (!s || !R.on) { rBall.visible = false; rTwinBall.visible = false; return true; }
+  const put = (m, p, end) => { const i = Math.min(end, Math.floor(t / p.dt)); m.position.copy(WF(p.x[i], p.y[i], p.z[i])); return i; };
+  rBall.visible = true;
+  const i = put(rBall, s.path, s.end);
+  // backspin about the horizontal axis across the flight; omega(t) = omega0 exp(-k t) (ASSUMED decay rate k)
+  const w0 = R.S * R.sel.v / IDX.ball_radius, k = rCase().params.k || 0, tt = i * s.path.dt;
+  const ang = k > 0 ? w0 * (1 - Math.exp(-k * tt)) / k : w0 * tt, b = s.pose.bearingDeg * Math.PI / 180;
+  rAxis.set(-Math.sin(b), 0, Math.cos(b)); rBall.setRotationFromAxisAngle(rAxis, ang);
+  rTwinBall.visible = R.twin && R.S !== 0;
+  let j = 0; if (rTwinBall.visible) j = put(rTwinBall, s.twin.path, s.twin.end);
+  return i >= s.end && (!rTwinBall.visible || j >= s.twin.end);
+}
+
+// ---- 3D robot: chassis, front marker, turret, barrel at the release point; flight paths
+function rClear(gr) {
+  gr.traverse(o => { if (o !== gr) { if (o.geometry) o.geometry.dispose(); if (o.material && o.material.dispose) o.material.dispose(); } });
+  while (gr.children.length) gr.remove(gr.children[0]);
+}
+function rBuild3D() {
+  rClear(rDyn);
+  const T = rTurret() || { yawDraw: 0, ok: true }, a = R.heading * Math.PI / 180, h = R.h;
+  const body = new THREE.Group(); body.position.copy(WF(R.x, R.y, 0)); body.rotation.y = -a; rDyn.add(body);
+  const ch = Math.max(0.06, Math.min(0.14, h - 0.09));
+  const chassis = new THREE.Mesh(new THREE.BoxGeometry(2 * RHALF, ch, 2 * RHALF), new THREE.MeshStandardMaterial({ color: 0x1d2a36, roughness: 0.6, metalness: 0.2 }));
+  chassis.position.set(0, ch / 2, 0); chassis.castShadow = true; body.add(chassis);
+  const lid = new THREE.Mesh(new THREE.BoxGeometry(2 * RHALF + 0.004, 0.01, 2 * RHALF + 0.004), new THREE.MeshStandardMaterial({ color: 0x324456, roughness: 0.5 }));
+  lid.position.set(0, ch, 0); body.add(lid);
+  const front = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.02, 2 * RHALF * 0.7), new THREE.MeshStandardMaterial({ color: COL.pollen, emissive: 0x3a2a00 }));
+  front.position.set(RHALF - 0.02, ch + 0.012, 0); body.add(front);
+  const tur = new THREE.Group(); tur.rotation.y = -T.yawDraw * Math.PI / 180; body.add(tur);
+  const metal = new THREE.MeshStandardMaterial({ color: 0x8a96a2, metalness: 0.6, roughness: 0.35 });
+  const mh = h - 0.06 - ch;
+  if (mh > 0.005) { const mast = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, mh, 16), metal); mast.position.set(0, ch + mh / 2, 0); tur.add(mast); }
+  const disk = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.02, 32), new THREE.MeshStandardMaterial({ color: 0x4d5965, roughness: 0.5, metalness: 0.3 }));
+  disk.position.set(0, Math.max(ch + 0.01, h - 0.06), 0); disk.castShadow = true; tur.add(disk);
+  const th = (R.sel ? R.sel.theta : 60) * Math.PI / 180;
+  const pivot = new THREE.Group(); pivot.position.set(0, h, 0); pivot.rotation.z = th - Math.PI / 2; tur.add(pivot);
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.042, 0.24, 24, 1, true),
+    new THREE.MeshStandardMaterial({ color: T.ok ? 0xc9d2da : COL.hit, emissive: T.ok ? 0x000000 : 0x5a1008, roughness: 0.4, side: THREE.DoubleSide }));
+  barrel.position.y = 0.09; barrel.castShadow = true; pivot.add(barrel);   // muzzle 0.21 m out from the pivot
+  const s = R.shot;
+  if (s && !rStale()) {
+    const pts = (p, end, stride) => { const o = []; for (let i = 0; i <= end; i += stride) o.push(WF(p.x[i], p.y[i], p.z[i])); if (end % stride) o.push(WF(p.x[end], p.y[end], p.z[end])); return o; };
+    const P = pts(s.path, s.end, 6);
+    if (P.length > 1) rDyn.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(P), Math.min(400, P.length * 3), 0.0045, 8, false),
+      new THREE.MeshStandardMaterial({ color: COL.pollen, emissive: 0x6a4a00, roughness: 0.4 })));
+    const dot = (p, i) => { const m = new THREE.Mesh(new THREE.SphereGeometry(0.018, 12, 8), new THREE.MeshBasicMaterial({ color: COL.hit })); m.position.copy(WF(p.x[i], p.y[i], p.z[i])); rDyn.add(m); };
+    if (s.cls.result === "hit") dot(s.path, s.end);
+    if (R.twin && R.S !== 0) {
+      const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts(s.twin.path, s.twin.end, 4)), new THREE.LineDashedMaterial({ color: COL.twin, dashSize: 0.03, gapSize: 0.02 }));
+      l.computeLineDistances(); rDyn.add(l);
+      if (s.twin.cls.result === "hit") dot(s.twin.path, s.twin.end);
     }
+  }
+  if (!R.anim) rPlaceBalls(1e9);
+}
+function rView(name) {
+  const ps = R.pose, b = ps ? ps.bearingDeg * Math.PI / 180 : 0, cb = Math.cos(b), sb = Math.sin(b);
+  const mx = (R.x + X_GATE) / 2, my = R.y / 2;
+  const V = {
+    shooter: [WR(R.x - 0.95 * cb, R.y - 0.95 * sb, R.h + 0.45), WR(X_GATE - 0.1, 0, 1.3)],
+    iso: [WR(R.x - 2.3 * cb + 1.6 * sb, R.y - 2.3 * sb - 1.6 * cb, 2.1), WR(0.55 * R.x + 0.45 * X_GATE, 0.55 * R.y, 0.7)],
+    side: [WR(mx + 4.2 * sb, my - 4.2 * cb, 1.6), WR(mx, my, 1.3)],
+    cell: [WR(1.05, 0.35, 2.15), WR(0.32, 0, 1.45)],
+    top: [WR(0, FLD_YC - 0.001, 5.4), WR(0, FLD_YC, 0)],
+  }[name];
+  camera.position.copy(V[0]); controls.target.copy(V[1]); controls.update();
+}
+
+// ---- top-down map
+function rHeatLoad() {
+  const cs = rCase();
+  if (!R.heat || (R.heatMD && R.heatMD.cs === cs)) return;
+  R.heatMD = null;
+  Promise.all([loadStatus(), loadPos(cs.files.unfav.pos_file), loadPos(cs.files.fav.pos_file)]).then(([ST, far, near]) => {
+    if (rCase() !== cs) return;
+    R.heatMD = { ST, far, near, cs }; R.heatLayer = null; rDrawAll();
+  }).catch(e => console.error(e));
+}
+function drawRMap() {
+  const cv = $("rmap"), { x, w, h } = setupCanvas(cv);
+  if (w < 20) return;
+  const g = mapGeom(w, h), FG = F.FI.field_grid, GG = F.FI.grid, C = PS().constants;
+  x.fillStyle = "#0b1015"; x.fillRect(0, 0, w, h);
+  const fx0 = g.X(-FLD_X), fy0 = g.Y(FLD_YC + FLD_X), fs = 2 * FLD_X * g.s;
+  x.fillStyle = "#1a2229"; x.fillRect(fx0, fy0, fs, fs);
+  x.strokeStyle = "#232d36"; x.lineWidth = 1;
+  for (let i = 1; i < 6; i++) { const t = i * fs / 6; x.beginPath(); x.moveTo(fx0 + t, fy0); x.lineTo(fx0 + t, fy0 + fs); x.moveTo(fx0, fy0 + t); x.lineTo(fx0 + fs, fy0 + t); x.stroke(); }
+  const ih = nearest(GG.h, R.h);
+  if (R.heat && R.heatMD) {   // underlay from the precomputed field data at the nearest exported height
+    const MD = R.heatMD, ST = MD.ST, N = ST.N, cw = FG.step * g.s, dpr = window.devicePixelRatio || 1;
+    const key = [ih, MD.cs.S, MD.cs.var, Math.round(w), Math.round(h), dpr].join("|");
+    if (!R.heatLayer || R.heatLayer.key !== key) {
+      let max = 1;
+      for (let i = 0; i < N; i++) if (ST.status[i] === 0) { const P = ST.fav[i] ? MD.near : MD.far; max = Math.max(max, P.count[ih * N + i]); }
+      const L = document.createElement("canvas"); L.width = cv.width; L.height = cv.height;
+      const lx = L.getContext("2d"); lx.setTransform(cv.width / w, 0, 0, cv.height / h, 0, 0);
+      for (let row = 0; row < FG.ny; row++) for (let col = 0; col < FG.nx; col++) {
+        const i = row * FG.nx + col, st0 = ST.status[i];
+        if (st0 === 1) continue;
+        let fill = "#171e25";
+        if (st0 === 0) { const P = ST.fav[i] ? MD.near : MD.far, v = P.count[ih * N + i]; fill = v ? heatCol(v / max) : "#3a2224"; }
+        lx.fillStyle = fill; lx.fillRect(g.X(FG.xs[col]) - cw / 2, g.Y(FG.ys[row]) - cw / 2, cw + 0.6, cw + 0.6);
+      }
+      R.heatLayer = { key, cv: L, max };
+    }
+    x.globalAlpha = 0.8; x.drawImage(R.heatLayer.cv, 0, 0, w, h); x.globalAlpha = 1;
+  }
+  // walls, centre line, illegal A-frame zone, both HIVEs, the gate
+  x.strokeStyle = "#5a6774"; x.lineWidth = 2; x.strokeRect(fx0, fy0, fs, fs);
+  x.setLineDash([3, 4]); x.strokeStyle = "rgba(141,156,170,.45)"; x.lineWidth = 1;
+  x.beginPath(); x.moveTo(fx0, g.Y(FLD_YC)); x.lineTo(fx0 + fs, g.Y(FLD_YC)); x.stroke(); x.setLineDash([]);
+  const bx = C.BASE_X + 0.05, by0 = C.BASE_Y[0] - 0.05, by1 = C.BASE_Y[1] + 0.05;
+  x.fillStyle = "rgba(255,107,90,.10)"; x.fillRect(g.X(-bx), g.Y(by1), 2 * bx * g.s, (by1 - by0) * g.s);
+  x.strokeStyle = "rgba(255,107,90,.55)"; x.setLineDash([4, 3]); x.strokeRect(g.X(-bx), g.Y(by1), 2 * bx * g.s, (by1 - by0) * g.s); x.setLineDash([]);
+  const gm = IDX.geoms.unfav_t30; let hx0 = 9, hx1 = -9;
+  gm.names.forEach((nm, j) => { if (gm.body[j] === "frame_static") return; [gm.P0[j], gm.P1[j]].forEach(p => { hx0 = Math.min(hx0, p[0]); hx1 = Math.max(hx1, p[0]); }); });
+  x.font = MONO();
+  // HIVE: the 0.508 m wide up cell centred on y = 0; other HIVE: mirrored section at y 0.39..0.90 (ASSUMED footprint, context only)
+  [[hx0, hx1, 0.26, -0.26, "#e8edf2", "rgba(232,237,242,.30)", "HIVE"], [-hx1, -hx0, 0.90, 0.39, "#8796a4", "rgba(135,150,164,.28)", "other HIVE"]].forEach(([a0, a1, y0, y1, col, fill, lab]) => {
+    x.fillStyle = fill; x.strokeStyle = col; x.lineWidth = 1.5;
+    x.fillRect(g.X(a0), g.Y(y0), (a1 - a0) * g.s, (y0 - y1) * g.s); x.strokeRect(g.X(a0), g.Y(y0), (a1 - a0) * g.s, (y0 - y1) * g.s);
+    x.fillStyle = col; x.textAlign = "left"; x.fillText(lab, g.X(Math.max(a1, hx1)) + 4, g.Y((y0 + y1) / 2) + 4);
+  });
+  // bearing rays from the gate: psi = side-wall limit and 60 deg (model limit), both sides of the tipping plane
+  x.save(); x.beginPath(); x.rect(fx0, fy0, fs, fs); x.clip();
+  x.strokeStyle = "rgba(244,196,48,.28)"; x.lineWidth = 1; x.setLineDash([2, 4]);
+  x.beginPath(); x.moveTo(fx0, g.Y(0)); x.lineTo(fx0 + fs, g.Y(0)); x.stroke();
+  [[GG.psi_side_wall || 35.57, "rgba(255,180,90,.45)"], [GG.psi_max_model || 60, "rgba(220,200,255,.45)"]].forEach(([p, col]) => {
+    const r = p * Math.PI / 180; x.strokeStyle = col;
+    [-1, 1].forEach(sx => [-1, 1].forEach(sy => { x.beginPath(); x.moveTo(g.X(X_GATE), g.Y(0)); x.lineTo(g.X(X_GATE + sx * 6 * Math.cos(r)), g.Y(sy * 6 * Math.sin(r))); x.stroke(); }));
+  });
+  x.setLineDash([]); x.restore();
+  x.fillStyle = "rgba(244,196,48,.7)"; x.textAlign = "right"; if (w >= 480) x.fillText("tipping plane ψ = 0", fx0 + fs - 4, g.Y(0) - 4);
+  x.beginPath(); x.arc(g.X(X_GATE), g.Y(0), 4, 0, 6.3); x.strokeStyle = "#f4c430"; x.lineWidth = 2; x.stroke();
+  x.fillStyle = "rgba(227,234,240,.75)"; x.textAlign = "center";
+  const narrowMap = w < 560;
+  x.textAlign = "left"; x.fillText(narrowMap ? "far (unfav.)" : "far side (unfavourable)", fx0 + 6, fy0 + 14);
+  x.textAlign = "right"; x.fillText(narrowMap ? "near (fav.)" : "near side (favourable)", fx0 + fs - 6, fy0 + 14);
+  x.textAlign = "center";
+  x.fillStyle = "rgba(255,107,90,.8)"; x.fillText("A-frame base: illegal", g.X(0), g.Y(by0) + 13);
+  // the robot: square chassis, front marker, turret, barrel (red if the turret cannot reach), turn handle
+  const T = rTurret(), a = R.heading * Math.PI / 180, cx = g.X(R.x), cy = g.Y(R.y), s = g.s;
+  x.strokeStyle = "rgba(244,196,48,.6)"; x.lineWidth = 1.2; x.setLineDash([5, 4]);
+  x.beginPath(); x.moveTo(cx, cy); x.lineTo(g.X(X_GATE), g.Y(0)); x.stroke(); x.setLineDash([]);
+  x.save(); x.translate(cx, cy); x.rotate(-a);
+  x.fillStyle = "rgba(29,42,54,.92)"; x.strokeStyle = "#f4c430"; x.lineWidth = 2;
+  x.fillRect(-RHALF * s, -RHALF * s, 2 * RHALF * s, 2 * RHALF * s); x.strokeRect(-RHALF * s, -RHALF * s, 2 * RHALF * s, 2 * RHALF * s);
+  x.fillStyle = "#f4c430"; x.fillRect(RHALF * s - 4, -RHALF * s * 0.7, 4, 1.4 * RHALF * s);
+  x.strokeStyle = "rgba(227,234,240,.55)"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(RHALF * s, 0); x.lineTo(HANDLE * s - 7, 0); x.stroke();
+  x.beginPath(); x.arc(HANDLE * s, 0, 7, 0, 6.3); x.fillStyle = "#e3eaf0"; x.fill();
+  x.fillStyle = "#4d5965"; x.beginPath(); x.arc(0, 0, 0.09 * s, 0, 6.3); x.fill();
+  if (T) {
+    x.rotate(-T.yawDraw * Math.PI / 180);
+    x.strokeStyle = T.ok ? "#e3eaf0" : "#ff6b5a"; x.lineWidth = Math.max(3, 0.06 * s); x.lineCap = "round";
+    x.beginPath(); x.moveTo(0, 0); x.lineTo(0.3 * s, 0); x.stroke(); x.lineCap = "butt";
+  }
+  x.restore();
+  x.fillStyle = "#f4c430"; x.beginPath(); x.arc(cx, cy, 3, 0, 6.3); x.fill();
+  // legend + caption
+  const sw = (c, t) => `<span><i style="background:${c}"></i>${t}</span>`;
+  let leg = sw("rgba(255,107,90,.35)", "illegal A-frame base zone") + sw("#e8edf2", "HIVE (up cell, aim point = yellow ring)") + sw("#8796a4", "other HIVE (context)") +
+    `<span><i style="background:linear-gradient(90deg,#1a2229 40%,#ffb45a 45%,#1a2229 50%)"></i>ψ = ${GG.psi_side_wall}°: side-wall risk beyond</span>` +
+    `<span><i style="background:linear-gradient(90deg,#1a2229 40%,#dcc8ff 45%,#1a2229 50%)"></i>ψ = 60°: extrapolated beyond</span>`;
+  if (R.heat) leg += R.heatLayer && R.heatMD ? sw(heatCol(0.15), "few clean pairs") + sw(heatCol(1), `most (${R.heatLayer.max})`) + sw("#3a2224", "none") + sw("#171e25", "outside the table") : "<span>loading heatmap…</span>";
+  $("rmap-leg").innerHTML = leg;
+  $("rmap-cap").textContent = R.heat
+    ? `map: precomputed at h = ${GG.h[ih]} m (nearest); readouts are live at your height (${R.h.toFixed(3)} m). Colour = clean speed and angle pairs, backspin ${SPIN_LABEL[String(R.S)] || R.S}, ${AERO_NAMES[rCase().var] || rCase().var} (ASSUMED literature air). PREDICTED.`
+    : "Top-down field, near side to the right. The robot is the 0.457 m square (yellow bar = front, white knob = turn handle); its barrel turns to the up cell. Release point = robot centre (ASSUMED).";
+  R.mg = g;
+}
+
+// ---- window chart: wheel rpm (x) against hood angle (y)
+function drawRWin() {
+  const cv = $("rwin"), { x, w, h } = setupCanvas(cv);
+  R.winGeom = null;
+  if (w < 20) return;
+  x.fillStyle = "#16212b"; x.fillRect(0, 0, w, h);
+  const Lm = 48, Rm = 12, Tm = 10, Bm = 36, pw = w - Lm - Rm, ph = h - Tm - Bm;
+  x.fillStyle = "#0b1015"; x.fillRect(Lm, Tm, pw, ph);
+  const msg = t => { x.fillStyle = "#8d9caa"; x.font = "13px 'IBM Plex Sans', sans-serif"; x.textAlign = "center"; x.fillText(t, Lm + pw / 2, Tm + ph / 2); };
+  const res = R.res;
+  if (!res || R.resKey !== rKey()) { msg(R.err ? "solve failed: " + R.err : "solving…"); return; }
+  if (!res.grid) { msg("no shot: illegal spot"); return; }
+  const g = res.grid, V = g.v, TH = g.th, nV = V.length, nT = TH.length, showTw = R.twin && R.S !== 0 && res.twin && res.twin.grid;
+  const tc = showTw ? res.twin.grid.clean : null;
+  let i0 = nV, i1 = -1, j0 = nT, j1 = -1;
+  const inc = cl => { for (let k = 0; k < cl.length; k++) if (cl[k]) { const i = (k / nT) | 0, j = k % nT; if (i < i0) i0 = i; if (i > i1) i1 = i; if (j < j0) j0 = j; if (j > j1) j1 = j; } };
+  inc(g.clean); if (tc) inc(tc);
+  if (i1 < 0) { msg(R.S !== 0 ? "no clean shot here, with or without spin" : "no clean shot here"); return; }
+  i0 = Math.max(0, i0 - 3); i1 = Math.min(nV - 1, i1 + 3); j0 = Math.max(0, j0 - 3); j1 = Math.min(nT - 1, j1 + 3);
+  while (i1 - i0 < 14 && (i0 > 0 || i1 < nV - 1)) { if (i0 > 0) i0--; if (i1 < nV - 1) i1++; }
+  while (j1 - j0 < 14 && (j0 > 0 || j1 < nT - 1)) { if (j0 > 0) j0--; if (j1 < nT - 1) j1++; }
+  const vLo = V[i0] - g.dv / 2, vHi = V[i1] + g.dv / 2, tLo = TH[j0] - g.dth / 2, tHi = TH[j1] + g.dth / 2;
+  const X = v => Lm + (v - vLo) / (vHi - vLo) * pw, Y = t => Tm + ph - (t - tLo) / (tHi - tLo) * ph;
+  const cw = pw / (i1 - i0 + 1), chh = ph / (j1 - j0 + 1);
+  let mMax = 1e-6;
+  for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) { const k = i * nT + j; if (g.clean[k] && isFinite(g.margin[k])) mMax = Math.max(mMax, g.margin[k]); }
+  for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
+    const k = i * nT + j; if (!g.clean[k]) continue;
+    const t = isFinite(g.margin[k]) ? Math.min(1, g.margin[k] / mMax) : 0;
+    x.fillStyle = `rgb(${Math.round(255 * (0.12 + 0.1 * t))},${Math.round(255 * (0.42 + 0.41 * t))},${Math.round(255 * (0.36 + 0.26 * t))})`;
+    x.fillRect(Lm + (i - i0) * cw, Tm + (j1 - j) * chh, cw + 0.5, chh + 0.5);
+  }
+  if (tc) {   // twin window outline (dashed grey)
+    x.strokeStyle = "#a9b4bf"; x.lineWidth = 1.4; x.setLineDash([4, 3]); x.beginPath();
+    const at = (i, j) => i >= 0 && i < nV && j >= 0 && j < nT && tc[i * nT + j] === 1;
+    for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) {
+      if (!at(i, j)) continue;
+      const L0 = Lm + (i - i0) * cw, T0 = Tm + (j1 - j) * chh;
+      if (!at(i - 1, j)) { x.moveTo(L0, T0); x.lineTo(L0, T0 + chh); }
+      if (!at(i + 1, j)) { x.moveTo(L0 + cw, T0); x.lineTo(L0 + cw, T0 + chh); }
+      if (!at(i, j + 1)) { x.moveTo(L0, T0); x.lineTo(L0 + cw, T0); }
+      if (!at(i, j - 1)) { x.moveTo(L0, T0 + chh); x.lineTo(L0 + cw, T0 + chh); }
+    }
+    x.stroke(); x.setLineDash([]);
+  }
+  // axes
+  x.fillStyle = "#8d9caa"; x.strokeStyle = "#24323f"; x.font = MONO(); x.lineWidth = 1;
+  const rLo = rpmOf(vLo), rHi = rpmOf(vHi), rs = rHi - rLo, rStep = rs > 4000 ? 1000 : rs > 2000 ? 500 : rs > 800 ? 200 : rs > 300 ? 100 : 50;
+  x.textAlign = "center";
+  for (let r = Math.ceil(rLo / rStep) * rStep; r <= rHi; r += rStep) { const px = X(vOfRpm(r)); x.beginPath(); x.moveTo(px, Tm); x.lineTo(px, Tm + ph); x.stroke(); x.fillText(String(r), px, Tm + ph + 14); }
+  const ts = tHi - tLo, tStep = ts > 30 ? 10 : ts > 12 ? 5 : ts > 5 ? 2 : ts > 2.5 ? 1 : 0.5;
+  x.textAlign = "right";
+  for (let t = Math.ceil(tLo / tStep) * tStep; t <= tHi; t += tStep) { const py = Y(t); x.beginPath(); x.moveTo(Lm, py); x.lineTo(Lm + pw, py); x.stroke(); x.fillText(t.toFixed(tStep < 1 ? 1 : 0), Lm - 5, py + 4); }
+  x.textAlign = "center"; x.fillText(`wheel rpm (98 mm wheel, grip ${R.vu.toFixed(2)})`, Lm + pw / 2, h - 5);
+  x.save(); x.translate(12, Tm + ph / 2); x.rotate(-Math.PI / 2); x.fillText("hood angle (° from horizontal)", 0, 0); x.restore();
+  // markers: min rpm (triangle), min angle (diamond), most forgiving (ring), selected (crosshair); twin markers hollow grey
+  x.save(); x.beginPath(); x.rect(Lm, Tm, pw, ph); x.clip();
+  const tri = (px, py, fill, col) => { x.beginPath(); x.moveTo(px - 7, py); x.lineTo(px + 5, py - 7); x.lineTo(px + 5, py + 7); x.closePath(); fill ? (x.fillStyle = col, x.fill()) : (x.strokeStyle = col, x.lineWidth = 1.5, x.stroke()); };
+  const dia = (px, py, fill, col) => { x.beginPath(); x.moveTo(px, py + 7); x.lineTo(px + 6, py); x.lineTo(px, py - 7); x.lineTo(px - 6, py); x.closePath(); fill ? (x.fillStyle = col, x.fill()) : (x.strokeStyle = col, x.lineWidth = 1.5, x.stroke()); };
+  if (tc) { const t = res.twin; if (t.minRpmTol) tri(X(t.minRpmTol.v), Y(t.minRpmTol.theta), false, "#a9b4bf"); if (t.minAngleTol) dia(X(t.minAngleTol.v), Y(t.minAngleTol.theta), false, "#a9b4bf"); }
+  if (res.minRpm) tri(X(res.minRpm.v), Y(res.minRpm.theta), false, "#f4c430");
+  if (res.minAngle) dia(X(res.minAngle.v), Y(res.minAngle.theta), false, "#ff9d3c");
+  if (res.minRpmTol) tri(X(res.minRpmTol.v), Y(res.minRpmTol.theta), true, "#f4c430");
+  if (res.minAngleTol) dia(X(res.minAngleTol.v), Y(res.minAngleTol.theta), true, "#ff9d3c");
+  if (res.mostForgiving) { x.strokeStyle = "#e3eaf0"; x.lineWidth = 2; x.beginPath(); x.arc(X(res.mostForgiving.v), Y(res.mostForgiving.theta), 7, 0, 6.3); x.stroke(); }
+  if (R.sel) {
+    const px = X(R.sel.v), py = Y(R.sel.theta); x.strokeStyle = "#f4c430"; x.lineWidth = 2;
+    x.beginPath(); x.moveTo(px - 14, py); x.lineTo(px - 8, py); x.moveTo(px + 8, py); x.lineTo(px + 14, py); x.moveTo(px, py - 14); x.lineTo(px, py - 8); x.moveTo(px, py + 8); x.lineTo(px, py + 14); x.stroke();
+  }
+  x.restore();
+  x.strokeStyle = "#24323f"; x.strokeRect(Lm + 0.5, Tm + 0.5, pw - 1, ph - 1);
+  R.winGeom = { Lm, Tm, pw, ph, vLo, vHi, tLo, tHi };
+}
+
+// ---- readouts ("At this spot"), the selected-shot card, the verdict pills, the test hook
+function rDrawAll() {
+  if (!R.on || !R.ready) return;
+  rSyncInputs(); drawRMap(); rRender(); drawRWin(); rBuild3D(); rTest();
+}
+let rRaf = false;
+function rChanged(kind) {
+  if (kind === "pose") { rClamp(); R.pose = PS().pose(R.x, R.y, R.meta); }
+  if (kind === "pose" || kind === "param") { R.pick = null; R.sel = null; R.shot = null; R.anim = null; rSchedule(); }
+  if (kind === "param" || kind === "heat") rHeatLoad();
+  if (!rRaf) { rRaf = true; requestAnimationFrame(() => { rRaf = false; rDrawAll(); }); }
+}
+function rRender() {
+  const ps = R.pose, T = rTurret(), res = R.res, stale = rStale(), GG = F.FI.grid;
+  const dl = (el, rows) => { $(el).innerHTML = rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join(""); };
+  dl("rpose", [
+    ["Side", ps.side === "fav" ? "near (favourable: the cell mouth faces you)" : "far (unfavourable: shoot over the HIVE)"],
+    ["Horizontal distance to the cell", Math.hypot(X_GATE - R.x, R.y).toFixed(2) + " m"],
+    ["Distance d to the HIVE pivot plane", ps.d.toFixed(2) + " m"],
+    ["Bearing ψ off the tipping plane", Math.abs(ps.psi).toFixed(1) + "°"],
+    ["Turret yaw (vs chassis front)", T ? `${Math.abs(T.yaw).toFixed(1)}° ${T.yaw >= 0 ? "left" : "right"}${T.ok ? "" : " · beyond travel"}` : "–"],
+    ["Release (user)", `${R.h.toFixed(3)} m (${inch(R.h)}), robot centre`]]);
+  const warn = [];
+  if (ps.status === "illegal") warn.push("Illegal spot: " + ps.notes.join("; ") + ".");
+  if (T && !T.ok) warn.push(`Turn the robot by ${Math.ceil(T.turn)}° ${T.dir}: the turret travel (${TRAVEL.find(t => t[0] === R.travel)[1]}) cannot reach the cell from this heading.`);
+  if (ps.ok && ps.sideWallRisk) warn.push(`Side-wall risk: ψ ${Math.abs(ps.psi).toFixed(1)}° ≥ ${GG.psi_side_wall}°. The cell side walls are not modelled, so this window is optimistic.`);
+  if (ps.status === "psi_extrapolated") warn.push(`Extrapolated ψ: above ${GG.psi_max_model}° (ASSUMED extrapolation; the base model treats it as infeasible).`);
+  if (ps.status === "beyond_model") warn.push("Out of model: " + ps.notes.filter(n => !/side wall|other HIVE/.test(n)).join("; ") + ".");
+  if (ps.otherHive) warn.push("The sight line crosses the other HIVE (ASSUMED obstacle, not modelled).");
+  $("rwarn").textContent = warn.join("\n");
+  $("rres").classList.toggle("stale", stale);
+  rSolvingLabel();
+  const S0 = R.S === 0, ast = r => r && r.atRangeEdge ? " (at the edge of the searched range)" : "";
+  const box = (label, val, sub, knife, twin, none, tag) => `<div class="big${none ? " none" : ""}"><div class="bl">${label}<i>PREDICTED</i>${tag ? `<i>${tag}</i>` : ""}</div><div class="bv">${val}</div>${sub ? `<div class="bs">${sub}</div>` : ""}${knife ? `<div class="bk">${knife}</div>` : ""}<div class="bt">${twin}</div></div>`;
+  const twinTxt = f => S0 ? "S = 0: this is already the no-spin case." : (res.twin && f(res.twin) ? "No-spin twin (S = 0): " + f(res.twin) : "No-spin twin (S = 0): no clean shot without spin");
+  const mm = c => isFinite(c) ? (c < 0.001 ? (c * 1000).toFixed(2) : (c * 1000).toFixed(1)) + " mm" : "–";
+  const pct = f => Math.round(f * 100) + "%";
+  let html = "";
+  if (!res) html = `<p class="note">${R.err ? "Solve failed: " + esc(R.err) : "Solving the window at this spot…"}</p>`;
+  else if (!res.grid) html = `<p class="note">No shot from an illegal spot. Move the robot.</p>`;
+  else {
+    const mr = res.minRpm, ma = res.minAngle, mf = res.mostForgiving, mrT = res.minRpmTol, maT = res.minAngleTol, tl = res.tol;
+    const tolTxt = `ASSUMED tolerance: clean over ${tl.theta.toFixed(1)}° of hood angle / ${tl.v.toFixed(2)} m/s of exit speed with ≥ ${Math.round(tl.margin * 1000)} mm clearance`;
+    const knifeR = r => r ? `<b>Knife edge</b> (lowest clean found, a grazing shot: do not set the robot here): ${Math.round(rpmOf(r.v))} rpm (${r.v.toFixed(3)} m/s) at ${fmtAng(r.theta)}, clearance ${mm(r.margin)}, continuous clean hood run ${r.run.toFixed(3)}°. Envelope ${r.thetaLo.toFixed(2)}–${r.thetaHi.toFixed(2)}° is ${pct(r.envelopeCleanFrac)} clean.${ast(r)}` : "";
+    const knifeA = r => r ? `<b>Knife edge</b> (lowest clean found, a grazing shot: do not set the robot here): ${r.theta.toFixed(2)}° (${(90 - r.theta).toFixed(2)}° from vertical) at ${Math.round(rpmOf(r.v))} rpm, clearance ${mm(r.margin)}, continuous clean run ${Math.round(rpmOf(r.runLo))}–${Math.round(rpmOf(r.runHi))} rpm. Envelope ${Math.round(rpmOf(r.vLo))}–${Math.round(rpmOf(r.vHi))} rpm is ${pct(r.envelopeCleanFrac)} clean.${ast(r)}` : "";
+    html += box("Minimum wheel rpm", mrT ? `${Math.round(rpmOf(mrT.v))} <small>rpm</small>` : mr ? "only knife edges" : "no clean shot",
+      mrT ? `exit ${mrT.v.toFixed(2)} m/s at ${fmtAng(mrT.theta)} · clean hood run ${mrT.thetaLo.toFixed(2)}–${mrT.thetaHi.toFixed(2)}°${mrT.runCapped ? " or wider" : ""} · clearance ${mm(mrT.margin)} · ${tolTxt}` : mr ? `No speed meets the ${tolTxt.replace("ASSUMED tolerance: ", "ASSUMED tolerance (")}).` : "",
+      knifeR(mr),
+      twinTxt(t => (t.minRpmTol || t.minRpm) && (t.minRpmTol ? `${Math.round(rpmOf(t.minRpmTol.v))} rpm at ${t.minRpmTol.theta.toFixed(1)}° (${(90 - t.minRpmTol.theta).toFixed(1)}° from vertical, with tolerance)` : "no shot with tolerance") +
+        (t.minRpm ? ` · knife edge ${Math.round(rpmOf(t.minRpm.v))} rpm at ${t.minRpm.theta.toFixed(2)}°, clearance ${mm(t.minRpm.margin)}` : "")), !mrT, "ASSUMED tol");
+    html += box("Minimum hood angle", maT ? `${maT.theta.toFixed(1)}° <small>from horizontal · ${(90 - maT.theta).toFixed(1)}° from vertical</small>` : ma ? "only knife edges" : "no clean shot",
+      maT ? `at ${Math.round(rpmOf(maT.v))} rpm (${maT.v.toFixed(2)} m/s) · clean speed run ${Math.round(rpmOf(maT.vLo))}–${Math.round(rpmOf(maT.vHi))} rpm${maT.runCapped ? " or wider" : ""} · clearance ${mm(maT.margin)} · ${tolTxt}${ast(ma)}` : ma ? `No hood angle meets the ${tolTxt.replace("ASSUMED tolerance: ", "ASSUMED tolerance (")}).` : "",
+      knifeA(ma),
+      twinTxt(t => (t.minAngleTol || t.minAngle) && (t.minAngleTol ? `${t.minAngleTol.theta.toFixed(1)}° (${(90 - t.minAngleTol.theta).toFixed(1)}° from vertical) at ${Math.round(rpmOf(t.minAngleTol.v))} rpm (with tolerance)` : "no angle with tolerance") +
+        (t.minAngle ? ` · knife edge ${t.minAngle.theta.toFixed(2)}°, clearance ${mm(t.minAngle.margin)}` : "")), !maT, "ASSUMED tol");
+    html += box("Most forgiving shot", mf ? `${Math.round(rpmOf(mf.v))} <small>rpm at</small> ${mf.theta.toFixed(1)}°` : "none",
+      mf ? `holds ±${Math.round(rpmOf(mf.tolV))} rpm (±${mf.tolV.toFixed(2)} m/s) and ±${mf.tolTheta.toFixed(2)}° on the search grid · ${(90 - mf.theta).toFixed(1)}° from vertical · clearance ${mm(mf.margin)}` : "", "",
+      twinTxt(t => t.mostForgiving && `${Math.round(rpmOf(t.mostForgiving.v))} rpm at ${t.mostForgiving.theta.toFixed(1)}° (${(90 - t.mostForgiving.theta).toFixed(1)}° from vertical), holds ±${t.mostForgiving.tolTheta.toFixed(2)}°`), !mf);
+    const bs = S0 ? "none (S = 0)" : [mrT && `${Math.round(spinRpm(mrT.v))} rpm at the min-rpm shot`, mf && `${Math.round(spinRpm(mf.v))} rpm at the most forgiving shot`].filter(Boolean).join(" · ") || "–";
+    html += `<dl class="stats rstats"><dt>Ball spin (backspin, derived)</dt><dd>${bs}</dd>` +
+      `<dt>Clean pairs found</dt><dd>${res.count}${S0 ? "" : " · twin " + (res.twin ? res.twin.count : 0)}</dd>` +
+      `<dt>Solved</dt><dd>${g2(res.grid.v)} speeds × ${g2(res.grid.th)} angles (${res.grid.dv} m/s × ${res.grid.dth}°) in ${(res.ms / 1000).toFixed(1)} s</dd></dl>`;
+  }
+  $("rres").innerHTML = html;
+  // window caption + legend
+  const caseName = AERO_NAMES[rCase().var] || rCase().var;
+  $("rwin-cap").textContent = `Live at x ${R.x.toFixed(2)}, y ${R.y.toFixed(2)} m, release ${R.h.toFixed(3)} m, backspin ${SPIN_LABEL[String(R.S)] || R.S}, ${caseName.toLowerCase()} (ASSUMED air). Green = clean entry with this spin, brighter = more clearance. Click a square to load that shot.`;
+  const sw = (c, t) => `<span><i style="background:${c}"></i>${t}</span>`;
+  $("rwin-leg").innerHTML = sw("#5ad49e", "clean (this spin)") + (S0 ? "" : `<span><i style="background:transparent;border:1.5px dashed #a9b4bf"></i>no-spin twin window</span>`) +
+    sw("#f4c430", "▶ minimum rpm (filled: with tolerance, hollow: knife edge)") + sw("#ff9d3c", "◆ minimum hood angle (same)") + `<span><i style="background:transparent;border:2px solid #e3eaf0;border-radius:50%"></i>most forgiving</span>` +
+    (S0 ? "" : "<span>hollow grey = twin minima (with tolerance)</span>");
+  // selected shot card + verdict
+  const s = R.shot, sel = R.sel, rows = [];
+  let pills = "";
+  const pill = (c, t) => `<span class="pill ${c}">${t}</span>`;
+  const verdictOf = c => c.result === "clean" ? "clean entry" : c.result === "hit" ? "touches " + prettyPart(c.hit) : "misses the cell";
+  if (s && sel && !stale) {
+    rows.push(["Shot", { mf: "most forgiving", minRpm: "minimum rpm (with ASSUMED tolerance)", minAngle: "minimum hood angle (with ASSUMED tolerance)",
+                         minRpmKnife: "minimum rpm (knife edge: grazing)", minAngleKnife: "minimum hood angle (knife edge: grazing)", cell: "your pick" }[sel.src]],
+      ["Wheel speed (derived)", `${Math.round(rpmOf(sel.v))} rpm at grip ${R.vu.toFixed(2)}`], ["Exit speed", sel.v.toFixed(2) + " m/s"],
+      ["Hood angle", fmtAng(sel.theta)], ["Ball spin (derived)", S0 ? "none" : Math.round(spinRpm(sel.v)) + " rpm backspin"],
+      ["Turret", T ? `${Math.abs(T.yaw).toFixed(1)}° ${T.yaw >= 0 ? "left" : "right"} of the front${T.ok ? "" : ` · turn the robot ${Math.ceil(T.turn)}° ${T.dir} first`}` : "–"],
+      ["Live replay", verdictOf(s.cls) + (s.cls.result === "clean" && isFinite(s.cls.minClear) ? ` · clearance ${Math.round(s.cls.minClear * 1000)} mm` : "")],
+      ["No-spin twin (same rpm, angle)", S0 ? "same shot (S = 0)" : verdictOf(s.twin.cls)]);
+    pills = pill(s.cls.result === "clean" ? "clean" : s.cls.result === "hit" ? "hit" : "miss", "LIVE REPLAY: " + verdictOf(s.cls).toUpperCase());
+    if (!S0 && R.twin) pills += pill("twin", "no-spin twin: " + verdictOf(s.twin.cls));
+    if (T && !T.ok) pills += pill("hit", `turn the robot ${Math.ceil(T.turn)}°`);
+  } else if (R.solving) pills = pill("miss", "solving…");
+  else if (res && !res.grid) pills = pill("miss", "illegal spot");
+  else if (res && !stale) pills = pill("miss", "no clean shot here");
+  $("rshot").innerHTML = rows.length ? rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join("") : `<dt>Shot</dt><dd>${stale ? "waiting for the solve" : "none"}</dd>`;
+  $("rnote").textContent = "The replay uses a finer time step than the window search, so a shot right at the window edge can replay differently. A clean entry means the ball enters the up cell through the air without touching the HIVE; bounces are not modelled. No repeatability claim.";
+  $("verdict").innerHTML = pills;
+}
+const g2 = a => a.length;
+function rTest() {
+  const res = R.res, ok = res && !rStale(), T = rTurret();
+  const fr = r => r ? `${Math.round(rpmOf(r.v))}rpm@${r.theta.toFixed(2)}deg` : "none";
+  const fa = r => r ? `${r.theta.toFixed(2)}deg@${Math.round(rpmOf(r.v))}rpm` : "none";
+  const fk = r => r ? `${fr(r)}/clr${(r.margin * 1000).toFixed(2)}mm/run${r.run.toFixed(3)}` : "none";
+  document.body.dataset.robotTest = ["view=robot", `pos=${R.x.toFixed(2)},${R.y.toFixed(2)}`, `h=${R.h.toFixed(3)}`, `heading=${R.heading.toFixed(1)}`,
+    `turretYaw=${T ? T.yaw.toFixed(1) : "na"}`, `turretOk=${T ? T.ok : "na"}`, `S=${R.S}`, `status=${R.pose ? R.pose.status : "na"}`,
+    `solve=${R.err ? "error" : ok ? "done" : "pending"}`, `minRpm=${ok ? fr(res.minRpmTol) : "pending"}`, `minAngle=${ok ? fa(res.minAngleTol) : "pending"}`,
+    `knifeRpm=${ok ? fk(res.minRpm) : "pending"}`, `knifeAngle=${ok ? fa(res.minAngle) : "pending"}`,
+    `twin=${ok ? (res.twin ? "minRpm " + fr(res.twin.minRpmTol) + " minAngle " + fa(res.twin.minAngleTol) + " knife " + fr(res.twin.minRpm) : "none") : "pending"}`,
+    `shot=${R.shot && ok ? R.shot.cls.result : "none"}`, `ms=${ok ? Math.round(res.ms) : ""}`, `engine=${RW.fallback ? "main-thread" : "worker"}`].join(";");
+}
+
+// ---- robot-view UI
+function rseg(el, items, get, set, kind) {
+  el.innerHTML = "";
+  items.forEach(([v, label]) => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.dataset.v = String(v);
+    b.addEventListener("click", () => { set(v); rChanged(kind); }); el.appendChild(b);
+  });
+  el._get = get;
+}
+function rSyncInputs() {
+  ["rtrav-seg", "rs-seg", "rvu-seg"].forEach(id => { const el = $(id); el.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === String(el._get())))); });
+  const sel = $("raero"), want = F.FI.cases.filter(c => c.S === R.S).map(c => c.var).join(",");
+  if (sel.dataset.vars !== want) {
+    sel.innerHTML = ""; sel.dataset.vars = want;
+    F.FI.cases.filter(c => c.S === R.S).forEach(c => { const o = document.createElement("option"); o.value = c.var; o.textContent = AERO_NAMES[c.var] || c.var; sel.appendChild(o); });
+  }
+  sel.value = R.aero;
+  if (document.activeElement !== $("rx")) $("rx").value = R.x.toFixed(2);
+  if (document.activeElement !== $("ry")) $("ry").value = R.y.toFixed(2);
+  $("rhd").value = Math.round(R.heading); $("rhd-o").textContent = R.heading.toFixed(1) + "°";
+  $("rh").value = R.h; $("rh-o").textContent = `${R.h.toFixed(3)} m · ${inch(R.h)}`;
+}
+function robotInit() {
+  const FI = F.FI, GG = FI.grid;
+  R.meta = { grid: GG, sections: FI.sections, frame: FI.frame, field_grid: FI.field_grid };
+  const rh = $("rh"); rh.min = GG.h[0]; rh.max = GG.h[GG.h.length - 1]; rh.step = 0.001;
+  R.h = GG.h[GG.h.length - 1];
+  const Ss = Array.from(new Set(FI.cases.map(c => c.S))).sort((a, b) => a - b);
+  rseg($("rtrav-seg"), TRAVEL, () => R.travel, v => { R.travel = v; }, "heading");
+  rseg($("rs-seg"), Ss.map(s => [s, SPIN_LABEL[String(s)] || String(s)]), () => R.S, v => { R.S = +v; if (!fCase(R.S, R.aero)) R.aero = "nominal"; }, "param");
+  rseg($("rvu-seg"), IDX.v_over_u.map(r => [r, r.toFixed(2)]), () => R.vu, v => { R.vu = +v; }, "grip");
+  $("raero").addEventListener("change", e => { R.aero = e.target.value; rChanged("param"); });
+  rh.addEventListener("input", () => { R.h = +rh.value; rChanged("param"); });
+  $("rhd").addEventListener("input", e => { R.heading = wrap180(+e.target.value); rChanged("heading"); });
+  [["rx", "x"], ["ry", "y"]].forEach(([id, k]) => $(id).addEventListener("change", e => { const v = parseFloat(e.target.value); if (isFinite(v)) { R[k] = v; rChanged("pose"); } }));
+  $("rface").addEventListener("click", () => { if (R.pose) { R.heading = Math.round(R.pose.bearingDeg * 10) / 10; rChanged("heading"); } });
+  $("rc-twin").addEventListener("change", e => { R.twin = e.target.checked; rChanged("view"); });
+  $("rc-slow").addEventListener("change", e => { R.slow = e.target.checked; });
+  $("rc-heat").addEventListener("change", e => { R.heat = e.target.checked; rChanged("heat"); });
+  $("rfire").addEventListener("click", rFire);
+  $("rmf").addEventListener("click", () => rPick("mf"));
+  $("rminrpm").addEventListener("click", () => rPick("minRpm"));
+  $("rminang").addEventListener("click", () => rPick("minAngle"));
+  // map: drag the body to move, drag the knob to turn, click elsewhere to jump; keys
+  const rm = $("rmap"); let drag = null;
+  const fpt = e => { const r = rm.getBoundingClientRect(), g = mapGeom(r.width, r.height); return [g.ix(e.clientX - r.left), g.iy(e.clientY - r.top), g]; };
+  rm.addEventListener("pointerdown", e => {
+    const [fx, fy, g] = fpt(e), a = R.heading * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);
+    try { rm.focus({ preventScroll: true }); } catch (_) { /* ignore */ }
+    if (Math.hypot(fx - (R.x + HANDLE * ca), fy - (R.y + HANDLE * sa)) * g.s < 14) drag = { mode: "rot" };
+    else {
+      const lx = (fx - R.x) * ca + (fy - R.y) * sa, ly = -(fx - R.x) * sa + (fy - R.y) * ca;
+      if (Math.abs(lx) <= RHALF && Math.abs(ly) <= RHALF) drag = { mode: "move", ox: fx - R.x, oy: fy - R.y };
+      else { drag = { mode: "move", ox: 0, oy: 0 }; R.x = fx; R.y = fy; rChanged("pose"); }
+    }
+    rm.style.cursor = "grabbing";
+    try { rm.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+    e.preventDefault();
+  });
+  rm.addEventListener("pointermove", e => {
+    if (!drag) return;
+    const [fx, fy] = fpt(e);
+    if (drag.mode === "rot") { R.heading = Math.round(wrap180(Math.atan2(fy - R.y, fx - R.x) * 180 / Math.PI) * 10) / 10; rChanged("heading"); }
+    else { R.x = fx - drag.ox; R.y = fy - drag.oy; rChanged("pose"); }
+  });
+  ["pointerup", "pointercancel"].forEach(n => rm.addEventListener(n, () => { drag = null; rm.style.cursor = ""; }));
+  rm.addEventListener("keydown", e => {
+    const st0 = e.shiftKey ? 0.05 : 0.01, rs = e.shiftKey ? 1 : 5; let k = null;
+    if (e.key === "ArrowLeft") { R.x -= st0; k = "pose"; } else if (e.key === "ArrowRight") { R.x += st0; k = "pose"; }
+    else if (e.key === "ArrowUp") { R.y += st0; k = "pose"; } else if (e.key === "ArrowDown") { R.y -= st0; k = "pose"; }
+    else if (e.key === "q" || e.key === "Q") { R.heading = wrap180(R.heading + rs); k = "heading"; }
+    else if (e.key === "e" || e.key === "E") { R.heading = wrap180(R.heading - rs); k = "heading"; }
+    if (k) { e.preventDefault(); rChanged(k); }
+  });
+  // window chart: hover + click to load a shot
+  const rw = $("rwin");
+  const at = e => {
+    const G2 = R.winGeom; if (!G2 || !R.res || !R.res.grid || rStale()) return null;
+    const r = rw.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+    if (px < G2.Lm || px > G2.Lm + G2.pw || py < G2.Tm || py > G2.Tm + G2.ph) return null;
+    const g = R.res.grid, v = G2.vLo + (px - G2.Lm) / G2.pw * (G2.vHi - G2.vLo), t = G2.tHi - (py - G2.Tm) / G2.ph * (G2.tHi - G2.tLo);
+    const iv = Math.max(0, Math.min(g.v.length - 1, Math.round((v - g.v[0]) / g.dv))), it = Math.max(0, Math.min(g.th.length - 1, Math.round((t - g.th[0]) / g.dth)));
+    const k = iv * g.th.length + it;
+    return { v: g.v[iv], theta: g.th[it], clean: g.clean[k] === 1, twin: !!(R.res.twin && R.res.twin.grid && R.res.twin.grid.clean[k]) };
+  };
+  rw.addEventListener("mousemove", e => {
+    const c = at(e); if (!c) { tip.hidden = true; return; }
+    tip.hidden = false; tip.style.left = (e.clientX + 14) + "px"; tip.style.top = (e.clientY + 12) + "px";
+    tip.textContent = `${Math.round(rpmOf(c.v))} rpm (${c.v.toFixed(2)} m/s) · ${c.theta.toFixed(2)}° · ${c.clean ? "clean" : "not clean"}${R.S !== 0 ? " · twin " + (c.twin ? "clean" : "not clean") : ""}`;
+  });
+  rw.addEventListener("mouseleave", () => { tip.hidden = true; });
+  rw.addEventListener("click", e => { const c = at(e); if (!c) return; R.pick = { v: c.v, theta: c.theta, src: "cell" }; rShotUpdate(); rDrawAll(); rFire(); });
+  rClamp(); R.pose = PS().pose(R.x, R.y, R.meta);
+  R.ready = true;
+}
+
+const PLANE_OBJS = () => [robot, shotGroup, fanGroup, standGroup, ball, twinBall, hitMark, twinHitMark];
+const SUB = {
+  robot: "Put the robot anywhere on the field, at any heading, with a turret. Set the release height, backspin and grip: the page solves the clean-entry window at that exact spot live and gives the minimum wheel rpm, the minimum hood angle and the most forgiving shot, each next to its no-spin twin. Air resistance included (drag, capped spin lift, spin decay; ASSUMED literature values). PREDICTED, not measured.",
+  plane: null, field: null };
+function showFor(m) {
+  $("rtop").hidden = m !== "robot"; $("rrail").hidden = m !== "robot"; $("rsec").hidden = m !== "robot";
+  $("prail").hidden = m !== "plane"; $("plane-charts").hidden = m !== "plane";
+  $("frail").hidden = m !== "field"; $("fsec").hidden = m !== "field";
+  PLANE_OBJS().forEach(o => { o.visible = m === "plane"; });
+  fieldGroup.visible = m === "field"; robotGroup.visible = m === "robot";
+  scene.scale.z = m === "robot" ? -1 : 1;   // robot view: true field handedness (see WF)
+  if (SUB.plane == null) SUB.plane = SUB.field = $("sub").textContent;
+  $("sub").textContent = SUB[m] || SUB.plane;
+  $("leg-fan").hidden = m === "robot";
+  document.body.dataset.view = m;
+}
+async function setMode(m) {
+  if (!["robot", "plane", "field"].includes(m)) m = "robot";
+  syncSeg($("mode-seg"), () => m);
+  if (m === MODE) return;
+  const prev = MODE;
+  if (prev === "plane" || prev === null) R.savedPlane = { side: st.side, tilt: st.tilt };
+  MODE = m; F.on = m === "field"; R.on = m === "robot"; anim = null; R.anim = null;
+  try { if (location.hash !== "#" + m) history.replaceState(null, "", "#" + m); } catch (_) { /* ignore */ }
+  showFor(m); $("verdict").innerHTML = ""; tip.hidden = true;
+  if (m === "plane") {
+    if (R.savedPlane) { st.side = R.savedPlane.side; st.tilt = R.savedPlane.tilt; }
+    buildHive(); refresh(); view("iso"); return;
+  }
+  try { await loadFI(); } catch (e) {
+    $("loading").hidden = false; $("loading").textContent = "Field data not found (" + e.message + "). Showing the single-plane view.";
+    setTimeout(() => { $("loading").hidden = true; }, 4000); F.fiP = null;
+    if (m === "field") setTest({ view: "error", error: e.message }); else document.body.dataset.robotTest = "view=error;error=" + e.message;
+    MODE = null; return setMode("plane");
+  }
+  if (MODE !== m) return;
+  if (m === "field") {
+    if (!F.ready) fieldInit();
     camera.position.copy(W(-3.6, -3.2, 2.7)); controls.target.copy(W(-0.1, 0, 0.5)); controls.update();
     await fieldUpdate();
-  } else {
-    F.on = false; $("frail").hidden = true; $("fsec").hidden = true; $("prail").hidden = false; $("plane-charts").hidden = false;
-    fieldGroup.visible = false; PLANE_OBJS().forEach(o => { o.visible = true; });
-    if (F.saved) { st.side = F.saved.side; st.tilt = F.saved.tilt; }
-    buildHive(); refresh(); view("iso");
+    return;
   }
+  // robot: far-side HIVE pose (tilt 30, CAD) drawn in field coordinates
+  st.side = "unfav"; st.tilt = "30"; buildHive();
+  if (!R.ready) robotInit();
+  rView("iso");
+  if (!R.res || R.resKey !== rKey()) rSchedule(0);
+  rHeatLoad(); rChanged("view");
 }
+const modeFromHash = () => { const t = location.hash + location.search; return /field/.test(t) ? "field" : /plane/.test(t) ? "plane" : "robot"; };
+window.addEventListener("hashchange", () => { setMode(modeFromHash()); });
 
 // ---------------------------------------------------------------- boot
 async function boot() {
@@ -1387,15 +2744,13 @@ async function boot() {
     st.d = G.d[id]; st.ih = ih; refresh();
   });
   $("mode-seg").querySelectorAll("button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.v)));
-  syncSeg($("mode-seg"), () => "plane");
-  if (/field/.test(location.hash + location.search)) setTimeout(() => setMode("field"), 0);
   $("prov").textContent = "Data: " + IDX.label + ". Flight integrator: " + IDX.integrator.method + ", dt " + IDX.integrator.dt + " s.";
   // open on the CAD-card spot: h 0.737 m, d 0.75 m, backspin S 1.0, most forgiving shot there
   st.ih = NH - 1; st.d = 0.75;
   const data = await loadCase(curCase().files[geomKey()].file);
   curSlice = slice(data, st.ih, nearest(G.d, st.d)); curSq = squareMap(curSlice.clean); pickBest();
-  resize(); view("iso");
-  await doRefresh();
+  resize();
+  await setMode(modeFromHash());
   $("loading").hidden = true;
   requestAnimationFrame(loop);
 }
