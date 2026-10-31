@@ -630,7 +630,7 @@ int main(int argc, char** argv) {
 	const cl_kernel k_diag[2] = { make_kernel(F.prog, "diag"), make_kernel(F.prog, "diag") };
 	for (int p = 0; p < 2; p++)
 		ArgSetter(k_diag[p]).lattice(F.f[p])(flags)(bx0)(by0)(bz0)(bx)(by)(bz)(fcx)(fcy)(fcz)((float)rmid)((float)(rh * rh))
-			((float)((Rin - 1.0) * (Rin - 1.0)))(axesb)((cl_uint)nh)(dpartb)((float)((R - 0.5) * (R - 0.5)));
+			((float)((Rin - 1.0) * (Rin - 1.0)))(axesb)((cl_uint)nh)(dpartb)((float)(R * R));
 	double theta_now = 0.0; // spin angle of the voxelised geometry
 	const float r2 = use_stl ? -1.0f : (float)(R * R);
 	const cl_uint occM = (cl_uint)occ.M;

@@ -396,7 +396,7 @@ kernel void diag(FARG(a), global const uchar* restrict flags, const uint bx0, co
 			global fs* A[19] = FLIST(a);
 			const float rx = (float)x - ccx, ry = (float)y - ccy, rz = (float)z - ccz, r2 = rx * rx + ry * ry + rz * rz;
 			const float r = sqrt(r2);
-			if (fabs(r - rmid) < 1.0f && r2 < rl2) { // rl2 = (R - 0.5)^2: the disc stays inside the shell (no outer-flow cell)
+			if (r > rmid - 0.5f && r2 < rl2) { // rl2 = R^2: the whole disc (|s - rmid| < 0.5, r_perp < r_h) and no outer-flow cell
 				for (uint k = 0u; k < nh && hk < 0; k++) {
 					const float ax = axes[3u * k], ay = axes[3u * k + 1u], az = axes[3u * k + 2u];
 					const float s = rx * ax + ry * ay + rz * az;
