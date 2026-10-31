@@ -87,12 +87,19 @@ html, body { overflow-x: hidden; }
 .pill { max-width: 100%; white-space: normal; }
 @media (max-width: 520px) { .legend { display: none; } h1 { font-size: 24px; } #win { aspect-ratio: 4 / 3; } .stage { min-height: 340px; } .hud { right: 8px; left: 8px; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.modeseg { margin-left: auto; } .modeseg button { flex: 0 1 auto; padding: 6px 12px; }
+#fmap { aspect-ratio: 1; touch-action: none; cursor: crosshair; } #fwin { aspect-ratio: 16 / 10; }
+.fleg { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
+.fleg i { display: inline-block; width: 12px; height: 12px; vertical-align: -2px; margin-right: 5px; border: 1px solid var(--line); border-radius: 2px; }
+.warn { color: #f4a43c; font-size: 12.5px; margin: 0; } .warn { white-space: pre-line; } .warn:empty { display: none; }
+@media (max-width: 520px) { #fwin { aspect-ratio: 4 / 3; } .modeseg { margin-left: 0; } }
 </style>
 
 <div class="wrap">
   <header>
     <h1><b>POLLEN</b> Shot Explorer</h1>
     <span class="tag">Predicted · not measured</span>
+    <div class="seg modeseg" id="mode-seg" role="group" aria-label="View"><button type="button" data-v="plane">Single plane</button><button type="button" data-v="field">Field: every position</button></div>
     <p class="sub">Every launch that drops POLLEN into the upward CELL without touching the HIVE, from the PM-001 model (Team 207 Critical Mass). Set the robot's distance, release height, hood angle, wheel rpm and backspin; the green fan is every clean shot from that spot.</p>
   </header>
 
@@ -107,6 +114,7 @@ html, body { overflow-x: hidden; }
           <button id="v-cell" type="button">Into the cell</button>
           <button id="v-top" type="button">Top</button>
         </div>
+        <p class="note" style="margin:0 0 6px">Angles are shown two ways: from horizontal (as set) and from vertical (90 minus that). Bearing ψ is measured off the HIVE vertical tipping plane, the plane holding the HIVE cross-section, perpendicular to the pivot axis. All values PREDICTED, not measured.</p>
         <div class="legend">
           <span><i style="background:var(--pollen)"></i>your shot</span>
           <span><i style="background:var(--twin)"></i>no-spin twin (same speed, angle)</span>
@@ -118,7 +126,7 @@ html, body { overflow-x: hidden; }
       <div class="loading" id="loading">Loading the model's shot grid…</div>
     </div>
 
-    <div class="rail">
+    <div class="rail" id="prail">
       <section class="card" aria-labelledby="h-robot">
         <h2 id="h-robot">Robot</h2>
         <div class="row"><label for="d">Distance to HIVE pivot plane <output id="d-o"></output></label><input id="d" type="range"></div>
@@ -159,9 +167,35 @@ html, body { overflow-x: hidden; }
         </div>
       </section>
     </div>
+    <div class="rail" id="frail" hidden>
+      <section class="card" aria-labelledby="h-fpos">
+        <h2 id="h-fpos">Robot position</h2>
+        <p class="note">Click or drag on the field map to place the robot. It aims at the up cell automatically. Positions snap to the 0.05 m model grid.</p>
+        <dl class="stats" id="fpos"></dl>
+        <p class="warn" id="fwarn"></p>
+      </section>
+      <section class="card" aria-labelledby="h-fset">
+        <h2 id="h-fset">Settings</h2>
+        <div class="row"><label>Release height (ball centre)</label><div class="seg" id="fh-seg"></div></div>
+        <div class="row"><label>Backspin S = ωR/v</label><div class="seg" id="fs-seg"></div></div>
+        <div class="row"><label>Grip: exit speed ÷ wheel surface speed</label><div class="seg" id="fvu-seg"></div></div>
+        <div class="row"><label for="faero">Air (drag and spin lift, ASSUMED)</label><select id="faero"></select></div>
+        <div class="row"><label>Map colour</label><div class="seg" id="fmetric-seg"></div></div>
+      </section>
+      <section class="card" aria-labelledby="h-fshow">
+        <h2 id="h-fshow">Show in 3D</h2>
+        <div class="checks">
+          <label><input type="checkbox" id="fc-fan" checked> Sample of every clean shot from this spot</label>
+          <label><input type="checkbox" id="fc-twin" checked> No-spin twin (S = 0, same speed and angle)</label>
+          <label><input type="checkbox" id="fc-arcs"> Best-shot arcs from a sparse set of spots (this side)</label>
+        </div>
+        <p class="note" id="fnote"></p>
+        <p class="note">Angles are shown two ways: from horizontal and from vertical (90 minus that). Bearing ψ is measured off the HIVE vertical tipping plane (holds the HIVE cross-section, perpendicular to the pivot axis). PREDICTED, not measured.</p>
+      </section>
+    </div>
   </div>
 
-  <div class="charts">
+  <div class="charts" id="plane-charts">
     <section class="chart" aria-labelledby="h-win">
       <h3 id="h-win">Shot window from this spot</h3>
       <p id="win-cap">Each square is one speed and angle. Green squares go in clean; brighter green holds more error. Click a square to load that shot.</p>
@@ -171,6 +205,21 @@ html, body { overflow-x: hidden; }
       <h3 id="h-stand">Where to stand</h3>
       <p>Number of clean speed and angle pairs at each distance, one line per release height. Click to move the robot.</p>
       <canvas id="stand" role="img" aria-label="Clean shot count against distance for each release height"></canvas>
+    </section>
+  </div>
+
+  <div class="charts" id="fsec" hidden>
+    <section class="chart" aria-labelledby="h-fmap">
+      <h3 id="h-fmap">Field map: where a clean shot exists</h3>
+      <p id="fmap-cap"></p>
+      <canvas id="fmap" role="img" aria-label="Top-down field map with a heatmap of clean shots per robot position"></canvas>
+      <div class="fleg" id="fleg"></div>
+    </section>
+    <section class="chart" aria-labelledby="h-fwin">
+      <h3 id="h-fwin">Shot window at this position</h3>
+      <p id="fwin-cap"></p>
+      <canvas id="fwin" role="img" aria-label="Clean window at the chosen position: exit speed against hood angle"></canvas>
+      <p class="note" id="fprov"></p>
     </section>
   </div>
 
@@ -302,7 +351,31 @@ html, body { overflow-x: hidden; }
     return { result: "miss", i: n - 1, hit: null, minClear: minC, entryAngle: null };
   }
 
-  const api = { integrate: integrate, classify: classify, segSeg: segSeg, insideConvex: insideConvex };
+
+  // ---- oblique (whole-field) shots: same model as src/robustness.py "score from anywhere" ----
+  // Planar flight in the vertical plane of bearing psi (spin axis perpendicular to that plane, no
+  // sideways Magnus), projected on the HIVE shot axis: X and VX are scaled by cos(psi); the
+  // lateral coordinate is Y = s sin(psi) (s = along-bearing ground range). The pentagon roof drop
+  // is carried by the section geometry at offset sEff(psi); cell side walls are NOT modelled.
+  function sEff(psiDeg) { return Math.min(0.3 * Math.tan(Math.abs(psiDeg) * Math.PI / 180), 0.2); }
+
+  // returns the shape classify() expects (X, Z, n) plus Y, VX, VY, VZ; psi sign = side of the aim line
+  function integrateOblique(v, thDeg, psiDeg, S0, p, dt, tMax, zStop) {
+    const base = integrate(v, thDeg, S0, p, dt, tMax, zStop);
+    const ps = psiDeg * Math.PI / 180, c = Math.cos(ps), sn = Math.sin(ps), n = base.n;
+    const X = new Float64Array(n), Y = new Float64Array(n), VX = new Float64Array(n), VY = new Float64Array(n);
+    for (let i = 0; i < n; i++) {
+      X[i] = base.X[i] * c; Y[i] = base.X[i] * sn; VX[i] = base.VX[i] * c; VY[i] = base.VX[i] * sn;
+    }
+    return { X: X, Y: Y, Z: base.Z, VX: VX, VY: VY, VZ: base.VZ, dt: base.dt, n: n, w0: base.w0,
+             k: base.k, psi: psiDeg };
+  }
+
+  // geom = the section for sEff(|psi|) (index.json "sections"); same exact classifier as classify()
+  function classifyOblique(path, geom, d, h, R) { return classify(path, geom, d, h, R); }
+
+  const api = { integrate: integrate, classify: classify, integrateOblique: integrateOblique,
+    classifyOblique: classifyOblique, sEff: sEff, segSeg: segSeg, insideConvex: insideConvex };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.PollenPhysics = api;
 })(typeof self !== "undefined" ? self : this);
@@ -358,22 +431,23 @@ function slice(data, ih, id) {
 }
 // L-infinity distance to the nearest non-clean cell (two-pass chamfer): k = half-size of the
 // largest clean square centred on each cell, i.e. the shot holds +/- k cells of speed and angle.
-function squareMap(clean) {
-  const D = new Int32Array(NV * NT), BIG = 1 << 20;
-  for (let i = 0; i < NV; i++) for (let j = 0; j < NT; j++) {
-    const k = i * NT + j;
+function squareMap(clean, nv, nt) {
+  nv = nv || NV; nt = nt || NT;
+  const D = new Int32Array(nv * nt), BIG = 1 << 20;
+  for (let i = 0; i < nv; i++) for (let j = 0; j < nt; j++) {
+    const k = i * nt + j;
     if (!clean[k]) { D[k] = 0; continue; }
     let v = BIG;
-    if (i === 0 || j === 0 || j === NT - 1) v = 1;
-    else v = Math.min(D[k - NT] + 1, D[k - 1] + 1, D[k - NT - 1] + 1, D[k - NT + 1] + 1);
+    if (i === 0 || j === 0 || j === nt - 1) v = 1;
+    else v = Math.min(D[k - nt] + 1, D[k - 1] + 1, D[k - nt - 1] + 1, D[k - nt + 1] + 1);
     D[k] = v;
   }
-  for (let i = NV - 1; i >= 0; i--) for (let j = NT - 1; j >= 0; j--) {
-    const k = i * NT + j;
+  for (let i = nv - 1; i >= 0; i--) for (let j = nt - 1; j >= 0; j--) {
+    const k = i * nt + j;
     if (!D[k]) continue;
     let v = D[k];
-    if (i === NV - 1 || j === 0 || j === NT - 1) v = Math.min(v, 1);
-    else v = Math.min(v, D[k + NT] + 1, D[k + 1] + 1, D[k + NT + 1] + 1, D[k + NT - 1] + 1);
+    if (i === nv - 1 || j === 0 || j === nt - 1) v = Math.min(v, 1);
+    else v = Math.min(v, D[k + nt] + 1, D[k + 1] + 1, D[k + nt + 1] + 1, D[k + nt - 1] + 1);
     D[k] = v;
   }
   return D;   // D = k + 1 for clean cells
@@ -684,7 +758,7 @@ function drawWindow() {
     x.textAlign = "right"; x.fillText(v.toFixed(vStep < 0.25 ? 1 : 2), L - 5, py + 4);
     x.textAlign = "left"; x.fillText(Math.round(vToRpm(v)), L + pw + 5, py + 4);
   }
-  x.textAlign = "center"; x.fillText("launch angle", L + pw / 2, h - 4);
+  x.textAlign = "center"; x.fillText("launch angle (° from horizontal; from vertical = 90 minus this)", L + pw / 2, h - 4);
   x.save(); x.translate(11, T + ph / 2); x.rotate(-Math.PI / 2); x.fillText("exit speed m/s", 0, 0); x.restore();
   x.save(); x.translate(w - 8, T + ph / 2); x.rotate(Math.PI / 2); x.fillText(`wheel rpm at grip ${st.vu}`, 0, 0); x.restore();
   // current shot crosshair
@@ -774,7 +848,7 @@ async function doRefresh(opts) {
 function syncUI(data) {
   const c = cell(), h = G.h[st.ih], k = c.iv * NT + c.it;
   $("d").value = st.d; $("d-o").textContent = st.d.toFixed(2) + " m";
-  $("th").value = st.theta; $("th-o").textContent = st.theta.toFixed(1) + "°";
+  $("th").value = st.theta; $("th-o").textContent = st.theta.toFixed(1) + "° · " + (90 - st.theta).toFixed(1) + "° from vertical";
   $("rpm").value = Math.round(st.rpm); $("rpm-o").textContent = Math.round(st.rpm) + " rpm";
   syncSeg($("h-seg"), () => st.ih);
   syncSeg($("side-seg"), () => st.side);
@@ -803,7 +877,7 @@ function syncUI(data) {
   const r = shot.r, tw = twin.r;
   let html = "";
   if (clean) {
-    html += `<span class="pill clean">CLEAN ENTRY · descends ${curSlice.ang[k].toFixed(1)}° · ${(curSlice.margin[k] * 1000).toFixed(0)} mm clearance</span>`;
+    html += `<span class="pill clean">CLEAN ENTRY · descends ${curSlice.ang[k].toFixed(1)}° (${(90 - curSlice.ang[k]).toFixed(1)}° from vertical) · ${(curSlice.margin[k] * 1000).toFixed(0)} mm clearance</span>`;
     html += `<span class="pill clean">holds ±${(sq * 0.05).toFixed(2)} m/s and ±${(sq * 0.1).toFixed(1)}°</span>`;
   } else if (r.result === "hit") html += `<span class="pill hit">TOUCHES ${prettyPart(r.hit)} first</span>`;
   else if (r.result === "clean") html += `<span class="pill clean">CLEAN in the replay, at the window edge</span>`;
@@ -858,17 +932,400 @@ function resize() {
 let roPending = false;
 new ResizeObserver(() => {
   if (roPending) return; roPending = true;
-  requestAnimationFrame(() => { roPending = false; resize(); if (curSlice) { drawWindow(); loadCase(curCase().files[geomKey()].file).then(drawStand).catch(() => {}); } });
+  requestAnimationFrame(() => { roPending = false; resize(); if (F.on) { if (F.ready) { F.layer = null; fieldSchedule(); } } else if (curSlice) { drawWindow(); loadCase(curCase().files[geomKey()].file).then(drawStand).catch(() => {}); } });
 }).observe(document.body);
 function loop(now) {
   requestAnimationFrame(loop);
   controls.update();
-  if (anim && shot) {
+  if (anim && shot && !F.on) {
     const t = (now - anim.t0) / 1000 * (st.slow ? 0.25 : 1);
     if (placeBalls(t)) anim = null;
   }
   if (robot.userData.wheel) robot.userData.wheel.rotation.y += 0.25;
   renderer.render(scene, camera);
+}
+
+// ---------------------------------------------------------------- FIELD view: every position, oblique shots
+// PREDICTED clean-entry windows from data/field (viz/explorer/FIELD_DATA.md). Aero is ASSUMED (literature).
+const FLD_X = 1.8009, FLD_YC = 0.3236;
+const F = { on: false, FI: null, fiP: null, ready: false, ih: 4, S: 1.0, aero: "nominal", metric: "count", fan: true, twin: true, arcs: false,
+            col: -1, row: -1, pick: null, tok: 0, layer: null, winGeom: null, win: null, info: null, test: {}, mapGeomLast: null };
+const fieldGroup = new THREE.Group(); scene.add(fieldGroup); fieldGroup.visible = false;
+const fcache = new Map();
+function fget(name, parse) {   // fetch a text file under data/field once, parse once
+  if (!fcache.has(name)) fcache.set(name, fetch("data/field/" + name).then(r => { if (!r.ok) throw new Error(name + " " + r.status); return r.text(); }).then(parse));
+  return fcache.get(name);
+}
+function b64buf(t) { const s = atob(t.trim()), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u.buffer; }
+function setTest(o) {   // debug hook: the dumped DOM shows what the field view did
+  Object.assign(F.test, o);
+  const s = Object.keys(F.test).map(k => k + "=" + F.test[k]).join(";");
+  $("fsec").dataset.test = s; document.body.dataset.fieldTest = s;
+}
+function loadFI() {
+  if (!F.fiP) F.fiP = fetch("data/field/index.json").then(r => { if (!r.ok) throw new Error("data/field/index.json " + r.status); return r.json(); }).then(j => { F.FI = j; return j; });
+  return F.fiP;
+}
+function loadStatus() {
+  const FG = F.FI.field_grid, N = FG.nx * FG.ny;
+  return fget(FG.pos_status, t => {
+    const b = b64buf(t), u = new Uint8Array(b);
+    return { N, status: u.slice(0, N), other: u.slice(N, 2 * N), fav: u.slice(2 * N, 3 * N), di: new Int16Array(b.slice(3 * N, 5 * N)),
+             pi: new Int16Array(b.slice(5 * N, 7 * N)), psi: new Uint16Array(b.slice(7 * N, 9 * N)) };
+  });
+}
+function loadPos(file) {
+  const FG = F.FI.field_grid, T = F.FI.grid.h.length * FG.nx * FG.ny;
+  return fget(file, t => {
+    const b = b64buf(t); let o = 0;
+    const take = (C, n) => { const a = new C(b.slice(o, o + T * n)); o += T * n; return a; };
+    return { count: take(Uint16Array, 2), k: take(Uint8Array, 1), v: take(Uint16Array, 2), th: take(Uint16Array, 2), ang: take(Uint16Array, 2), margin: take(Uint16Array, 2) };
+  });
+}
+function loadMask(side, cs) {   // decoded lazily, one case and side at a time, then cached
+  const m = cs.files[side];
+  return fget(m.file, t => {
+    const b = b64buf(t), n = new Uint32Array(b, 0, 1)[0], no = m.n_offsets;
+    return { n, off: new Uint32Array(b, 4, no), idx: new Uint32Array(b, 4 + 4 * no, n),
+             mg: new Uint16Array(b, 4 + 4 * no + 4 * n, n), an: new Uint16Array(b, 4 + 4 * no + 6 * n, n) };
+  });
+}
+const sideWallPsi = () => { const g = F.FI.grid; if (typeof g.psi_side_wall === "number") return g.psi_side_wall;
+  if (g.side_wall_risk) { const i = g.side_wall_risk.findIndex(f => f === 1); if (i >= 0) return g.psi[i]; } return 35; };
+const fCase = (S, v) => F.FI.cases.find(c => c.S === S && c.var === v);
+const fCur = () => fCase(F.S, F.aero) || fCase(F.S, "nominal");
+async function loadMapData() {
+  const cs = fCur(), ST = await loadStatus();
+  const [far, near] = await Promise.all([loadPos(cs.files.unfav.pos_file), loadPos(cs.files.fav.pos_file)]);
+  return { ST, far, near, cs };
+}
+function windowAt(mk, side, ip, ih, id) {   // decode one (psi, h, d) slice of the mask
+  const GG = F.FI.grid, nV = GG.v[side].length, nT = GG.theta[side].length, per = nV * nT, s = ip * GG.h.length + ih;
+  const a = mk.off[s], e = mk.off[s + 1], lo = id * per, hi = lo + per;
+  let l = a, r = e; while (l < r) { const m = (l + r) >> 1; if (mk.idx[m] < lo) l = m + 1; else r = m; }
+  const clean = new Uint8Array(per), margin = new Float32Array(per), ang = new Float32Array(per); let n = 0;
+  for (let i = l; i < e && mk.idx[i] < hi; i++) { const k = mk.idx[i] - lo; clean[k] = 1; margin[k] = mk.mg[i] / 1e4; ang[k] = mk.an[i] / 100; n++; }
+  return { clean, margin, ang, n, nV, nT, sq: squareMap(clean, nV, nT) };
+}
+function cellInfo(MD, col, row) {
+  const FG = F.FI.field_grid, ST = MD.ST, i = row * FG.nx + col, side = ST.fav[i] ? "fav" : "unfav";
+  const P = side === "fav" ? MD.near : MD.far, o = F.ih * ST.N + i;
+  return { i, col, row, x: FG.xs[col], y: FG.ys[row], side, d: Math.abs(FG.xs[col]), psi: ST.psi[i] / 100, status: ST.status[i], other: ST.other[i] === 1,
+           di: ST.di[i], pi: ST.pi[i], count: P.count[o], k: P.k[o], v: P.v[o] / 100, th: P.th[o] / 100, cs: MD.cs };
+}
+function secFor(side, ip) {   // section at the ASSUMED lateral offset s_eff(psi)
+  const S = F.FI.sections, off = Math.round(PH.sEff(F.FI.grid.psi[ip]) * 1e4) / 1e4;
+  let key = side + "_s" + off;
+  if (!S[key]) { let bd = 1e9; for (const k in S) if (k.indexOf(side + "_s") === 0) { const dd = Math.abs(+k.slice(side.length + 2) - off); if (dd < bd) { bd = dd; key = k; } } }
+  return S[key];
+}
+function flyF(info, v, th, S, params, sec, h) {
+  const p = PH.integrateOblique(v, th, info.psi, S, params);
+  const r = PH.classifyOblique(p, sec, info.d, h, IDX.ball_radius);
+  return { p, r, end: endIndex(p, r, h) };
+}
+function fpoints(p, info, h, upto, stride) {   // shooter frame: pivot plane x=0, robot at x=-d; page y = -(data y)
+  const sg = Math.sign(info.y), yr = -info.y, pts = [];
+  const add = i => pts.push(W(p.X[i] - info.d, yr + sg * p.Y[i], p.Z[i] + h));
+  for (let i = 0; i <= upto; i += stride) add(i);
+  if (upto % stride) add(upto);
+  return pts;
+}
+
+// ---- map
+function mapGeom(w, h) {
+  const pad = 8, s = Math.min((w - 2 * pad) / (2 * FLD_X), (h - 2 * pad) / (2 * FLD_X)), ox = (w - 2 * FLD_X * s) / 2, oy = (h - 2 * FLD_X * s) / 2;
+  return { s, X: x => ox + (x + FLD_X) * s, Y: y => oy + (FLD_YC + FLD_X - y) * s, ix: px => (px - ox) / s - FLD_X, iy: py => FLD_YC + FLD_X - (py - oy) / s };
+}
+const heatCol = t => `hsl(158,65%,${(12 + 38 * t).toFixed(1)}%)`;
+const MONO = () => "11px " + getComputedStyle(document.body).getPropertyValue("--mono");
+function drawMap(MD) {
+  const cv = $("fmap"), { x, w, h } = setupCanvas(cv);
+  if (w < 20) return;
+  const FG = F.FI.field_grid, ST = MD.ST, g = mapGeom(w, h), N = ST.N, cw = FG.step * g.s, psiMax = F.FI.grid.psi_max_model * 100, swPsi = sideWallPsi();
+  x.fillStyle = "#0b1015"; x.fillRect(0, 0, w, h);
+  const key = [F.ih, F.S, F.aero, F.metric, Math.round(w), Math.round(h), window.devicePixelRatio || 1].join("|");
+  if (!F.layer || F.layer.key !== key) {   // heat layer cached: drags only redraw the marker
+    let max = 1;
+    for (let i = 0; i < N; i++) if (ST.status[i] === 0) { const P = ST.fav[i] ? MD.near : MD.far, o = F.ih * N + i, v = F.metric === "k" ? P.k[o] : P.count[o]; if (v > max) max = v; }
+    const L = document.createElement("canvas"); L.width = cv.width; L.height = cv.height;
+    const lx = L.getContext("2d"); lx.setTransform(cv.width / w, 0, 0, cv.height / h, 0, 0);
+    for (let row = 0; row < FG.ny; row++) for (let col = 0; col < FG.nx; col++) {
+      const i = row * FG.nx + col, s = ST.status[i], px = g.X(FG.xs[col]) - cw / 2, py = g.Y(FG.ys[row]) - cw / 2;
+      let fill;
+      if (s === 1) fill = "#46515c"; else if (s === 2) fill = "#171e25"; else if (s === 3) fill = "#241d2e";
+      else { const P = ST.fav[i] ? MD.near : MD.far, o = F.ih * N + i, v = F.metric === "k" ? P.k[o] : P.count[o]; fill = v ? heatCol(v / max) : "#3a2224"; }
+      lx.fillStyle = fill; lx.fillRect(px, py, cw + 0.6, cw + 0.6);
+      if (s === 0) {
+        if (ST.psi[i] > psiMax) { lx.strokeStyle = "rgba(220,200,255,.6)"; lx.lineWidth = 1; lx.beginPath(); lx.moveTo(px, py + cw); lx.lineTo(px + cw, py); lx.stroke(); }
+        if (F.FI.grid.psi[ST.pi[i]] + 2.5 > swPsi) { lx.strokeStyle = "rgba(255,180,90,.5)"; lx.lineWidth = 1; lx.beginPath(); lx.moveTo(px, py); lx.lineTo(px + cw, py + cw); lx.stroke(); }
+        if (ST.other[i]) { lx.fillStyle = "#f4a43c"; lx.beginPath(); lx.arc(px + cw / 2, py + cw / 2, Math.max(1.2, cw * 0.16), 0, 6.3); lx.fill(); }
+      }
+    }
+    F.layer = { key, cv: L, max };
+  }
+  x.drawImage(F.layer.cv, 0, 0, w, h);
+  x.strokeStyle = "#5a6774"; x.lineWidth = 2; x.strokeRect(g.X(-FLD_X), g.Y(FLD_YC + FLD_X), 2 * FLD_X * g.s, 2 * FLD_X * g.s);
+  x.setLineDash([3, 4]); x.strokeStyle = "rgba(141,156,170,.5)"; x.lineWidth = 1;
+  x.beginPath(); x.moveTo(g.X(-FLD_X), g.Y(FLD_YC)); x.lineTo(g.X(FLD_X), g.Y(FLD_YC)); x.stroke();
+  x.strokeStyle = "#e3eaf0"; x.strokeRect(g.X(-0.4945), g.Y(0.628 + FLD_YC), 0.989 * g.s, 1.256 * g.s); x.setLineDash([]);
+  const gm = IDX.geoms.unfav_t30; let hx0 = 9, hx1 = -9; gm.P0.concat(gm.P1).forEach(p => { hx0 = Math.min(hx0, p[0]); hx1 = Math.max(hx1, p[0]); });
+  [[0, "#e8edf2", "HIVE (up cell)"], [2 * FLD_YC, "#8796a4", "other HIVE"]].forEach(([yy, col, lab]) => {
+    x.fillStyle = col === "#e8edf2" ? "rgba(232,237,242,.30)" : "rgba(135,150,164,.28)"; x.strokeStyle = col; x.lineWidth = 1.5;
+    x.fillRect(g.X(hx0), g.Y(yy + 0.26), (hx1 - hx0) * g.s, 0.52 * g.s); x.strokeRect(g.X(hx0), g.Y(yy + 0.26), (hx1 - hx0) * g.s, 0.52 * g.s);
+    x.fillStyle = col; x.font = MONO(); x.textAlign = "left"; x.fillText(lab, g.X(hx1) + 4, g.Y(yy) + 4);
+  });
+  x.beginPath(); x.arc(g.X(0.401), g.Y(0), 4, 0, 6.3); x.strokeStyle = "#f4c430"; x.lineWidth = 2; x.stroke();
+  x.fillStyle = "rgba(227,234,240,.75)"; x.font = MONO(); x.textAlign = "center";
+  x.fillText("far side (shoot over the HIVE)", g.X(-0.9), g.Y(FLD_YC + FLD_X) + 14); x.fillText("near side", g.X(1.0), g.Y(FLD_YC + FLD_X) + 14);
+  x.textAlign = "left"; x.fillText("A-frame base", g.X(-0.49), g.Y(-0.304) + 13);
+  if (F.info) {
+    const I = F.info, rx = g.X(I.x), ry = g.Y(I.y);
+    x.strokeStyle = "rgba(244,196,48,.7)"; x.lineWidth = 1.5; x.setLineDash([5, 4]); x.beginPath(); x.moveTo(rx, ry); x.lineTo(g.X(0.401), g.Y(0)); x.stroke(); x.setLineDash([]);
+    x.strokeStyle = "#f4c430"; x.lineWidth = 2; x.strokeRect(rx - 0.2285 * g.s, ry - 0.2285 * g.s, 0.457 * g.s, 0.457 * g.s);
+    x.fillStyle = "#f4c430"; x.beginPath(); x.arc(rx, ry, 4, 0, 6.3); x.fill();
+  }
+  F.mapGeomLast = g;
+}
+function drawLegend(max) {
+  const sw = (c, t) => `<span><i style="background:${c}"></i>${t}</span>`;
+  $("fleg").innerHTML = sw(heatCol(0.15), "few") + sw(heatCol(1), `most (${max})`) + sw("#3a2224", "no clean shot") + sw("#46515c", "illegal (A-frame base)") +
+    sw("#171e25", "outside table range (d 0.55-1.75 m)") + sw("#241d2e", "bearing beyond 77.5°") +
+    `<span><i style="background:#2c1f10;border-color:#f4a43c"></i>amber dot: sight line crosses the other HIVE (ASSUMED obstacle)</span>` +
+    `<span><i style="background:linear-gradient(45deg,#1f6b55 46%,#ffb45a 50%,#1f6b55 54%)"></i>diagonal: side wall may block, not modelled, window optimistic (bearing about ${sideWallPsi()}° or more)</span>` +
+    `<span><i style="background:linear-gradient(135deg,#1f6b55 46%,#dcc8ff 50%,#1f6b55 54%)"></i>diagonal: bearing over 60° (extrapolated, ASSUMED)</span>`;
+}
+
+// ---- window chart for the chosen position
+function drawFWin(win, side, kSel) {
+  const cv = $("fwin"), { x, w, h } = setupCanvas(cv);
+  if (w < 20) return;
+  x.fillStyle = "#16212b"; x.fillRect(0, 0, w, h);
+  const GG = F.FI.grid, V = GG.v[side], TH = GG.theta[side], nV = V.length, nT = TH.length, dv = V[1] - V[0], dth = TH[1] - TH[0];
+  const Lm = 44, Rm = 10, Tm = 10, Bm = 34, pw = w - Lm - Rm, ph = h - Tm - Bm;
+  let i0 = nV, i1 = -1, j0 = nT, j1 = -1;
+  if (win) for (let k = 0; k < nV * nT; k++) if (win.clean[k]) { const i = Math.floor(k / nT), j = k % nT; i0 = Math.min(i0, i); i1 = Math.max(i1, i); j0 = Math.min(j0, j); j1 = Math.max(j1, j); }
+  if (i1 < 0) { i0 = 0; i1 = nV - 1; j0 = 0; j1 = nT - 1; } else { i0 = Math.max(0, i0 - 3); i1 = Math.min(nV - 1, i1 + 3); j0 = Math.max(0, j0 - 3); j1 = Math.min(nT - 1, j1 + 3); }
+  const cw = pw / (j1 - j0 + 1), chh = ph / (i1 - i0 + 1);
+  x.fillStyle = "#0b1015"; x.fillRect(Lm, Tm, pw, ph);
+  if (win) for (let k = 0; k < nV * nT; k++) if (win.clean[k]) {
+    const i = Math.floor(k / nT), j = k % nT, t = Math.min(1, (win.sq[k] - 1) / 4);
+    x.fillStyle = `rgb(${Math.round(255 * (0.12 + 0.1 * t))},${Math.round(255 * (0.42 + 0.41 * t))},${Math.round(255 * (0.36 + 0.26 * t))})`;
+    x.fillRect(Lm + (j - j0) * cw, Tm + (i1 - i) * chh, cw + 0.5, chh + 0.5);
+  }
+  x.fillStyle = "#8d9caa"; x.strokeStyle = "#24323f"; x.font = MONO();
+  const spanT = (j1 - j0 + 1) * dth, spanV = (i1 - i0 + 1) * dv, tS = spanT > 20 ? 5 : spanT > 10 ? 2 : spanT > 4 ? 1 : 0.5, vS = spanV > 4 ? 1 : spanV > 2 ? 0.5 : spanV > 1 ? 0.25 : 0.1;
+  x.textAlign = "center";
+  for (let a = Math.ceil((TH[j0] - dth / 2) / tS) * tS; a <= TH[j1] + dth / 2; a += tS) { const px = Lm + (a - TH[j0] + dth / 2) / dth * cw; x.fillText(a.toFixed(tS < 1 ? 1 : 0), px, Tm + ph + 14); x.beginPath(); x.moveTo(px, Tm + ph); x.lineTo(px, Tm + ph + 3); x.stroke(); }
+  x.textAlign = "right";
+  for (let v = Math.ceil((V[i0] - dv / 2) / vS) * vS; v <= V[i1] + dv / 2; v += vS) { const py = Tm + ph - (v - V[i0] + dv / 2) / dv * chh; x.fillText(v.toFixed(vS < 0.5 ? 2 : 1), Lm - 5, py + 4); x.beginPath(); x.moveTo(Lm - 3, py); x.lineTo(Lm, py); x.stroke(); }
+  x.textAlign = "center"; x.fillText("hood / launch angle (° from horizontal; from vertical = 90 minus this)", Lm + pw / 2, h - 5);
+  x.save(); x.translate(11, Tm + ph / 2); x.rotate(-Math.PI / 2); x.fillText("exit speed (m/s)", 0, 0); x.restore();
+  if (win && !win.n) { x.textAlign = "center"; x.fillText("no clean shot here at this height and spin", Lm + pw / 2, Tm + ph / 2); }
+  if (kSel >= 0) {
+    const i = Math.floor(kSel / nT), j = kSel % nT;
+    x.strokeStyle = "#f4c430"; x.lineWidth = 2; x.beginPath(); x.arc(Lm + (j - j0 + 0.5) * cw, Tm + (i1 - i + 0.5) * chh, 6, 0, 6.3); x.stroke();
+  }
+  F.winGeom = { Lm, Tm, pw, ph, cw, chh, i1, j0, side };
+}
+
+// ---- the update: place -> window -> oblique flight -> 3D
+let fScheduled = false;
+function fieldSchedule() { if (fScheduled) return; fScheduled = true; requestAnimationFrame(() => { fScheduled = false; fieldUpdate().catch(e => { console.error(e); setTest({ error: String(e.message || e) }); }); }); }
+function fmtTol(cells, side) { const V = F.FI.grid.v[side], T = F.FI.grid.theta[side]; return cells > 0 ? `±${(cells * (V[1] - V[0])).toFixed(2)} m/s, ±${(cells * (T[1] - T[0])).toFixed(1)}°` : "no margin (single cell)"; }
+function hitDot(s, I, h) { const m = new THREE.Mesh(new THREE.SphereGeometry(0.018, 12, 8), new THREE.MeshBasicMaterial({ color: COL.hit })); m.position.copy(fpoints(s.p, I, h, s.end, 1e9)[1]); fieldGroup.add(m); }
+function drawFloorRobot(I, h) {   // the robot body at the chosen spot, in the shooter frame
+  const bh = Math.max(h - 0.08, 0.12), fw = 0.457;
+  const m = new THREE.Mesh(new THREE.BoxGeometry(fw, bh, fw), new THREE.MeshStandardMaterial({ color: 0x1d2a36, roughness: 0.6, metalness: 0.2 }));
+  m.position.copy(W(-I.d - fw / 2 + 0.06, -I.y, bh / 2)); fieldGroup.add(m);
+  const top = new THREE.Mesh(new THREE.BoxGeometry(fw + 0.004, 0.012, fw + 0.004), new THREE.MeshStandardMaterial({ color: 0x324456 }));
+  top.position.copy(W(-I.d - fw / 2 + 0.06, -I.y, bh)); fieldGroup.add(top);
+}
+async function fieldUpdate() {
+  const tok = ++F.tok, GG = F.FI.grid, FG = F.FI.field_grid;
+  const MD = await loadMapData(); if (tok !== F.tok || !F.on) return;
+  if (F.col < 0) {   // default spot: far side, about 0.9 m out near the up-cell line (else the best-count cell)
+    let c = Math.round((-0.9 - FG.xs[0]) / FG.step), r = Math.round((FLD_YC - 0.1 - FG.ys[0]) / FG.step);
+    if (MD.ST.status[r * FG.nx + c] !== 0) { let b = -1, bi = 0; for (let i = 0; i < MD.ST.N; i++) if (MD.ST.status[i] === 0 && MD.far.count[F.ih * MD.ST.N + i] > b) { b = MD.far.count[F.ih * MD.ST.N + i]; bi = i; } c = bi % FG.nx; r = Math.floor(bi / FG.nx); }
+    F.col = c; F.row = r;
+  }
+  const I = cellInfo(MD, F.col, F.row); F.info = I;
+  const h = GG.h[F.ih], cs = fCur(), spinOn = F.S > 0;
+  drawMap(MD); drawLegend(F.layer.max);
+  $("fmap-cap").textContent = `PREDICTED, not measured. Colour = ${F.metric === "k" ? "tolerance k (side of the largest all-clean square of speed and angle cells)" : "number of clean speed and angle pairs"} at release height ${h} m, backspin ${SPIN_LABEL[String(F.S)]}, ${AERO_NAMES[cs.var] || cs.var} (aero from literature, ASSUMED). Click or drag to place the robot.`;
+  const warn = [];
+  if (I.status === 0 && I.psi > GG.psi_max_model) warn.push(`Bearing ${I.psi.toFixed(0)}° is above 60°: extrapolated, ASSUMED (the base model treats it as infeasible).`);
+  if (I.status === 0 && F.FI.grid.psi[I.pi] + 2.5 > sideWallPsi()) warn.push(`Side wall may block (bearing about ${sideWallPsi()}° or more): not modelled, window optimistic.`);
+  if (I.other) warn.push("The sight line crosses the other HIVE: ASSUMED obstacle. The window ignores it.");
+  $("fwarn").textContent = warn.join("\n");
+  const base = [["Position", `x ${I.x.toFixed(2)} m, y ${I.y.toFixed(2)} m`], ["Side", I.side === "fav" ? "near (mouth faces you)" : "far (mouth faces away)"],
+    ["Distance d to pivot plane", I.d.toFixed(2) + " m"], ["Bearing ψ off the HIVE tipping plane", I.psi.toFixed(1) + "°"]];
+  const dl = rows => { $("fpos").innerHTML = rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join(""); };
+  const pill = (c, t) => `<span class="pill ${c}">${t}</span>`;
+  clearGroup(fieldGroup);
+  if (st.side !== I.side || st.tilt !== "30") { st.side = I.side; st.tilt = "30"; buildHive(); }
+  drawFloorRobot(I, h);
+  if (I.status !== 0) {
+    const msg = { 1: "Illegal: inside the A-frame base footprint.", 2: "Outside the modelled distance range (d 0.55 to 1.75 m).", 3: "Bearing beyond the export (above 77.5°)." }[I.status];
+    dl(base.concat([["Best shot", "none"]])); $("fwarn").textContent = msg; $("fwin-cap").textContent = msg;
+    drawFWin(null, I.side, -1); F.win = null; $("verdict").innerHTML = pill("miss", msg);
+    setTest({ view: "on", pos: `${I.x.toFixed(2)},${I.y.toFixed(2)}`, window: "none", verdict: "unavailable", status: I.status }); return;
+  }
+  const mk = await loadMask(I.side, cs); if (tok !== F.tok || !F.on) return;
+  const win = windowAt(mk, I.side, I.pi, F.ih, I.di); F.win = win;
+  const V = GG.v[I.side], TH = GG.theta[I.side], nT = win.nT;
+  let k = -1;   // chosen shot: clicked square, else the model's best (largest all-clean square), else the highest-clearance clean cell
+  if (F.pick != null && win.clean[F.pick]) k = F.pick;
+  else if (I.count > 0 && I.k > 0) { const iv = V.findIndex(v => Math.abs(v - I.v) < 1e-6), it = TH.findIndex(t => Math.abs(t - I.th) < 1e-6); if (iv >= 0 && it >= 0 && win.clean[iv * nT + it]) k = iv * nT + it; }
+  if (k < 0 && win.n) { let bm = -1; for (let q = 0; q < win.clean.length; q++) if (win.clean[q] && win.margin[q] > bm) { bm = win.margin[q]; k = q; } }
+  drawFWin(win, I.side, k);
+  $("fwin-cap").textContent = `Nearest bins: d ${GG.d[I.di].toFixed(2)} m, ψ ${GG.psi[I.pi]}° off the HIVE tipping plane, release ${h} m. ${win.n} clean squares of ${(V[1] - V[0]).toFixed(2)} m/s × ${(TH[1] - TH[0]).toFixed(1)}°; brighter = holds more error. Click a square to load that shot.`;
+  if (k < 0) {
+    dl(base.concat([["Best shot", "none: no clean shot in the model here"]]));
+    $("verdict").innerHTML = pill("miss", "No clean shot here at this height and spin");
+    setTest({ view: "on", pos: `${I.x.toFixed(2)},${I.y.toFixed(2)}`, window: 0, verdict: "no-window" }); return;
+  }
+  const v = V[Math.floor(k / nT)], th = TH[k % nT], sec = secFor(I.side, I.pi), prm = cs.params;
+  const tolCells = win.sq[k] - 1, spinRpm = F.S * v / IDX.ball_radius * 60 / (2 * Math.PI);
+  dl(base.concat([["Exit speed v", v.toFixed(2) + " m/s"], ["Hood angle", th.toFixed(1) + "° from horizontal · " + (90 - th).toFixed(1) + "° from vertical"],
+    ["Wheel speed (grip " + st.vu.toFixed(2) + ")", Math.round(vToRpm(v)) + " rpm"],
+    ["Ball spin", F.S === 0 ? "none" : Math.round(spinRpm) + " rpm back"], ["Tolerance", fmtTol(tolCells, I.side)],
+    ["Descent angle at the gate", win.ang[k].toFixed(1) + "° from horizontal · " + (90 - win.ang[k]).toFixed(1) + "° from vertical"], ["Clearance", (win.margin[k] * 1000).toFixed(0) + " mm"],
+    ["Clean pairs here", String(win.n)], ["Shot", F.pick != null ? "your pick" : "best (largest all-clean square)"]]));
+  const main = flyF(I, v, th, F.S, prm, sec, h);
+  const verdict = main.r.result === "clean" ? "CLEAN ENTRY" : main.r.result === "hit" ? "TOUCHES " + prettyPart(main.r.hit) : "MISSES";
+  let html = pill(main.r.result === "clean" ? "clean" : main.r.result === "hit" ? "hit" : "miss", `OBLIQUE REPLAY: ${verdict}`) + pill("clean", `window holds ${fmtTol(tolCells, I.side)}`);
+  const pts = fpoints(main.p, I, h, main.end, 6);
+  if (pts.length > 1) fieldGroup.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), Math.min(400, pts.length * 3), 0.0045, 8, false),
+    new THREE.MeshStandardMaterial({ color: COL.pollen, emissive: 0x6a4a00, roughness: 0.4 })));
+  if (main.r.result === "hit") hitDot(main, I, h);
+  let twinV = "none (S = 0 is the no-spin case)";
+  if (spinOn) {   // binding rule: every backspin shot is shown with its S = 0 twin
+    const c0 = fCase(0, F.aero) || fCase(0, "nominal"), tw = flyF(I, v, th, 0, c0.params, sec, h);
+    twinV = tw.r.result === "clean" ? "clean" : tw.r.result === "hit" ? "touches " + prettyPart(tw.r.hit) : "misses";
+    if (F.twin) {
+      const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(fpoints(tw.p, I, h, tw.end, 4)), new THREE.LineDashedMaterial({ color: COL.twin, dashSize: 0.03, gapSize: 0.02 }));
+      l.computeLineDistances(); fieldGroup.add(l);
+      if (tw.r.result === "hit") hitDot(tw, I, h);
+    }
+    html += pill("twin", "no-spin twin (S = 0): " + twinV);
+  }
+  $("verdict").innerHTML = html;
+  let fanN = 0, fanTried = 0;   // a budgeted sample of the clean squares, replayed at this exact spot; only clean replays are drawn
+  if (F.fan) {
+    const cells = []; for (let q = 0; q < win.clean.length; q++) if (win.clean[q]) cells.push(q);
+    const budget = window.matchMedia("(max-width: 700px)").matches ? 45 : 110, step = Math.max(1, Math.ceil(cells.length / budget)), pos = [], col = [];
+    for (let n = 0; n < cells.length; n += step) {
+      const q = cells[n], f = flyF(I, V[Math.floor(q / nT)], TH[q % nT], F.S, prm, sec, h); fanTried++;
+      if (f.r.result !== "clean") continue;
+      fanN++; const t = Math.min(1, (win.sq[q] - 1) / 4), c = [0.12 + 0.1 * t, 0.42 + 0.41 * t, 0.36 + 0.26 * t], pp = fpoints(f.p, I, h, Math.min(f.r.i + 2, f.p.n - 1), 8);
+      for (let a = 0; a + 1 < pp.length; a++) { pos.push(pp[a].x, pp[a].y, pp[a].z, pp[a + 1].x, pp[a + 1].y, pp[a + 1].z); col.push(c[0], c[1], c[2], c[0], c[1], c[2]); }
+    }
+    if (pos.length) {
+      const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+      fieldGroup.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.5, depthWrite: false })));
+    }
+  }
+  let arcN = 0;   // whole-field mode: best-shot arcs from a sparse set of spots (every 0.3 m) on this side
+  if (F.arcs) {
+    const P = I.side === "fav" ? MD.near : MD.far, N = MD.ST.N, pos = [], dots = [];
+    for (let row = 0; row < FG.ny && arcN < 140; row += 6) for (let col = 0; col < FG.nx && arcN < 140; col += 6) {
+      const i = row * FG.nx + col, o = F.ih * N + i;
+      if (MD.ST.status[i] !== 0 || (MD.ST.fav[i] ? "fav" : "unfav") !== I.side || !P.count[o] || !P.k[o]) continue;
+      const J = cellInfo(MD, col, row), f = flyF(J, P.v[o] / 100, P.th[o] / 100, F.S, prm, secFor(I.side, J.pi), h);
+      if (f.r.result !== "clean") continue;
+      arcN++; const pp = fpoints(f.p, J, h, Math.min(f.r.i + 2, f.p.n - 1), 10);
+      for (let a = 0; a + 1 < pp.length; a++) pos.push(pp[a].x, pp[a].y, pp[a].z, pp[a + 1].x, pp[a + 1].y, pp[a + 1].z);
+      dots.push(pp[0].x, 0.02, pp[0].z);
+    }
+    if (pos.length) {
+      const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      fieldGroup.add(new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: COL.pollen, transparent: true, opacity: 0.55 })));
+      const g2 = new THREE.BufferGeometry(); g2.setAttribute("position", new THREE.Float32BufferAttribute(dots, 3));
+      fieldGroup.add(new THREE.Points(g2, new THREE.PointsMaterial({ color: 0xffffff, size: 0.05 })));
+    }
+  }
+  $("fnote").textContent = `3D is drawn in the shooter's frame (near-side positions mirrored). Green fan: ${fanN} of ${fanTried} sampled clean squares also replay clean at this exact spot (sample capped for speed). ` +
+    (F.arcs ? `Yellow arcs: best shot from ${arcN} spots, every 0.3 m on this side. ` : "") + "PREDICTED, not measured.";
+  setTest({ view: "on", pos: `${I.x.toFixed(2)},${I.y.toFixed(2)}`, side: I.side, d: I.d.toFixed(2), psi: I.psi.toFixed(1), window: win.n,
+            shot: `${v.toFixed(2)}@${th.toFixed(1)}`, verdict: main.r.result, twin: twinV, fan: fanN, arcs: arcN, S: F.S });
+}
+
+// ---- field-view UI
+function fseg(el, items, get, set) {
+  el.innerHTML = "";
+  items.forEach(([val, label]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = label; b.dataset.v = val; b.addEventListener("click", () => { set(val); F.pick = null; fsync(); fieldSchedule(); }); el.appendChild(b); });
+  el._get = get;
+}
+function fsync() {
+  ["fh-seg", "fs-seg", "fvu-seg", "fmetric-seg"].forEach(id => { const el = $(id); el.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === String(el._get())))); });
+  if (!fCase(F.S, F.aero)) F.aero = "nominal";
+  const sel = $("faero"); sel.innerHTML = "";
+  F.FI.cases.filter(c => c.S === F.S).forEach(c => { const o = document.createElement("option"); o.value = c.var; o.textContent = AERO_NAMES[c.var] || c.var; sel.appendChild(o); });
+  sel.value = F.aero;
+}
+function fieldInit() {
+  const GG = F.FI.grid, Ss = Array.from(new Set(F.FI.cases.map(c => c.S))).sort((a, b) => a - b);
+  F.ih = GG.h.length - 1;
+  fseg($("fh-seg"), GG.h.map((h, i) => [i, h + " m"]), () => F.ih, v => { F.ih = +v; });
+  fseg($("fs-seg"), Ss.map(s => [s, SPIN_LABEL[String(s)] || String(s)]), () => F.S, v => { F.S = +v; });
+  fseg($("fvu-seg"), IDX.v_over_u.map(r => [r, r.toFixed(2)]), () => st.vu, v => { st.vu = +v; });
+  fseg($("fmetric-seg"), [["count", "clean-shot count"], ["k", "tolerance k"]], () => F.metric, v => { F.metric = v; });
+  $("faero").addEventListener("change", e => { F.aero = e.target.value; F.pick = null; fieldSchedule(); });
+  [["fc-fan", "fan"], ["fc-twin", "twin"], ["fc-arcs", "arcs"]].forEach(([id, key]) => $(id).addEventListener("change", e => { F[key] = e.target.checked; fieldSchedule(); }));
+  const fm = $("fmap"); let down = false;
+  const place = e => {
+    if (!F.mapGeomLast) return;
+    const r = fm.getBoundingClientRect(), g = mapGeom(r.width, r.height), FG = F.FI.field_grid;
+    const col = Math.round((g.ix(e.clientX - r.left) - FG.xs[0]) / FG.step), row = Math.round((g.iy(e.clientY - r.top) - FG.ys[0]) / FG.step);
+    if (col < 0 || col >= FG.nx || row < 0 || row >= FG.ny || (col === F.col && row === F.row)) return;
+    F.col = col; F.row = row; F.pick = null; fieldSchedule();
+  };
+  fm.addEventListener("pointerdown", e => { down = true; try { fm.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ } place(e); });
+  fm.addEventListener("pointermove", e => { if (down) place(e); });
+  ["pointerup", "pointercancel"].forEach(n => fm.addEventListener(n, () => { down = false; }));
+  const fw = $("fwin"), cellAt = e => {
+    const g = F.winGeom; if (!g || !F.win) return null;
+    const r = fw.getBoundingClientRect(), px = e.clientX - r.left, py = e.clientY - r.top;
+    if (px < g.Lm || px > g.Lm + g.pw || py < g.Tm || py > g.Tm + g.ph) return null;
+    return { i: g.i1 - Math.floor((py - g.Tm) / g.chh), j: g.j0 + Math.floor((px - g.Lm) / g.cw) };
+  };
+  fw.addEventListener("mousemove", e => {
+    const c = cellAt(e); if (!c) { tip.hidden = true; return; }
+    const GG2 = F.FI.grid, sd = F.winGeom.side, k = c.i * F.win.nT + c.j, ok = F.win.clean[k];
+    tip.hidden = false; tip.style.left = (e.clientX + 14) + "px"; tip.style.top = (e.clientY + 12) + "px";
+    tip.textContent = `${GG2.v[sd][c.i].toFixed(2)} m/s (${Math.round(vToRpm(GG2.v[sd][c.i]))} rpm) · ${GG2.theta[sd][c.j].toFixed(1)}° · ` + (ok ? `clean, holds ${fmtTol(F.win.sq[k] - 1, sd)}` : "not clean");
+  });
+  fw.addEventListener("mouseleave", () => { tip.hidden = true; });
+  fw.addEventListener("click", e => { const c = cellAt(e); if (!c) return; const k = c.i * F.win.nT + c.j; if (F.win.clean[k]) { F.pick = k; fieldSchedule(); } });
+  $("fprov").textContent = F.FI.label + " " + Object.keys(F.FI.provenance).map(k => k + ": " + F.FI.provenance[k]).join("; ") +
+    ". More backspin is not always better: spin lift saturates. A clean entry means air-only entry without touching the HIVE; bounces are not modelled.";
+  fsync();
+  F.ready = true;
+}
+const PLANE_OBJS = () => [robot, shotGroup, fanGroup, standGroup, ball, twinBall, hitMark, twinHitMark];
+async function setMode(m) {
+  const field = m === "field";
+  syncSeg($("mode-seg"), () => m);
+  if (field === F.on) return;
+  if (field) {
+    F.on = true; anim = null; F.saved = { side: st.side, tilt: st.tilt };
+    $("prail").hidden = true; $("plane-charts").hidden = true; $("frail").hidden = false; $("fsec").hidden = false;
+    PLANE_OBJS().forEach(o => { o.visible = false; }); fieldGroup.visible = true; $("verdict").innerHTML = "";
+    try { await loadFI(); if (!F.ready) fieldInit(); if (!F.on) return; } catch (e) {
+      F.on = false; $("frail").hidden = true; $("fsec").hidden = true; $("prail").hidden = false; $("plane-charts").hidden = false;
+      PLANE_OBJS().forEach(o => { o.visible = true; }); fieldGroup.visible = false; syncSeg($("mode-seg"), () => "plane");
+      $("loading").hidden = false; $("loading").textContent = "Field data not found (" + e.message + "). Showing the single-plane view.";
+      setTimeout(() => { $("loading").hidden = true; }, 4000); F.fiP = null; setTest({ view: "error", error: e.message }); refresh(); return;
+    }
+    camera.position.copy(W(-3.6, -3.2, 2.7)); controls.target.copy(W(-0.1, 0, 0.5)); controls.update();
+    await fieldUpdate();
+  } else {
+    F.on = false; $("frail").hidden = true; $("fsec").hidden = true; $("prail").hidden = false; $("plane-charts").hidden = false;
+    fieldGroup.visible = false; PLANE_OBJS().forEach(o => { o.visible = true; });
+    if (F.saved) { st.side = F.saved.side; st.tilt = F.saved.tilt; }
+    buildHive(); refresh(); view("iso");
+  }
 }
 
 // ---------------------------------------------------------------- boot
@@ -929,6 +1386,9 @@ async function boot() {
     for (let k = 0; k < NH; k++) { const dist = Math.abs(data.count[k * ND + id] - n); if (dist < bd) { bd = dist; ih = k; } }
     st.d = G.d[id]; st.ih = ih; refresh();
   });
+  $("mode-seg").querySelectorAll("button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.v)));
+  syncSeg($("mode-seg"), () => "plane");
+  if (/field/.test(location.hash + location.search)) setTimeout(() => setMode("field"), 0);
   $("prov").textContent = "Data: " + IDX.label + ". Flight integrator: " + IDX.integrator.method + ", dt " + IDX.integrator.dt + " s.";
   // open on the CAD-card spot: h 0.737 m, d 0.75 m, backspin S 1.0, most forgiving shot there
   st.ih = NH - 1; st.d = 0.75;
