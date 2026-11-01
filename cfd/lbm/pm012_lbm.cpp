@@ -123,8 +123,10 @@ static void usage() {
 		"  rotstokes: uw=0.005 wall speed omega R, nu=0.2 (finest level)   platform=0 device=0 (GPU index on that OpenCL platform)\n"
 		"  grid refinement: lv=1 number of levels (1 = uniform grid; 2..4 nested boxes around the body, factor 2 each).\n"
 		"    D is the FINEST level's cells per diameter; Lx,Ly,Lz,xc describe the coarsest level (level 0, D/2^(lv-1)).\n"
-		"    fb=0.7,1.5,0.7 finest box in D around the body centre: upstream, downstream, lateral half width (rotstokes 0.8,0.8,0.8)\n"
-		"    gb=0.5,1.0,0.4 added per coarser refined level   plan=1 print levels, cells and memory, then exit (no GPU)\n"
+		"    fb=1.5,2.5,1.5 finest box: upstream, downstream, lateral HALF WIDTH in D from the body centre, so the gap to the\n"
+		"      surface is fb - 0.5 D (rotstokes 0.8,0.8,0.8). Narrower boxes (0.7 and 1.2 lateral) biased the forces.\n"
+		"    gb=0.25,1.0,0.25 added per coarser refined level (lv=3 in the 6x4x4 D box needs D >= 64)\n"
+		"    plan=1 print levels, cells, gaps and memory, then exit (no GPU)\n"
 		"  body=none (no body: uniform-flow check) or body=masstest (closed box with bounce-back walls: total-mass check)\n"
 		"  seed=0 offset of the initial-noise hash\n"
 		"  hole and cavity diagnostics (sphere and stl): holes=<holes.json of stl_holes.py> (hole axes, CAD frame)\n"
@@ -315,7 +317,14 @@ int main(int argc, char** argv) {
 		if (s.empty()) return;
 		if (sscanf(s.c_str(), "%lf,%lf,%lf", &v[0], &v[1], &v[2]) != 3 || v[0] <= 0 || v[1] <= 0 || v[2] <= 0) die("%s needs three positive numbers a,b,c", k);
 	};
-	const double fb_def[3] = { stokes ? 0.8 : 0.7, stokes ? 0.8 : 1.5, stokes ? 0.8 : 0.7 }, gb_def[3] = { 0.5, 1.0, 0.4 };
+	// fb is a half width from the body centre. The first default 0.7,1.5,0.7 left only 0.2 D between the surface and the
+	// coarse level upstream and sideways, which biased Cd, Cl and the sign of CM against the uniform grid (review A/B).
+	// 1.2 sideways (gap 0.7 D) still raised the S 0 Cd by 5-9 % (D 64 lv 3, D 48 lv 2). 1.5,2.5,1.5 (gap 1.0 D) matched
+	// the uniform grid in Cd, Cl and CM at S 0 and S 0.5 at D 64 lv 3; at D 48 lv 2 it matched at S 0.5 and in Cd at S 0,
+	// and its S 0 Cl and CM miss over t* 15-40 is smaller than the miss between two uniform runs with different noise
+	// seeds. The A/B at the production D 128 decides (cfd/README.md, "Finest-box bias"). gb 0.25 sideways keeps lv 3
+	// inside the 6x4x4 D box down to D 64.
+	const double fb_def[3] = { stokes ? 0.8 : 1.5, stokes ? 0.8 : 2.5, stokes ? 0.8 : 1.5 }, gb_def[3] = { 0.25, 1.0, 0.25 };
 	double fb[3], gb[3];
 	triple("fb", fb_def, fb);
 	triple("gb", gb_def, gb);
@@ -471,6 +480,12 @@ int main(int argc, char** argv) {
 		need / 1048576.0, maxbuf / 1048576.0, upd * 1e-6, (double)std::min({ lo[0], lo[1], lo[2] }), (double)std::min({ (int)Nx - 1 - hi[0], (int)Ny - 1 - hi[1], (int)Nz - 1 - hi[2] }));
 	printf("  finest dx = D/%g: %.2f-%.2f cells across a 10.2-11.2 mm hole, %.2f cells across the 1.778 mm wall (POLLEN scale)\n",
 		D, 10.2 * D / 71.12, 11.2 * D / 71.12, 1.778 * D / 71.12);
+	{ // gap between the nominal sphere surface (radius D/2) and the faces of the finest level (the whole domain if lv=1)
+		const double gu = (cc[0] + 0.5 - R) / D, gd = ((double)Nx - 0.5 - cc[0] - R) / D;
+		const double gl = std::min({ cc[1] + 0.5 - R, (double)Ny - 0.5 - cc[1] - R, cc[2] + 0.5 - R, (double)Nz - 0.5 - cc[2] - R }) / D;
+		printf("  finest %s: gap from the body surface %.2f D upstream, %.2f D downstream, %.2f D lateral%s\n",
+			L > 1 ? "box" : "level (uniform grid: the domain)", gu, gd, gl, L > 1 ? " (fb - 0.5 D)" : "");
+	}
 	printf("need_mib=%.0f\n", need / 1048576.0 + 64.0);
 	fflush(stdout);
 	if (plan) return 0;
@@ -920,10 +935,15 @@ int main(int argc, char** argv) {
 			}
 			const uint32_t X = lv[l].n[0], Y = lv[l].n[1];
 			const unsigned ix = (unsigned)(imax % X), iy = (unsigned)((imax / X) % Y), iz = (unsigned)(imax / ((size_t)X * Y));
-			fprintf(fo, "# field field_level=%d field_cells=%llu max_abs_rho_minus_1=%.6e mean_rho_minus_1=%.6e max_abs_u_minus_uin=%.6e field_at=%u,%u,%u\n", l,
+			// max_abs_u_minus_uin is in lattice units; the _over_uin key divides it by the inflow speed u_in (absent when u_in = 0)
+			const double uin = mtest ? 0.0 : u;
+			fprintf(fo, "# field field_level=%d field_cells=%llu max_abs_rho_minus_1=%.6e mean_rho_minus_1=%.6e max_abs_u_minus_uin=%.6e field_at=%u,%u,%u", l,
 				(unsigned long long)cnt, mr, cnt ? sr / cnt : 0.0, mu, ix, iy, iz);
-			printf("field L%d: max|rho-1| %.3e, mean rho-1 %.3e, max|u-u_in| %.3e (u_in %g) at cell %u,%u,%u (flags %u)\n", l, mr, cnt ? sr / cnt : 0.0,
-				mu, mtest ? 0.0 : u, ix, iy, iz, (unsigned)fg[imax]);
+			if (uin > 0.0) fprintf(fo, " max_abs_u_minus_uin_over_uin=%.6e", mu / uin);
+			fprintf(fo, "\n");
+			printf("field L%d: max|rho-1| %.3e, mean rho-1 %.3e, max|u-u_in| %.3e lattice units", l, mr, cnt ? sr / cnt : 0.0, mu);
+			if (uin > 0.0) printf(" = %.3e u_in", mu / uin);
+			printf(" (u_in %g) at cell %u,%u,%u (flags %u)\n", uin, ix, iy, iz, (unsigned)fg[imax]);
 		}
 		if (mtest) {
 			double m = 0.0;

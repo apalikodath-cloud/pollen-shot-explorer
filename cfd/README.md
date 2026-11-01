@@ -21,7 +21,7 @@ choice), USER (given by the team), CONFIRMED (from official CAD), derived (compu
   published; they are not in this repo's history.
 - Inputs keep their own labels (table "Inputs"). Run times and speeds are read from the run logs (derived).
 
-## Status (2026-10-31 14:09)
+## Status (2026-10-31 14:20)
 
 - **Not released.** No CFD number may replace an ASSUMED value in the model. `cfd_aero.json` records the same
   status and holds no POLLEN values.
@@ -36,7 +36,8 @@ choice), USER (given by the team), CONFIRMED (from official CAD), derived (compu
   0.497 (BGK, D 94, stationary): inside the band, but T 55 < 150, so it does not pass, and its box correction is
   ASSUMED for BGK. A gate-length run at D 94 or on the refined grid is needed before V1 can pass.
 - **CM and k (spin decay): not usable until the torque gate passes** (section "Torque gate", pre-registered
-  2026-10-31 13:47). The spinning runs give CM near 0 (D 48) or a CM with the sign of a driving torque (D 96). The review
+  2026-10-31 13:47). The spinning runs give CM near 0 (D 48) or a CM with the sign of a driving torque (D 96, refined
+  grid with the old finest box, which biases CM: section "Finest-box bias"). The review
   re-derived the moving-wall term, the torque Ty and the CM formula and found them correct. The gate rule applied to
   the D 48 V2 run fails: CM +0.00004 against 0.0047-0.0079, and the CM window is not stationary (PREDICTED; a
   diagnostic, because D 48 is not the release grid). No CM or k from this folder may be used, quoted or matched
@@ -51,7 +52,10 @@ choice), USER (given by the team), CONFIRMED (from official CAD), derived (compu
   is in the band, but its Cl window and the seed-0 twin's Cl window are not stationary, and u_win(Cl) + L_twin is
   0.073 > 0.055 (PREDICTED).
 - Runs with local grid refinement (option `lv=` 2 or more) are described in "Local grid refinement". The same
-  binding rule applies to them, including T >= 150.
+  binding rule applies to them, including T >= 150. The first default finest box biased Cd, Cl and CM, so the refined
+  V1 and V2 rows (lv 3 D 96) are superseded. New box fb 1.5 / 2.5 / 1.5 D; production grid lv 3 D 128. The box A/B at
+  D 128 (refined against uniform; the S 0 uniform reference with noise seeds 0 and 104729) and the V1 and V2 reruns at
+  lv 3 D 128 are queued; every refined production case is held until they pass (section "Finest-box bias").
 
 ## Acceptance (binding)
 
@@ -92,6 +96,11 @@ and `match` apply it.
 T 55; about +0.0012 at uniform D 64; +0.0020 (u_win 0.0006) at refined D 64 with the new finest box. A laminar
 estimate gives 0.003-0.006. The wall layer is thin: D / sqrt(Re) is 0.26 cells at D 48 and 0.53 at D 96. The
 moving-wall term, Ty and the CM formula were re-derived and found correct.
+
+*Note 2026-10-31 (added after pre-registration; the text above is unchanged):* the +0.0020 (u_win 0.0006) at refined D 64
+came from the run with finest box fb 1.2 / 2.5 / 1.2 (ab_r64l3_S0.5_fb1.2), not from the adopted box. The same case with the
+adopted box fb 1.5 / 2.5 / 1.5 (ab_r64l3_S0.5_fb1.5) gives CM +0.0017 (u_win 0.0010), t* 15-40 (PREDICTED). The pass band
+0.0047-0.0079 is unchanged.
 
 **Case.** Smooth analytic sphere (`body=sphere`), Re 33057, S 0.5, BGK, FP16, Cs 0.1, u 0.05 (tau 0.50022 at D 48,
 0.50029 at D 64, 0.50044 at D 96), T >= 150, window t* 15 to the end, on the release grid and box (the grid, `lv`,
@@ -210,22 +219,32 @@ around the ball. Own code in `cfd/lbm/`, following the published method of Rohde
   pulls from outside its box come from the parent cell they lie in (uniform explosion); after its first sub-step the
   fine level is summed back into the covered parent cells (coalescence). No non-equilibrium rescaling.
 - The body, the moving-wall term, the STL re-voxelisation of a spinning ball and the momentum-exchange force all live
-  on the finest level only. The finest box must hold the whole shell and the hollow inside (default margin
-  0.7 D upstream, 1.5 D downstream, 0.7 D sideways; each coarser refined level adds 0.5 / 1.0 / 0.4 D).
+  on the finest level only. The finest box must hold the whole shell and the hollow inside, with room to spare.
+- Box size: `fb` (finest box) and `gb` (added per coarser refined level) are **half widths measured from the body
+  centre**, upstream / downstream / lateral. The gap between the ball's surface and the next coarser level is
+  therefore fb - 0.5 D. Default since the 2026-10-31 review: fb 1.5 / 2.5 / 1.5 D (gap 1.0 / 2.0 / 1.0 D) and
+  gb 0.25 / 1.0 / 0.25 D. The first default, fb 0.7 / 1.5 / 0.7 D, left a gap of only 0.2 / 1.0 / 0.2 D and biased
+  Cd, Cl and CM; fb 1.2 sideways (gap 0.7 D) still raised the S 0 Cd by 5-9 % (section "Finest-box bias" below).
+  `plan=1` prints the gaps.
 
 **Options.** `lv=1` (uniform, the old behaviour) to 4; `fb=up,down,side` finest box; `gb=up,down,side` growth per
-coarser level; `plan=1` prints per-level cells and memory, cells across a hole and across the wall, and
+coarser level; `plan=1` prints per-level cells and memory, cells across a hole and across the wall, the gaps and
 `need_mib=` for a queue, then exits without the GPU; `body=none` (uniform-flow check) and `body=masstest` (closed box,
-total mass) are checks. `lv=3 D=192` (box 6x4x4 D) needs about 4.3 GB in FP16 (derived, solver plan):
+total mass) are checks. The production grid is `lv=3 D=128` in the 6x4x4 D box with the default `fb` and `gb`; it
+needs 7077 MiB in FP16 (derived, solver plan):
 
-| Level | D | Cells | Memory (FP16) |
-|---|---|---|---|
-| L0 | 48 | 288x192x192 = 10.6 M | 780 MiB |
-| L1 | 96 | 356x212x212 = 16.0 M | 1175 MiB |
-| L2 | 192 | 424x272x272 = 31.4 M | 2304 MiB |
+| Level | D | Cells | Box (D) | Memory (FP16) |
+|---|---|---|---|---|
+| L0 | 32 | 192x128x128 = 3.15 M | 6.00 x 4.00 x 4.00 (domain) | 231 MiB |
+| L1 | 64 | 336x224x224 = 16.9 M | 5.25 x 3.50 x 3.50 | 1238 MiB |
+| L2 | 128 | 512x384x384 = 75.5 M | 4.00 x 3.00 x 3.00 | 5544 MiB |
 
-The finest D 192 gives 27.5-30.2 cells across a hole and 4.8 across the wall (derived; D 94 uniform gave 13-15 and
-2.35). A uniform D 192 grid would need about 680 M cells, which does not fit. `lv=3 D=96` uses 0.54 GB.
+The finest D 128 gives 18.4-20.2 cells across a hole and 3.2 across the wall (derived; D 94 uniform gave 13-15 and
+2.35). With the default box, `lv=3` needs 941 MiB at D 64, 3023 at D 96, 7077 at D 128, 10049 at D 144, 13761 at
+D 160 and 23733 at D 192 (12 GB card). D 128 is also the finest D at which the uniform reference for the box A/B still
+fits: 8553 MiB in a reduced 4.5 x 3.5 x 3.5 D domain (a uniform D 128 grid in the full box needs 14848 MiB). Cost
+(derived): 2.17e11 cell updates per t*, about 7 h for T 150 and 2.6 h for T 55 at 1300 MLUPs (about 11 h and 4 h at
+800 MLUPs on the shared card).
 
 **Hole and cavity diagnostics** (`holes=<file from stl_holes.py>`, sphere or STL). New `# dg ...` lines after every
 CSV row and a `# dg_avg ...` footer (t* >= 15); the existing keys are unchanged.
@@ -249,30 +268,106 @@ CSV row and a `# dg_avg ...` footer (t* >= 15); the existing keys are unchanged.
 | Check | Result | Target |
 |---|---|---|
 | Total mass, closed box, lv 2 D 32 and lv 3 D 64, FP32 | relative change 2.2e-9 and -1.5e-9 (largest 3.5e-9) | round-off |
-| Uniform flow, no body, lv 3 D 64, BGK | FP16 noise max \|u - U\|/U 4.5e-4 = same as the uniform grid (4.6-5.2e-4); FP32, no noise: max \|u - U\|/U 9.2e-6 and \|rho - 1\| 1.5e-6 at t* 12 on every level | no growth at the interfaces |
-| Uniform flow, no body, regularized collision, Re 3e4 | lv 3 FP32 grows: 8.6e-4 (t* 3), 3.3e-2 (t* 6), 3.9e-2 (t* 12), first at the upstream face of the finest box. The **uniform** grid does the same (D 16: 3.9e-3 at t* 12, 3.95e-2 at t* 24; D 32: 3.9e-2 at t* 12; also with Cs 0); stable at u 0.02 (6e-7) and at Re 3000 (7.6e-6) | **fails**; see below |
+| Uniform flow, no body, lv 3 D 64, BGK (max \|u - u_in\| in lattice units, then as a fraction of u_in = 0.05) | FP16 noise: 4.5e-4 = 0.9 % of u_in, the same as the uniform grid (4.6-5.2e-4 = 0.9-1.0 %); FP32, no noise: 9.2e-6 = 1.8e-4 of u_in, and \|rho - 1\| 1.5e-6, at t* 12 on every level | no growth at the interfaces |
+| Uniform flow, no body, regularized collision, Re 3e4 (max \|u - u_in\|, lattice units; u_in 0.05 unless noted) | lv 3 FP32 grows: 8.6e-4 = 1.7 % of u_in (t* 3), 3.3e-2 = 0.66 u_in (t* 6), 3.9e-2 = 0.78 u_in (t* 12), first at the upstream face of the finest box. The **uniform** grid does the same (D 16: 3.9e-3 = 7.8 % at t* 12, 3.95e-2 = 0.79 u_in at t* 24; D 32: 3.9e-2 = 0.78 u_in at t* 12; also with Cs 0); stable at u_in 0.02 (6.4e-7 = 3.2e-5 of u_in) and at Re 3000 (7.6e-6 = 1.5e-4 of u_in) | **fails**; see below |
 | Old uniform runs (`lv=1`) with the new code | 192 CSV rows: forces and Cd, Cy, Cl bit-identical; torques differ by at most 1.2e-7 (lattice units; summation order of the force split) | same as before |
 | V0 rotating sphere, Stokes torque, lv 2 D 32 FP32 | 1.0286 x analytic; uniform grid 1.0264 (+0.2 %) | 0.97-1.10 |
 | Sphere Re 100, lv 2 D 32 FP32 | Cd 1.2013; uniform grid 1.1890 (+1.0 %) | within a few % of the uniform grid |
 | Diagnostics unit check: closed smooth sphere, S 0.5, lv 2 D 32, `holes=` given | hole flux 0, cavity 0 cells, inner and hole-wall force 0, outer part = total (Cd 0.654) | exactly that |
 | Diagnostics, spinning POLLEN STL (hole facing the flow), S 0.5, lv 2 D 96, t* 3 (smoke test) | STL volume ratio 1.0005, odd rays 0; 371,848 cavity cells; hole fluxes non-zero; at t* 3 Cd split outer / inner / hole walls 0.567 / 0.067 / 0.065, sum = total to 1e-6 | runs; not a result |
-| **V1** smooth sphere Re 33057, S 0, lv 3 D 96, BGK FP16, box 6x4x4, T 55, mean t* 15-55 | Cd 0.553 (se 0.004, half-window drift -0.011); Cl -0.004, Cy -0.023 | Binding V1 (section "Acceptance"): box-corrected Cd 0.540 (x 0.976), +19 % against 0.453, outside 0.43-0.50, and T 55 < 150: **fail**. (The "30 %" band first used here is withdrawn.) Uniform BGK D 80 same box: Cd 0.539, Cl 0.104 |
-| **V2** smooth sphere Re 33057, S 0.5, same grid | Cl 0.220 (se 0.007, drift +0.012), Cd 0.510, CM not usable (torque check pending); S 0 twin above: Cl -0.004, Cd 0.553 | Binding V2: Cl 0.2197 is just below 0.22, and T 55 < 150: **fail**. Twin lateral L 0.024, u_win(Cl) + L 0.034 <= 0.055. CM: not usable: torque check pending |
+| **V1** (superseded: box-biased) smooth sphere Re 33057, S 0, lv 3 D 96, BGK FP16, box 6x4x4, **old finest box** fb 0.7 / 1.5 / 0.7, T 55, mean t* 15-55 | Cd 0.553 (se 0.004, half-window drift -0.011); Cl -0.004, Cy -0.023 | Binding V1 (section "Acceptance"): box-corrected Cd 0.540 (x 0.976), +19 % against 0.453, outside 0.43-0.50, and T 55 < 150: **fail**. (The "30 %" band first used here is withdrawn.) Uniform BGK D 80 same box: Cd 0.539, Cl 0.104. **Box-biased** (section "Finest-box bias"): superseded until the rerun with the new box |
+| **V2** (superseded: box-biased) smooth sphere Re 33057, S 0.5, same grid and old box | Cl 0.220 (se 0.007, drift +0.012), Cd 0.510, CM -0.014 (not usable, see the last column); S 0 twin above: Cl -0.004, Cd 0.553 | Binding V2: Cl 0.2197 is just below 0.22, and T 55 < 150: **fail**. Twin lateral L 0.024, u_win(Cl) + L 0.034 <= 0.055. CM < 0 means the air would spin the ball up, which is unphysical; the spin-decay formula would turn it into a negative k. The sign comes from the old box (section "Finest-box bias"). **Box-biased**: superseded until the rerun with the new box |
 
-All numbers in this table are PREDICTED (own solver; smooth sphere: validation only, not POLLEN). The V1 and V2
-grid study continues at finest D 192 (lv 3, queued); D 384 does not fit in 12 GB (lv 4: 31 GiB with these boxes,
-15 GiB even with tight boxes).
+All numbers in this table are PREDICTED (own solver; smooth sphere: validation only, not POLLEN). V1 and V2 are
+rerun at lv 3 D 128 with the new box (queued, T 150), behind the box A/B at D 128 (section "Finest-box bias"; queue order changed 2026-10-31 14:40 so all five A/B runs start
+before v1_ref_d128 and v2_ref_d128_S0.5). The
+planned D 192 grid no longer fits with the wider box (23.2 GiB at lv 3).
 
 **Collision: BGK for production.** The regularized collision (`coll=reg`) is unstable in plain uniform flow at
 tau close to 0.5 with u 0.05 (table above), on the uniform grid as well as the refined one, with or without the
 Smagorinsky term. That fits its high sphere Cd (0.67-0.70 against 0.54-0.56 for BGK). All refined and production runs
 use `coll=bgk`.
 
-No POLLEN number from the refined solver exists yet. Queued after V1 and V2 at D 192 (same configuration, refined
-lv 3 D 192 BGK): POLLEN hole facing the flow and between holes at S 0 and S 0.5; 8 random orientations at S 0 and 4
-of them at S 1.0 (7 m/s); between holes at S 0 and S 1.0 at 4 and 10 m/s. Every spin case has its no-spin twin and a
-smooth-sphere twin on the same grid. Estimated cost (derived): about 3 h per case at D 192 on the RTX 3060, more
-for spinning POLLEN (re-voxelisation).
+No POLLEN number from the refined solver exists yet. The production cases are **held**, not queued, until both D 128
+box A/B pairs match and V1 and V2 pass at lv 3 D 128 with the new box (same configuration, BGK); spinning cases also
+wait for the torque gate. They are: POLLEN hole facing the flow and between holes at S 0 and S 0.5; 8 random
+orientations at S 0 and 4 of them at S 1.0 (7 m/s); between holes at S 0 and S 1.0 at 4 and 10 m/s, all at T 55.
+Every spin case has its no-spin twin and a smooth-sphere twin on the same grid. Estimated cost (derived): about 2.6 h
+per case at 1300 MLUPs (about 4 h at 800 MLUPs on the shared card), more for spinning POLLEN (re-voxelisation).
+
+### Finest-box bias (PREDICTED)
+
+The body force lives on the finest level only, but the flow next to the ball still feels where the coarse level
+starts. The review compared the refined grid with the uniform grid at the same finest D and found that the first
+default box (fb 0.7 / 1.5 / 0.7, gap 0.2 D upstream and sideways) biased all three coefficients: at D 32, lv 2,
+S 0.5, t* 15-40, uniform / old box / wide box (fb 1.5 / 3.5 / 1.5, a 5 x 3 x 3 D finest box; not the adopted
+1.5 / 2.5 / 1.5) gave Cd 0.601 / 0.613 / 0.604 (PREDICTED), Cl 0.284 / 0.176 / 0.278 and CM +0.0013 / -0.0173 /
++0.0008. The same three at S 0 gave Cd 0.5685 / 0.7132 / 0.5701 (PREDICTED), so the +25 % old-box Cd bias is an S 0
+result (+2 % at S 0.5, inside the Cd window uncertainty); at S 0.5 the old box shows in Cl and CM. The V1 and V2 rows
+above used that box, and the V2 CM of -0.014 (CM < 0, unphysical) is the same effect. The review re-derived the moving-wall term, the torque Ty and the CM formula and found them correct.
+
+Box A/B: refined minus uniform at the same finest D, same 6x4x4 D domain and settings (BGK, FP16, Re 33057), T 40,
+window t* 15-40, judged with `postprocess.py match` (both windows stationary and |difference| <= max(t95
+sqrt(se_a^2 + se_b^2), floor)). Uniform references: D 64 runs of T 55 (S 0) and T 40 (S 0.5), D 48 runs of T 150,
+all read over t* 15-40.
+
+| Finest D, levels | fb up / down / side (gap to the surface, D) | S | dCd (tol) | dCl (tol) | dCM (tol) | Match |
+|---|---|---|---|---|---|---|
+| 64, lv 3 | 1.2 / 2.5 / 1.2 (0.7 / 2.0 / 0.7) | 0 | +0.028 (0.014) | +0.082 (0.090) | -0.0011 (0.0026) | **no**: Cd |
+| 64, lv 3 | 1.2 / 2.5 / 1.2 | 0.5 | +0.007 (0.013) | +0.001 (0.026) | -0.0003 (0.0015) | **no**: refined Cd window not stationary |
+| 64, lv 3 | 1.5 / 2.5 / 1.5 (1.0 / 2.0 / 1.0) | 0 | +0.007 (0.015) | +0.014 (0.113) | 0.0000 (0.0015) | yes |
+| 64, lv 3 | 1.5 / 2.5 / 1.5 | 0.5 | +0.004 (0.012) | -0.005 (0.030) | -0.0006 (0.0018) | yes |
+| 48, lv 2 | 1.2 / 2.5 / 1.2 | 0 | +0.034 (0.020) | +0.106 (0.055) | -0.0014 (0.0013) | **no**: all three |
+| 48, lv 2 | 1.2 / 2.5 / 1.2 | 0.5 | +0.003 (0.026) | -0.037 (0.033) | +0.0004 (0.0025) | **no**: Cl |
+| 48, lv 2 | 1.2 / 3.5 / 1.2 | 0 | +0.050 (0.026) | +0.158 (0.045) | -0.0032 (0.0013) | **no**: all three |
+| 48, lv 2 | 1.5 / 2.5 / 1.5 | 0 | -0.0003 (0.017) | +0.165 (0.068) | -0.0039 (0.0016) | **no**: Cl and CM |
+| 48, lv 2 | 1.5 / 2.5 / 1.5 | 0.5 | +0.012 (0.023) | -0.006 (0.030) | -0.0005 (0.0022) | yes |
+| 48, lv 2 | 1.5 / 3.5 / 1.5 | 0 | -0.002 (0.029) | +0.0001 (0.064) | -0.0006 (0.0021) | yes |
+| 48, lv 2 | 1.5 / 3.5 / 1.5 | 0.5 | +0.008 (0.021) | +0.007 (0.032) | +0.0001 (0.0021) | yes |
+
+Reading (PREDICTED, derived from the table):
+- The sideways gap sets the drag: with 0.7 D the S 0 Cd is 5-9 % high at both D, and a longer wake box does not help
+  (1.2 / 3.5 / 1.2 is worse). A gap of 1.0 D matches Cd in every pair.
+- At S 0 the lateral force and the torque of a smooth sphere average to zero; over 25 t* they follow the wake's slow
+  side-to-side swing, so they are the most sensitive part of the test. At D 48 (lv 2: the coarse level behind the box
+  is D 24) the 2.5 D box missed Cl and CM at S 0 over t* 15-40, but two uniform runs that differ only in the start
+  noise miss each other by more, and the refined run matches the seed-104729 run in all three (table below). At D 64
+  (lv 3) the 2.5 D box matched all three at S 0 and S 0.5.
+- New default: fb 1.5 / 2.5 / 1.5, gb 0.25 / 1.0 / 0.25. A 3.5 D wake box is not used: at D 128 its uniform A/B
+  reference needs 10440 MiB even in the smallest domain that holds it, which is the whole card, and lv 3 with it
+  needs 8522 MiB.
+
+Start noise and a longer window, D 48, lv 2, fb 1.5 / 2.5 / 1.5, runs of T 150 (the uniform S 0 reference also with a
+second start-noise seed: g48_v1_S0_T150_seed104729). Difference = first named minus second named:
+
+| Pair, D 48 | S | Window t* | dCd (tol) | dCl (tol) | dCM (tol) | Match |
+|---|---|---|---|---|---|---|
+| uniform seed 104729 - uniform seed 0 | 0 | 15-40 | +0.001 (0.024) | +0.202 (0.053) | -0.0044 (0.0013) | **no**: Cl and CM |
+| refined - uniform seed 104729 | 0 | 15-40 | -0.001 (0.020) | -0.038 (0.061) | +0.0005 (0.0012) | yes |
+| refined - uniform seed 0 | 0 | 15-150 | -0.005 (0.010) | +0.035 (0.255) | -0.0007 (0.0037) | **no**: uniform Cl window not stationary |
+| refined - uniform seed 104729 | 0 | 15-150 | -0.0015 (0.010) | -0.048 (0.125) | +0.0009 (0.0021) | **no**: uniform CM window not stationary |
+| uniform seed 104729 - uniform seed 0 | 0 | 15-150 | -0.003 (0.010) | +0.083 (0.262) | -0.0016 (0.0034) | **no**: windows not stationary |
+| refined - uniform | 0.5 | 15-150 | -0.004 (0.010) | -0.002 (0.010) | +0.0001 (0.0010) | **no**: uniform windows not stationary |
+
+Over t* 15-150 every refined-minus-uniform difference is inside its tolerance at S 0 and S 0.5; the rule says no only
+because some uniform windows fail the trend test (the refined windows pass it). Over 25 t* at S 0 (D 48) the uniform grid
+does not match itself in Cl and CM, so a single-seed S 0 pair cannot show a box bias in Cl or CM.
+
+**Binding check at the production finest D (queued, not run; rule set before any D 128 result).** The same A/B at finest
+D 128, refined lv 2 against uniform, in a reduced 4.5 x 3.5 x 3.5 D domain (centre 1.75 D from the inlet; uniform
+8553 MiB, refined 6669 MiB), at S 0.5 and S 0, T 40, window t* 15-40. Cd at S 0 and Cd, Cl and CM at S 0.5 must match
+by the rule. At S 0, Cl and CM pass if they match, or if |refined - uniform| is no larger than the difference between
+two uniform runs that differ only in the start noise (seed 0 and seed 104729, both queued). V1 and V2 at lv 3 D 128
+(T 150) are queued behind it and count only if both pairs pass. If a pair fails on a difference, the box is widened and
+the production plan is redone; if it fails only because a window is not stationary, it does not pass, and that pair is
+rerun longer (T 150) before the box is changed.
+
+This check tests the finest-box edge (fb 1.5 / 2.5 / 1.5), not the second lv 3 interface.
+
+*Pinned 2026-10-31, before any D 128 result CSV existed (ab_*128* runs not yet started).* S 0 comparison at D 128 (PREDICTED
+when run): the uniform run is ab_u128_S0_dom4.5 (seed 0). The seed spread is |ab_u128_S0_dom4.5_seed104729 -
+ab_u128_S0_dom4.5| per coefficient (Cd, Cl, CM), each a mean over t* 15-40. The seed-spread route needs stationary windows:
+both uniform windows must pass the stationarity (trend) test, otherwise the S 0 pair is "not decided", not "pass".
 
 ## Averaging and uncertainty (`postprocess.py`)
 
@@ -370,6 +465,7 @@ sphere, so they share the POLLEN voxelization path.
 |---|---|---|---|
 | v1_bgk_d94_T150 | V1, uniform D 94, BGK, T 150 (the first gate-length D 94 run) | 13:15 | about 18:30 (scaled from v1_bgk_d94: 6808 s for T 55) |
 | g64_p_S1.0_between_revox1_T150 | revox check, POLLEN, D 64, S 1.0, revox 1 | held until the torque gate passes | |
+| ab_u128_S0.5_dom4.5, ab_r128l2_S0.5_fb1.5_dom4.5, ab_r128l2_S0_fb1.5_dom4.5, ab_u128_S0_dom4.5, ab_u128_S0_dom4.5_seed104729, v1_ref_d128, v2_ref_d128_S0.5 | box A/B at D 128 (T 40) and V1 / V2 at lv 3 D 128 (T 150), refined-solver queue (section "Finest-box bias") | not yet: each needs 6669-8553 MiB, so they start after v1_bgk_d94_T150 | about 25 h of GPU time in all at 1300 MLUPs, 41 h at 800 (derived) |
 
 Finished since 11:50: v1_bgk_d94, g48_v2_S0.5_T150, g48_v2stl_S0.5_T150, g48_v1_S0_T150,
 g64_p_S1.0_between_revox2_T150 (its revox 1 partner is held, so it is not reported), g48_v1stl_S0_T150 (13:17) and
@@ -448,8 +544,12 @@ The model uses A = pi R^2 with R = 0.0355 m, S = |w|R/|v| and w(t) = w0 exp(-k t
 35.56 mm. `postprocess.py` converts every `body=stl` run (derived formulas):
 - **Drag and lift:** Cd_model = Cd_cfd (R_cfd/R)^2 = 1.0034 Cd_cfd. Cl converts the same way.
 - **Spin ratio:** S_model = 0.9983 S_cfd.
-- **Spin decay:** k = T/(I w) = CM 0.5 rho v pi R_cfd^4 / (I S). At 7 m/s that is about 1.07 CM/S per second. CM and k: not usable until the torque gate passes; then the band is
-  X +- (e_M |X| + u_win), never narrower than F_STL for CM and F_STL x kf for k, where kf = 0.5 rho v pi R_cfd^4 / (I S).
+- **Spin decay:** k = T/(I w) = CM 0.5 rho v pi R_cfd^4 / (I S). At 7 m/s that is about 1.07 CM/S per second.
+  A physical result has CM > 0 (the air slows the spin, k > 0). CM < 0 would mean the air spins the ball up, which
+  cannot happen for a ball flying through still air; such a run must be treated as a numerical problem and its CM not
+  converted to k (the formula would give a negative k; `postprocess.py` does not check the sign). CM and k: not usable
+  until the torque gate passes; then the band is X +- (e_M |X| + u_win), never narrower than F_STL for CM and
+  F_STL x kf for k, where kf = 0.5 rho v pi R_cfd^4 / (I S).
 
 ## Rerun (Git Bash, from the repo root, with PM012_CFD_ROOT set to a folder outside the repo)
 

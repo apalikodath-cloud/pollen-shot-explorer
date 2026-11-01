@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>POLLEN shot flow</title>
+<link rel="icon" href="data:,">
+<style>
+:root{--bg:#f3f5f8;--panel:rgba(255,255,255,.93);--ink:#16202e;--mute:#586579;--line:#c9d1dd;--accent:#1d5fd1;--warn:#b3261e;--warnbg:#fde7e5;--contour:#1a1f2b;--spin:#d9730d;--twin:#2a74d6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0e16;--panel:rgba(18,24,36,.93);--ink:#e6ebf3;--mute:#98a4b8;--line:#2b3447;--accent:#6ea2ff;--warn:#ffb4ab;--warnbg:#5a1410;--contour:#f2f5fa;--spin:#ff9a3d;--twin:#6ea2ff}}
+:root[data-theme="dark"]{--bg:#0a0e16;--panel:rgba(18,24,36,.93);--ink:#e6ebf3;--mute:#98a4b8;--line:#2b3447;--accent:#6ea2ff;--warn:#ffb4ab;--warnbg:#5a1410;--contour:#f2f5fa;--spin:#ff9a3d;--twin:#6ea2ff}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#top{position:fixed;left:0;right:0;top:0;padding:8px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;pointer-events:none}
+#top h1{font-size:15px;margin:0;font-weight:650}
+#top a{color:var(--accent);pointer-events:auto;font-size:13px}
+#load{margin-left:auto;font-size:12px;color:var(--mute)}
+#banner{display:none;position:fixed;left:50%;top:40px;transform:translateX(-50%);z-index:5;background:var(--warnbg);color:var(--warn);border:2px solid var(--warn);padding:6px 16px;border-radius:8px;font-weight:800;font-size:clamp(14px,3.6vw,22px);text-align:center;pointer-events:none;white-space:nowrap}
+#caps{position:fixed;right:16px;top:40px;width:min(430px,46vw);z-index:3;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.cap{font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 9px}
+.cap:empty{display:none}
+.cap b{display:block;font-size:13px}
+.cap.m{border-left:4px solid var(--spin)}.cap.t{border-left:4px solid var(--twin)}
+.cap .pred{color:var(--mute)}.cap .syn{color:var(--warn);font-weight:700}
+#panel{position:fixed;left:16px;top:40px;width:290px;max-height:calc(100% - 150px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;z-index:4}
+#panel summary{cursor:pointer;font-weight:650;padding:4px 0}
+#panel label{display:flex;gap:8px;align-items:center;padding:2px 0;cursor:pointer}
+#panel .row{display:flex;gap:8px;align-items:center;padding:2px 0}
+#panel .row span{min-width:74px;color:var(--mute);font-size:12px}
+#panel .row output{min-width:46px;text-align:right;font-variant-numeric:tabular-nums;font-size:12px}
+#panel h3{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:10px 0 2px}
+select,button{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+button{cursor:pointer}button.on{border-color:var(--accent);color:var(--accent)}select{max-width:160px}input[type=range]{flex:1;min-width:0}
+#tbar{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;z-index:3;font-size:12px;width:min(640px,calc(100vw - 32px))}
+#tbar .trow{display:flex;gap:8px;align-items:center;margin:2px 0;flex-wrap:wrap}#tbar input[type=range]{flex:1;min-width:80px}
+#tbar .tnote{color:var(--mute);font-size:11px}
+#read{font-size:12px}
+#read table{border-collapse:collapse}#read td,#read th{padding:1px 8px 1px 0;text-align:left;font-weight:400}#read th{color:var(--mute)}
+#read .c1{color:var(--spin);font-weight:650}#read .c2{color:var(--twin);font-weight:650}
+#hint{position:fixed;right:16px;bottom:96px;font-size:11px;color:var(--mute);max-width:260px;text-align:right;pointer-events:none}
+#legend{position:fixed;right:16px;bottom:120px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 9px;z-index:3;font-size:11px;color:var(--mute);pointer-events:none}
+#legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:5px}
+@media (max-width:700px){
+ #panel{left:8px;top:auto;bottom:122px;width:calc(100% - 16px);max-height:42%}
+ #caps{left:8px;right:8px;width:auto;top:34px}.cap{font-size:11px;padding:3px 7px}
+ #tbar{bottom:6px}#tbar .tnote{display:none}
+ #hint,#legend{display:none}
+}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+"three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+<script src="../explorer/physics.js"></script>
+<script src="../explorer/solver.js"></script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="top"><h1>POLLEN shot flow</h1><a href="flow.html">flow viewer</a><a href="../explorer/">shot explorer</a><span id="load"></span></div>
+<div id="banner"></div>
+<div id="caps"><div class="cap m" id="capM"></div><div class="cap t" id="capT"></div><div class="cap" id="read"></div></div>
+<details id="panel" open><summary>Robot, shot and flow</summary>
+ <h3>Robot (drag it on the field)</h3>
+ <div class="row"><span>x (m)</span><input type="range" id="rx" min="-1.8" max="1.8" step="0.01"><output id="rxo"></output></div>
+ <div class="row"><span>y (m)</span><input type="range" id="ry" min="-1.47" max="2.12" step="0.01"><output id="ryo"></output></div>
+ <div class="row"><span>Heading</span><input type="range" id="rh" min="0" max="355" step="5"><output id="rho"></output></div>
+ <div class="row"><span>Release height</span><input type="range" id="rz" min="0.2" max="0.737" step="0.01"><output id="rzo"></output></div>
+ <h3>Shot</h3>
+ <div class="row"><span>Ball speed</span><input type="range" id="sv" min="3" max="10" step="0.05"><output id="svo"></output></div>
+ <div class="row"><span>Launch angle</span><input type="range" id="sth" min="30" max="88" step="0.1"><output id="stho"></output></div>
+ <div class="row"><span>Spin S</span><select id="sS"></select></div>
+ <div class="row"><button id="bSuggest">Suggest setting</button><span id="sgNote" style="min-width:0"></span></div>
+ <h3>Display</h3>
+ <div class="row"><span>Show</span><select id="dMode"><option value="both">Spin and no-spin twin</option><option value="twin">No-spin twin only</option></select></div>
+ <label><input type="checkbox" id="dTwinFlow" checked> Flow around the twin</label>
+ <div class="row"><span title="display only: shifts the twin sideways so the two flows do not overlap">Twin offset*</span><input type="range" id="dOff" min="0" max="0.6" step="0.05" value="0.3"><output id="dOffo"></output></div>
+ <div class="row"><span>Flow size</span><select id="dMag"><option value="1">1x (true scale)</option><option value="2">2x</option><option value="4">4x</option></select></div>
+ <h3>Flow layers</h3>
+ <label><input type="checkbox" id="lStream" checked> Streamlines</label>
+ <label><input type="checkbox" id="lVortex" checked> Vortex cores (Q)</label>
+ <div class="row"><span>Q level</span><input type="range" id="qLevel" min="0" max="2" step="1" value="2"></div>
+ <label><input type="checkbox" id="lY" checked> Slice: plane y=0 (spin-axis normal)</label>
+ <label><input type="checkbox" id="lZ"> Slice: plane z=0</label>
+ <div class="row"><span>Colour by</span><select id="sField"><option value="speed">Speed</option><option value="vort">Vorticity</option></select></div>
+ <label><input type="checkbox" id="lCont" checked> Contour lines</label>
+ <div class="row"><span>Opacity</span><input type="range" id="sOp" min="0.1" max="1" step="0.05" value="0.8"></div>
+ <label><input type="checkbox" id="lAnimCase"> Prefer animated time-series case</label>
+ <h3>Camera</h3>
+ <div class="row"><select id="cMode"><option value="follow">Follow spin ball</option><option value="followT">Follow twin ball</option><option value="free">Free orbit</option></select><button id="cOver">Overview</button></div>
+<p style="font-size:11px;color:var(--mute);margin:8px 0 2px">*Twin offset only shifts the twin drawing sideways (display only; 0 = true position). Drag the robot to move it. Drag empty space to orbit, wheel or pinch to zoom, right-drag to pan.</p>
+</details>
+<div id="legend"></div>
+<div id="tbar"><div class="trow"><button id="tPlay">Play</button><input type="range" id="tSlide" min="0" max="1" step="0.001" value="0"><select id="tSpd"><option value="0.1">0.1x</option><option value="0.25" selected>0.25x</option><option value="0.5">0.5x</option><option value="1">1x</option></select><label><input type="checkbox" id="tLoop" checked> Loop</label></div><div class="trow"><span id="tLab"></span></div><div class="tnote">Flow is drawn in the ball frame: the CFD free stream runs against the ball's motion through the air and the spin axis follows the ball's spin. Positions are field metres.</div></div>
+<script type="module" src="shot.js"></script>
+</body>
+</html>
