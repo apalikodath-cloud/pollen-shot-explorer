@@ -1,0 +1,2202 @@
+{
+ "version": 1,
+ "id": "anim_S0",
+ "label": "POLLEN 7 m/s, no spin, time series (btw)",
+ "synthetic": false,
+ "status": "PREDICTED (CFD model output, not a measurement)",
+ "units": "lengths in body diameters D, origin at body centre; speed in free-stream U",
+ "t_star": 22,
+ "Re": 33057,
+ "S": 0,
+ "orientation": "btw",
+ "omega_axis": [
+  0,
+  1,
+  0
+ ],
+ "flow_dir": [
+  1,
+  0,
+  0
+ ],
+ "grid": {
+  "nx": 192,
+  "ny": 102,
+  "nz": 102,
+  "dx_D": 0.015625,
+  "D_cells": 128
+ },
+ "bounds": {
+  "lo": [
+   -0.79296875,
+   -0.79296875,
+   -0.79296875
+  ],
+  "hi": [
+   2.19140625,
+   0.78515625,
+   0.78515625
+  ]
+ },
+ "speed_range": [
+  0,
+  1.5
+ ],
+ "vort_range": [
+  -23.99478530883789,
+  23.99478530883789
+ ],
+ "streamwise_vort_scale": 7.932716889373627,
+ "colormaps": {
+  "speed": "turbo",
+  "vorticity": "RdBu_r"
+ },
+ "frames": {
+  "n": 49,
+  "t_star": [
+   20.0,
+   20.25,
+   20.5,
+   20.75,
+   21.0,
+   21.25,
+   21.5,
+   21.75,
+   22.0,
+   22.25,
+   22.5,
+   22.75,
+   23.0,
+   23.25,
+   23.5,
+   23.75,
+   24.0,
+   24.25,
+   24.5,
+   24.75,
+   25.0,
+   25.25,
+   25.5,
+   25.75,
+   26.0,
+   26.25,
+   26.5,
+   26.75,
+   27.0,
+   27.25,
+   27.5,
+   27.75,
+   28.0,
+   28.25,
+   28.5,
+   28.75,
+   29.0,
+   29.25,
+   29.5,
+   29.75,
+   30.0,
+   30.25,
+   30.5,
+   30.75,
+   31.0,
+   31.25,
+   31.5,
+   31.75,
+   32.0
+  ],
+  "size": [
+   192,
+   102
+  ],
+  "vel_plane": "y0",
+  "vel_scale": 1.5,
+  "vort_scale": [
+   23.99478530883789,
+   23.700592041015625
+  ]
+ },
+ "D_mm": 71.12,
+ "U_mps": 7.0,
+ "vortex_levels": [
+  {
+   "level": 4.0,
+   "index": 0,
+   "n_verts": 21592,
+   "n_faces": 42360
+  },
+  {
+   "level": 12.0,
+   "index": 1,
+   "n_verts": 10344,
+   "n_faces": 19800
+  },
+  {
+   "level": 30.0,
+   "index": 2,
+   "n_verts": 2345,
+   "n_faces": 4246
+  }
+ ],
+ "slices": [
+  {
+   "tag": "y0",
+   "normal_axis": "y",
+   "flow_axis": "x",
+   "vert_axis": "z",
+   "extent_flow": [
+    -0.80078125,
+    2.19921875
+   ],
+   "extent_vert": [
+    -0.80078125,
+    0.79296875
+   ],
+   "speed_png": "slice_y0_speed.png",
+   "vort_png": "slice_y0_vort.png",
+   "size": [
+    384,
+    204
+   ],
+   "vort_range": [
+    -23.99478530883789,
+    23.99478530883789
+   ],
+   "levels": {
+    "speed": [
+     0.1,
+     0.2,
+     0.30000000000000004,
+     0.4,
+     0.5,
+     0.6,
+     0.7000000000000001,
+     0.8,
+     0.9,
+     1.0,
+     1.1,
+     1.2000000000000002,
+     1.3000000000000003,
+     1.4000000000000001,
+     1.5000000000000002
+    ],
+    "vort": [
+     -20.0,
+     -15.0,
+     -10.0,
+     -5.0,
+     0.0,
+     5.0,
+     10.0,
+     15.0,
+     20.0
+    ]
+   }
+  },
+  {
+   "tag": "z0",
+   "normal_axis": "z",
+   "flow_axis": "x",
+   "vert_axis": "y",
+   "extent_flow": [
+    -0.80078125,
+    2.19921875
+   ],
+   "extent_vert": [
+    -0.80078125,
+    0.79296875
+   ],
+   "speed_png": "slice_z0_speed.png",
+   "vort_png": "slice_z0_vort.png",
+   "size": [
+    384,
+    204
+   ],
+   "vort_range": [
+    -23.700592041015625,
+    23.700592041015625
+   ],
+   "levels": {
+    "speed": [
+     0.1,
+     0.2,
+     0.30000000000000004,
+     0.4,
+     0.5,
+     0.6,
+     0.7000000000000001,
+     0.8,
+     0.9,
+     1.0,
+     1.1,
+     1.2000000000000002,
+     1.3000000000000003,
+     1.4000000000000001,
+     1.5000000000000002
+    ],
+    "vort": [
+     -20.0,
+     -15.0,
+     -10.0,
+     -5.0,
+     0.0,
+     5.0,
+     10.0,
+     15.0,
+     20.0
+    ]
+   }
+  }
+ ],
+ "files": {
+  "streamlines": {
+   "url": "streamlines.bin",
+   "bytes": 559435,
+   "arrays": [
+    {
+     "name": "counts",
+     "dtype": "uint32",
+     "offset": 0,
+     "length": 833
+    },
+    {
+     "name": "pos",
+     "dtype": "uint16",
+     "offset": 3332,
+     "length": 238329
+    },
+    {
+     "name": "speed",
+     "dtype": "uint8",
+     "offset": 479992,
+     "length": 79443
+    }
+   ],
+   "n_lines": 833,
+   "n_verts": 79443
+  },
+  "vortex": {
+   "url": "vortex.bin",
+   "bytes": 1036844,
+   "arrays": [
+    {
+     "name": "pos0",
+     "dtype": "uint16",
+     "offset": 0,
+     "length": 64776
+    },
+    {
+     "name": "omega0",
+     "dtype": "int8",
+     "offset": 129552,
+     "length": 21592
+    },
+    {
+     "name": "idx0",
+     "dtype": "uint32",
+     "offset": 151144,
+     "length": 127080
+    },
+    {
+     "name": "pos1",
+     "dtype": "uint16",
+     "offset": 659464,
+     "length": 31032
+    },
+    {
+     "name": "omega1",
+     "dtype": "int8",
+     "offset": 721528,
+     "length": 10344
+    },
+    {
+     "name": "idx1",
+     "dtype": "uint32",
+     "offset": 731872,
+     "length": 59400
+    },
+    {
+     "name": "pos2",
+     "dtype": "uint16",
+     "offset": 969472,
+     "length": 7035
+    },
+    {
+     "name": "omega2",
+     "dtype": "int8",
+     "offset": 983544,
+     "length": 2345
+    },
+    {
+     "name": "idx2",
+     "dtype": "uint32",
+     "offset": 985892,
+     "length": 12738
+    }
+   ]
+  },
+  "slices": {
+   "url": "slices.bin",
+   "bytes": 1052937,
+   "arrays": [
+    {
+     "name": "y0_speed_seg",
+     "dtype": "float32",
+     "offset": 0,
+     "length": 87032
+    },
+    {
+     "name": "y0_speed_lvl",
+     "dtype": "uint8",
+     "offset": 348128,
+     "length": 21758
+    },
+    {
+     "name": "y0_vort_seg",
+     "dtype": "float32",
+     "offset": 369888,
+     "length": 35252
+    },
+    {
+     "name": "y0_vort_lvl",
+     "dtype": "uint8",
+     "offset": 510896,
+     "length": 8813
+    },
+    {
+     "name": "z0_speed_seg",
+     "dtype": "float32",
+     "offset": 519712,
+     "length": 89300
+    },
+    {
+     "name": "z0_speed_lvl",
+     "dtype": "uint8",
+     "offset": 876912,
+     "length": 22325
+    },
+    {
+     "name": "z0_vort_seg",
+     "dtype": "float32",
+     "offset": 899240,
+     "length": 36164
+    },
+    {
+     "name": "z0_vort_lvl",
+     "dtype": "uint8",
+     "offset": 1043896,
+     "length": 9041
+    }
+   ]
+  },
+  "frames": {
+   "url": "frames.bin",
+   "bytes": 5796864,
+   "arrays": [
+    {
+     "name": "sol_y0",
+     "dtype": "uint8",
+     "offset": 0,
+     "length": 19584
+    },
+    {
+     "name": "f0_y0_s",
+     "dtype": "uint8",
+     "offset": 19584,
+     "length": 19584
+    },
+    {
+     "name": "f0_y0_w",
+     "dtype": "int8",
+     "offset": 39168,
+     "length": 19584
+    },
+    {
+     "name": "f0_y0_u",
+     "dtype": "int8",
+     "offset": 58752,
+     "length": 19584
+    },
+    {
+     "name": "f0_y0_v",
+     "dtype": "int8",
+     "offset": 78336,
+     "length": 19584
+    },
+    {
+     "name": "sol_z0",
+     "dtype": "uint8",
+     "offset": 97920,
+     "length": 19584
+    },
+    {
+     "name": "f0_z0_s",
+     "dtype": "uint8",
+     "offset": 117504,
+     "length": 19584
+    },
+    {
+     "name": "f0_z0_w",
+     "dtype": "int8",
+     "offset": 137088,
+     "length": 19584
+    },
+    {
+     "name": "f1_y0_s",
+     "dtype": "uint8",
+     "offset": 156672,
+     "length": 19584
+    },
+    {
+     "name": "f1_y0_w",
+     "dtype": "int8",
+     "offset": 176256,
+     "length": 19584
+    },
+    {
+     "name": "f1_y0_u",
+     "dtype": "int8",
+     "offset": 195840,
+     "length": 19584
+    },
+    {
+     "name": "f1_y0_v",
+     "dtype": "int8",
+     "offset": 215424,
+     "length": 19584
+    },
+    {
+     "name": "f1_z0_s",
+     "dtype": "uint8",
+     "offset": 235008,
+     "length": 19584
+    },
+    {
+     "name": "f1_z0_w",
+     "dtype": "int8",
+     "offset": 254592,
+     "length": 19584
+    },
+    {
+     "name": "f2_y0_s",
+     "dtype": "uint8",
+     "offset": 274176,
+     "length": 19584
+    },
+    {
+     "name": "f2_y0_w",
+     "dtype": "int8",
+     "offset": 293760,
+     "length": 19584
+    },
+    {
+     "name": "f2_y0_u",
+     "dtype": "int8",
+     "offset": 313344,
+     "length": 19584
+    },
+    {
+     "name": "f2_y0_v",
+     "dtype": "int8",
+     "offset": 332928,
+     "length": 19584
+    },
+    {
+     "name": "f2_z0_s",
+     "dtype": "uint8",
+     "offset": 352512,
+     "length": 19584
+    },
+    {
+     "name": "f2_z0_w",
+     "dtype": "int8",
+     "offset": 372096,
+     "length": 19584
+    },
+    {
+     "name": "f3_y0_s",
+     "dtype": "uint8",
+     "offset": 391680,
+     "length": 19584
+    },
+    {
+     "name": "f3_y0_w",
+     "dtype": "int8",
+     "offset": 411264,
+     "length": 19584
+    },
+    {
+     "name": "f3_y0_u",
+     "dtype": "int8",
+     "offset": 430848,
+     "length": 19584
+    },
+    {
+     "name": "f3_y0_v",
+     "dtype": "int8",
+     "offset": 450432,
+     "length": 19584
+    },
+    {
+     "name": "f3_z0_s",
+     "dtype": "uint8",
+     "offset": 470016,
+     "length": 19584
+    },
+    {
+     "name": "f3_z0_w",
+     "dtype": "int8",
+     "offset": 489600,
+     "length": 19584
+    },
+    {
+     "name": "f4_y0_s",
+     "dtype": "uint8",
+     "offset": 509184,
+     "length": 19584
+    },
+    {
+     "name": "f4_y0_w",
+     "dtype": "int8",
+     "offset": 528768,
+     "length": 19584
+    },
+    {
+     "name": "f4_y0_u",
+     "dtype": "int8",
+     "offset": 548352,
+     "length": 19584
+    },
+    {
+     "name": "f4_y0_v",
+     "dtype": "int8",
+     "offset": 567936,
+     "length": 19584
+    },
+    {
+     "name": "f4_z0_s",
+     "dtype": "uint8",
+     "offset": 587520,
+     "length": 19584
+    },
+    {
+     "name": "f4_z0_w",
+     "dtype": "int8",
+     "offset": 607104,
+     "length": 19584
+    },
+    {
+     "name": "f5_y0_s",
+     "dtype": "uint8",
+     "offset": 626688,
+     "length": 19584
+    },
+    {
+     "name": "f5_y0_w",
+     "dtype": "int8",
+     "offset": 646272,
+     "length": 19584
+    },
+    {
+     "name": "f5_y0_u",
+     "dtype": "int8",
+     "offset": 665856,
+     "length": 19584
+    },
+    {
+     "name": "f5_y0_v",
+     "dtype": "int8",
+     "offset": 685440,
+     "length": 19584
+    },
+    {
+     "name": "f5_z0_s",
+     "dtype": "uint8",
+     "offset": 705024,
+     "length": 19584
+    },
+    {
+     "name": "f5_z0_w",
+     "dtype": "int8",
+     "offset": 724608,
+     "length": 19584
+    },
+    {
+     "name": "f6_y0_s",
+     "dtype": "uint8",
+     "offset": 744192,
+     "length": 19584
+    },
+    {
+     "name": "f6_y0_w",
+     "dtype": "int8",
+     "offset": 763776,
+     "length": 19584
+    },
+    {
+     "name": "f6_y0_u",
+     "dtype": "int8",
+     "offset": 783360,
+     "length": 19584
+    },
+    {
+     "name": "f6_y0_v",
+     "dtype": "int8",
+     "offset": 802944,
+     "length": 19584
+    },
+    {
+     "name": "f6_z0_s",
+     "dtype": "uint8",
+     "offset": 822528,
+     "length": 19584
+    },
+    {
+     "name": "f6_z0_w",
+     "dtype": "int8",
+     "offset": 842112,
+     "length": 19584
+    },
+    {
+     "name": "f7_y0_s",
+     "dtype": "uint8",
+     "offset": 861696,
+     "length": 19584
+    },
+    {
+     "name": "f7_y0_w",
+     "dtype": "int8",
+     "offset": 881280,
+     "length": 19584
+    },
+    {
+     "name": "f7_y0_u",
+     "dtype": "int8",
+     "offset": 900864,
+     "length": 19584
+    },
+    {
+     "name": "f7_y0_v",
+     "dtype": "int8",
+     "offset": 920448,
+     "length": 19584
+    },
+    {
+     "name": "f7_z0_s",
+     "dtype": "uint8",
+     "offset": 940032,
+     "length": 19584
+    },
+    {
+     "name": "f7_z0_w",
+     "dtype": "int8",
+     "offset": 959616,
+     "length": 19584
+    },
+    {
+     "name": "f8_y0_s",
+     "dtype": "uint8",
+     "offset": 979200,
+     "length": 19584
+    },
+    {
+     "name": "f8_y0_w",
+     "dtype": "int8",
+     "offset": 998784,
+     "length": 19584
+    },
+    {
+     "name": "f8_y0_u",
+     "dtype": "int8",
+     "offset": 1018368,
+     "length": 19584
+    },
+    {
+     "name": "f8_y0_v",
+     "dtype": "int8",
+     "offset": 1037952,
+     "length": 19584
+    },
+    {
+     "name": "f8_z0_s",
+     "dtype": "uint8",
+     "offset": 1057536,
+     "length": 19584
+    },
+    {
+     "name": "f8_z0_w",
+     "dtype": "int8",
+     "offset": 1077120,
+     "length": 19584
+    },
+    {
+     "name": "f9_y0_s",
+     "dtype": "uint8",
+     "offset": 1096704,
+     "length": 19584
+    },
+    {
+     "name": "f9_y0_w",
+     "dtype": "int8",
+     "offset": 1116288,
+     "length": 19584
+    },
+    {
+     "name": "f9_y0_u",
+     "dtype": "int8",
+     "offset": 1135872,
+     "length": 19584
+    },
+    {
+     "name": "f9_y0_v",
+     "dtype": "int8",
+     "offset": 1155456,
+     "length": 19584
+    },
+    {
+     "name": "f9_z0_s",
+     "dtype": "uint8",
+     "offset": 1175040,
+     "length": 19584
+    },
+    {
+     "name": "f9_z0_w",
+     "dtype": "int8",
+     "offset": 1194624,
+     "length": 19584
+    },
+    {
+     "name": "f10_y0_s",
+     "dtype": "uint8",
+     "offset": 1214208,
+     "length": 19584
+    },
+    {
+     "name": "f10_y0_w",
+     "dtype": "int8",
+     "offset": 1233792,
+     "length": 19584
+    },
+    {
+     "name": "f10_y0_u",
+     "dtype": "int8",
+     "offset": 1253376,
+     "length": 19584
+    },
+    {
+     "name": "f10_y0_v",
+     "dtype": "int8",
+     "offset": 1272960,
+     "length": 19584
+    },
+    {
+     "name": "f10_z0_s",
+     "dtype": "uint8",
+     "offset": 1292544,
+     "length": 19584
+    },
+    {
+     "name": "f10_z0_w",
+     "dtype": "int8",
+     "offset": 1312128,
+     "length": 19584
+    },
+    {
+     "name": "f11_y0_s",
+     "dtype": "uint8",
+     "offset": 1331712,
+     "length": 19584
+    },
+    {
+     "name": "f11_y0_w",
+     "dtype": "int8",
+     "offset": 1351296,
+     "length": 19584
+    },
+    {
+     "name": "f11_y0_u",
+     "dtype": "int8",
+     "offset": 1370880,
+     "length": 19584
+    },
+    {
+     "name": "f11_y0_v",
+     "dtype": "int8",
+     "offset": 1390464,
+     "length": 19584
+    },
+    {
+     "name": "f11_z0_s",
+     "dtype": "uint8",
+     "offset": 1410048,
+     "length": 19584
+    },
+    {
+     "name": "f11_z0_w",
+     "dtype": "int8",
+     "offset": 1429632,
+     "length": 19584
+    },
+    {
+     "name": "f12_y0_s",
+     "dtype": "uint8",
+     "offset": 1449216,
+     "length": 19584
+    },
+    {
+     "name": "f12_y0_w",
+     "dtype": "int8",
+     "offset": 1468800,
+     "length": 19584
+    },
+    {
+     "name": "f12_y0_u",
+     "dtype": "int8",
+     "offset": 1488384,
+     "length": 19584
+    },
+    {
+     "name": "f12_y0_v",
+     "dtype": "int8",
+     "offset": 1507968,
+     "length": 19584
+    },
+    {
+     "name": "f12_z0_s",
+     "dtype": "uint8",
+     "offset": 1527552,
+     "length": 19584
+    },
+    {
+     "name": "f12_z0_w",
+     "dtype": "int8",
+     "offset": 1547136,
+     "length": 19584
+    },
+    {
+     "name": "f13_y0_s",
+     "dtype": "uint8",
+     "offset": 1566720,
+     "length": 19584
+    },
+    {
+     "name": "f13_y0_w",
+     "dtype": "int8",
+     "offset": 1586304,
+     "length": 19584
+    },
+    {
+     "name": "f13_y0_u",
+     "dtype": "int8",
+     "offset": 1605888,
+     "length": 19584
+    },
+    {
+     "name": "f13_y0_v",
+     "dtype": "int8",
+     "offset": 1625472,
+     "length": 19584
+    },
+    {
+     "name": "f13_z0_s",
+     "dtype": "uint8",
+     "offset": 1645056,
+     "length": 19584
+    },
+    {
+     "name": "f13_z0_w",
+     "dtype": "int8",
+     "offset": 1664640,
+     "length": 19584
+    },
+    {
+     "name": "f14_y0_s",
+     "dtype": "uint8",
+     "offset": 1684224,
+     "length": 19584
+    },
+    {
+     "name": "f14_y0_w",
+     "dtype": "int8",
+     "offset": 1703808,
+     "length": 19584
+    },
+    {
+     "name": "f14_y0_u",
+     "dtype": "int8",
+     "offset": 1723392,
+     "length": 19584
+    },
+    {
+     "name": "f14_y0_v",
+     "dtype": "int8",
+     "offset": 1742976,
+     "length": 19584
+    },
+    {
+     "name": "f14_z0_s",
+     "dtype": "uint8",
+     "offset": 1762560,
+     "length": 19584
+    },
+    {
+     "name": "f14_z0_w",
+     "dtype": "int8",
+     "offset": 1782144,
+     "length": 19584
+    },
+    {
+     "name": "f15_y0_s",
+     "dtype": "uint8",
+     "offset": 1801728,
+     "length": 19584
+    },
+    {
+     "name": "f15_y0_w",
+     "dtype": "int8",
+     "offset": 1821312,
+     "length": 19584
+    },
+    {
+     "name": "f15_y0_u",
+     "dtype": "int8",
+     "offset": 1840896,
+     "length": 19584
+    },
+    {
+     "name": "f15_y0_v",
+     "dtype": "int8",
+     "offset": 1860480,
+     "length": 19584
+    },
+    {
+     "name": "f15_z0_s",
+     "dtype": "uint8",
+     "offset": 1880064,
+     "length": 19584
+    },
+    {
+     "name": "f15_z0_w",
+     "dtype": "int8",
+     "offset": 1899648,
+     "length": 19584
+    },
+    {
+     "name": "f16_y0_s",
+     "dtype": "uint8",
+     "offset": 1919232,
+     "length": 19584
+    },
+    {
+     "name": "f16_y0_w",
+     "dtype": "int8",
+     "offset": 1938816,
+     "length": 19584
+    },
+    {
+     "name": "f16_y0_u",
+     "dtype": "int8",
+     "offset": 1958400,
+     "length": 19584
+    },
+    {
+     "name": "f16_y0_v",
+     "dtype": "int8",
+     "offset": 1977984,
+     "length": 19584
+    },
+    {
+     "name": "f16_z0_s",
+     "dtype": "uint8",
+     "offset": 1997568,
+     "length": 19584
+    },
+    {
+     "name": "f16_z0_w",
+     "dtype": "int8",
+     "offset": 2017152,
+     "length": 19584
+    },
+    {
+     "name": "f17_y0_s",
+     "dtype": "uint8",
+     "offset": 2036736,
+     "length": 19584
+    },
+    {
+     "name": "f17_y0_w",
+     "dtype": "int8",
+     "offset": 2056320,
+     "length": 19584
+    },
+    {
+     "name": "f17_y0_u",
+     "dtype": "int8",
+     "offset": 2075904,
+     "length": 19584
+    },
+    {
+     "name": "f17_y0_v",
+     "dtype": "int8",
+     "offset": 2095488,
+     "length": 19584
+    },
+    {
+     "name": "f17_z0_s",
+     "dtype": "uint8",
+     "offset": 2115072,
+     "length": 19584
+    },
+    {
+     "name": "f17_z0_w",
+     "dtype": "int8",
+     "offset": 2134656,
+     "length": 19584
+    },
+    {
+     "name": "f18_y0_s",
+     "dtype": "uint8",
+     "offset": 2154240,
+     "length": 19584
+    },
+    {
+     "name": "f18_y0_w",
+     "dtype": "int8",
+     "offset": 2173824,
+     "length": 19584
+    },
+    {
+     "name": "f18_y0_u",
+     "dtype": "int8",
+     "offset": 2193408,
+     "length": 19584
+    },
+    {
+     "name": "f18_y0_v",
+     "dtype": "int8",
+     "offset": 2212992,
+     "length": 19584
+    },
+    {
+     "name": "f18_z0_s",
+     "dtype": "uint8",
+     "offset": 2232576,
+     "length": 19584
+    },
+    {
+     "name": "f18_z0_w",
+     "dtype": "int8",
+     "offset": 2252160,
+     "length": 19584
+    },
+    {
+     "name": "f19_y0_s",
+     "dtype": "uint8",
+     "offset": 2271744,
+     "length": 19584
+    },
+    {
+     "name": "f19_y0_w",
+     "dtype": "int8",
+     "offset": 2291328,
+     "length": 19584
+    },
+    {
+     "name": "f19_y0_u",
+     "dtype": "int8",
+     "offset": 2310912,
+     "length": 19584
+    },
+    {
+     "name": "f19_y0_v",
+     "dtype": "int8",
+     "offset": 2330496,
+     "length": 19584
+    },
+    {
+     "name": "f19_z0_s",
+     "dtype": "uint8",
+     "offset": 2350080,
+     "length": 19584
+    },
+    {
+     "name": "f19_z0_w",
+     "dtype": "int8",
+     "offset": 2369664,
+     "length": 19584
+    },
+    {
+     "name": "f20_y0_s",
+     "dtype": "uint8",
+     "offset": 2389248,
+     "length": 19584
+    },
+    {
+     "name": "f20_y0_w",
+     "dtype": "int8",
+     "offset": 2408832,
+     "length": 19584
+    },
+    {
+     "name": "f20_y0_u",
+     "dtype": "int8",
+     "offset": 2428416,
+     "length": 19584
+    },
+    {
+     "name": "f20_y0_v",
+     "dtype": "int8",
+     "offset": 2448000,
+     "length": 19584
+    },
+    {
+     "name": "f20_z0_s",
+     "dtype": "uint8",
+     "offset": 2467584,
+     "length": 19584
+    },
+    {
+     "name": "f20_z0_w",
+     "dtype": "int8",
+     "offset": 2487168,
+     "length": 19584
+    },
+    {
+     "name": "f21_y0_s",
+     "dtype": "uint8",
+     "offset": 2506752,
+     "length": 19584
+    },
+    {
+     "name": "f21_y0_w",
+     "dtype": "int8",
+     "offset": 2526336,
+     "length": 19584
+    },
+    {
+     "name": "f21_y0_u",
+     "dtype": "int8",
+     "offset": 2545920,
+     "length": 19584
+    },
+    {
+     "name": "f21_y0_v",
+     "dtype": "int8",
+     "offset": 2565504,
+     "length": 19584
+    },
+    {
+     "name": "f21_z0_s",
+     "dtype": "uint8",
+     "offset": 2585088,
+     "length": 19584
+    },
+    {
+     "name": "f21_z0_w",
+     "dtype": "int8",
+     "offset": 2604672,
+     "length": 19584
+    },
+    {
+     "name": "f22_y0_s",
+     "dtype": "uint8",
+     "offset": 2624256,
+     "length": 19584
+    },
+    {
+     "name": "f22_y0_w",
+     "dtype": "int8",
+     "offset": 2643840,
+     "length": 19584
+    },
+    {
+     "name": "f22_y0_u",
+     "dtype": "int8",
+     "offset": 2663424,
+     "length": 19584
+    },
+    {
+     "name": "f22_y0_v",
+     "dtype": "int8",
+     "offset": 2683008,
+     "length": 19584
+    },
+    {
+     "name": "f22_z0_s",
+     "dtype": "uint8",
+     "offset": 2702592,
+     "length": 19584
+    },
+    {
+     "name": "f22_z0_w",
+     "dtype": "int8",
+     "offset": 2722176,
+     "length": 19584
+    },
+    {
+     "name": "f23_y0_s",
+     "dtype": "uint8",
+     "offset": 2741760,
+     "length": 19584
+    },
+    {
+     "name": "f23_y0_w",
+     "dtype": "int8",
+     "offset": 2761344,
+     "length": 19584
+    },
+    {
+     "name": "f23_y0_u",
+     "dtype": "int8",
+     "offset": 2780928,
+     "length": 19584
+    },
+    {
+     "name": "f23_y0_v",
+     "dtype": "int8",
+     "offset": 2800512,
+     "length": 19584
+    },
+    {
+     "name": "f23_z0_s",
+     "dtype": "uint8",
+     "offset": 2820096,
+     "length": 19584
+    },
+    {
+     "name": "f23_z0_w",
+     "dtype": "int8",
+     "offset": 2839680,
+     "length": 19584
+    },
+    {
+     "name": "f24_y0_s",
+     "dtype": "uint8",
+     "offset": 2859264,
+     "length": 19584
+    },
+    {
+     "name": "f24_y0_w",
+     "dtype": "int8",
+     "offset": 2878848,
+     "length": 19584
+    },
+    {
+     "name": "f24_y0_u",
+     "dtype": "int8",
+     "offset": 2898432,
+     "length": 19584
+    },
+    {
+     "name": "f24_y0_v",
+     "dtype": "int8",
+     "offset": 2918016,
+     "length": 19584
+    },
+    {
+     "name": "f24_z0_s",
+     "dtype": "uint8",
+     "offset": 2937600,
+     "length": 19584
+    },
+    {
+     "name": "f24_z0_w",
+     "dtype": "int8",
+     "offset": 2957184,
+     "length": 19584
+    },
+    {
+     "name": "f25_y0_s",
+     "dtype": "uint8",
+     "offset": 2976768,
+     "length": 19584
+    },
+    {
+     "name": "f25_y0_w",
+     "dtype": "int8",
+     "offset": 2996352,
+     "length": 19584
+    },
+    {
+     "name": "f25_y0_u",
+     "dtype": "int8",
+     "offset": 3015936,
+     "length": 19584
+    },
+    {
+     "name": "f25_y0_v",
+     "dtype": "int8",
+     "offset": 3035520,
+     "length": 19584
+    },
+    {
+     "name": "f25_z0_s",
+     "dtype": "uint8",
+     "offset": 3055104,
+     "length": 19584
+    },
+    {
+     "name": "f25_z0_w",
+     "dtype": "int8",
+     "offset": 3074688,
+     "length": 19584
+    },
+    {
+     "name": "f26_y0_s",
+     "dtype": "uint8",
+     "offset": 3094272,
+     "length": 19584
+    },
+    {
+     "name": "f26_y0_w",
+     "dtype": "int8",
+     "offset": 3113856,
+     "length": 19584
+    },
+    {
+     "name": "f26_y0_u",
+     "dtype": "int8",
+     "offset": 3133440,
+     "length": 19584
+    },
+    {
+     "name": "f26_y0_v",
+     "dtype": "int8",
+     "offset": 3153024,
+     "length": 19584
+    },
+    {
+     "name": "f26_z0_s",
+     "dtype": "uint8",
+     "offset": 3172608,
+     "length": 19584
+    },
+    {
+     "name": "f26_z0_w",
+     "dtype": "int8",
+     "offset": 3192192,
+     "length": 19584
+    },
+    {
+     "name": "f27_y0_s",
+     "dtype": "uint8",
+     "offset": 3211776,
+     "length": 19584
+    },
+    {
+     "name": "f27_y0_w",
+     "dtype": "int8",
+     "offset": 3231360,
+     "length": 19584
+    },
+    {
+     "name": "f27_y0_u",
+     "dtype": "int8",
+     "offset": 3250944,
+     "length": 19584
+    },
+    {
+     "name": "f27_y0_v",
+     "dtype": "int8",
+     "offset": 3270528,
+     "length": 19584
+    },
+    {
+     "name": "f27_z0_s",
+     "dtype": "uint8",
+     "offset": 3290112,
+     "length": 19584
+    },
+    {
+     "name": "f27_z0_w",
+     "dtype": "int8",
+     "offset": 3309696,
+     "length": 19584
+    },
+    {
+     "name": "f28_y0_s",
+     "dtype": "uint8",
+     "offset": 3329280,
+     "length": 19584
+    },
+    {
+     "name": "f28_y0_w",
+     "dtype": "int8",
+     "offset": 3348864,
+     "length": 19584
+    },
+    {
+     "name": "f28_y0_u",
+     "dtype": "int8",
+     "offset": 3368448,
+     "length": 19584
+    },
+    {
+     "name": "f28_y0_v",
+     "dtype": "int8",
+     "offset": 3388032,
+     "length": 19584
+    },
+    {
+     "name": "f28_z0_s",
+     "dtype": "uint8",
+     "offset": 3407616,
+     "length": 19584
+    },
+    {
+     "name": "f28_z0_w",
+     "dtype": "int8",
+     "offset": 3427200,
+     "length": 19584
+    },
+    {
+     "name": "f29_y0_s",
+     "dtype": "uint8",
+     "offset": 3446784,
+     "length": 19584
+    },
+    {
+     "name": "f29_y0_w",
+     "dtype": "int8",
+     "offset": 3466368,
+     "length": 19584
+    },
+    {
+     "name": "f29_y0_u",
+     "dtype": "int8",
+     "offset": 3485952,
+     "length": 19584
+    },
+    {
+     "name": "f29_y0_v",
+     "dtype": "int8",
+     "offset": 3505536,
+     "length": 19584
+    },
+    {
+     "name": "f29_z0_s",
+     "dtype": "uint8",
+     "offset": 3525120,
+     "length": 19584
+    },
+    {
+     "name": "f29_z0_w",
+     "dtype": "int8",
+     "offset": 3544704,
+     "length": 19584
+    },
+    {
+     "name": "f30_y0_s",
+     "dtype": "uint8",
+     "offset": 3564288,
+     "length": 19584
+    },
+    {
+     "name": "f30_y0_w",
+     "dtype": "int8",
+     "offset": 3583872,
+     "length": 19584
+    },
+    {
+     "name": "f30_y0_u",
+     "dtype": "int8",
+     "offset": 3603456,
+     "length": 19584
+    },
+    {
+     "name": "f30_y0_v",
+     "dtype": "int8",
+     "offset": 3623040,
+     "length": 19584
+    },
+    {
+     "name": "f30_z0_s",
+     "dtype": "uint8",
+     "offset": 3642624,
+     "length": 19584
+    },
+    {
+     "name": "f30_z0_w",
+     "dtype": "int8",
+     "offset": 3662208,
+     "length": 19584
+    },
+    {
+     "name": "f31_y0_s",
+     "dtype": "uint8",
+     "offset": 3681792,
+     "length": 19584
+    },
+    {
+     "name": "f31_y0_w",
+     "dtype": "int8",
+     "offset": 3701376,
+     "length": 19584
+    },
+    {
+     "name": "f31_y0_u",
+     "dtype": "int8",
+     "offset": 3720960,
+     "length": 19584
+    },
+    {
+     "name": "f31_y0_v",
+     "dtype": "int8",
+     "offset": 3740544,
+     "length": 19584
+    },
+    {
+     "name": "f31_z0_s",
+     "dtype": "uint8",
+     "offset": 3760128,
+     "length": 19584
+    },
+    {
+     "name": "f31_z0_w",
+     "dtype": "int8",
+     "offset": 3779712,
+     "length": 19584
+    },
+    {
+     "name": "f32_y0_s",
+     "dtype": "uint8",
+     "offset": 3799296,
+     "length": 19584
+    },
+    {
+     "name": "f32_y0_w",
+     "dtype": "int8",
+     "offset": 3818880,
+     "length": 19584
+    },
+    {
+     "name": "f32_y0_u",
+     "dtype": "int8",
+     "offset": 3838464,
+     "length": 19584
+    },
+    {
+     "name": "f32_y0_v",
+     "dtype": "int8",
+     "offset": 3858048,
+     "length": 19584
+    },
+    {
+     "name": "f32_z0_s",
+     "dtype": "uint8",
+     "offset": 3877632,
+     "length": 19584
+    },
+    {
+     "name": "f32_z0_w",
+     "dtype": "int8",
+     "offset": 3897216,
+     "length": 19584
+    },
+    {
+     "name": "f33_y0_s",
+     "dtype": "uint8",
+     "offset": 3916800,
+     "length": 19584
+    },
+    {
+     "name": "f33_y0_w",
+     "dtype": "int8",
+     "offset": 3936384,
+     "length": 19584
+    },
+    {
+     "name": "f33_y0_u",
+     "dtype": "int8",
+     "offset": 3955968,
+     "length": 19584
+    },
+    {
+     "name": "f33_y0_v",
+     "dtype": "int8",
+     "offset": 3975552,
+     "length": 19584
+    },
+    {
+     "name": "f33_z0_s",
+     "dtype": "uint8",
+     "offset": 3995136,
+     "length": 19584
+    },
+    {
+     "name": "f33_z0_w",
+     "dtype": "int8",
+     "offset": 4014720,
+     "length": 19584
+    },
+    {
+     "name": "f34_y0_s",
+     "dtype": "uint8",
+     "offset": 4034304,
+     "length": 19584
+    },
+    {
+     "name": "f34_y0_w",
+     "dtype": "int8",
+     "offset": 4053888,
+     "length": 19584
+    },
+    {
+     "name": "f34_y0_u",
+     "dtype": "int8",
+     "offset": 4073472,
+     "length": 19584
+    },
+    {
+     "name": "f34_y0_v",
+     "dtype": "int8",
+     "offset": 4093056,
+     "length": 19584
+    },
+    {
+     "name": "f34_z0_s",
+     "dtype": "uint8",
+     "offset": 4112640,
+     "length": 19584
+    },
+    {
+     "name": "f34_z0_w",
+     "dtype": "int8",
+     "offset": 4132224,
+     "length": 19584
+    },
+    {
+     "name": "f35_y0_s",
+     "dtype": "uint8",
+     "offset": 4151808,
+     "length": 19584
+    },
+    {
+     "name": "f35_y0_w",
+     "dtype": "int8",
+     "offset": 4171392,
+     "length": 19584
+    },
+    {
+     "name": "f35_y0_u",
+     "dtype": "int8",
+     "offset": 4190976,
+     "length": 19584
+    },
+    {
+     "name": "f35_y0_v",
+     "dtype": "int8",
+     "offset": 4210560,
+     "length": 19584
+    },
+    {
+     "name": "f35_z0_s",
+     "dtype": "uint8",
+     "offset": 4230144,
+     "length": 19584
+    },
+    {
+     "name": "f35_z0_w",
+     "dtype": "int8",
+     "offset": 4249728,
+     "length": 19584
+    },
+    {
+     "name": "f36_y0_s",
+     "dtype": "uint8",
+     "offset": 4269312,
+     "length": 19584
+    },
+    {
+     "name": "f36_y0_w",
+     "dtype": "int8",
+     "offset": 4288896,
+     "length": 19584
+    },
+    {
+     "name": "f36_y0_u",
+     "dtype": "int8",
+     "offset": 4308480,
+     "length": 19584
+    },
+    {
+     "name": "f36_y0_v",
+     "dtype": "int8",
+     "offset": 4328064,
+     "length": 19584
+    },
+    {
+     "name": "f36_z0_s",
+     "dtype": "uint8",
+     "offset": 4347648,
+     "length": 19584
+    },
+    {
+     "name": "f36_z0_w",
+     "dtype": "int8",
+     "offset": 4367232,
+     "length": 19584
+    },
+    {
+     "name": "f37_y0_s",
+     "dtype": "uint8",
+     "offset": 4386816,
+     "length": 19584
+    },
+    {
+     "name": "f37_y0_w",
+     "dtype": "int8",
+     "offset": 4406400,
+     "length": 19584
+    },
+    {
+     "name": "f37_y0_u",
+     "dtype": "int8",
+     "offset": 4425984,
+     "length": 19584
+    },
+    {
+     "name": "f37_y0_v",
+     "dtype": "int8",
+     "offset": 4445568,
+     "length": 19584
+    },
+    {
+     "name": "f37_z0_s",
+     "dtype": "uint8",
+     "offset": 4465152,
+     "length": 19584
+    },
+    {
+     "name": "f37_z0_w",
+     "dtype": "int8",
+     "offset": 4484736,
+     "length": 19584
+    },
+    {
+     "name": "f38_y0_s",
+     "dtype": "uint8",
+     "offset": 4504320,
+     "length": 19584
+    },
+    {
+     "name": "f38_y0_w",
+     "dtype": "int8",
+     "offset": 4523904,
+     "length": 19584
+    },
+    {
+     "name": "f38_y0_u",
+     "dtype": "int8",
+     "offset": 4543488,
+     "length": 19584
+    },
+    {
+     "name": "f38_y0_v",
+     "dtype": "int8",
+     "offset": 4563072,
+     "length": 19584
+    },
+    {
+     "name": "f38_z0_s",
+     "dtype": "uint8",
+     "offset": 4582656,
+     "length": 19584
+    },
+    {
+     "name": "f38_z0_w",
+     "dtype": "int8",
+     "offset": 4602240,
+     "length": 19584
+    },
+    {
+     "name": "f39_y0_s",
+     "dtype": "uint8",
+     "offset": 4621824,
+     "length": 19584
+    },
+    {
+     "name": "f39_y0_w",
+     "dtype": "int8",
+     "offset": 4641408,
+     "length": 19584
+    },
+    {
+     "name": "f39_y0_u",
+     "dtype": "int8",
+     "offset": 4660992,
+     "length": 19584
+    },
+    {
+     "name": "f39_y0_v",
+     "dtype": "int8",
+     "offset": 4680576,
+     "length": 19584
+    },
+    {
+     "name": "f39_z0_s",
+     "dtype": "uint8",
+     "offset": 4700160,
+     "length": 19584
+    },
+    {
+     "name": "f39_z0_w",
+     "dtype": "int8",
+     "offset": 4719744,
+     "length": 19584
+    },
+    {
+     "name": "f40_y0_s",
+     "dtype": "uint8",
+     "offset": 4739328,
+     "length": 19584
+    },
+    {
+     "name": "f40_y0_w",
+     "dtype": "int8",
+     "offset": 4758912,
+     "length": 19584
+    },
+    {
+     "name": "f40_y0_u",
+     "dtype": "int8",
+     "offset": 4778496,
+     "length": 19584
+    },
+    {
+     "name": "f40_y0_v",
+     "dtype": "int8",
+     "offset": 4798080,
+     "length": 19584
+    },
+    {
+     "name": "f40_z0_s",
+     "dtype": "uint8",
+     "offset": 4817664,
+     "length": 19584
+    },
+    {
+     "name": "f40_z0_w",
+     "dtype": "int8",
+     "offset": 4837248,
+     "length": 19584
+    },
+    {
+     "name": "f41_y0_s",
+     "dtype": "uint8",
+     "offset": 4856832,
+     "length": 19584
+    },
+    {
+     "name": "f41_y0_w",
+     "dtype": "int8",
+     "offset": 4876416,
+     "length": 19584
+    },
+    {
+     "name": "f41_y0_u",
+     "dtype": "int8",
+     "offset": 4896000,
+     "length": 19584
+    },
+    {
+     "name": "f41_y0_v",
+     "dtype": "int8",
+     "offset": 4915584,
+     "length": 19584
+    },
+    {
+     "name": "f41_z0_s",
+     "dtype": "uint8",
+     "offset": 4935168,
+     "length": 19584
+    },
+    {
+     "name": "f41_z0_w",
+     "dtype": "int8",
+     "offset": 4954752,
+     "length": 19584
+    },
+    {
+     "name": "f42_y0_s",
+     "dtype": "uint8",
+     "offset": 4974336,
+     "length": 19584
+    },
+    {
+     "name": "f42_y0_w",
+     "dtype": "int8",
+     "offset": 4993920,
+     "length": 19584
+    },
+    {
+     "name": "f42_y0_u",
+     "dtype": "int8",
+     "offset": 5013504,
+     "length": 19584
+    },
+    {
+     "name": "f42_y0_v",
+     "dtype": "int8",
+     "offset": 5033088,
+     "length": 19584
+    },
+    {
+     "name": "f42_z0_s",
+     "dtype": "uint8",
+     "offset": 5052672,
+     "length": 19584
+    },
+    {
+     "name": "f42_z0_w",
+     "dtype": "int8",
+     "offset": 5072256,
+     "length": 19584
+    },
+    {
+     "name": "f43_y0_s",
+     "dtype": "uint8",
+     "offset": 5091840,
+     "length": 19584
+    },
+    {
+     "name": "f43_y0_w",
+     "dtype": "int8",
+     "offset": 5111424,
+     "length": 19584
+    },
+    {
+     "name": "f43_y0_u",
+     "dtype": "int8",
+     "offset": 5131008,
+     "length": 19584
+    },
+    {
+     "name": "f43_y0_v",
+     "dtype": "int8",
+     "offset": 5150592,
+     "length": 19584
+    },
+    {
+     "name": "f43_z0_s",
+     "dtype": "uint8",
+     "offset": 5170176,
+     "length": 19584
+    },
+    {
+     "name": "f43_z0_w",
+     "dtype": "int8",
+     "offset": 5189760,
+     "length": 19584
+    },
+    {
+     "name": "f44_y0_s",
+     "dtype": "uint8",
+     "offset": 5209344,
+     "length": 19584
+    },
+    {
+     "name": "f44_y0_w",
+     "dtype": "int8",
+     "offset": 5228928,
+     "length": 19584
+    },
+    {
+     "name": "f44_y0_u",
+     "dtype": "int8",
+     "offset": 5248512,
+     "length": 19584
+    },
+    {
+     "name": "f44_y0_v",
+     "dtype": "int8",
+     "offset": 5268096,
+     "length": 19584
+    },
+    {
+     "name": "f44_z0_s",
+     "dtype": "uint8",
+     "offset": 5287680,
+     "length": 19584
+    },
+    {
+     "name": "f44_z0_w",
+     "dtype": "int8",
+     "offset": 5307264,
+     "length": 19584
+    },
+    {
+     "name": "f45_y0_s",
+     "dtype": "uint8",
+     "offset": 5326848,
+     "length": 19584
+    },
+    {
+     "name": "f45_y0_w",
+     "dtype": "int8",
+     "offset": 5346432,
+     "length": 19584
+    },
+    {
+     "name": "f45_y0_u",
+     "dtype": "int8",
+     "offset": 5366016,
+     "length": 19584
+    },
+    {
+     "name": "f45_y0_v",
+     "dtype": "int8",
+     "offset": 5385600,
+     "length": 19584
+    },
+    {
+     "name": "f45_z0_s",
+     "dtype": "uint8",
+     "offset": 5405184,
+     "length": 19584
+    },
+    {
+     "name": "f45_z0_w",
+     "dtype": "int8",
+     "offset": 5424768,
+     "length": 19584
+    },
+    {
+     "name": "f46_y0_s",
+     "dtype": "uint8",
+     "offset": 5444352,
+     "length": 19584
+    },
+    {
+     "name": "f46_y0_w",
+     "dtype": "int8",
+     "offset": 5463936,
+     "length": 19584
+    },
+    {
+     "name": "f46_y0_u",
+     "dtype": "int8",
+     "offset": 5483520,
+     "length": 19584
+    },
+    {
+     "name": "f46_y0_v",
+     "dtype": "int8",
+     "offset": 5503104,
+     "length": 19584
+    },
+    {
+     "name": "f46_z0_s",
+     "dtype": "uint8",
+     "offset": 5522688,
+     "length": 19584
+    },
+    {
+     "name": "f46_z0_w",
+     "dtype": "int8",
+     "offset": 5542272,
+     "length": 19584
+    },
+    {
+     "name": "f47_y0_s",
+     "dtype": "uint8",
+     "offset": 5561856,
+     "length": 19584
+    },
+    {
+     "name": "f47_y0_w",
+     "dtype": "int8",
+     "offset": 5581440,
+     "length": 19584
+    },
+    {
+     "name": "f47_y0_u",
+     "dtype": "int8",
+     "offset": 5601024,
+     "length": 19584
+    },
+    {
+     "name": "f47_y0_v",
+     "dtype": "int8",
+     "offset": 5620608,
+     "length": 19584
+    },
+    {
+     "name": "f47_z0_s",
+     "dtype": "uint8",
+     "offset": 5640192,
+     "length": 19584
+    },
+    {
+     "name": "f47_z0_w",
+     "dtype": "int8",
+     "offset": 5659776,
+     "length": 19584
+    },
+    {
+     "name": "f48_y0_s",
+     "dtype": "uint8",
+     "offset": 5679360,
+     "length": 19584
+    },
+    {
+     "name": "f48_y0_w",
+     "dtype": "int8",
+     "offset": 5698944,
+     "length": 19584
+    },
+    {
+     "name": "f48_y0_u",
+     "dtype": "int8",
+     "offset": 5718528,
+     "length": 19584
+    },
+    {
+     "name": "f48_y0_v",
+     "dtype": "int8",
+     "offset": 5738112,
+     "length": 19584
+    },
+    {
+     "name": "f48_z0_s",
+     "dtype": "uint8",
+     "offset": 5757696,
+     "length": 19584
+    },
+    {
+     "name": "f48_z0_w",
+     "dtype": "int8",
+     "offset": 5777280,
+     "length": 19584
+    }
+   ]
+  },
+  "body": {
+   "url": "body.bin",
+   "bytes": 613200,
+   "arrays": [
+    {
+     "name": "pos",
+     "dtype": "float32",
+     "offset": 0,
+     "length": 46728
+    },
+    {
+     "name": "normal",
+     "dtype": "int8",
+     "offset": 186912,
+     "length": 46728
+    },
+    {
+     "name": "idx",
+     "dtype": "uint32",
+     "offset": 233640,
+     "length": 94890
+    }
+   ],
+   "n_verts": 15576,
+   "n_faces": 31630,
+   "fine": true
+  }
+ },
+ "speed_mps": 7.0
+}

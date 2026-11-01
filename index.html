@@ -3,6 +3,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>POLLEN Shot Explorer</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<script>try { var th = localStorage.getItem("pollen-theme"); if (th === "light" || th === "dark") document.documentElement.dataset.theme = th; } catch (_) { /* storage blocked: follow the system theme */ }</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -26,6 +27,30 @@
   --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
   color-scheme: dark;
+  /* PM-023: extra tokens (surfaces, CFD series colours, spacing and type scales) */
+  --btn-bg: rgba(17,25,33,.86); --overlay: rgba(11,16,21,.86); --tipbg: #05080b; --rbarbg: rgba(5,8,11,.96);
+  --cv-accent: #f4c430; /* canvas accent: canvases keep a dark plotting surface in both themes */
+  --c1: #6cb4ff; --c2: #f4c430; --c3: #e58cff; --ink-on-pollen: #14110a;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
+  --t-sm: 12px; --t-md: 14px; --t-lg: 16px; --t-xl: 28px;
+}
+:root[data-theme="light"] {
+  --bg: #f3f5f7; --panel: #ffffff; --panel-2: #eaeef2; --line: #c9d1d9; --fg: #141b22; --muted: #4f5d6a;
+  --pollen: #9a6b00; --clean: #0a7f5a; --hit: #c0392b; --miss: #5b6874; --twin: #46535f;
+  --tight: #9c5a00; --no: #c0392b; --out: #4f5d6a;
+  --btn-bg: rgba(255,255,255,.94); --overlay: rgba(255,255,255,.92); --tipbg: #ffffff; --rbarbg: rgba(255,255,255,.97);
+  --c1: #1a62a8; --c2: #946500; --c3: #8e3aba; --ink-on-pollen: #ffffff;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f3f5f7; --panel: #ffffff; --panel-2: #eaeef2; --line: #c9d1d9; --fg: #141b22; --muted: #4f5d6a;
+    --pollen: #9a6b00; --clean: #0a7f5a; --hit: #c0392b; --miss: #5b6874; --twin: #46535f;
+    --tight: #9c5a00; --no: #c0392b; --out: #4f5d6a;
+    --btn-bg: rgba(255,255,255,.94); --overlay: rgba(255,255,255,.92); --tipbg: #ffffff; --rbarbg: rgba(255,255,255,.97);
+    --c1: #1a62a8; --c2: #946500; --c3: #8e3aba; --ink-on-pollen: #ffffff;
+    color-scheme: light;
+  }
 }
 html, body { background: var(--bg); color: var(--fg); }
 body { font-family: var(--body); font-size: 14px; line-height: 1.45; }
@@ -42,13 +67,13 @@ h1 b { color: var(--pollen); font-weight: 700; }
 .hud { position: absolute; left: 12px; top: 12px; right: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; pointer-events: none; flex-wrap: wrap; }
 .hud > * { pointer-events: auto; }
 .views { display: flex; gap: 4px; flex-wrap: wrap; }
-.views button, .btn { font: 500 12px var(--body); color: var(--fg); background: rgba(17,25,33,.86); border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px; cursor: pointer; }
+.views button, .btn { font: 500 12px var(--body); color: var(--fg); background: var(--btn-bg); border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px; cursor: pointer; }
 .views button:hover, .btn:hover { border-color: var(--muted); }
 button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--pollen); outline-offset: 1px; }
-.legend { background: rgba(11,16,21,.86); border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; font-size: 12px; display: grid; gap: 3px; }
+.legend { background: var(--overlay); border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; font-size: 12px; display: grid; gap: 3px; }
 .legend i { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
 .verdict { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; pointer-events: none; }
-.pill { font: 600 13px var(--mono); letter-spacing: .04em; padding: 4px 9px; border-radius: 999px; border: 1px solid currentColor; background: rgba(11,16,21,.82); }
+.pill { font: 600 13px var(--mono); letter-spacing: .04em; padding: 4px 9px; border-radius: 999px; border: 1px solid currentColor; background: var(--overlay); }
 .pill.clean { color: var(--clean); } .pill.hit { color: var(--hit); } .pill.miss { color: var(--miss); } .pill.twin { color: var(--twin); font-weight: 500; }
 .loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-family: var(--mono); background: #070b0f; }
 .rail { display: grid; gap: 12px; align-content: start; min-width: 0; }
@@ -61,14 +86,14 @@ input[type=range] { width: 100%; accent-color: var(--pollen); }
 select { width: 100%; font: 13px var(--body); color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 5px 6px; }
 .seg { display: flex; flex-wrap: wrap; gap: 4px; }
 .seg button { flex: 1 1 auto; font: 500 12px var(--mono); color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 5px 6px; cursor: pointer; }
-.seg button[aria-pressed=true] { background: var(--pollen); color: #14110a; border-color: var(--pollen); }
+.seg button[aria-pressed=true] { background: var(--pollen); color: var(--ink-on-pollen); border-color: var(--pollen); }
 .seg button:disabled { opacity: .35; cursor: not-allowed; }
 .stats { display: grid; grid-template-columns: minmax(8.5em, 1fr) auto; gap: 3px 10px; font-size: 12.5px; }
 .stats dt { color: var(--muted); } .stats dd { margin: 0; text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
 .checks { display: grid; gap: 5px; font-size: 12.5px; }
 .checks label { display: flex; gap: 7px; align-items: center; cursor: pointer; }
 .btns { display: flex; gap: 6px; flex-wrap: wrap; }
-.btn.primary { background: var(--pollen); color: #14110a; border-color: var(--pollen); font-weight: 600; }
+.btn.primary { background: var(--pollen); color: var(--ink-on-pollen); border-color: var(--pollen); font-weight: 600; }
 .note { font-size: 12px; color: var(--muted); margin: 0; }
 .charts { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 14px; }
 @media (max-width: 960px) { .charts { grid-template-columns: minmax(0, 1fr); } }
@@ -77,7 +102,7 @@ select { width: 100%; font: 13px var(--body); color: var(--fg); background: var(
 .chart p { margin: 0; color: var(--muted); font-size: 12.5px; }
 .chart canvas { width: 100%; display: block; cursor: crosshair; }
 #win { aspect-ratio: 16 / 9; } #stand { aspect-ratio: 4 / 3; }
-.tip { position: fixed; pointer-events: none; background: #05080b; border: 1px solid var(--line); border-radius: 4px; padding: 5px 8px; font: 12px var(--mono); color: var(--fg); z-index: 20; white-space: nowrap; }
+.tip { position: fixed; pointer-events: none; background: var(--tipbg); border: 1px solid var(--line); border-radius: 4px; padding: 5px 8px; font: 12px var(--mono); color: var(--fg); z-index: 20; white-space: nowrap; }
 footer { color: var(--muted); font-size: 12px; display: grid; gap: 6px; max-width: 110ch; }
 footer p { margin: 0; }
 code { font-family: var(--mono); font-size: 12px; }
@@ -123,8 +148,9 @@ header { display: grid; gap: 8px; }
 .titlerow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 h1 { font-size: 28px; }
 .btn.reset { margin-left: auto; }
+.btn.themebtn { min-width: 64px; } .btn.themebtn + .btn.reset { margin-left: 0; }
 .sub { font-size: 14px; color: var(--fg); opacity: .85; }
-.tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .tabs button { display: grid; gap: 1px; text-align: left; font: 400 12px var(--body); color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer; min-height: 44px; }
 .tabs button b { font: 600 16px var(--display); letter-spacing: .03em; color: var(--fg); }
 .tabs button:hover { border-color: var(--muted); }
@@ -132,7 +158,7 @@ h1 { font-size: 28px; }
 .tabs button[aria-pressed=true] b { color: var(--pollen); }
 .card h2, .shead h2 { font-size: 16px; }
 .shead { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
-.n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--pollen); color: #14110a; font: 700 14px var(--display); margin-right: 8px; vertical-align: 1px; }
+.n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--pollen); color: var(--ink-on-pollen); font: 700 14px var(--display); margin-right: 8px; vertical-align: 1px; }
 .hint { font-size: 12px; color: var(--muted); margin: 0; }
 .hint-i { display: inline-grid; place-items: center; width: 16px; height: 16px; border: 1px solid var(--muted); border-radius: 50%; font: 600 10px var(--body); color: var(--muted); cursor: help; }
 .term { font: 400 11px var(--mono); color: var(--muted); border-bottom: 1px dotted var(--muted); cursor: help; text-transform: none; letter-spacing: 0; }
@@ -191,7 +217,7 @@ body[data-view=robot] .stage { min-height: 460px; }
 /* PM-011 review: charts sit at the top of their card (no stretched gaps); phone sticky answer bar; field map first in the Field view */
 .chart { align-content: start; }
 body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec { order: -1; }
-.rbar { position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 15; display: grid; gap: 2px; text-align: left; font: 400 12px/1.35 var(--body); color: var(--muted); background: rgba(5,8,11,.96); border: 1px solid var(--pollen); border-radius: 8px; padding: 8px 12px; cursor: pointer; box-shadow: 0 4px 18px rgba(0,0,0,.55); }
+.rbar { position: fixed; left: 8px; right: 8px; bottom: 8px; z-index: 15; display: grid; gap: 2px; text-align: left; font: 400 12px/1.35 var(--body); color: var(--muted); background: var(--rbarbg); border: 1px solid var(--pollen); border-radius: 8px; padding: 8px 12px; cursor: pointer; box-shadow: 0 4px 18px rgba(0,0,0,.55); }
 .rbar b { font: 700 19px var(--display); color: var(--pollen); font-variant-numeric: tabular-nums; }
 .rbar .rb-st { font: 600 14px var(--display); letter-spacing: .03em; } .rbar .rb-st.ok { color: var(--clean); } .rbar .rb-st.tight { color: var(--tight); } .rbar .rb-st.no { color: var(--no); } .rbar .rb-st.out, .rbar .rb-st.wait { color: var(--out); }
 .rbar .rb-tw { color: var(--twin); } .rbar.stale > :not(.rb-st) { opacity: .45; }
@@ -212,6 +238,7 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
   .stage, body[data-view=robot] .stage { min-height: 0; height: min(64vh, 480px); }
 }
 @media (max-width: 520px) {
+  .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .tabs button { padding: 6px 8px; } .tabs button b { font-size: 15px; } .tabs button span { font-size: 11px; }
   .rec .say b { font-size: 30px; }
   .tiles { grid-template-columns: minmax(0, 1fr); gap: 6px; }
@@ -223,6 +250,70 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
 .kitlink a { color: var(--pollen); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .seg button small { display: block; font: 400 10px var(--mono); color: inherit; opacity: .75; }
 .spinseg button { font-family: var(--body); }
+/* CFD view (PM-023): own section, shown when body[data-view=cfd]; the 3D scene and the other views are hidden then */
+body[data-view=cfd] .wrap > :not(header):not(footer):not(#cfdsec) { display: none !important; }
+body[data-view=cfd] .rbar, body[data-view=cfd] .kitlink { display: none !important; }
+#cfdsec { display: grid; gap: 14px; min-width: 0; }
+#cfdsec[hidden] { display: none; }
+#cfdsec .card { min-width: 0; }
+#cfdsec h2 { margin: 0; }
+.cfd-lead { margin: 0; max-width: 78ch; font-size: 14px; line-height: 1.55; color: var(--fg); }
+.cfd-lead small, .cfd-note { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.cfd-note { margin: 0; max-width: 90ch; }
+.badge { display: inline-block; font: 600 11px var(--mono); letter-spacing: .04em; padding: 1px 6px; border-radius: 3px; border: 1px solid var(--pollen); color: var(--pollen); vertical-align: middle; white-space: nowrap; }
+.badge.d { border-color: var(--muted); color: var(--muted); }
+.cfd-ctl { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; }
+.cfd-ctl .grp { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.cfd-ctl .grp > span { font-size: 12px; color: var(--muted); margin-right: 2px; }
+.chip { font: 500 13px var(--body); color: var(--fg); background: var(--panel-2); border: 1px solid var(--line); border-radius: 14px; padding: 4px 11px; cursor: pointer; min-height: 30px; }
+.chip[aria-pressed=true] { border-color: var(--pollen); color: var(--pollen); }
+.cfd-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+@media (max-width: 960px) { .cfd-grid { grid-template-columns: minmax(0, 1fr); } }
+.cfd-svg { width: 100%; height: auto; display: block; }
+.cfd-svg text { font: 11px var(--mono); fill: var(--muted); }
+.cfd-svg .ax { stroke: var(--line); stroke-width: 1; } .cfd-svg .gr { stroke: var(--line); stroke-width: 1; opacity: .5; }
+.cfd-svg .tt { fill: var(--fg); font: 600 12px var(--body); }
+.cfd-leg { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin: 0; }
+.cfd-leg i { display: inline-block; width: 18px; height: 0; border-top: 3px solid; vertical-align: middle; margin-right: 5px; }
+.cfd-tw { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table.cfd { border-collapse: collapse; width: 100%; font: 13px var(--mono); font-variant-numeric: tabular-nums; min-width: 760px; }
+table.cfd th { font: 600 11px var(--body); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.cfd td { text-align: right; padding: 5px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.cfd th:first-child, table.cfd td:first-child { text-align: left; }
+table.cfd tr.s0 td { color: var(--twin); }
+table.cfd tr.sel td { background: var(--panel-2); }
+table.cfd tr[data-id] { cursor: pointer; }
+table.cfd td.tw { color: var(--twin); border-left: 1px dashed var(--line); }
+table.cfd td.d192:first-child::after { content: " \25C6"; color: var(--clean); }
+.cfd-grid2 { display: grid; gap: 6px; }
+.cfd-fields { border: 1px dashed var(--line); border-radius: 6px; padding: 10px; }
+.cfd-fields img { max-width: 100%; height: auto; border-radius: 4px; }
+@media (max-width: 520px) { .cfd-lead { font-size: 13.5px; } .chip { min-height: 38px; } }
+#cfd-fields[hidden] { display: none; }
+#cfdsec, .cfd-grid > div, .cfd-tw { min-width: 0; max-width: 100%; }
+#cfdsec .card { overflow: hidden; }
+body[data-view=cfd] .wrap { min-width: 0; max-width: 100vw; overflow-x: hidden; }
+/* PM-023 polish: shared scales, focus, readable chart text */
+.wrap { gap: var(--s4); padding-block: var(--s4) var(--s5); }
+.card, .chart { padding: var(--s4); gap: var(--s3); }
+.card h2, .shead h2, .chart h3 { letter-spacing: .04em; }
+.hint, .note, .cfd-note, .labkey { line-height: 1.5; }
+a { color: var(--pollen); text-underline-offset: 3px; }
+:where(button, a, summary, select, input, [tabindex], tr[data-id]):focus-visible { outline: 2px solid var(--pollen); outline-offset: 2px; border-radius: 4px; }
+.tabs button, .chip, .btn, .seg button { transition: border-color .12s, background-color .12s; }
+.tabs button { min-height: 52px; align-content: center; }
+.tabs button span { font-size: var(--t-sm); }
+.seg button, .chip { min-height: 34px; }
+.tag { white-space: nowrap; }
+.cfd-svg text { font-size: 12px; } .cfd-svg .tt { font: 600 14px var(--body); }
+@media (max-width: 520px) {
+  .wrap { gap: var(--s3); }
+  .card, .chart { padding: var(--s3); }
+  .cfd-svg text { font-size: 17px; } .cfd-svg .tt { font-size: 19px; }
+  .tabs button { min-height: 48px; }
+}
+.stage .hud .note, .stage .hudnote, .stage .hud .legend { --muted: #8d9caa; }
+.stage .hud .note, .stage .hudnote { color: #aab6c1; }
 </style>
 
 <div class="wrap">
@@ -230,6 +321,7 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
     <div class="titlerow">
       <h1><b>POLLEN</b> Shot Explorer</h1>
       <span class="tag" title="Every number here comes from a computer model. Nothing has been measured on a real robot yet.">Predicted · not measured</span>
+      <button class="btn themebtn" id="theme-btn" type="button" aria-label="Switch between light and dark theme" title="Switch between light and dark theme"></button>
       <button class="btn reset" id="reset" type="button" title="Put every setting back to its starting value">Reset</button>
     </div>
     <p class="sub" id="sub">Drag the robot on the map, set your shooter height and backspin, then read the wheel rpm and hood angle in the answer card.</p>
@@ -237,6 +329,7 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
       <button type="button" data-v="robot"><b>Robot</b><span>Where can I shoot from?</span></button>
       <button type="button" data-v="plane"><b>Side view</b><span>One shot up close</span></button>
       <button type="button" data-v="field"><b>Field map</b><span>Every spot at once</span></button>
+      <button type="button" data-v="cfd"><b>CFD</b><span>Our wind-flow results</span></button>
     </nav>
     <p class="kitlink"><a href="measure/measure.html" id="measure-link">Measure your shooter</a> <span>· track a slow-motion video and fit drag (Cd) and spin lift (Cl) with the no-spin twin test, then enter them here (Advanced settings)</span></p>
   </header>
@@ -470,6 +563,40 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
       <details class="more"><summary>Where these numbers come from</summary><p class="note" id="fprov"></p></details>
     </section>
   </div>
+
+  <section id="cfdsec" hidden aria-labelledby="h-cfd">
+    <div class="card">
+      <div class="shead"><h2 id="h-cfd">Our own CFD of POLLEN</h2><span class="badge">PREDICTED</span></div>
+      <p class="cfd-lead">A GPU lattice-Boltzmann large-eddy simulation (D3Q19) of the real POLLEN shape: the exact sphere with its 26 holes, grid-refined near the ball, with interpolated bounce-back walls. It gives the mean drag (Cd), the backspin lift (Cl) and the spin-down torque (CM) coefficients. <b>This is a model, not a measurement</b>: no wind-tunnel or flight test of POLLEN exists yet, so every number here is PREDICTED.</p>
+      <p class="cfd-note">Spin ratio S = ω·R / U (derived: ball surface speed over air speed). Reynolds number Re = U·D / ν (derived); Re 20000, 33057 and 47224 are about 4, 7 and 10 m/s (derived). Means use the window 15 ≤ t* ≤ 150, where t* is time in ball diameters per U (derived). Cd, Cl are force over ½ρU²A with A = π(D/2)²; CM = torque over ½ρU²A·R, positive when the ball is slowed down. Orientations: btw = between holes, hf = hole facing the flow, o3 = a third orientation. A run appears once it has finished; more are added as they arrive.</p>
+    </div>
+    <div class="card">
+      <div class="cfd-ctl" role="group" aria-label="Chart controls">
+        <div class="grp"><span>Coefficient</span><button class="chip" type="button" data-cm="Cl" aria-pressed="true">Lift Cl</button><button class="chip" type="button" data-cm="Cd" aria-pressed="false">Drag Cd</button><button class="chip" type="button" data-cm="CM" aria-pressed="false">Torque CM</button></div>
+        <div class="grp"><span>Orientation</span><span id="cfd-or"></span></div>
+      </div>
+      <div class="cfd-grid">
+        <div><svg class="cfd-svg" id="cfd-ch1" viewBox="0 0 600 340" role="img" aria-label="Coefficient against spin ratio, one curve per Reynolds number"></svg><p class="cfd-leg" id="cfd-leg1"></p></div>
+        <div><svg class="cfd-svg" id="cfd-ch2" viewBox="0 0 600 340" role="img" aria-label="Time history of Cl and Cd for the selected run"></svg><p class="cfd-leg" id="cfd-leg2"></p></div>
+      </div>
+      <p class="cfd-note" id="cfd-trend"></p>
+    </div>
+    <div class="card">
+      <div class="shead"><h2>Results table</h2><span class="badge">PREDICTED</span></div>
+      <div class="cfd-tw"><table class="cfd" id="cfd-tab"></table></div>
+      <p class="cfd-note">Each backspin row has its no-spin twin beside it: the S = 0 run at the same Re, orientation and grid (dashed column). Click a row to plot its history. A diamond after the run name marks the finer grid (192 cells per diameter). "not run yet" means the twin has not finished.</p>
+    </div>
+    <div class="card">
+      <div class="shead"><h2>Grid resolution</h2><span class="badge">PREDICTED</span></div>
+      <p class="cfd-lead" id="cfd-grid"></p>
+      <p class="cfd-note" id="cfd-gridnote">D128 and D192 are 128 and 192 cells across the ball diameter. Statistical error of the means is not yet quantified.</p>
+    </div>
+    <div class="card cfd-fields" id="cfd-fields" hidden>
+      <div class="shead"><h2>Flow field</h2><span class="badge">PREDICTED</span></div>
+      <p class="cfd-note" id="cfd-fields-cap"></p>
+      <div id="cfd-fields-img"></div>
+    </div>
+  </section>
 
   <footer>
     <details class="about"><summary><b>About this model.</b> PREDICTED by a computer model; no POLLEN drag, spin lift, bounce or grip has been measured. Test on a real robot before a match.</summary>
@@ -2516,6 +2643,7 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
 "use strict";
 const PH = window.PollenPhysics;
 const $ = id => document.getElementById(id);
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#f4c430";   // canvas 2D cannot resolve var(); read the token instead
 const COL = { pollen: 0xf4c430, clean: 0x38d39f, hit: 0xff6b5a, twin: 0xa9b4bf };
 const AERO_NAMES = { nominal: "Nominal (literature middle)", Cd_low: "Low drag (Cd 0.33)", Cd_high: "High drag (Cd 0.9)",
   Cl_low: "Weak spin lift", Cl_high: "Strong spin lift", k_high: "Fast spin decay" };
@@ -2722,7 +2850,7 @@ function buildRobot() {
 // the ball: yellow perforated shell with one dark stripe so the spin is visible
 const ballTex = (function () {
   const c = document.createElement("canvas"); c.width = 512; c.height = 256; const x = c.getContext("2d");
-  x.fillStyle = "#f4c430"; x.fillRect(0, 0, 512, 256);
+  x.fillStyle = cssv("--cv-accent"); x.fillRect(0, 0, 512, 256);
   x.fillStyle = "#b38708";
   for (let r = 0; r < 5; r++) for (let k = 0; k < 8; k++) { x.beginPath(); x.arc((k + (r % 2) * 0.5) * 64 + 16, 28 + r * 50, 11, 0, 7); x.fill(); }
   x.fillStyle = "#3b2c05"; x.fillRect(0, 118, 512, 20);
@@ -2876,7 +3004,7 @@ function drawWindow() {
     const kk = curSq[k] - 1, t = Math.min(1, kk / 4);
     x.fillStyle = `rgb(${Math.round(24 + 32 * t)},${Math.round(92 + 119 * t)},${Math.round(74 + 85 * t)})`;
     x.fillRect(L + (j - j0) * cw, T + (i1 - i) * chh, Math.ceil(cw), Math.ceil(chh));
-    if (robustSlice && robustSlice[k]) { x.strokeStyle = "#f4c430"; x.lineWidth = 1; x.strokeRect(L + (j - j0) * cw + 0.5, T + (i1 - i) * chh + 0.5, cw - 1, chh - 1); }
+    if (robustSlice && robustSlice[k]) { x.strokeStyle = cssv("--cv-accent"); x.lineWidth = 1; x.strokeRect(L + (j - j0) * cw + 0.5, T + (i1 - i) * chh + 0.5, cw - 1, chh - 1); }
   }
   // axes: angle (x) and exit speed (y, left) with flywheel rpm on the right
   x.fillStyle = "#8d9caa"; x.font = "11px 'IBM Plex Mono', monospace"; x.strokeStyle = "#24323f"; x.lineWidth = 1;
@@ -2899,7 +3027,7 @@ function drawWindow() {
   // current shot crosshair
   if (c.iv >= i0 && c.iv <= i1 && c.it >= j0 && c.it <= j1) {
     const px = L + (c.it - j0 + 0.5) * cw, py = T + (i1 - c.iv + 0.5) * chh;
-    x.strokeStyle = "#f4c430"; x.lineWidth = 2;
+    x.strokeStyle = cssv("--cv-accent"); x.lineWidth = 2;
     x.beginPath(); x.arc(px, py, Math.max(5, Math.min(cw, chh)), 0, 7); x.stroke();
     x.beginPath(); x.moveTo(px - 12, py); x.lineTo(px - 6, py); x.moveTo(px + 6, py); x.lineTo(px + 12, py);
     x.moveTo(px, py - 12); x.lineTo(px, py - 6); x.moveTo(px, py + 6); x.lineTo(px, py + 12); x.stroke();
@@ -2935,7 +3063,7 @@ function drawStand(caseData) {
   for (let d = 0.6; d <= 1.751; d += 0.2) { x.textAlign = "center"; x.fillText(d.toFixed(1), X(d), T + ph + 14); }
   x.fillText("distance to HIVE pivot plane (m)", L + pw / 2, h - 4);
   x.save(); x.translate(10, T + ph / 2); x.rotate(-Math.PI / 2); x.textAlign = "center"; x.fillText("clean pairs", 0, 0); x.restore();
-  const hues = ["#3b5d6e", "#4b7f86", "#5aa497", "#78c9a4", "#f4c430"];
+  const hues = ["#3b5d6e", "#4b7f86", "#5aa497", "#78c9a4", cssv("--cv-accent")];
   // legend: laid out by measured width so the labels never overlap on a phone
   const full = G.h.map(v => `h ${v} m`), short = G.h.map(v => `${v}`);
   const gap = 10, wid = a => a.reduce((s, t) => s + x.measureText(t).width + gap, 0);
@@ -2951,7 +3079,7 @@ function drawStand(caseData) {
     x.fillText(labs[ih], legX[ih], 14);
   }
   const px = X(G.d[nearest(G.d, st.d)]), py = Y(caseData.count[st.ih * ND + nearest(G.d, st.d)]);
-  x.fillStyle = "#f4c430"; x.beginPath(); x.arc(px, py, 5, 0, 7); x.fill();
+  x.fillStyle = cssv("--cv-accent"); x.beginPath(); x.arc(px, py, 5, 0, 7); x.fill();
   x.strokeStyle = "rgba(244,196,48,.4)"; x.setLineDash([3, 3]); x.beginPath(); x.moveTo(px, T); x.lineTo(px, T + ph); x.stroke(); x.setLineDash([]);
 }
 
@@ -3086,10 +3214,11 @@ function resize() {
   renderer.setSize(r.width, r.height, false); camera.aspect = r.width / Math.max(1, r.height); camera.updateProjectionMatrix();
 }
 let roPending = false;
-new ResizeObserver(() => {
+window.redrawCanvases = () => {   // also called by the theme toggle so canvas accents re-read the CSS tokens
   if (roPending) return; roPending = true;
   requestAnimationFrame(() => { roPending = false; resize(); if (MODE === "robot") { if (R.ready) { R.heatLayer = null; rDrawAll(); } } else if (F.on) { if (F.ready) { F.layer = null; fieldSchedule(); } } else if (curSlice) { drawWindow(); loadCase(curCase().files[geomKey()].file).then(drawStand).catch(() => {}); } });
-}).observe(document.body);
+};
+new ResizeObserver(() => window.redrawCanvases()).observe(document.body);
 function loop(now) {
   requestAnimationFrame(loop);
   controls.update();
@@ -3356,7 +3485,7 @@ function drawMap(MD) {
     x.fillRect(r[0], r[1], r[2], r[3]); x.strokeRect(r[0], r[1], r[2], r[3]);
     x.fillStyle = col; x.font = MONO(); x.textAlign = MAPV.blue ? "right" : "left"; tagText(x, lab, MAPV.blue ? r[0] - 4 : r[0] + r[2] + 4, r[1] + r[3] / 2 + 4);   // label on the mouth side in both views
   });
-  x.beginPath(); x.arc(g.X(0.401), g.Y(0), 4, 0, 6.3); x.strokeStyle = "#f4c430"; x.lineWidth = 2; x.stroke();
+  x.beginPath(); x.arc(g.X(0.401), g.Y(0), 4, 0, 6.3); x.strokeStyle = cssv("--cv-accent"); x.lineWidth = 2; x.stroke();
   x.fillStyle = "rgba(227,234,240,.75)"; x.font = MONO();
   const sl = sideLabels(g, w < 560);
   x.textAlign = "left"; tagText(x, sl[0], g.fx0 + 6, g.fy0 + 14); x.textAlign = "right"; tagText(x, sl[1], g.fx0 + g.fs - 6, g.fy0 + 14);
@@ -3364,8 +3493,8 @@ function drawMap(MD) {
   if (F.info) {
     const I = F.info, rx = g.X(I.x), ry = g.Y(I.y);
     x.strokeStyle = "rgba(244,196,48,.7)"; x.lineWidth = 1.5; x.setLineDash([5, 4]); x.beginPath(); x.moveTo(rx, ry); x.lineTo(g.X(0.401), g.Y(0)); x.stroke(); x.setLineDash([]);
-    x.strokeStyle = "#f4c430"; x.lineWidth = 2; x.strokeRect(rx - 0.2285 * g.s, ry - 0.2285 * g.s, 0.457 * g.s, 0.457 * g.s);
-    x.fillStyle = "#f4c430"; x.beginPath(); x.arc(rx, ry, 4, 0, 6.3); x.fill();
+    x.strokeStyle = cssv("--cv-accent"); x.lineWidth = 2; x.strokeRect(rx - 0.2285 * g.s, ry - 0.2285 * g.s, 0.457 * g.s, 0.457 * g.s);
+    x.fillStyle = cssv("--cv-accent"); x.beginPath(); x.arc(rx, ry, 4, 0, 6.3); x.fill();
   }
   F.mapGeomLast = g;
 }
@@ -3406,7 +3535,7 @@ function drawFWin(win, side, kSel) {
   if (win && !win.n) { x.textAlign = "center"; x.fillText("no clean shot here at this height and spin", Lm + pw / 2, Tm + ph / 2); }
   if (kSel >= 0) {
     const i = Math.floor(kSel / nT), j = kSel % nT;
-    x.strokeStyle = "#f4c430"; x.lineWidth = 2; x.beginPath(); x.arc(Lm + (j - j0 + 0.5) * cw, Tm + (i1 - i + 0.5) * chh, 6, 0, 6.3); x.stroke();
+    x.strokeStyle = cssv("--cv-accent"); x.lineWidth = 2; x.beginPath(); x.arc(Lm + (j - j0 + 0.5) * cw, Tm + (i1 - i + 0.5) * chh, 6, 0, 6.3); x.stroke();
   }
   F.winGeom = { Lm, Tm, pw, ph, cw, chh, i1, j0, side };
 }
@@ -3424,6 +3553,7 @@ function drawFloorRobot(I, h) {   // the robot body at the chosen spot, in the s
   top.position.copy(W(-I.d - fw / 2 + 0.06, -I.y, bh)); fieldGroup.add(top);
 }
 async function fieldUpdate() {
+  if (document.body.dataset.view === "cfd") return;   // CFD view hides the map canvases; nothing to draw
   const tok = ++F.tok, GG = F.FI.grid, FG = F.FI.field_grid;
   const MD = await loadMapData(); if (tok !== F.tok || !F.on) return;
   if (F.col < 0) {   // default spot: far side, about 0.9 m out near the up-cell line (else the best-count cell)
@@ -4058,7 +4188,7 @@ function drawRMap() {
   });
   x.setLineDash([]); x.restore();
   x.fillStyle = "rgba(244,196,48,.7)"; x.textAlign = "right"; if (w >= 480) x.fillText("HIVE centre line (ψ = 0)", fx0 + fs - 4, g.Y(0) - 4);
-  x.beginPath(); x.arc(g.X(X_GATE), g.Y(0), 4, 0, 6.3); x.strokeStyle = "#f4c430"; x.lineWidth = 2; x.stroke();
+  x.beginPath(); x.arc(g.X(X_GATE), g.Y(0), 4, 0, 6.3); x.strokeStyle = cssv("--cv-accent"); x.lineWidth = 2; x.stroke();
   x.fillStyle = "rgba(227,234,240,.75)"; x.textAlign = "center";
   const narrowMap = w < 560;
   const sl = sideLabels(g, narrowMap);
@@ -4073,9 +4203,9 @@ function drawRMap() {
   x.beginPath(); x.moveTo(cx, cy); x.lineTo(g.X(X_GATE), g.Y(0)); x.stroke(); x.setLineDash([]);
   x.save(); x.translate(cx, cy); x.rotate(-(a + g.rot));
   x.save(); x.translate(-R.robFo * s, R.robLo * s);   // chassis centre (canvas y points to the robot's right)
-  x.fillStyle = bad ? "rgba(90,29,24,.92)" : "rgba(29,42,54,.92)"; x.strokeStyle = bad ? "#ff6b5a" : "#f4c430"; x.lineWidth = 2;
+  x.fillStyle = bad ? "rgba(90,29,24,.92)" : "rgba(29,42,54,.92)"; x.strokeStyle = bad ? "#ff6b5a" : cssv("--cv-accent"); x.lineWidth = 2;
   x.fillRect(-hl, -hw, 2 * hl, 2 * hw); x.strokeRect(-hl, -hw, 2 * hl, 2 * hw);
-  x.fillStyle = "#f4c430"; x.fillRect(hl - 4, -hw * 0.7, 4, 1.4 * hw);
+  x.fillStyle = cssv("--cv-accent"); x.fillRect(hl - 4, -hw * 0.7, 4, 1.4 * hw);
   x.strokeStyle = "rgba(227,234,240,.55)"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(hl, 0); x.lineTo(hd - 7, 0); x.stroke();
   x.beginPath(); x.arc(hd, 0, 7, 0, 6.3); x.fillStyle = "#e3eaf0"; x.fill();
   x.restore();
@@ -4086,7 +4216,7 @@ function drawRMap() {
     x.beginPath(); x.moveTo(0, 0); x.lineTo(0.3 * s, 0); x.stroke(); x.lineCap = "butt";
   }
   x.restore();
-  x.fillStyle = "#f4c430"; x.beginPath(); x.arc(cx, cy, 3, 0, 6.3); x.fill();
+  x.fillStyle = cssv("--cv-accent"); x.beginPath(); x.arc(cx, cy, 3, 0, 6.3); x.fill();
   // legend + caption
   const sw = (c, t) => `<span><i style="background:${c}"></i>${t}</span>`;
   let leg = sw("rgba(255,107,90,.35)", "illegal A-frame base zone") + sw("#e8edf2", "HIVE (up cell, aim point = yellow ring)") + sw("#8796a4", "other HIVE (context)") +
@@ -4164,15 +4294,15 @@ function drawRWin() {
   const tri = (px, py, fill, col) => { x.beginPath(); x.moveTo(px - 7, py); x.lineTo(px + 5, py - 7); x.lineTo(px + 5, py + 7); x.closePath(); fill ? (x.fillStyle = col, x.fill()) : (x.strokeStyle = col, x.lineWidth = 1.5, x.stroke()); };
   const dia = (px, py, fill, col) => { x.beginPath(); x.moveTo(px, py + 7); x.lineTo(px + 6, py); x.lineTo(px, py - 7); x.lineTo(px - 6, py); x.closePath(); fill ? (x.fillStyle = col, x.fill()) : (x.strokeStyle = col, x.lineWidth = 1.5, x.stroke()); };
   if (tc) { const t = res.twin; if (t.minRpmTol) tri(X(t.minRpmTol.v), Y(t.minRpmTol.theta), false, "#a9b4bf"); if (t.minAngleTol) dia(X(t.minAngleTol.v), Y(t.minAngleTol.theta), false, "#a9b4bf"); }
-  if (res.minRpm) tri(X(res.minRpm.v), Y(res.minRpm.theta), false, "#f4c430");
+  if (res.minRpm) tri(X(res.minRpm.v), Y(res.minRpm.theta), false, cssv("--cv-accent"));
   if (res.minAngle) dia(X(res.minAngle.v), Y(res.minAngle.theta), false, "#ff9d3c");
-  if (res.minRpmTol) tri(X(res.minRpmTol.v), Y(res.minRpmTol.theta), true, "#f4c430");
+  if (res.minRpmTol) tri(X(res.minRpmTol.v), Y(res.minRpmTol.theta), true, cssv("--cv-accent"));
   if (res.minAngleTol) dia(X(res.minAngleTol.v), Y(res.minAngleTol.theta), true, "#ff9d3c");
   if (res.mostForgiving) { x.strokeStyle = "#e3eaf0"; x.lineWidth = 2; x.beginPath(); x.arc(X(res.mostForgiving.v), Y(res.mostForgiving.theta), 7, 0, 6.3); x.stroke(); }
   { const B = rBestCur(), sq = (b, fill, col) => { if (!b || !b.ok) return; x.beginPath(); x.rect(X(b.v) - 6, Y(b.theta) - 6, 12, 12); if (fill) { x.fillStyle = col; x.fill(); } else { x.strokeStyle = col; x.lineWidth = 1.5; x.stroke(); } };
     if (B) { if (tc && B.twin !== B.main) sq(B.twin, false, "#a9b4bf"); sq(B.main, true, "#5ec8ff"); } }   // best chance (PM-017)
   if (R.sel) {
-    const px = X(R.sel.v), py = Y(R.sel.theta); x.strokeStyle = "#f4c430"; x.lineWidth = 2;
+    const px = X(R.sel.v), py = Y(R.sel.theta); x.strokeStyle = cssv("--cv-accent"); x.lineWidth = 2;
     x.beginPath(); x.moveTo(px - 14, py); x.lineTo(px - 8, py); x.moveTo(px + 8, py); x.lineTo(px + 14, py); x.moveTo(px, py - 14); x.lineTo(px, py - 8); x.moveTo(px, py + 8); x.lineTo(px, py + 14); x.stroke();
   }
   x.restore();
@@ -4357,7 +4487,7 @@ function rRender() {
   const sw = (c, t) => `<span><i style="background:${c}"></i>${t}</span>`;
   $("rwin-leg").innerHTML = sw("#5ad49e", "clean with this spin") + (S0 ? "" : `<span><i style="background:transparent;border:1.5px dashed #a9b4bf"></i>no-spin twin (S = 0) clean area</span>`) +
     sw("#5ec8ff", "■ best chance (ASSUMED scatter)") + (S0 ? "" : "<span>hollow grey square = twin best chance</span>") +
-    sw("#f4c430", "▶ lowest rpm (filled: with room for error, hollow: knife edge)") + sw("#ff9d3c", "◆ lowest hood angle (same)") + `<span><i style="background:transparent;border:2px solid #e3eaf0;border-radius:50%"></i>most forgiving</span>` +
+    sw("var(--cv-accent)", "▶ lowest rpm (filled: with room for error, hollow: knife edge)") + sw("#ff9d3c", "◆ lowest hood angle (same)") + `<span><i style="background:transparent;border:2px solid #e3eaf0;border-radius:50%"></i>most forgiving</span>` +
     (S0 ? "" : "<span>hollow grey = twin lowest points</span>");
   // selected shot card + verdict
   const s = R.shot, sel = R.sel, rows = [];
@@ -4671,7 +4801,20 @@ async function boot() {
     for (let k = 0; k < NH; k++) { const dist = Math.abs(data.count[k * ND + id] - n); if (dist < bd) { bd = dist; ih = k; } }
     st.d = G.d[id]; st.ih = ih; refresh();
   });
-  $("mode-seg").querySelectorAll("button").forEach(b => b.addEventListener("click", () => setMode(b.dataset.v)));
+  $("mode-seg").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
+    const v = b.dataset.v, cfd = v === "cfd";
+    $("cfdsec").hidden = !cfd;
+    document.body.dataset.view = cfd ? "cfd" : MODE;
+    if (cfd) {
+      syncSeg($("mode-seg"), () => "cfd");
+      try { history.replaceState(null, "", "#cfd"); } catch (_) { /* ignore */ }
+      $("sub").textContent = "Our own GPU flow simulation of POLLEN: drag, lift from backspin and spin-down torque. PREDICTED, not measured.";
+      CFD.show(); window.scrollTo(0, 0);
+    } else {
+      if (v === MODE) { syncSeg($("mode-seg"), () => v); $("sub").textContent = SUB[v]; try { history.replaceState(null, "", "#" + v); } catch (_) { /* ignore */ } rBarSync(); }
+      setMode(v);
+    }
+  }));
   $("reset").addEventListener("click", () => { if (MODE === "robot" && R.ready) rReset(); else location.reload(); });
   $("prov").textContent = "Data: " + IDX.label + ". Flight integrator: " + IDX.integrator.method + ", dt " + IDX.integrator.dt + " s.";
   // open on the CAD-card spot: h 0.737 m, d 0.75 m, backspin S 1.0, most forgiving shot there
@@ -4680,9 +4823,156 @@ async function boot() {
   curSlice = slice(data, st.ih, nearest(G.d, st.d)); curSq = squareMap(curSlice.clean); pickBest();
   resize();
   await setMode(modeFromHash());
+  if (window.WANT_CFD) $("mode-seg").querySelector('[data-v=cfd]').click();
   $("loading").hidden = true;
   requestAnimationFrame(loop);
 }
 boot().catch(err => { $("loading").textContent = location.protocol === "file:" ? "This page needs its data folder and a web server. Open it from the team link (https://apalikodath-cloud.github.io/pollen-shot-explorer/), not as a downloaded file." : "Could not load the shot grid: " + err.message; console.error(err); });
 })();
 </script>
+<script>
+// CFD view (PM-023). Reads data/cfd_runs.json (written by export_cfd.py). Every number is PREDICTED.
+const CFD = (() => {
+  const $ = id => document.getElementById(id);
+  const RECOL = { 20000: "var(--c1)", 33057: "var(--c2)", 47224: "var(--c3)" };
+  const OR_NAME = { btw: "between holes", hf: "hole-facing", o3: "third orientation" };
+  const MET = { Cl: "Lift coefficient Cl", Cd: "Drag coefficient Cd", CM: "Torque coefficient CM" };
+  let D = null, loading = null, metric = "Cl", orient = "btw", sel = null, fields = null;
+  const fmt = (v, n) => v == null ? "n/a" : (Math.abs(v) < 1e-9 ? 0 : v).toFixed(n);
+  const dig = m => m === "CM" ? 4 : 3;
+  const col = re => RECOL[re] || "var(--clean)";
+  const nice = (lo, hi) => { const span = hi - lo || 1, st = Math.pow(10, Math.floor(Math.log10(span / 4))); const m = [1, 2, 5, 10].find(k => span / (k * st) <= 6) * st; return { lo: Math.floor(lo / m + 1e-9) * m, hi: Math.ceil(hi / m - 1e-9) * m, st: m }; };
+  const twinOf = r => D.runs.find(q => q.S === 0 && q.D === r.D && q.Re === r.Re && q.orient === r.orient);
+  function svg(el, o) {   // o: {xs, ys, series:[{pts,color,dash,mk,open,nol}], band, xl, yl, title}
+    const W = 600, H = 340, L = 52, R = 14, T = 30, B = 44;
+    const yt = nice(o.ys[0], o.ys[1]), xt = nice(o.xs[0], o.xs[1]);
+    const X = v => L + (v - xt.lo) / (xt.hi - xt.lo) * (W - L - R), Y = v => H - B - (v - yt.lo) / (yt.hi - yt.lo) * (H - T - B);
+    let s = `<text class="tt" x="${L}" y="16">${o.title}</text>`;
+    if (o.band) s += `<rect x="${X(o.band[0])}" y="${T}" width="${X(o.band[1]) - X(o.band[0])}" height="${H - T - B}" style="fill:var(--pollen)" opacity=".1"/>`;
+    for (let v = yt.lo; v <= yt.hi + yt.st / 2; v += yt.st) s += `<line class="gr" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${+v.toFixed(4)}</text>`;
+    for (let v = xt.lo; v <= xt.hi + xt.st / 2; v += xt.st) s += `<line class="ax" x1="${X(v)}" x2="${X(v)}" y1="${H - B}" y2="${H - B + 4}"/><text x="${X(v)}" y="${H - B + 17}" text-anchor="middle">${+v.toFixed(4)}</text>`;
+    s += `<line class="ax" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/><line class="ax" x1="${L}" x2="${L}" y1="${T}" y2="${H - B}"/>`;
+    s += `<text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle">${o.xl}</text><text transform="translate(12 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle">${o.yl}</text>`;
+    for (const se of o.series) {
+      const p = se.pts.map(([x, y]) => `${X(x).toFixed(1)},${Y(y).toFixed(1)}`);
+      if (p.length > 1 && !se.nol) s += `<polyline points="${p.join(" ")}" style="fill:none;stroke:${se.color}" stroke-width="${se.w || 2}" ${se.dash ? `stroke-dasharray="${se.dash}"` : ""} stroke-linejoin="round"/>`;
+      if (se.mk) for (const [x, y, tip] of se.pts) {
+        const cx = X(x), cy = Y(y), f = se.open ? "var(--panel)" : se.color;
+        s += se.mk === "d" ? `<path d="M${cx} ${cy - 6.5}L${cx + 6.5} ${cy}L${cx} ${cy + 6.5}L${cx - 6.5} ${cy}Z" style="fill:${f};stroke:${se.color}" stroke-width="2"><title>${tip || ""}</title></path>`
+          : `<circle cx="${cx}" cy="${cy}" r="4.5" style="fill:${f};stroke:${se.color}" stroke-width="2"><title>${tip || ""}</title></circle>`;
+      }
+    }
+    el.innerHTML = s;
+  }
+  function chips(parent, items, cur, cb) {
+    parent.innerHTML = items.map(([v, t]) => `<button class="chip" type="button" data-v="${v}" aria-pressed="${v === cur}">${t}</button>`).join("");
+    parent.querySelectorAll("button").forEach(b => b.addEventListener("click", () => cb(b.dataset.v)));
+  }
+  function chart1() {
+    const runs = D.runs.filter(r => r.orient === orient);
+    const res = [...new Set(runs.map(r => r.Re))].sort((a, b) => a - b);
+    const ser = [], vals = [0.01], xs = [0, 0.5];
+    for (const re of res) for (const g of [128, 192]) {
+      const pts = runs.filter(r => r.Re === re && r.D === g).sort((a, b) => a.S - b.S).map(r => [r.S, r[metric], `${r.id}: ${metric} ${fmt(r[metric], dig(metric))} (PREDICTED)`]);
+      if (!pts.length) continue;
+      pts.forEach(p => { vals.push(p[1]); xs[1] = Math.max(xs[1], p[0]); });
+      ser.push({ pts, color: col(re), mk: g === 192 ? "d" : "c", open: g === 192, nol: g === 192 && pts.length < 2, dash: g === 192 ? "5 4" : "" });
+    }
+    svg($("cfd-ch1"), { xs, ys: [Math.min(0, ...vals), Math.max(...vals) * 1.08], series: ser, xl: "spin ratio S = ωR/U (derived)", yl: metric, title: `${MET[metric]} vs spin ratio, ${OR_NAME[orient] || orient} (PREDICTED)` });
+    $("cfd-leg1").innerHTML = res.map(re => `<span><i style="border-color:${col(re)}"></i>Re ${re}</span>`).join("") +
+      `<span>filled circle = 128 cells per diameter (D128), open diamond = D192 (finer grid)</span><span>the S = 0 points are the no-spin twins</span>`;
+  }
+  function chart2() {
+    const r = D.runs.find(q => q.id === sel);
+    if (!r) { $("cfd-ch2").innerHTML = ""; $("cfd-leg2").textContent = "Select a run in the table."; return; }
+    const tw = r.S > 0 ? twinOf(r) : null, ser = [];
+    const mk = (q, k, color, dash) => ({ pts: q.series.t.map((t, i) => [t, q.series[k][i]]), color, dash, w: 1.6 });
+    ser.push(mk(r, "Cl", "var(--c2)"), mk(r, "Cd", "var(--c1)"));
+    if (tw) ser.push(mk(tw, "Cl", "var(--c2)", "4 3"), mk(tw, "Cd", "var(--c1)", "4 3"));
+    const w = ser.flatMap(s => s.pts.filter(p => p[0] >= D.window[0]).map(p => p[1]));
+    const tmax = Math.max(...r.series.t);
+    svg($("cfd-ch2"), { xs: [0, tmax], ys: [Math.min(0, ...w), Math.max(...w) * 1.15], series: ser, band: [D.window[0], Math.min(D.window[1], tmax)], xl: "t* (ball diameters of flow travel, derived)", yl: "Cl, Cd", title: `${r.id.replace("p_ibb_", "")} history, 1-t* bin means (PREDICTED)` });
+    $("cfd-leg2").innerHTML = `<span><i style="border-color:var(--c2)"></i>Cl</span><span><i style="border-color:var(--c1)"></i>Cd</span>` +
+      (tw ? `<span>dashed = no-spin twin ${tw.id.replace("p_ibb_", "")}</span>` : r.S > 0 ? `<span>no-spin twin not run yet</span>` : "") + `<span>shaded = averaging window t* ${D.window[0]} to ${D.window[1]}; the start-up transient before it is not averaged</span>`;
+  }
+  function table() {
+    const rows = D.runs.slice().sort((a, b) => a.D - b.D || a.orient.localeCompare(b.orient) || a.Re - b.Re || a.S - b.S);
+    let h = `<tr><th>Run</th><th title="Reynolds number, dimensionless">Re (-)</th><th title="spin ratio omega*R/U, dimensionless">S (-)</th><th>Cd (-)</th><th>Cl (-)</th><th>CM (-)</th><th style="border-left:1px dashed var(--line)">twin Cd</th><th>twin Cl</th><th>twin CM</th><th>Cl minus twin</th></tr>`;
+    for (const r of rows) {
+      const t = r.S > 0 ? twinOf(r) : null;
+      const tw = r.S === 0 ? `<td class="tw" colspan="4">this is a no-spin twin</td>` : t ? `<td class="tw">${fmt(t.Cd, 4)}</td><td>${fmt(t.Cl, 4)}</td><td>${fmt(t.CM, 5)}</td><td>${fmt(r.Cl - t.Cl, 4)}</td>` : `<td class="tw" colspan="4">twin not run yet</td>`;
+      h += `<tr data-id="${r.id}" class="${r.S === 0 ? "s0" : ""} ${r.id === sel ? "sel" : ""}"><td class="${r.D === 192 ? "d192" : ""}">${r.id.replace("p_ibb_", "")}</td><td>${r.Re}</td><td>${r.S}</td><td>${fmt(r.Cd, 4)}</td><td>${fmt(r.Cl, 4)}</td><td>${fmt(r.CM, 5)}</td>${tw}</tr>`;
+    }
+    const el = $("cfd-tab"); el.innerHTML = h;
+    el.querySelectorAll("tr[data-id]").forEach(tr => tr.addEventListener("click", () => { sel = tr.dataset.id; table(); chart2(); fieldsFor(); }));
+  }
+  function trend() {
+    const base = D.runs.filter(r => r.D === 128 && r.orient === "btw" && r.Re === 33057).sort((a, b) => a.S - b.S);
+    if (base.length < 3) { $("cfd-trend").textContent = ""; return; }
+    const parts = [];
+    for (let i = 1; i < base.length; i++) parts.push(`S ${base[i - 1].S} to ${base[i].S}: ${fmt((base[i].Cl - base[i - 1].Cl) / (base[i].S - base[i - 1].S), 2)}`);
+    $("cfd-trend").innerHTML = `<b>Shape of the lift curve</b> (D128, between holes, Re 33057, PREDICTED): lift gained per unit of S is ${parts.join("; ")} (derived). The curve bends, so read the table value at the S you plan to use.`;
+  }
+  function gridNote() {
+    const lines = [], pairs = [];
+    for (const f of D.runs.filter(r => r.D === 192 && r.S > 0)) {
+      const c = D.runs.find(r => r.D === 128 && r.orient === f.orient && r.Re === f.Re && r.S === f.S);
+      if (!c) continue;
+      pairs.push({ f, c });
+      const dl = 100 * (c.Cl - f.Cl) / c.Cl, dir = dl >= 0 ? "lower" : "higher";
+      lines.push(`At S ${f.S} (${OR_NAME[f.orient] || f.orient}, Re ${f.Re}) the finer D192 grid gives Cl <b>${fmt(f.Cl, 3)}</b> against <b>${fmt(c.Cl, 3)}</b> at D128, ${fmt(Math.abs(dl), 0)}% ${dir} (derived), and Cd ${fmt(f.Cd, 3)} against ${fmt(c.Cd, 3)}. D128 torque CM is ${fmt(c.CM, 4)} against ${fmt(f.CM, 4)} at D192.`);
+    }
+    $("cfd-grid").innerHTML = (lines.join(" ") || "No D192 backspin run has finished yet.") + ` <span class="badge">PREDICTED</span>`;
+    const covered = pairs.map(q => "S " + q.f.S + " (" + (OR_NAME[q.f.orient] || q.f.orient) + ", Re " + q.f.Re + ")").join(", ");
+    const allLower = pairs.length && pairs.every(q => q.f.Cl < q.c.Cl);
+    $("cfd-gridnote").textContent = "D128 and D192 are 128 and 192 cells across the ball diameter. " +
+      (pairs.length ? "D192 covers only " + covered + "; elsewhere only D128 exists. " +
+        (allLower ? "Where both exist the finer grid lowers the lift, so treat D128 lift and torque CM as upper estimates there. " : "Compare the pairs above before reading a D128 value as an upper or lower estimate. ") : "No D128/D192 pair exists yet, so grid sensitivity is not known. ") +
+      "Statistical error of the means is not yet quantified.";
+  }
+  function fieldsFor() {
+    const box = $("cfd-fields"), e = fields && sel && fields[sel];
+    const files = e ? (Array.isArray(e) ? e : e.files || []) : [];
+    if (!files.length) { box.hidden = true; return; }
+    $("cfd-fields-cap").textContent = (e.caption || "Mid-plane slice of velocity or vorticity") + " for " + sel + " (PREDICTED).";
+    $("cfd-fields-img").innerHTML = files.map(f => `<img loading="lazy" alt="Flow field slice, ${sel}" src="cfd/fields/${encodeURIComponent(sel)}/${encodeURIComponent(f)}">`).join("");
+    box.hidden = false;
+  }
+  function render() {
+    chips($("cfd-or"), [...new Set(D.runs.map(r => r.orient))].sort().map(o => [o, OR_NAME[o] || o]), orient, v => { orient = v; render(); });
+    document.querySelectorAll("[data-cm]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.cm === metric)));
+    chart1(); chart2(); table(); trend(); gridNote(); fieldsFor();
+  }
+  async function load() {
+    if (!loading) loading = (async () => {
+      try { const r = await fetch("data/cfd_runs.json", { cache: "no-cache" }); if (!r.ok) throw new Error(r.status); D = await r.json(); }
+      catch (e) { D = { runs: [], window: [15, 150], err: e.message }; }
+      try { const r = await fetch("cfd/fields/index.json", { cache: "no-cache" }); if (r.ok) fields = await r.json(); } catch (_) { /* no field data yet */ }
+      if (D.runs.length) { orient = D.runs.some(r => r.orient === "btw") ? "btw" : D.runs[0].orient; sel = (D.runs.find(r => r.id.includes("d128_btw_S0.5")) || D.runs[0]).id; }
+      document.querySelectorAll("[data-cm]").forEach(b => b.addEventListener("click", () => { metric = b.dataset.cm; render(); }));
+    })();
+    await loading;
+  }
+  async function show() {
+    await load();
+    if (!D.runs.length) { $("cfd-grid").textContent = "No CFD data is available on this page yet" + (D.err ? " (" + D.err + ")." : "."); return; }
+    render();
+  }
+  (function theme() {   // light / dark toggle: data-theme on <html>, remembered in localStorage when available
+    const root = document.documentElement, btn = $("theme-btn"), mq = window.matchMedia("(prefers-color-scheme: light)");
+    const eff = () => root.dataset.theme || (mq.matches ? "light" : "dark");
+    const label = () => { btn.textContent = eff() === "light" ? "Dark" : "Light"; btn.title = "Switch to " + btn.textContent.toLowerCase() + " theme"; };
+    btn.addEventListener("click", () => {
+      const next = eff() === "light" ? "dark" : "light"; root.dataset.theme = next;
+      try { localStorage.setItem("pollen-theme", next); } catch (_) { /* ignore */ }
+      label(); if (window.redrawCanvases) window.redrawCanvases(); if (D && D.runs && D.runs.length && !$("cfdsec").hidden) render();
+    });
+    if (mq.addEventListener) mq.addEventListener("change", label);
+    label();
+  })();
+  window.WANT_CFD = /cfd/.test(location.hash);
+  if (window.WANT_CFD) { document.body.dataset.view = "cfd"; $("cfdsec").hidden = false; show(); }   // open straight on the CFD view; boot() re-applies it
+  return { show };
+})();
+</script>
+

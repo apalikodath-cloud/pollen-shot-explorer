@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>POLLEN flow viewer</title>
+<link rel="icon" href="data:,">
+<style>
+:root{--bg:#f3f5f8;--panel:rgba(255,255,255,.92);--ink:#16202e;--mute:#586579;--line:#c9d1dd;--accent:#1d5fd1;--warn:#b3261e;--warnbg:#fde7e5;--contour:#1a1f2b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0e16;--panel:rgba(18,24,36,.92);--ink:#e6ebf3;--mute:#98a4b8;--line:#2b3447;--accent:#6ea2ff;--warn:#ffb4ab;--warnbg:#5a1410;--contour:#f2f5fa}}
+:root[data-theme="dark"]{--bg:#0a0e16;--panel:rgba(18,24,36,.92);--ink:#e6ebf3;--mute:#98a4b8;--line:#2b3447;--accent:#6ea2ff;--warn:#ffb4ab;--warnbg:#5a1410;--contour:#f2f5fa}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#top{position:fixed;left:0;right:0;top:0;padding:8px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;pointer-events:none}
+#top h1{font-size:15px;margin:0;font-weight:650;pointer-events:auto}
+#top a{color:var(--accent);pointer-events:auto;font-size:13px}
+#banner{display:none;position:fixed;left:50%;top:44px;transform:translateX(-50%);z-index:5;background:var(--warnbg);color:var(--warn);border:2px solid var(--warn);padding:6px 16px;border-radius:8px;font-weight:800;font-size:clamp(14px,3.6vw,22px);text-align:center;pointer-events:none;white-space:nowrap}
+.cap{position:fixed;top:92px;z-index:3;max-width:48vw;font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 9px;pointer-events:none}
+.cap:empty{display:none}
+.cap b{display:block;font-size:13px}.cap .pred{color:var(--mute)}.cap .syn{color:var(--warn);font-weight:700}
+#panel{position:fixed;left:16px;top:130px;width:268px;max-height:calc(100% - 200px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;z-index:4}
+#panel summary{cursor:pointer;font-weight:650;padding:4px 0}
+#panel label{display:flex;gap:8px;align-items:center;padding:3px 0;cursor:pointer}
+#panel .row{display:flex;gap:8px;align-items:center;padding:3px 0}
+#panel .row span{min-width:66px;color:var(--mute);font-size:12px}
+#panel h3{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:10px 0 2px}
+select,button{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
+button{cursor:pointer}select{max-width:170px}input[type=range]{flex:1;min-width:0}
+#tbar{position:fixed;left:50%;transform:translateX(-50%);bottom:30px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;z-index:3;font-size:12px;width:min(620px,calc(100vw - 32px))}
+#tbar .trow{display:flex;gap:8px;align-items:center;margin:2px 0}#tbar input[type=range]{flex:1;min-width:0}#tbar .tnote{color:var(--mute);font-size:11px}
+#legend{position:fixed;right:16px;bottom:16px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;z-index:3;font-size:12px}
+#legend canvas{display:block;width:200px;height:12px;border-radius:3px;margin:2px 0}
+#legend .lab{display:flex;justify-content:space-between;color:var(--mute)}
+#hint{position:fixed;left:16px;right:16px;bottom:10px;font-size:12px;color:var(--mute);pointer-events:none}
+#empty{display:none;position:fixed;inset:0;align-items:center;justify-content:center;padding:24px;z-index:6}
+#empty div{max-width:520px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 24px}
+#empty code{background:var(--bg);padding:1px 5px;border-radius:4px}
+#load{position:fixed;right:16px;top:8px;font-size:12px;color:var(--mute)}
+@media (max-width:700px){
+ #panel{left:8px;top:auto;bottom:8px;width:calc(100% - 16px);max-height:52%}
+ #tbar{bottom:8px}#tbar .tnote{display:none}#legend{left:auto;right:8px;bottom:110px;top:auto;font-size:11px}#legend canvas{width:140px}
+ .cap{top:92px;max-width:49vw;font-size:11px}.cap.r{right:8px}.cap.l{left:8px}
+ #hint{display:none}
+}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+"three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div id="top"><h1>POLLEN flow viewer</h1><a href="../index.html">shot explorer</a><span id="load"></span></div>
+<div id="banner"></div>
+<div class="cap l" id="capA"></div><div class="cap r" id="capB"></div>
+<details id="panel" open><summary>Layers and runs</summary>
+ <h3>Run</h3>
+ <div class="row"><span>Run</span><select id="runA"></select></div>
+ <label><input type="checkbox" id="cmp"> Compare side by side</label>
+ <div class="row"><span>Run B</span><select id="runB"></select></div>
+ <h3>Layers</h3>
+ <label><input type="checkbox" id="lStream" checked> Streamlines</label>
+ <div class="row"><span>Line width</span><input type="range" id="wStream" min="0.8" max="4" step="0.1" value="1.3"></div>
+ <label><input type="checkbox" id="lAnim" checked> Animate flow dashes</label>
+ <label><input type="checkbox" id="lVortex" checked> Vortex cores (Q)</label>
+ <div class="row"><span>Q level</span><input type="range" id="qLevel" min="0" max="2" step="1" value="1"></div>
+ <label><input type="checkbox" id="lBody" checked> Body</label>
+ <h3>Contour slices</h3>
+ <label><input type="checkbox" id="lY" checked> <span id="nA">Plane A</span></label>
+ <label><input type="checkbox" id="lZ"> <span id="nB">Plane B</span></label>
+ <div class="row"><span>Colour by</span><select id="sField"><option value="speed">Speed</option><option value="vort">Vorticity</option></select></div>
+ <label><input type="checkbox" id="lCont" checked> Contour lines</label>
+ <div class="row"><span>Opacity</span><input type="range" id="sOp" min="0.1" max="1" step="0.05" value="0.85"></div>
+ <h3>View</h3>
+ <div class="row"><button id="bReset">Reset</button><button id="bBody">Zoom to body</button><button id="bWake">Wake</button></div>
+</details>
+<div id="tbar" style="display:none"><div class="trow"><button id="tPlay">Play</button><input type="range" id="tSlide" min="0" max="1" step="0.01" value="0"><select id="tSpd" title="Playback speed"><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option></select><label><input type="checkbox" id="tLoop" checked> Loop</label><label><input type="checkbox" id="lPart" checked> Particles</label></div><div class="trow"><span id="tLab"></span></div><div class="tnote">Simulation is in the ball's frame: the ball is fixed and air moves past it at the shot speed, as seen from the ball in flight.</div></div>
+<div id="legend"></div>
+<div id="hint">Drag: orbit. Right-drag or two-finger drag: pan. Wheel or pinch: zoom to the cursor. Double-click: focus a point.</div>
+<div id="empty"><div><h2 style="margin-top:0">No flow runs yet</h2>
+<p>This viewer reads <code>flows/index.json</code> and one folder per run. None were found.</p>
+<p>Make a bundle from a solver snapshot with <code>python viz/flow/make_flow.py &lt;snapshot.json&gt; -o viz/flow/flows/&lt;run_id&gt;</code> and list it in <code>flows/index.json</code>. See <code>viz/flow/README.md</code>.</p></div></div>
+<script type="module" src="flow.js"></script>
+</body>
+</html>
