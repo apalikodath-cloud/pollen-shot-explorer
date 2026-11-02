@@ -1,17 +1,24 @@
-// Shot flow scene: the explorer's shot path (physics.js integrate3D through solver.js shot()) with the
-// nearest CFD case drawn around the ball, rotated so the CFD free stream meets the ball as the air does.
+// Shot flow scene ("3D flow"): the explorer's shot path (physics.js integrate3D through solver.js shot()) with the CFD
+// drawn around the ball as a general solution. At every moment of the flight the two library cases that bracket the
+// ball's local spin ratio S(t) are crossfaded (each at the library speed nearest the ball's), the flow is rotated so
+// the CFD free stream meets the ball as the air does, and speeds are coloured in m/s at the ball's local speed.
+// The library is whatever flows/index.json lists; nothing here is tied to particular cases.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RunView, esc, cssVar, env } from './flowview.js';
+import { RunView, esc, cssVar, env, turbo } from './flowview.js';
 
 THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const BASE = (params.get('flows') || 'flows').replace(/\/+$/, '');
 const FIELD_URL = params.get('field') || '../data/field/index.json';
+const EMBED = params.get('embed') === '1';
 const PS = window.PollenSolver, C = PS.constants;
-const IN = 0.0254, D_M = 0.07112;
-const SPIN_COL = 0xff8c1a, TWIN_COL = 0x5aa7ff;
+const IN = 0.0254, D_M = 0.07112, R_M = D_M / 2;
+const COL = { main: 0xf4c430, twin: 0xa9b4bf };   // explorer: POLLEN yellow for the backspin shot, grey for the twin
+const SPIN_CAP = 2;       // drawn ball spin, revolutions per second of screen time at most (the real spin is far too fast to see)
+const MAX_VIEWS = 6;      // loaded CFD cases kept per ball
+if (EMBED) document.documentElement.classList.add('embed');
 
 // ------------------------------------------------------------ renderer, camera
 const canvas = $('gl');
@@ -29,6 +36,7 @@ const scene = new THREE.Scene();
 scene.add(new THREE.HemisphereLight(0xffffff, 0x556070, 1.1));
 const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(-2, -3, 5); scene.add(key);
 scene.add(new THREE.DirectionalLight(0xbcd0ff, 0.6).translateX(2).translateY(2).translateZ(-1));
+let BG = new THREE.Color(cssVar('--bg') || '#0b1015');
 
 // ------------------------------------------------------------ field, HIVE
 const line = (pts, color, op = 1) => new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map((p) => new THREE.Vector3(...p))), new THREE.LineBasicMaterial({ color, transparent: op < 1, opacity: op }));
@@ -58,12 +66,12 @@ function buildField(meta) {
     const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(lp, 3));
     g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({ color: 0xf2c94c })));
   }
-  const gate = new THREE.Mesh(new THREE.SphereGeometry(0.03, 12, 8), new THREE.MeshBasicMaterial({ color: 0x2ecc71 }));
-  gate.position.set(C.X_GATE, 0, 1.5); g.add(gate); gate.visible = false;
 }
 
 // ------------------------------------------------------------ robot
-const U = { x: -1.0, y: 0.2, hd: 0, h: 0.737, v: 6.5, th: 75, S: 1.0, tSim: 0, play: false, lastLegal: null };
+// U.q: the explorer's full query (air, drag, wind, robot, lift, ...) when it drives this page; null = local defaults
+const U = { x: -1.0, y: 0.2, hd: 0, h: 0.737, v: 6.5, th: 75, S: 1.0, tSim: 0, play: false, lastLegal: null,
+  avg: params.get('avg') !== '0', q: null, vleg: 10 };
 const robot = new THREE.Group();
 {
   const L = 18 * IN;
@@ -78,19 +86,32 @@ const robot = new THREE.Group();
 const relMark = new THREE.Mesh(new THREE.SphereGeometry(0.012, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
 scene.add(relMark);
 
-function qNow(metaQ) {
-  const cs = META.cases.find((c) => c.S === U.S && c.var === 'nominal') || META.cases.find((c) => c.S === U.S) || META.cases[0];
-  return { x: U.x, y: U.y, h: U.h, S: U.S, vu: 0.42, params: cs.params, meta: metaQ, air: { tC: 20, altM: 0, rh: 0 },
-    drag: { model: 'const', spin: 0 }, wind: { along: 0, up: 0, side: 0 },
-    // a (zero) move block selects the 3D path, i.e. physics.js integrate3D
-    move: { along: 0, across: 0, wz: 0, d0: 0, lead: true },
+let META = null;
+const ZERO_MOVE = { along: 0, across: 0, wz: 0, d0: 0, lead: true };   // a (zero) move block selects the 3D path (physics.js integrate3D)
+function nearestCase(S) {
+  let best = null;
+  for (const c of META.cases) {
+    const d = Math.abs(c.S - S) + (c.var === 'nominal' ? 0 : 1e-3);
+    if (!best || d < best.d) best = { d, c };
+  }
+  return best.c;
+}
+function qNow() {
+  if (U.q) {
+    const q = Object.assign({}, U.q, { x: U.x, y: U.y, h: U.h, S: U.S, meta: META._q });
+    q.robot = Object.assign({}, U.q.robot || {}, { heading: U.hd });
+    if (!q.move) q.move = ZERO_MOVE;
+    if (!q.params) q.params = nearestCase(U.S).params;
+    return q;
+  }
+  return { x: U.x, y: U.y, h: U.h, S: U.S, vu: 0.42, params: nearestCase(U.S).params, meta: META._q, air: { tC: 20, altM: 0, rh: 0 },
+    drag: { model: 'const', spin: 0 }, wind: { along: 0, up: 0, side: 0 }, move: ZERO_MOVE,
     robot: { length: 18 * IN, width: 18 * IN, offset: [0, 0], heading: U.hd } };
 }
-let META = null;
 
 // ------------------------------------------------------------ shot paths
 // path record: positions, velocity (central difference), local speed ratio S(t) = S0 v0 exp(-k t) / |v|
-function makePath(p, S0, k, col) {
+function makePath(p, S0, k, w0) {
   const n = p.n, dt = p.dt, vx = new Float32Array(n), vy = new Float32Array(n), vz = new Float32Array(n), sp = new Float32Array(n);
   for (let i = 0; i < n; i++) {
     const a = Math.max(0, i - 1), b = Math.min(n - 1, i + 1), d = (b - a) * dt || dt;
@@ -99,31 +120,38 @@ function makePath(p, S0, k, col) {
   }
   const h0 = Math.hypot(vx[0], vy[0]) || 1, axis = new THREE.Vector3(vy[0] / h0, -vx[0] / h0, 0);  // backspin axis, fixed
   const v0 = sp[0];
-  return { p, n, dt, T: (n - 1) * dt, vx, vy, vz, sp, axis, S0, k, v0, col,
+  return { p, n, dt, T: (n - 1) * dt, vx, vy, vz, sp, axis, S0, k, v0, w0,
     Sloc: (i, t) => S0 * v0 * Math.exp(-k * t) / Math.max(sp[i], 0.05) };
 }
 const PATHS = { main: null, twin: null, verdict: null };
 const pathLines = { main: null, twin: null };
+// legend top in m/s: a round number at or above x
+const RUNGS = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50];
+const niceCeil = (x) => RUNGS.find((r) => r >= x - 1e-9) || Math.ceil(x / 10) * 10;
 function rebuildShot() {
-  const q = qNow(META._q);
+  const q = qNow();
   const pose = PS.pose(U.x, U.y, META._q, { robot: q.robot });
-  if (!pose.ok) { $('sgNote').textContent = 'robot would overlap a wall or the HIVE base'; return false; }
+  if (!pose.ok && !U.q) { $('sgNote').textContent = 'robot would overlap a wall or the HIVE base'; return false; }
   const r = PS.shot(q, U.v, U.th);
   const k = q.params.k || 0;
-  PATHS.main = makePath(r.path, U.S, k); PATHS.twin = makePath(r.twin.path, 0, k);
+  const w0 = isFinite(r.ballSpinRpm) && r.ballSpinRpm > 0 ? r.ballSpinRpm * Math.PI / 30 : U.S * U.v / R_M;
+  PATHS.main = makePath(r.path, U.S, k, U.S > 0 ? w0 : 0); PATHS.twin = makePath(r.twin.path, 0, k, 0);
   PATHS.verdict = r;
-  for (const key_ of ['main', 'twin']) {
-    if (pathLines[key_]) { scene.remove(pathLines[key_]); pathLines[key_].geometry.dispose(); }
-    const P = PATHS[key_], pts = [];
+  for (const k_ of ['main', 'twin']) {
+    if (pathLines[k_]) { scene.remove(pathLines[k_]); pathLines[k_].geometry.dispose(); }
+    const P = PATHS[k_], pts = [];
     for (let i = 0; i < P.n; i += 4) pts.push(new THREE.Vector3(P.p.x[i], P.p.y[i], P.p.z[i]));
-    const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: key_ === 'main' ? SPIN_COL : TWIN_COL }));
-    pathLines[key_] = l; scene.add(l);
+    const l = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: COL[k_] }));
+    pathLines[k_] = l; scene.add(l);
   }
   U.lastLegal = { x: U.x, y: U.y, hd: U.hd };
   $('sgNote').textContent = '';
   const T = Math.max(PATHS.main.T, PATHS.twin.T); $('tSlide').max = String(T);
   U.tSim = Math.min(U.tSim, T);
-  updateReadout(); applyOffsets(); need = true;
+  // colour scale follows the ball: 0 to a round number at about 1.5x its current air speed, the fastest air near it (see render)
+  U.vleg = niceCeil(1.5 * Math.max(0.5, PATHS.main.v0, PATHS.twin.v0));
+  drawLegend();
+  updateReadout(); updateSummary(); applyOffsets(); need = true;
   return true;
 }
 function updateRobot() {
@@ -131,135 +159,257 @@ function updateRobot() {
   robot.userData.body.material.color.set(U.lastLegal && U.lastLegal.x === U.x && U.lastLegal.y === U.y ? 0x2f6fdd : 0xd33b3b);
   relMark.position.set(U.x, U.y, U.h);
   $('rx').value = U.x; $('ry').value = U.y; $('rh').value = U.hd; $('rz').value = U.h;
-  $('rxo').textContent = U.x.toFixed(2); $('ryo').textContent = U.y.toFixed(2); $('rho').textContent = U.hd + '°'; $('rzo').textContent = U.h.toFixed(2);
+  $('rxo').textContent = U.x.toFixed(2); $('ryo').textContent = U.y.toFixed(2); $('rho').textContent = Math.round(U.hd) + '°'; $('rzo').textContent = U.h.toFixed(2);
 }
+const fmtS = (s) => (+s).toFixed(2).replace(/\.?0+$/, '') || '0';
 function updateShotUi() {
-  $('sv').value = U.v; $('sth').value = U.th; $('svo').textContent = U.v.toFixed(2) + ' m/s'; $('stho').textContent = U.th.toFixed(1) + '°'; $('sS').value = String(U.S);
+  $('sv').value = U.v; $('sth').value = U.th; $('svo').textContent = U.v.toFixed(2) + ' m/s'; $('stho').textContent = U.th.toFixed(1) + '°';
+  const sel = $('sS');
+  if (![...sel.options].some((o) => +o.value === U.S)) sel.insertAdjacentHTML('beforeend', `<option value="${U.S}">Backspin S ${fmtS(U.S)}</option>`);
+  const o = [...sel.options].find((o_) => +o_.value === U.S); if (o) sel.value = o.value;
 }
-const cell = (c) => c ? `${c.result}${c.minClear != null && isFinite(c.minClear) ? ' (min clearance ' + (c.minClear * 1000).toFixed(0) + ' mm)' : ''}` : '-';
+function updateSummary() {
+  $('sumRobot').textContent = `x ${U.x.toFixed(2)} m, y ${U.y.toFixed(2)} m, heading ${Math.round(U.hd)}°, release ${U.h.toFixed(2)} m`;
+  $('sumShot').textContent = `${U.v.toFixed(2)} m/s at ${U.th.toFixed(1)}°, ${U.S > 0 ? 'backspin S ' + fmtS(U.S) : 'no spin'}`;
+}
+const cell = (c) => c ? `${c.result}${c.minClear != null && isFinite(c.minClear) ? ' (min clearance ' + (Math.round(c.minClear * 1000) || 0) + ' mm)' : ''}` : '-';
 function updateReadout() {
   const r = PATHS.verdict; if (!r) return;
   const tw = r.twin, same = U.S === 0;
   const ea = (c) => (c && c.entryAngle != null && isFinite(c.entryAngle) ? c.entryAngle.toFixed(0) + '°' : '-');
-  $('read').innerHTML = `<table><tr><th></th><th class="c1">${same ? 'No spin' : 'Backspin S ' + U.S}</th>${same ? '' : '<th class="c2">No-spin twin</th>'}</tr>
+  $('read').innerHTML = `<table><tr><th></th><th class="c1">${same ? 'No spin' : 'Backspin S ' + fmtS(U.S)}</th>${same ? '' : '<th class="c2">No-spin twin</th>'}</tr>
   <tr><th>Result</th><td>${esc(cell(r.cls))}</td>${same ? '' : `<td>${esc(cell(tw.cls))}</td>`}</tr>
   <tr><th>Entry angle</th><td>${ea(r.cls)}</td>${same ? '' : `<td>${ea(tw.cls)}</td>`}</tr>
   <tr><th>Flight time</th><td>${PATHS.main.T.toFixed(2)} s</td>${same ? '' : `<td>${PATHS.twin.T.toFixed(2)} s</td>`}</tr>
   <tr><th>Wheel</th><td colspan="2">${r.rpm.toFixed(0)} rpm, ball spin ${r.ballSpinRpm.toFixed(0)} rpm</td></tr></table>
-  <div style="color:var(--mute);margin-top:3px">PREDICTED (model output); drag, Cd and Magnus coefficients ASSUMED</div>`;
+  <div class="mute">PREDICTED (model output); drag, Cd and Magnus coefficients ASSUMED</div>`;
 }
 
-// ------------------------------------------------------------ flow slots
-let RUNS = [];
-const tok = { main: 0, twin: 0 };
-const slots = {};
-for (const k of ['main', 'twin']) {
-  const g = new THREE.Group(); g.matrixAutoUpdate = false; g.visible = false; scene.add(g);
-  const ball = new THREE.Mesh(new THREE.SphereGeometry(D_M / 2, 20, 14), new THREE.MeshStandardMaterial({ color: k === 'main' ? SPIN_COL : TWIN_COL, roughness: 0.5 }));
-  scene.add(ball);
-  slots[k] = { k, group: g, ball, view: null, entry: null, loading: false, off: 0, last: null, tFlow: 0, lastUpd: 0 };
+// ------------------------------------------------------------ CFD library
+let RUNS = [], LEVELS = [];
+const isAnim = (r) => (r.n_frames || 0) >= 10;
+function buildLibrary(runs) {
+  RUNS = runs;
+  LEVELS = [...new Set(RUNS.map((r) => Math.round(r.S * 1000) / 1000))].sort((a, b) => a - b);
 }
+// the case drawn at one spin level: nearest speed (log), the time mean when Averaged is on, long series only when asked
+function caseScore(r, speed) {
+  return Math.abs(Math.log(speed / r.speed_mps)) + (U.avg && !r.mean ? 0.5 : 0) + (isAnim(r) !== $('lAnimCase').checked ? 0.05 : 0);
+}
+function pickAt(s, level, speed) {
+  const cand = RUNS.filter((r) => Math.abs(r.S - level) < 1e-3);
+  if (!cand.length) return null;
+  let best = cand[0];
+  for (const r of cand) if (caseScore(r, speed) < caseScore(best, speed)) best = r;
+  const cur = cand.find((r) => r.id === s.cur.get(level));
+  if (cur && caseScore(cur, speed) <= caseScore(best, speed) + 0.08) best = cur;   // hysteresis: no flicker at a tie
+  s.cur.set(level, best.id);
+  return best;
+}
+// targets: the two cases bracketing the local spin ratio, linear weights in S; clamped to the library range
+function targets(s, speed, Sl) {
+  const lv = s.k === 'twin' ? LEVELS.filter((L) => L === 0) : LEVELS;
+  if (!lv.length) return { list: [], clamp: null, Sc: Sl };
+  const lo = lv[0], hi = lv[lv.length - 1], Sc = Math.min(hi, Math.max(lo, Sl));
+  const clamp = Sl < lo - 0.005 ? 'low' : Sl > hi + 0.005 ? 'high' : null;
+  let a = lo, b = hi;
+  for (const L of lv) if (L <= Sc + 1e-9) a = L;
+  for (let i = lv.length - 1; i >= 0; i--) if (lv[i] >= Sc - 1e-9) b = lv[i];
+  const w = b > a ? (Sc - a) / (b - a) : 0;
+  const ra = pickAt(s, a, speed), rb = b !== a ? pickAt(s, b, speed) : null;
+  const list = [];
+  if (ra && (1 - w > 0.002 || !rb)) list.push({ r: ra, w: rb ? 1 - w : 1, S: a });
+  if (rb && w > 0.002) list.push({ r: rb, w: ra ? w : 1, S: b });
+  return { list, clamp, Sc, lo, hi };
+}
+
+// ------------------------------------------------------------ flow slots (one per ball): cached RunViews, crossfaded
+const slots = {};
+const MAN = new Map();   // manifest cache by url
+for (const k of ['main', 'twin']) {
+  const g = new THREE.Group(); g.matrixAutoUpdate = false; scene.add(g);
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.5, 28, 18),
+    new THREE.MeshStandardMaterial({ color: COL[k], roughness: 0.55, metalness: 0.05, side: THREE.DoubleSide }));
+  ball.matrixAutoUpdate = false; scene.add(ball);
+  slots[k] = { k, group: g, ball, views: new Map(), cur: new Map(), T: { list: [] }, speed: 0, Sl: 0, tFlow: 0, spinF: 1 };
+}
+let ballGeomSet = false, loading = 0;
 function disposeObj(o) {
   o.traverse((c) => { c.geometry?.dispose(); const ms = Array.isArray(c.material) ? c.material : c.material ? [c.material] : []; for (const m of ms) { m.map?.dispose(); m.dispose(); } });
 }
-async function setCase(slot, entry) {
-  if (slot.loading) return;
-  slot.loading = true; $('load').textContent = 'Loading ' + (entry.label || entry.id) + '...';
+function setLoad() { $('load').textContent = loading ? `Loading CFD (${loading})...` : ''; }
+function viewFor(s, entry) {
+  const key = `${entry.id}|${U.avg ? 'mean' : 'inst'}`;
+  let o = s.views.get(key);
+  if (!o) {
+    o = { key, entry, avg: U.avg, view: null, w: 0, g: new THREE.Group(), failed: false, used: 0, fadeW: -1, cs: -1, lastUpd: 0 };
+    s.group.add(o.g); s.views.set(key, o);
+    loadView(s, o);
+  }
+  o.used = performance.now();
+  return o;
+}
+async function loadView(s, o) {
+  loading++; setLoad();
   try {
-    const url = `${BASE}/${entry.path}`, dir = url.slice(0, url.lastIndexOf('/'));
-    const m = await (await fetch(url)).json();
-    const v = new RunView(m, dir); await v.load();
-    const kids = v.scene.children.filter((c) => !c.isLight);
-    for (const c of kids) { v.scene.remove(c); slot.group.add(c); }
-    for (const c of [...slot.group.children]) if (!kids.includes(c)) { slot.group.remove(c); disposeObj(c); }
-    slot.view = v; slot.entry = entry; slot.tFlow = 0;
+    const url = `${BASE}/${o.entry.path}`, dir = url.slice(0, url.lastIndexOf('/'));
+    if (!MAN.has(url)) MAN.set(url, fetch(url).then((r) => { if (!r.ok) throw new Error(r.status + ' ' + url); return r.json(); }));
+    const m = await MAN.get(url);
+    const v = new RunView(m, dir, { mean: o.avg }); await v.load();
+    if (o.dead) { v.dispose(); loading--; setLoad(); return; }
+    for (const c of v.scene.children.filter((c) => !c.isLight)) { v.scene.remove(c); o.g.add(c); }
+    v.body.visible = false;                      // the spinning ball below stands in for the CFD body
     v.streams.material.uniforms.uRes.value.set(innerWidth * DPR, innerHeight * DPR);
-    slot.ball.visible = false;
-    applyLayers(); updateCaps();
-  } catch (e) { console.error(e); $('load').textContent = 'Load failed: ' + e.message; }
-  slot.loading = false; if (!slot.loading) $('load').textContent = '';
+    o.view = v;
+    if (!ballGeomSet) {                           // the CFD ball surface, holes and all, for both drawn balls
+      ballGeomSet = true;
+      const bg = v.body.geometry.clone();
+      for (const k of ['main', 'twin']) { slots[k].ball.geometry.dispose(); slots[k].ball.geometry = bg; }
+    }
+    layersTo(o); updateCaps();
+  } catch (e) { console.error(e); o.failed = true; $('load').textContent = 'CFD load failed: ' + e.message; }
+  loading--; if (!o.failed) setLoad();
+}
+function evict(s, o) {
+  o.dead = true; s.views.delete(o.key); s.group.remove(o.g); disposeObj(o.g);
+  if (o.view) for (const sl of o.view.slices) { for (const t of Object.values(sl.tex)) t.dispose(); sl.ftex?.dispose(); }
 }
 const ST = () => ({ stream: $('lStream').checked, vortex: $('lVortex').checked, q: +$('qLevel').value, planes: [$('lY').checked, $('lZ').checked],
   field: $('sField').value, cont: $('lCont').checked, sop: +$('sOp').value });
-function applyLayers() {
-  const s = ST();
-  for (const k of ['main', 'twin']) {
-    const v = slots[k].view; if (!v) continue;
-    v.streams.visible = s.stream; v.streams.material.uniforms.uWidth.value = 1.3 * DPR; v.streams.material.uniforms.uAnim.value = 1;
-    v.body.visible = true;
-    v.vortex.forEach((m, i) => { m.visible = s.vortex && i === Math.min(s.q, v.vortex.length - 1); });
-    v.slices.forEach((o, i) => {
-      o.group.visible = !!s.planes[i];
-      o.mat.map = v.fr ? o.ftex : o.tex[s.field]; o.mat.opacity = s.sop; o.mat.needsUpdate = true;
-      o.lines.speed.visible = s.cont && s.field === 'speed'; o.lines.vort.visible = s.cont && s.field === 'vort';
-    });
-    if (v.fr) v.dirty = true;
-  }
-  need = true;
+function layersTo(o, s = ST()) {
+  const v = o.view; if (!v) return;
+  v.streams.visible = s.stream; v.streams.material.uniforms.uWidth.value = 1.3 * DPR; v.streams.material.uniforms.uAnim.value = 1;
+  v.vortex.forEach((m, i) => { m.visible = s.vortex && i === Math.min(s.q, v.vortex.length - 1); });
+  v.slices.forEach((sl, i) => {
+    sl.group.visible = !!s.planes[i];
+    sl.mat.map = v.fr ? sl.ftex : sl.tex[s.field]; sl.mat.needsUpdate = true;
+    sl.lines.speed.visible = s.cont && s.field === 'speed'; sl.lines.vort.visible = s.cont && s.field === 'vort';
+  });
+  o.fadeW = -1; v.dirty = true;
 }
-// nearest case: local speed (log) and local spin ratio; animated series preferred only when asked
-function pick(speed, S, wantS0) {
-  const prefAnim = $('lAnimCase').checked;
-  let best = null, bd = 1e9;
-  for (const r of RUNS) {
-    const Sc = wantS0 ? 0 : r.S;
-    if (wantS0 && Math.abs(r.S) > 1e-6) continue;
-    const anim = (r.n_frames || 0) >= 10;
-    const d = Math.pow(Math.log(speed / r.speed_mps) / 0.3, 2) + Math.pow((S - Sc) / 0.25, 2) + (anim === prefAnim ? 0 : 0.05);
-    if (d < bd) { bd = d; best = r; }
+function applyLayers() { const s = ST(); for (const k in slots) for (const o of slots[k].views.values()) layersTo(o, s); need = true; }
+
+// per frame: weights eased toward the targets; only loaded targets count, so nothing pops while a case loads
+function updateSlot(s, show, dtS, tMs, st) {
+  const T = s.T, want = new Map();
+  if (show) for (const t of T.list) want.set(viewFor(s, t.r).key, t.w);
+  let sumL = 0;
+  for (const [k_, w] of want) { const o = s.views.get(k_); if (o.view) sumL += w; }
+  const ease = Math.min(1, dtS * 5);
+  for (const o of [...s.views.values()]) {
+    const goal = !show ? 0 : sumL > 0 ? (o.view && want.has(o.key) ? want.get(o.key) / sumL : 0) : o.w;
+    o.w += (goal - o.w) * ease; if (Math.abs(goal - o.w) < 0.003) o.w = goal;
+    const v = o.view;
+    o.g.visible = !!v && o.w > 0.01;
+    if (!v || !o.g.visible) continue;
+    if (Math.abs(o.w - o.fadeW) > 0.004) { v.setFade(o.w, st.sop); o.fadeW = o.w; }
+    // m/s colour: the bundle stores |u| / (speed_range[1] U); the ball's air speed sets U, the legend sets the top
+    const c = (v.m.speed_range?.[1] || 1.5) * s.speed / U.vleg;
+    if (Math.abs(c - o.cs) > 0.015 * c) { v.setColorScale(c); o.cs = c; }
+    v.streams.material.uniforms.uTime.value = tMs / 1000;
+    if (v.fr) {
+      const n = v.fr.n;
+      let ft = 0;
+      if (n > 1) {   // instantaneous series: ping-pong through the saved frames, about 2 t* per second while playing
+        const ts = v.fr.info.t_star || [], dts = ts.length === n ? Math.max(1e-3, (ts[n - 1] - ts[0]) / (n - 1)) : 1;
+        const ph = s.tFlow * Math.min(12, 2 / dts), per = 2 * (n - 1), x = ph % per;
+        ft = x <= n - 1 ? x : per - x;
+      }
+      if (v.dirty || (n > 1 && Math.abs(ft - v.curT) > 0.02 && tMs - o.lastUpd > 40)) { v.setTime(ft, st); o.lastUpd = tMs; }
+    }
   }
-  return best;
+  // keep a few recent cases ready, drop the rest
+  if (s.views.size > MAX_VIEWS) {
+    const idle = [...s.views.values()].filter((o) => o.w === 0 && !want.has(o.key)).sort((a, b) => a.used - b.used);
+    while (s.views.size > MAX_VIEWS && idle.length) evict(s, idle.shift());
+  }
 }
+
+// ------------------------------------------------------------ captions, legend
 const fmt = (x) => (+x).toFixed(2).replace(/\.?0+$/, '');
-function caption(k, speed, S) {
-  const s = slots[k]; if (!s.entry) return '';
-  const e = s.entry, m = s.view.m;
-  const nm = k === 'main' ? (U.S === 0 ? 'No-spin shot' : `Backspin shot (S ${U.S})`) : 'No-spin twin';
-  return `<b>${esc(nm)}</b>nearest CFD case ${fmt(e.speed_mps)} m/s S${fmt(e.S)} (ball now ${speed.toFixed(1)} m/s, S${S.toFixed(2)}) | ` +
-    `<span class="${m.synthetic ? 'syn' : 'pred'}">${m.synthetic ? 'SYNTHETIC TEST FIELD - not CFD' : 'PREDICTED'}</span> | ball-frame flow | orientation ${esc(e.orientation || m.orientation || 'btw')} ASSUMED`;
+const caseName = (r) => `S ${fmt(r.S)} @ ${fmt(r.speed_mps)} m/s`;
+function caption(k) {
+  const s = slots[k], T = s.T, P = PATHS[k];
+  if (!P) return '';
+  const nm = k === 'main' ? (U.S === 0 ? 'No-spin shot' : `Backspin shot, S ${fmtS(U.S)} at launch`) : 'No-spin twin';
+  const parts = [];
+  if (!T.list.length) parts.push(k === 'twin' && RUNS.length ? 'no no-spin CFD case in the library' : 'no CFD cases in the library');
+  else {
+    const shown = T.list.map((t) => `${caseName(t.r)}${T.list.length > 1 ? ' (' + Math.round(t.w * 100) + '%)' : ''}`);
+    parts.push(`general solution, ${T.list.length > 1 ? 'blended from CFD cases ' + shown.join(' + ') : 'from CFD case ' + shown[0]}`);
+  }
+  parts.push(`ball now ${s.speed.toFixed(1)} m/s` + (k === 'main' && U.S > 0 ? `, local S ${s.Sl.toFixed(2)}` : ''));
+  if (T.clamp) parts.push(`local S outside the CFD library (S ${fmt(T.lo)} to ${fmt(T.hi)}): drawn at S ${fmt(T.Sc)}`);
+  const vs = [...s.views.values()].filter((o) => o.view && o.w > 0.01).map((o) => o.view);
+  const syn = vs.some((v) => v.m.synthetic);
+  const out = parts.map(esc);
+  out.push(`<span class="${syn ? 'syn' : 'pred'}">${syn ? 'SYNTHETIC TEST FIELD - not CFD' : 'PREDICTED'}</span>`);
+  if (vs.length) {
+    const mv = vs.find((v) => v.mean);
+    if (mv) out.push(esc(`time mean of ${mv.m.mean.n_avg} frames`));
+    else out.push(U.avg ? 'instantaneous (no time mean saved for this case)' : 'instantaneous wake');
+  }
+  if (k === 'main' && U.S > 0) {
+    out.push('CFD includes the spinning holes');
+    if (s.spinF < 0.999) out.push(esc(`ball spin drawn ${Math.round(1 / s.spinF)}x slower than real`));
+  }
+  const ori = T.list[0]?.r.orientation || vs[0]?.m.orientation || 'btw';
+  out.push(esc(`hole orientation ${ori} ASSUMED`));
+  return `<b>${esc(nm)}</b>${out.join(' | ')}`;
 }
-let capNow = { main: [0, 0], twin: [0, 0] };
 function updateCaps() {
-  for (const k of ['main', 'twin']) $(k === 'main' ? 'capM' : 'capT').innerHTML = (k === 'twin' && U.S === 0) ? '' : caption(k, ...capNow[k]);
-  $('banner').style.display = ['main', 'twin'].some((k) => slots[k].view?.m.synthetic) ? 'block' : 'none';
+  $('capM').innerHTML = caption('main');
+  $('capT').innerHTML = U.S === 0 ? '' : caption('twin');
+  const syn = Object.values(slots).some((s) => [...s.views.values()].some((o) => o.view?.m.synthetic && o.w > 0.01));
+  $('banner').style.display = syn ? 'block' : 'none';
   $('banner').textContent = 'SYNTHETIC TEST FIELD — not CFD';
+}
+function drawLegend() {
+  const cv = $('lgBar'), ctx = cv.getContext('2d'), W = cv.width, H = cv.height;
+  for (let i = 0; i < W; i++) { const c = turbo(i / (W - 1)).map((x) => Math.round(x * 255)); ctx.fillStyle = `rgb(${c})`; ctx.fillRect(i, 0, 1, H); }
+  const V = U.vleg;
+  $('lgTicks').innerHTML = [0, V / 2, V].map((x) => `<span>${fmt(x)}</span>`).join('');
+  const mc = $('mlgBar'), mx = mc.getContext('2d');
+  mx.drawImage(cv, 0, 0, mc.width, mc.height); $('mhi').textContent = fmt(V);
 }
 
 // ------------------------------------------------------------ per-frame placement
-const MB = new THREE.Matrix4(), V3 = new THREE.Vector3(), X = new THREE.Vector3(), Y = new THREE.Vector3(), Z = new THREE.Vector3();
+const MB = new THREE.Matrix4(), MR = new THREE.Matrix4(), MS = new THREE.Matrix4(), V3 = new THREE.Vector3();
+const X = new THREE.Vector3(), Y = new THREE.Vector3(), Z = new THREE.Vector3();
 let offVec = new THREE.Vector3();
 function applyOffsets() {
   const a = PATHS.twin?.axis || new THREE.Vector3(0, 1, 0), o = +$('dOff').value;
   offVec = a.clone().multiplyScalar(o); $('dOffo').textContent = o.toFixed(2) + ' m';
   if (pathLines.twin) pathLines.twin.position.copy(offVec);
 }
+// ball-frame basis at path index i: CFD +x = air relative to the ball (against its velocity), CFD y = spin axis, z = x cross y
+function basis(P, i, sc, out) {
+  X.set(-P.vx[i], -P.vy[i], -P.vz[i]).normalize();
+  Y.copy(P.axis); Y.addScaledVector(X, -Y.dot(X)); if (Y.lengthSq() < 1e-9) Y.set(0, 1, 0).addScaledVector(X, -X.y); Y.normalize();
+  Z.crossVectors(X, Y);
+  return out.makeBasis(X.multiplyScalar(sc), Y.multiplyScalar(sc), Z.multiplyScalar(sc));
+}
 function place(k, P, tSim, show) {
   const s = slots[k];
   const i = Math.min(P.n - 1, Math.round(tSim / P.dt)), t = i * P.dt;
   const pos = V3.set(P.p.x[i], P.p.y[i], P.p.z[i]);
   if (k === 'twin') pos.add(offVec);
-  const speed = P.sp[i], Sl = P.Sloc(i, t);
-  capNow[k] = [speed, Sl];
-  s.ball.position.copy(pos); s.ball.visible = show && !s.view;
-  s.group.visible = show && !!s.view && (k === 'main' || $('dTwinFlow').checked);
-  if (!show) { s.ball.visible = false; return pos.clone(); }
-  // choose / switch the CFD case with a little hysteresis
-  const want = pick(speed, Sl, k === 'twin');
-  if (want && (!s.entry || (s.entry.id !== want.id && !s.loading && (s.last == null || performance.now() - s.last > 400)))) {
-    if (!s.entry || pickScore(want, speed, Sl, k) + 0.1 < pickScore(s.entry, speed, Sl, k)) { s.last = performance.now(); setCase(s, want).then(() => updateCaps()); }
-  }
-  // basis: CFD +x = air relative to the ball (against the ball's velocity), CFD y = spin axis, z = x cross y
-  X.set(-P.vx[i], -P.vy[i], -P.vz[i]).normalize();
-  Y.copy(P.axis); Y.addScaledVector(X, -Y.dot(X)); if (Y.lengthSq() < 1e-9) Y.set(0, 1, 0).addScaledVector(X, -X.y); Y.normalize();
-  Z.crossVectors(X, Y);
+  s.speed = P.sp[i]; s.Sl = P.Sloc(i, t);
+  s.T = targets(s, s.speed, s.Sl);
+  s.ball.visible = show;
+  s.group.visible = show && (k === 'main' || $('dTwinFlow').checked);
   const sc = D_M * +$('dMag').value;
-  MB.makeBasis(X.multiplyScalar(sc), Y.multiplyScalar(sc), Z.multiplyScalar(sc)); MB.setPosition(pos);
+  basis(P, i, sc, MB); MB.setPosition(pos);
   s.group.matrix.copy(MB); s.group.matrixWorldNeedsUpdate = true;
+  // the drawn ball turns about the (fixed) backspin axis: launch attitude, then phi(t) = w0 (1 - e^-kt) / k;
+  // positive rotation about the CFD +y axis is backspin (top surface moving back against the flight)
+  const w0 = P.w0, tsp = +$('tSpd').value;
+  s.spinF = w0 > 0 ? Math.min(1, (SPIN_CAP * 2 * Math.PI) / (w0 * tsp)) : 1;
+  const phi = w0 > 0 ? s.spinF * (P.k > 1e-6 ? w0 * (1 - Math.exp(-P.k * t)) / P.k : w0 * t) : 0;
+  basis(P, 0, sc, MS);
+  MR.makeRotationAxis(P.axis, phi).multiply(MS).setPosition(pos);
+  s.ball.matrix.copy(MR); s.ball.matrixWorldNeedsUpdate = true;
   return pos.clone();
-}
-function pickScore(r, speed, S, k) {
-  const Sc = k === 'twin' ? 0 : r.S;
-  return Math.pow(Math.log(speed / r.speed_mps) / 0.3, 2) + Math.pow((S - Sc) / 0.25, 2);
 }
 
 // ------------------------------------------------------------ interaction
@@ -267,6 +417,7 @@ let need = true, dragging = false;
 const ray = new THREE.Raycaster(), plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0), hit = new THREE.Vector3();
 function ndc(ev) { const r = canvas.getBoundingClientRect(); return new THREE.Vector2(((ev.clientX - r.left) / r.width) * 2 - 1, -((ev.clientY - r.top) / r.height) * 2 + 1); }
 canvas.addEventListener('pointerdown', (ev) => {
+  if (EMBED) return;   // the explorer's Robot tab places the robot
   ray.setFromCamera(ndc(ev), camera);
   if (ray.intersectObject(robot, true).length) { dragging = true; controls.enabled = false; canvas.setPointerCapture(ev.pointerId); ev.preventDefault(); }
 });
@@ -291,11 +442,23 @@ $('rz').addEventListener('input', () => { U.h = +$('rz').value; rebuildShot(); u
 $('sv').addEventListener('input', () => { U.v = +$('sv').value; updateShotUi(); rebuildShot(); });
 $('sth').addEventListener('input', () => { U.th = +$('sth').value; updateShotUi(); rebuildShot(); });
 $('sS').addEventListener('change', () => { U.S = +$('sS').value; updateShotUi(); rebuildShot(); updateCaps(); });
-for (const id of ['lStream', 'lVortex', 'qLevel', 'lY', 'lZ', 'sField', 'lCont', 'sOp', 'dTwinFlow']) $(id).addEventListener('input', applyLayers);
+for (const id of ['lStream', 'lVortex', 'qLevel', 'lY', 'lZ', 'sField', 'lCont', 'sOp']) $(id).addEventListener('input', applyLayers);
+for (const id of ['dTwinFlow', 'dMag', 'dMode']) $(id).addEventListener('input', () => { need = true; });
 $('dOff').addEventListener('input', () => { applyOffsets(); need = true; });
-$('dMode').addEventListener('change', () => { need = true; });
-$('lAnimCase').addEventListener('change', () => { for (const k of ['main', 'twin']) slots[k].last = null; });
-$('tPlay').onclick = () => { U.play = !U.play; $('tPlay').textContent = U.play ? 'Pause' : 'Play'; };
+$('lAnimCase').addEventListener('change', () => { for (const k in slots) slots[k].cur.clear(); });
+function setAvg(on) {
+  U.avg = on;
+  for (const b of document.querySelectorAll('#vMode button')) b.setAttribute('aria-pressed', String((b.dataset.m === 'avg') === on));
+  for (const k in slots) slots[k].cur.clear();
+  updateCaps();
+}
+for (const b of document.querySelectorAll('#vMode button')) b.addEventListener('click', () => setAvg(b.dataset.m === 'avg'));
+// phone layout: the panel folds to one line ("Shot and layers")
+function setPanel(open) { $('panel').classList.toggle('open', open); $('panelSum').setAttribute('aria-expanded', String(open)); }
+$('panelSum').addEventListener('click', () => setPanel(!$('panel').classList.contains('open')));
+$('panelSum').addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setPanel(!$('panel').classList.contains('open')); } });
+function setPlay(on) { U.play = on; $('tPlay').textContent = on ? 'Pause' : 'Play'; $('tPlay').setAttribute('aria-pressed', String(on)); }
+$('tPlay').onclick = () => { if (!U.play && PATHS.main && U.tSim >= Math.max(PATHS.main.T, PATHS.twin.T) - 1e-3) U.tSim = 0; setPlay(!U.play); };
 $('tSlide').addEventListener('input', () => { U.tSim = +$('tSlide').value; });
 $('cOver').onclick = () => { $('cMode').value = 'free'; camera.position.copy(OVER.pos); controls.target.copy(OVER.tgt); };
 $('cMode').addEventListener('change', () => { if ($('cMode').value !== 'free') followInit = true; });
@@ -303,7 +466,7 @@ let followInit = true;
 $('bSuggest').onclick = () => {
   $('sgNote').textContent = 'solving...';
   setTimeout(() => {
-    const q = qNow(META._q);
+    const q = qNow();
     const r = PS.solve(q);
     if (!r.pose || r.pose.ok === false) { $('sgNote').textContent = 'no legal pose'; return; }
     let s = r.mostForgiving; if (s && s.gripLimited && r.minRpm) s = r.minRpm;
@@ -314,38 +477,72 @@ $('bSuggest').onclick = () => {
 };
 function resize() {
   const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
-  for (const k of ['main', 'twin']) slots[k].view?.streams.material.uniforms.uRes.value.set(w * DPR, h * DPR);
+  for (const k in slots) for (const o of slots[k].views.values()) o.view?.streams.material.uniforms.uRes.value.set(w * DPR, h * DPR);
   need = true;
 }
 addEventListener('resize', resize);
+// theme: follows the explorer's saved choice (same storage key), live when the explorer switches it
+function retheme() {
+  BG = new THREE.Color(cssVar('--bg') || '#0b1015');
+  for (const k in slots) for (const o of slots[k].views.values()) if (o.view) { o.view.applyTheme(); o.fadeW = -1; }
+}
+addEventListener('storage', (e) => {
+  if (e.key !== 'pollen-theme') return;
+  if (e.newValue === 'light' || e.newValue === 'dark') document.documentElement.dataset.theme = e.newValue; else delete document.documentElement.dataset.theme;
+  retheme();
+});
+matchMedia('(prefers-color-scheme: light)').addEventListener?.('change', retheme);
+
+// the explorer (same origin) sends its current shot: {type: 'pollen-shot', x, y, hd, h, v, th, S, q}
+let pendingMsg = null;
+function applyShot(d) {
+  if (!META) { pendingMsg = d; return; }
+  if (d.q && typeof d.q === 'object') U.q = d.q;
+  for (const k_ of ['x', 'y', 'hd', 'h', 'v', 'th', 'S']) if (d[k_] !== null && d[k_] !== undefined && isFinite(d[k_])) U[k_] = +d[k_];
+  updateShotUi();
+  if (rebuildShot()) updateRobot();
+  if (d.reset) { U.tSim = 0; followInit = true; }
+  updateCaps();
+}
+addEventListener('message', (ev) => {
+  if (ev.origin !== location.origin) return;
+  const d = ev.data;
+  if (d && d.type === 'pollen-shot') applyShot(d);
+  if (d && d.type === 'pollen-flow-visible') VISIBLE = !!d.on;   // the explorer hides this tab: stop drawing until it is shown again
+});
 
 // ------------------------------------------------------------ loop
-let lastT = 0;
+let lastT = 0, capT = 0, VISIBLE = true;
 function render(t) {
   requestAnimationFrame(render);
+  if (!VISIBLE) { lastT = t; return; }
   const dtS = Math.min(0.1, Math.max(0, (t - lastT) / 1000)); lastT = t;
   if (!PATHS.main) return;
   const T = Math.max(PATHS.main.T, PATHS.twin.T);
   if (U.play) {
     U.tSim += dtS * +$('tSpd').value;
-    if (U.tSim > T) { if ($('tLoop').checked) U.tSim = 0; else { U.tSim = T; U.play = false; $('tPlay').textContent = 'Play'; } }
+    for (const k in slots) slots[k].tFlow += dtS;
+    if (U.tSim > T) { if ($('tLoop').checked) U.tSim = 0; else { U.tSim = T; setPlay(false); } }
   }
   $('tSlide').value = String(U.tSim);
-  const both = $('dMode').value === 'both' && U.S !== 0;
-  const showMain = $('dMode').value === 'both' || U.S === 0;
+  const mode = $('dMode').value;
+  const showMain = mode === 'both' || U.S === 0;
+  const showTwin = (mode === 'both' && U.S !== 0) || mode === 'twin';
   const pm = place('main', PATHS.main, U.tSim, showMain);
-  const pt = place('twin', PATHS.twin, U.tSim, both || $('dMode').value === 'twin');
-  $('tLab').textContent = `flight t = ${U.tSim.toFixed(2)} s of ${T.toFixed(2)} s | PREDICTED path`;
-  for (const k of ['main', 'twin']) {
-    const s = slots[k], v = s.view; if (!v) continue;
-    v.streams.material.uniforms.uTime.value = t / 1000;
-    if (v.fr && s.group.visible) {
-      s.tFlow += dtS * 8; const n = v.fr.n, ft = s.tFlow % n;
-      if (t - s.lastUpd > 33) { v.setTime(ft, ST()); s.lastUpd = t; }
-      v.stepParticles(dtS, false);
-    }
+  const pt = place('twin', PATHS.twin, U.tSim, showTwin);
+  const st = ST();
+  // speed colours scale with the ball's local speed so the flow pattern stays visible from launch to apex;
+  // a step up happens at once, a step down only once the speed is well inside the lower rung (no flicker)
+  const vNow = Math.max(showMain ? slots.main.speed : 0, showTwin ? slots.twin.speed : 0);
+  if (vNow > 0) {
+    const up = niceCeil(1.5 * vNow), down = niceCeil(1.5 * 1.15 * vNow);
+    const tg = up > U.vleg ? up : down < U.vleg ? down : U.vleg;
+    if (tg !== U.vleg) { U.vleg = tg; drawLegend(); }
   }
-  updateCapsThrottled(t);
+  updateSlot(slots.main, showMain, dtS, t, st);
+  updateSlot(slots.twin, showTwin && $('dTwinFlow').checked, dtS, t, st);
+  $('tLab').textContent = `flight ${U.tSim.toFixed(2)} s of ${T.toFixed(2)} s | ball ${slots[showMain ? 'main' : 'twin'].speed.toFixed(1)} m/s | PREDICTED path`;
+  if (t - capT > 200) { capT = t; updateCaps(); }
   const fol = $('cMode').value;
   if (fol !== 'free') {
     const tgt = fol === 'follow' && showMain ? pm : pt;
@@ -353,11 +550,9 @@ function render(t) {
     else { V3.copy(tgt).sub(controls.target); camera.position.add(V3); controls.target.copy(tgt); }
   }
   controls.update();
-  renderer.setClearColor(new THREE.Color(cssVar('--bg') || '#0a0e16'), 1);
+  renderer.setClearColor(BG, 1);
   renderer.render(scene, camera);
 }
-let capT = 0;
-function updateCapsThrottled(t) { if (t - capT > 150) { capT = t; updateCaps(); } }
 
 // ------------------------------------------------------------ boot
 async function boot() {
@@ -366,39 +561,40 @@ async function boot() {
     const fi = await (await fetch(FIELD_URL)).json();
     META = fi;
     META._q = { grid: fi.grid, sections: fi.sections, frame: fi.frame, field_grid: fi.field_grid, cases: fi.cases.map((c) => ({ S: c.S, var: c.var, params: c.params })) };
-  } catch (e) { $('load').textContent = 'Field data not found (' + FIELD_URL + '). Build the explorer data first.'; return; }
+  } catch (e) { $('load').textContent = 'Field data not found. Build the explorer data first.'; return; }
   buildField(META);
   const Ss = [...new Set(META.cases.map((c) => c.S))].sort((a, b) => a - b);
-  $('sS').innerHTML = Ss.map((s) => `<option value="${s}">${s === 0 ? 'S 0 (no spin)' : 'S ' + s + ' (backspin)'}</option>`).join('');
+  $('sS').innerHTML = Ss.map((s) => `<option value="${s}">${s === 0 ? 'No spin' : 'Backspin S ' + fmtS(s)}</option>`).join('');
   if (!Ss.includes(U.S)) U.S = Ss[Ss.length - 1];
   try {
     const idx = await (await fetch(`${BASE}/index.json`)).json();
-    RUNS = (idx.runs || []).map((r) => {
+    buildLibrary((idx.runs || []).map((r) => {
       const sp = r.speed_mps ?? parseFloat((/([0-9.]+)\s*m\/s/.exec(r.label || '') || [])[1]);
       const S = r.S ?? parseFloat((/\bS\s*([0-9.]+)/.exec(r.label || '') || [])[1] || 0);
       return Object.assign({}, r, { speed_mps: sp, S: isFinite(S) ? S : 0 });
-    }).filter((r) => isFinite(r.speed_mps));
-  } catch (e) { RUNS = []; }
-  if (!RUNS.length) $('load').textContent = 'No CFD cases found in ' + BASE + '/index.json';
-  if (params.get('x')) { U.x = +params.get('x'); U.y = +params.get('y') || U.y; }
-  if (params.get('v')) U.v = +params.get('v');
-  if (params.get('th')) U.th = +params.get('th');
-  if (params.get('S')) U.S = +params.get('S');
-  if (params.get('hd')) U.hd = +params.get('hd');
+    }).filter((r) => isFinite(r.speed_mps) && r.speed_mps > 0));
+  } catch (e) { buildLibrary([]); }
+  if (!RUNS.length) $('load').textContent = 'No CFD cases in the flow library yet.';
+  $('libNote').textContent = RUNS.length ? `CFD library: ${RUNS.length} cases, spin S ${LEVELS.map(fmt).join(', ')}; ` +
+    `${[...new Set(RUNS.map((r) => +r.speed_mps))].sort((a, b) => a - b).map(fmt).join(', ')} m/s.` : '';
+  for (const p of ['x', 'y', 'v', 'th', 'S', 'hd', 'h']) if (params.get(p) !== null && params.get(p) !== '' && isFinite(+params.get(p))) U[p] = +params.get(p);
   updateShotUi();
-  if (innerWidth < 700) $('panel').open = false;
   if (params.get('hidepanel')) $('panel').style.display = 'none';
   if (!rebuildShot()) { U.x = -1.0; U.y = 0.2; U.hd = 0; rebuildShot(); }
   updateRobot();
-  if (!params.get('v') && !params.get('x')) $('bSuggest').click();
+  if (!EMBED && !params.get('v') && !params.get('x')) $('bSuggest').click();
   if (params.get('cam')) $('cMode').value = params.get('cam');
   if (params.get('mag')) $('dMag').value = params.get('mag');
   if (params.get('off')) { $('dOff').value = params.get('off'); applyOffsets(); }
   if (params.get('plane')) { $('lY').checked = params.get('plane').includes('a'); $('lZ').checked = params.get('plane').includes('b'); }
   if (params.get('anim')) $('lAnimCase').checked = true;
+  if (params.get('spd')) $('tSpd').value = params.get('spd');
+  setAvg(U.avg); applyLayers();
   if (params.get('t')) U.tSim = +params.get('t');
-  if (params.get('play')) $('tPlay').click();
-  if (params.get('free')) { $('cMode').value = 'free'; }
+  if (params.get('play')) setPlay(true);
+  if (params.get('free')) $('cMode').value = 'free';
+  if (pendingMsg) { const d = pendingMsg; pendingMsg = null; applyShot(d); }
+  if (window.parent !== window) try { window.parent.postMessage({ type: 'pollen-flow-ready' }, location.origin); } catch (_) { /* not same origin */ }
   requestAnimationFrame(render);
 }
 boot().catch((e) => { console.error(e); $('load').textContent = 'Failed: ' + e.message; });

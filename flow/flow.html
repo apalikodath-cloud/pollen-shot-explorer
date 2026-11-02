@@ -5,42 +5,74 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>POLLEN flow viewer</title>
 <link rel="icon" href="data:,">
+<script>try { var th = localStorage.getItem("pollen-theme"); if (th === "light" || th === "dark") document.documentElement.dataset.theme = th; } catch (_) { /* storage blocked: follow the system theme */ }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-:root{--bg:#f3f5f8;--panel:rgba(255,255,255,.92);--ink:#16202e;--mute:#586579;--line:#c9d1dd;--accent:#1d5fd1;--warn:#b3261e;--warnbg:#fde7e5;--contour:#1a1f2b}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0e16;--panel:rgba(18,24,36,.92);--ink:#e6ebf3;--mute:#98a4b8;--line:#2b3447;--accent:#6ea2ff;--warn:#ffb4ab;--warnbg:#5a1410;--contour:#f2f5fa}}
-:root[data-theme="dark"]{--bg:#0a0e16;--panel:rgba(18,24,36,.92);--ink:#e6ebf3;--mute:#98a4b8;--line:#2b3447;--accent:#6ea2ff;--warn:#ffb4ab;--warnbg:#5a1410;--contour:#f2f5fa}
+:root{--bg:#0b1015;--panel:rgba(17,25,33,.92);--panel-2:#16212b;--line:#24323f;--fg:#e3eaf0;--muted:#8d9caa;--pollen:#f4c430;--twin:#a9b4bf;--warn:#ff6b5a;--warnbg:#3a1410;--contour:#f2f5fa;
+ --display:"Barlow Condensed","Arial Narrow","Roboto Condensed",sans-serif;--body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
+:root[data-theme="light"]{--bg:#f3f5f7;--panel:rgba(255,255,255,.94);--panel-2:#eaeef2;--line:#c9d1d9;--fg:#141b22;--muted:#4f5d6a;--pollen:#9a6b00;--twin:#46535f;--warn:#c0392b;--warnbg:#fde7e5;--contour:#1a1f2b;color-scheme:light}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f3f5f7;--panel:rgba(255,255,255,.94);--panel-2:#eaeef2;--line:#c9d1d9;--fg:#141b22;--muted:#4f5d6a;--pollen:#9a6b00;--twin:#46535f;--warn:#c0392b;--warnbg:#fde7e5;--contour:#1a1f2b;color-scheme:light}}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:14px/1.45 var(--body);overflow:hidden}
 #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
-#top{position:fixed;left:0;right:0;top:0;padding:8px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;pointer-events:none}
-#top h1{font-size:15px;margin:0;font-weight:650;pointer-events:auto}
-#top a{color:var(--accent);pointer-events:auto;font-size:13px}
-#banner{display:none;position:fixed;left:50%;top:44px;transform:translateX(-50%);z-index:5;background:var(--warnbg);color:var(--warn);border:2px solid var(--warn);padding:6px 16px;border-radius:8px;font-weight:800;font-size:clamp(14px,3.6vw,22px);text-align:center;pointer-events:none;white-space:nowrap}
-.cap{position:fixed;top:92px;z-index:3;max-width:48vw;font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 9px;pointer-events:none}
+#top{position:fixed;left:16px;right:16px;top:8px;display:flex;gap:6px 14px;align-items:baseline;flex-wrap:wrap;pointer-events:none;z-index:2}
+#top h1{font:700 22px/1.1 var(--display);margin:0;letter-spacing:.01em}#top h1 b{color:var(--pollen)}
+#top a{color:var(--fg);opacity:.8;pointer-events:auto;font-size:13px}
+#load{margin-left:auto;font-size:12px;color:var(--muted)}
+#banner{display:none;position:fixed;left:50%;top:44px;transform:translateX(-50%);z-index:5;background:var(--warnbg);color:var(--warn);border:2px solid var(--warn);padding:6px 16px;border-radius:8px;font-weight:700;font-size:clamp(14px,3.6vw,20px);text-align:center;pointer-events:none;max-width:calc(100vw - 32px)}
+#caps{position:fixed;right:16px;top:44px;width:min(420px,44vw);z-index:3;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.cap{font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;color:var(--muted)}
 .cap:empty{display:none}
-.cap b{display:block;font-size:13px}.cap .pred{color:var(--mute)}.cap .syn{color:var(--warn);font-weight:700}
-#panel{position:fixed;left:16px;top:130px;width:268px;max-height:calc(100% - 200px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;z-index:4}
-#panel summary{cursor:pointer;font-weight:650;padding:4px 0}
+.cap b{display:block;font:600 15px/1.2 var(--display);letter-spacing:.02em;color:var(--fg)}
+.cap i{font-style:normal;font:600 11px var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+#capA{border-left:4px solid var(--pollen)}#capB{border-left:4px solid var(--twin)}
+.cap .pred{color:var(--fg);font-weight:600}.cap .syn{color:var(--warn);font-weight:700}
+#panel{position:fixed;left:16px;top:44px;width:300px;max-height:calc(100% - 150px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;z-index:4}
+#panel h2{font:600 13px/1.2 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:10px 0 4px}
+#panel .inner>h2:first-child{margin-top:0}
 #panel label{display:flex;gap:8px;align-items:center;padding:3px 0;cursor:pointer}
 #panel .row{display:flex;gap:8px;align-items:center;padding:3px 0}
-#panel .row span{min-width:66px;color:var(--mute);font-size:12px}
-#panel h3{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:10px 0 2px}
-select,button{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
-button{cursor:pointer}select{max-width:170px}input[type=range]{flex:1;min-width:0}
-#tbar{position:fixed;left:50%;transform:translateX(-50%);bottom:30px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;z-index:3;font-size:12px;width:min(620px,calc(100vw - 32px))}
-#tbar .trow{display:flex;gap:8px;align-items:center;margin:2px 0}#tbar input[type=range]{flex:1;min-width:0}#tbar .tnote{color:var(--mute);font-size:11px}
-#legend{position:fixed;right:16px;bottom:16px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;z-index:3;font-size:12px}
-#legend canvas{display:block;width:200px;height:12px;border-radius:3px;margin:2px 0}
-#legend .lab{display:flex;justify-content:space-between;color:var(--mute)}
-#hint{position:fixed;left:16px;right:16px;bottom:10px;font-size:12px;color:var(--mute);pointer-events:none}
-#empty{display:none;position:fixed;inset:0;align-items:center;justify-content:center;padding:24px;z-index:6}
+#panel .row>span{min-width:86px;color:var(--muted);font-size:12px}
+#panel select{flex:1;max-width:none}
+.note{font-size:11.5px;color:var(--muted);margin:6px 0 0}
+.sm{color:var(--muted);font-size:12px}
+select,button{font:inherit;font-size:13px;color:var(--fg);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:4px 8px;min-height:30px}
+button{cursor:pointer}select{max-width:170px;min-width:0}input[type=range]{flex:1;min-width:0;accent-color:var(--pollen)}input[type=checkbox]{accent-color:var(--pollen)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;min-width:84px}
+.seg button[aria-pressed="true"]{background:var(--pollen);color:#14110a;font-weight:600}
+#adv{margin-top:10px;border-top:1px solid var(--line);padding-top:6px}
+#adv summary{cursor:pointer;font:600 14px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:4px 0}
+#tbar{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;z-index:3;font-size:12px;width:min(640px,calc(100vw - 32px))}
+#tbar .trow{display:flex;gap:8px;align-items:center;margin:2px 0;flex-wrap:wrap}#tbar input[type=range]{flex:1;min-width:60px}
+#tbar label{display:flex;gap:4px;align-items:center}
+#tPlay{min-width:64px;font-weight:600}
+#tLab{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+#tbar .tnote{color:var(--muted);font-size:11px}
+#legend{position:fixed;right:16px;bottom:16px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;z-index:3;font-size:11.5px;color:var(--muted);pointer-events:none;width:230px}
+#legend canvas{display:block;width:100%;height:10px;border-radius:3px;margin:2px 0}
+#legend .lab{display:flex;justify-content:space-between;font-family:var(--mono);color:var(--fg)}
+#legend .lr+.lr{margin-top:4px}
+body.series #legend{bottom:104px}
+#hint{position:fixed;left:16px;bottom:16px;max-width:calc(50vw - 340px);font-size:12px;color:var(--muted);pointer-events:none}
+body.series #hint{display:none}
+#empty{display:none;position:fixed;inset:0;align-items:center;justify-content:center;padding:24px 16px;z-index:6}
 #empty div{max-width:520px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 24px}
-#empty code{background:var(--bg);padding:1px 5px;border-radius:4px}
-#load{position:fixed;right:16px;top:8px;font-size:12px;color:var(--mute)}
+#empty h2{font:600 22px var(--display);margin-top:0}
+#empty code{background:var(--panel-2);padding:1px 5px;border-radius:4px;font-family:var(--mono);font-size:12px;overflow-wrap:anywhere}
+#panelSum{display:none}
 @media (max-width:700px){
- #panel{left:8px;top:auto;bottom:8px;width:calc(100% - 16px);max-height:52%}
- #tbar{bottom:8px}#tbar .tnote{display:none}#legend{left:auto;right:8px;bottom:110px;top:auto;font-size:11px}#legend canvas{width:140px}
- .cap{top:92px;max-width:49vw;font-size:11px}.cap.r{right:8px}.cap.l{left:8px}
+ #panel{left:16px;right:16px;width:auto;top:auto;bottom:16px;max-height:52%;padding:0}
+ body.series #panel{bottom:146px}
+ #panel>.inner{padding:8px 12px}
+ #panelSum{display:block;cursor:pointer;font:600 14px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 12px}
+ #panel:not(.open)>.inner{display:none}
+ #caps{left:16px;right:16px;width:auto;top:38px}.cap{font-size:11px;padding:4px 8px}.cap b{font-size:13px}
+ #tbar{bottom:8px;width:calc(100vw - 32px)}#tbar .tnote{display:none}
+ #legend{right:16px;width:150px;bottom:70px;font-size:10.5px}
+ body.series #legend{bottom:200px}
  #hint{display:none}
 }
 </style>
@@ -50,37 +82,51 @@ button{cursor:pointer}select{max-width:170px}input[type=range]{flex:1;min-width:
 </script>
 </head>
 <body>
-<canvas id="gl"></canvas>
-<div id="top"><h1>POLLEN flow viewer</h1><a href="../index.html">shot explorer</a><span id="load"></span></div>
+<canvas id="gl" aria-label="3D view of the CFD flow around the POLLEN ball"></canvas>
+<div id="top"><h1><b>POLLEN</b> flow viewer</h1><a href="shot.html">3D shot flow</a><a href="../index.html">shot explorer</a><span id="load"></span></div>
 <div id="banner"></div>
-<div class="cap l" id="capA"></div><div class="cap r" id="capB"></div>
-<details id="panel" open><summary>Layers and runs</summary>
- <h3>Run</h3>
- <div class="row"><span>Run</span><select id="runA"></select></div>
- <label><input type="checkbox" id="cmp"> Compare side by side</label>
- <div class="row"><span>Run B</span><select id="runB"></select></div>
- <h3>Layers</h3>
+<div id="caps"><div class="cap" id="capA"></div><div class="cap" id="capB"></div></div>
+<div id="panel">
+ <div id="panelSum" role="button" tabindex="0" aria-expanded="false">Case and layers</div>
+ <div class="inner">
+ <h2>CFD case</h2>
+ <div class="row"><select id="runA" aria-label="CFD case"></select></div>
+ <label><input type="checkbox" id="cmp"> Side by side with a second case</label>
+ <p class="note">A backspin case opens next to its no-spin twin at the same speed.</p>
+ <h2>Layers</h2>
  <label><input type="checkbox" id="lStream" checked> Streamlines</label>
- <div class="row"><span>Line width</span><input type="range" id="wStream" min="0.8" max="4" step="0.1" value="1.3"></div>
- <label><input type="checkbox" id="lAnim" checked> Animate flow dashes</label>
- <label><input type="checkbox" id="lVortex" checked> Vortex cores (Q)</label>
- <div class="row"><span>Q level</span><input type="range" id="qLevel" min="0" max="2" step="1" value="1"></div>
- <label><input type="checkbox" id="lBody" checked> Body</label>
- <h3>Contour slices</h3>
- <label><input type="checkbox" id="lY" checked> <span id="nA">Plane A</span></label>
- <label><input type="checkbox" id="lZ"> <span id="nB">Plane B</span></label>
- <div class="row"><span>Colour by</span><select id="sField"><option value="speed">Speed</option><option value="vort">Vorticity</option></select></div>
- <label><input type="checkbox" id="lCont" checked> Contour lines</label>
- <div class="row"><span>Opacity</span><input type="range" id="sOp" min="0.1" max="1" step="0.05" value="0.85"></div>
- <h3>View</h3>
- <div class="row"><button id="bReset">Reset</button><button id="bBody">Zoom to body</button><button id="bWake">Wake</button></div>
-</details>
-<div id="tbar" style="display:none"><div class="trow"><button id="tPlay">Play</button><input type="range" id="tSlide" min="0" max="1" step="0.01" value="0"><select id="tSpd" title="Playback speed"><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option></select><label><input type="checkbox" id="tLoop" checked> Loop</label><label><input type="checkbox" id="lPart" checked> Particles</label></div><div class="trow"><span id="tLab"></span></div><div class="tnote">Simulation is in the ball's frame: the ball is fixed and air moves past it at the shot speed, as seen from the ball in flight.</div></div>
+ <label><input type="checkbox" id="lVortex" checked> Vortex cores</label>
+ <label><input type="checkbox" id="lY" checked> Slice through the ball <span class="sm" id="nA"></span></label>
+ <h2>Flow</h2>
+ <div class="seg" id="vMode" role="group" aria-label="Averaged or instantaneous flow" title="Instant shows the turbulent wake's vortices; averaged shows the mean flow.">
+  <button type="button" data-m="avg" aria-pressed="false" title="Averaged: the mean flow (velocity averaged over the saved CFD frames)">Averaged</button>
+  <button type="button" data-m="inst" aria-pressed="true" title="Instant: one moment of the turbulent wake, with its vortices">Instant</button>
+ </div>
+ <p class="note">Instant shows the turbulent wake's vortices; averaged shows the mean flow. In Instant the tubes are vortex cores (Q-criterion) of one moment of a turbulent (LES) wake, and the blotchy slice is the same turbulence: not a model error.</p>
+ <details id="adv"><summary>Advanced</summary>
+  <h2>Second case</h2>
+  <div class="row"><span>Right side</span><select id="runB" aria-label="Second CFD case"></select></div>
+  <h2>More layers</h2>
+  <div class="row"><span>Line width</span><input type="range" id="wStream" min="0.8" max="4" step="0.1" value="1.3"></div>
+  <label><input type="checkbox" id="lAnim" checked> Animate flow dashes</label>
+  <div class="row"><span>Vortex level</span><input type="range" id="qLevel" min="0" max="2" step="1" value="1" title="Q-criterion threshold: left = weaker vortices too"></div>
+  <label><input type="checkbox" id="lBody" checked> Ball</label>
+  <label><input type="checkbox" id="lZ"> Second slice <span class="sm" id="nB"></span></label>
+  <div class="row"><span>Colour slices by</span><select id="sField"><option value="speed">Speed</option><option value="vort">Vorticity</option></select></div>
+  <label><input type="checkbox" id="lCont" checked> Contour lines</label>
+  <div class="row"><span>Slice opacity</span><input type="range" id="sOp" min="0.1" max="1" step="0.05" value="0.85"></div>
+  <h2>Camera</h2>
+  <div class="row"><button type="button" id="bReset">Reset</button><button type="button" id="bBody">Ball</button><button type="button" id="bWake">Wake</button></div>
+  <p class="note">The CFD rides along with the ball: the air streams past at the shot speed, as the ball sees it in flight. Drag to orbit, right-drag or two-finger drag to pan, wheel or pinch to zoom, double-click to focus a point.</p>
+ </details>
+ </div>
+</div>
+<div id="tbar" style="display:none"><div class="trow"><button type="button" id="tPlay">Play</button><input type="range" id="tSlide" min="0" max="1" step="0.01" value="0" aria-label="CFD time"><select id="tSpd" title="Playback speed"><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option></select><label><input type="checkbox" id="tLoop" checked> Loop</label><label><input type="checkbox" id="lPart" checked> Particles</label></div><div class="trow"><span id="tLab"></span></div><div class="tnote">Saved CFD frames of the turbulent wake, riding along with the ball.</div></div>
 <div id="legend"></div>
-<div id="hint">Drag: orbit. Right-drag or two-finger drag: pan. Wheel or pinch: zoom to the cursor. Double-click: focus a point.</div>
-<div id="empty"><div><h2 style="margin-top:0">No flow runs yet</h2>
+<div id="hint">Drag: orbit. Right-drag or two-finger drag: pan. Wheel or pinch: zoom. Double-click: focus a point.</div>
+<div id="empty"><div><h2>No flow runs yet</h2>
 <p>This viewer reads <code>flows/index.json</code> and one folder per run. None were found.</p>
-<p>Make a bundle from a solver snapshot with <code>python viz/flow/make_flow.py &lt;snapshot.json&gt; -o viz/flow/flows/&lt;run_id&gt;</code> and list it in <code>flows/index.json</code>. See <code>viz/flow/README.md</code>.</p></div></div>
+<p>Make a bundle from a solver snapshot with <code>python viz/flow/make_flow.py &lt;snapshot.json&gt; -o viz/flow/flows/&lt;run_id&gt; --add-index viz/flow/flows/index.json</code>. See <code>viz/flow/README.md</code>.</p></div></div>
 <script type="module" src="flow.js"></script>
 </body>
 </html>

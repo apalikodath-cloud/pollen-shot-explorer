@@ -144,7 +144,11 @@
      15.0,
      20.0
     ]
-   }
+   },
+   "field_size": [
+    192,
+    102
+   ]
   },
   {
    "tag": "z0",
@@ -200,7 +204,11 @@
      20.0,
      25.0
     ]
-   }
+   },
+   "field_size": [
+    192,
+    102
+   ]
   }
  ],
  "files": {
@@ -292,7 +300,7 @@
   },
   "slices": {
    "url": "slices.bin",
-   "bytes": 1155207,
+   "bytes": 1272712,
    "arrays": [
     {
      "name": "y0_speed_seg",
@@ -319,28 +327,64 @@
      "length": 9317
     },
     {
+     "name": "y0_sol",
+     "dtype": "uint8",
+     "offset": 578040,
+     "length": 19584
+    },
+    {
+     "name": "y0_s",
+     "dtype": "uint8",
+     "offset": 597624,
+     "length": 19584
+    },
+    {
+     "name": "y0_w",
+     "dtype": "int8",
+     "offset": 617208,
+     "length": 19584
+    },
+    {
      "name": "z0_speed_seg",
      "dtype": "float32",
-     "offset": 578040,
+     "offset": 636792,
      "length": 97584
     },
     {
      "name": "z0_speed_lvl",
      "dtype": "uint8",
-     "offset": 968376,
+     "offset": 1027128,
      "length": 24396
     },
     {
      "name": "z0_vort_seg",
      "dtype": "float32",
-     "offset": 992772,
+     "offset": 1051524,
      "length": 38220
     },
     {
      "name": "z0_vort_lvl",
      "dtype": "uint8",
-     "offset": 1145652,
+     "offset": 1204404,
      "length": 9555
+    },
+    {
+     "name": "z0_sol",
+     "dtype": "uint8",
+     "offset": 1213960,
+     "length": 19584
+    },
+    {
+     "name": "z0_s",
+     "dtype": "uint8",
+     "offset": 1233544,
+     "length": 19584
+    },
+    {
+     "name": "z0_w",
+     "dtype": "int8",
+     "offset": 1253128,
+     "length": 19584
     }
    ]
   },
@@ -497,6 +541,337 @@
    "n_faces": 31678,
    "fine": true
   }
+ },
+ "mean": {
+  "n_avg": 3,
+  "t_star": [
+   20.0,
+   22.0
+  ],
+  "files": {
+   "streamlines": {
+    "url": "mean_streamlines.bin",
+    "bytes": 620798,
+    "arrays": [
+     {
+      "name": "counts",
+      "dtype": "uint32",
+      "offset": 0,
+      "length": 839
+     },
+     {
+      "name": "pos",
+      "dtype": "uint16",
+      "offset": 3356,
+      "length": 264618
+     },
+     {
+      "name": "speed",
+      "dtype": "uint8",
+      "offset": 532592,
+      "length": 88206
+     }
+    ],
+    "n_lines": 839,
+    "n_verts": 88206
+   },
+   "vortex": {
+    "url": "mean_vortex.bin",
+    "bytes": 497044,
+    "arrays": [
+     {
+      "name": "pos0",
+      "dtype": "uint16",
+      "offset": 0,
+      "length": 38067
+     },
+     {
+      "name": "omega0",
+      "dtype": "int8",
+      "offset": 76136,
+      "length": 12689
+     },
+     {
+      "name": "idx0",
+      "dtype": "uint32",
+      "offset": 88828,
+      "length": 73926
+     },
+     {
+      "name": "pos1",
+      "dtype": "uint16",
+      "offset": 384532,
+      "length": 10572
+     },
+     {
+      "name": "omega1",
+      "dtype": "int8",
+      "offset": 405676,
+      "length": 3524
+     },
+     {
+      "name": "idx1",
+      "dtype": "uint32",
+      "offset": 409200,
+      "length": 19752
+     },
+     {
+      "name": "pos2",
+      "dtype": "uint16",
+      "offset": 488208,
+      "length": 948
+     },
+     {
+      "name": "omega2",
+      "dtype": "int8",
+      "offset": 490104,
+      "length": 316
+     },
+     {
+      "name": "idx2",
+      "dtype": "uint32",
+      "offset": 490420,
+      "length": 1656
+     }
+    ]
+   },
+   "slices": {
+    "url": "mean_slices.bin",
+    "bytes": 1086716,
+    "arrays": [
+     {
+      "name": "y0_speed_seg",
+      "dtype": "float32",
+      "offset": 0,
+      "length": 74788
+     },
+     {
+      "name": "y0_speed_lvl",
+      "dtype": "uint8",
+      "offset": 299152,
+      "length": 18697
+     },
+     {
+      "name": "y0_vort_seg",
+      "dtype": "float32",
+      "offset": 317852,
+      "length": 62716
+     },
+     {
+      "name": "y0_vort_lvl",
+      "dtype": "uint8",
+      "offset": 568716,
+      "length": 15679
+     },
+     {
+      "name": "y0_sol",
+      "dtype": "uint8",
+      "offset": 584396,
+      "length": 19584
+     },
+     {
+      "name": "y0_s",
+      "dtype": "uint8",
+      "offset": 603980,
+      "length": 19584
+     },
+     {
+      "name": "y0_w",
+      "dtype": "int8",
+      "offset": 623564,
+      "length": 19584
+     },
+     {
+      "name": "z0_speed_seg",
+      "dtype": "float32",
+      "offset": 643148,
+      "length": 71780
+     },
+     {
+      "name": "z0_speed_lvl",
+      "dtype": "uint8",
+      "offset": 930268,
+      "length": 17945
+     },
+     {
+      "name": "z0_vort_seg",
+      "dtype": "float32",
+      "offset": 948216,
+      "length": 18764
+     },
+     {
+      "name": "z0_vort_lvl",
+      "dtype": "uint8",
+      "offset": 1023272,
+      "length": 4691
+     },
+     {
+      "name": "z0_sol",
+      "dtype": "uint8",
+      "offset": 1027964,
+      "length": 19584
+     },
+     {
+      "name": "z0_s",
+      "dtype": "uint8",
+      "offset": 1047548,
+      "length": 19584
+     },
+     {
+      "name": "z0_w",
+      "dtype": "int8",
+      "offset": 1067132,
+      "length": 19584
+     }
+    ]
+   }
+  },
+  "vortex_levels": [
+   {
+    "level": 4.0,
+    "index": 0,
+    "n_verts": 12689,
+    "n_faces": 24642
+   },
+   {
+    "level": 12.0,
+    "index": 1,
+    "n_verts": 3524,
+    "n_faces": 6584
+   },
+   {
+    "level": 30.0,
+    "index": 2,
+    "n_verts": 316,
+    "n_faces": 552
+   }
+  ],
+  "slices": [
+   {
+    "tag": "y0",
+    "normal_axis": "y",
+    "flow_axis": "x",
+    "vert_axis": "z",
+    "extent_flow": [
+     -0.80078125,
+     2.19921875
+    ],
+    "extent_vert": [
+     -0.80078125,
+     0.79296875
+    ],
+    "speed_png": "mean_slice_y0_speed.png",
+    "vort_png": "mean_slice_y0_vort.png",
+    "size": [
+     384,
+     204
+    ],
+    "vort_range": [
+     -16.992677688598633,
+     16.992677688598633
+    ],
+    "levels": {
+     "speed": [
+      0.1,
+      0.2,
+      0.30000000000000004,
+      0.4,
+      0.5,
+      0.6,
+      0.7000000000000001,
+      0.8,
+      0.9,
+      1.0,
+      1.1,
+      1.2000000000000002,
+      1.3000000000000003,
+      1.4000000000000001,
+      1.5000000000000002
+     ],
+     "vort": [
+      -15.0,
+      -12.5,
+      -10.0,
+      -7.5,
+      -5.0,
+      -2.5,
+      0.0,
+      2.5,
+      5.0,
+      7.5,
+      10.0,
+      12.5,
+      15.0
+     ]
+    },
+    "field_size": [
+     192,
+     102
+    ]
+   },
+   {
+    "tag": "z0",
+    "normal_axis": "z",
+    "flow_axis": "x",
+    "vert_axis": "y",
+    "extent_flow": [
+     -0.80078125,
+     2.19921875
+    ],
+    "extent_vert": [
+     -0.80078125,
+     0.79296875
+    ],
+    "speed_png": "mean_slice_z0_speed.png",
+    "vort_png": "mean_slice_z0_vort.png",
+    "size": [
+     384,
+     204
+    ],
+    "vort_range": [
+     -19.661998748779297,
+     19.661998748779297
+    ],
+    "levels": {
+     "speed": [
+      0.1,
+      0.2,
+      0.30000000000000004,
+      0.4,
+      0.5,
+      0.6,
+      0.7000000000000001,
+      0.8,
+      0.9,
+      1.0,
+      1.1,
+      1.2000000000000002,
+      1.3000000000000003,
+      1.4000000000000001,
+      1.5000000000000002
+     ],
+     "vort": [
+      -15.0,
+      -10.0,
+      -5.0,
+      0.0,
+      5.0,
+      10.0,
+      15.0
+     ]
+    },
+    "field_size": [
+     192,
+     102
+    ]
+   }
+  ],
+  "vort_range": [
+   -16.992677688598633,
+   16.992677688598633
+  ],
+  "streamwise_vort_scale": 5.801850801256226,
+  "note": "time mean of the velocity over 3 frames (t* 20 to 22); layers computed from the mean field"
  },
  "speed_mps": 7.0
 }
