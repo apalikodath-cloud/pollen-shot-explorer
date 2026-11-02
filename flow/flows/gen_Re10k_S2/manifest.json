@@ -69,6 +69,13 @@
   "vort_scale": [
    30.3968448638916,
    23.29296112060547
+  ],
+  "solid_angle": [
+   -0.01,
+   2.0,
+   4.0,
+   6.0,
+   7.99
   ]
  },
  "D_mm": 71.12,
@@ -961,5 +968,6 @@
   "streamwise_vort_scale": 6.555377146401343,
   "note": "time mean of the velocity over 5 frames (t* 20 to 22); layers computed from the mean field"
  },
- "speed_mps": 2.12
+ "speed_mps": 2.12,
+ "body_t_star": 20.0
 }

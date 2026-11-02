@@ -5,7 +5,7 @@
 // The library is whatever flows/index.json lists; nothing here is tied to particular cases.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RunView, esc, cssVar, env, turbo } from './flowview.js';
+import { RunView, esc, cssVar, env, turbo, orientName } from './flowview.js';
 
 THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
 const $ = (id) => document.getElementById(id);
@@ -354,7 +354,7 @@ function caption(k) {
     if (s.spinF < 0.999) out.push(esc(`ball spin drawn ${Math.round(1 / s.spinF)}x slower than real`));
   }
   const ori = T.list[0]?.r.orientation || vs[0]?.m.orientation || 'btw';
-  out.push(esc(`hole orientation ${ori} ASSUMED`));
+  out.push(esc(`hole orientation ${orientName(ori)} (ASSUMED)`));
   return `<b>${esc(nm)}</b>${out.join(' | ')}`;
 }
 function updateCaps() {

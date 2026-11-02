@@ -1,7 +1,7 @@
 {
  "version": 1,
  "id": "real_Re20k_S1p0",
- "label": "POLLEN 4 m/s, backspin S 1.0 (btw)",
+ "label": "POLLEN 4.2 m/s, backspin S 1.0 (btw)",
  "synthetic": false,
  "status": "PREDICTED (CFD model output, not a measurement)",
  "units": "lengths in body diameters D, origin at body centre; speed in free-stream U",
@@ -67,10 +67,15 @@
   "vort_scale": [
    24.14790916442871,
    24.924287796020508
+  ],
+  "solid_angle": [
+   0.01,
+   2.0,
+   4.0
   ]
  },
  "D_mm": 71.12,
- "U_mps": 4.0,
+ "U_mps": 4.24,
  "vortex_levels": [
   {
    "level": 4.0,
@@ -881,5 +886,6 @@
   "streamwise_vort_scale": 5.714003633575184,
   "note": "time mean of the velocity over 3 frames (t* 20 to 22); layers computed from the mean field"
  },
- "speed_mps": 4.0
+ "speed_mps": 4.0,
+ "body_t_star": 20.0
 }

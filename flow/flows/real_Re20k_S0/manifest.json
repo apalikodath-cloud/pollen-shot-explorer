@@ -1,7 +1,7 @@
 {
  "version": 1,
  "id": "real_Re20k_S0",
- "label": "POLLEN 4 m/s, no spin (btw)",
+ "label": "POLLEN 4.2 m/s, no spin (btw)",
  "synthetic": false,
  "status": "PREDICTED (CFD model output, not a measurement)",
  "units": "lengths in body diameters D, origin at body centre; speed in free-stream U",
@@ -70,7 +70,7 @@
   ]
  },
  "D_mm": 71.12,
- "U_mps": 4.0,
+ "U_mps": 4.24,
  "vortex_levels": [
   {
    "level": 4.0,
@@ -869,5 +869,6 @@
   "streamwise_vort_scale": 4.615019142617125,
   "note": "time mean of the velocity over 3 frames (t* 20 to 22); layers computed from the mean field"
  },
- "speed_mps": 4.0
+ "speed_mps": 4.0,
+ "body_t_star": 20.0
 }

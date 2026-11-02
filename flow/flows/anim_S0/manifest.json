@@ -2549,5 +2549,6 @@
   "streamwise_vort_scale": 1.9669333166292202,
   "note": "time mean of the velocity over 49 frames (t* 20 to 32); layers computed from the mean field"
  },
- "speed_mps": 7.0
+ "speed_mps": 7.0,
+ "body_t_star": 20.0
 }

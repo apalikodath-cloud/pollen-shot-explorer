@@ -152,6 +152,12 @@ export class RunView {
     bg.setIndex(new THREE.BufferAttribute(bd.idx.slice(), 1));
     this.body = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({ color: 0xaeb4bd, roughness: 0.5, metalness: 0.15, side: THREE.DoubleSide }));
     this.scene.add(this.body);
+    // spin: the solver turns the body and its holes about +y (right-handed) by omega t, omega = S U / R, i.e.
+    // 2 S rad per unit t* = t U / D. With the free stream along +x the top surface moves downstream and the
+    // lift is +z, so positive S is backspin. The body mesh is the solid at body_t_star (the first saved frame).
+    const ax = m.omega_axis || [0, 1, 0];
+    this.spinRate = 2 * Math.abs(+m.S || 0) * (ax[1] < 0 ? -1 : 1);
+    this.bodyT = m.body_t_star ?? (m.files.body.fine && m.frames ? m.frames.t_star[0] : (m.t_star ?? 0));
 
     for (const lv of src.vortex_levels) {
       const g = new THREE.BufferGeometry();
@@ -393,6 +399,17 @@ export class RunView {
     g.attributes.position.needsUpdate = true; g.attributes.color.needsUpdate = true;
   }
 
+  // CFD time t* at a fractional frame index of the saved series (the snapshot time without a series)
+  tstarAt(t) {
+    const ts = this.fr && this.fr.n > 1 ? this.fr.info.t_star : null;
+    if (!ts) return this.m.t_star ?? this.bodyT;
+    const a = Math.min(ts.length - 1, Math.max(0, Math.floor(t))), b = Math.min(ts.length - 1, a + 1);
+    return ts[a] + (ts[b] - ts[a]) * Math.min(1, Math.max(0, t - a));
+  }
+
+  // turn the drawn ball to its spin angle at CFD time t*: at a saved frame the holes sit where the solver had them
+  setSpin(tstar) { this.body.rotation.y = this.spinRate * (tstar - this.bodyT); }
+
   setTime(t, s) {
     const fr = this.fr; if (!fr) return;
     const n = fr.n, a = Math.min(n - 1, Math.max(0, Math.floor(t))), b = Math.min(n - 1, a + 1), f = Math.min(1, Math.max(0, t - a));
@@ -451,8 +468,14 @@ export class RunView {
     else if (m.t_star != null && !m.frames) parts.push('t* ' + m.t_star);
     const saved = Math.round(1 / g.dx_D);
     parts.push(`grid ${g.nx}x${g.ny}x${g.nz}, ` + (g.D_cells && g.D_cells !== saved ? `solver ${g.D_cells} cells/D, saved ${saved} cells/D` : `${saved} cells/D`));
-    if (m.orientation) parts.push(`hole orientation ${m.orientation} ASSUMED`);
-    return `<b>${esc(m.label)}</b>${esc(parts.join(' | '))}<br><span class="${m.synthetic ? 'syn' : 'pred'}">${esc(m.status)}</span>`;
+    if (this.spinRate) parts.push(this.fr && this.fr.n > 1 ? 'ball turns with the CFD time (backspin)' : 'ball turn slowed down to show the backspin sense');
+    if (m.orientation) parts.push(`hole orientation ${orientName(m.orientation)} (ASSUMED)`);
+    return `<b>${esc(niceLabel(m.label))}</b>${esc(parts.join(' | '))}<br><span class="${m.synthetic ? 'syn' : 'pred'}">${esc(m.status)}</span>`;
   }
 }
+// hole orientation tags used in the CFD case names
+export const ORIENT = { btw: 'between holes', hf: 'hole-facing', o3: 'third orientation' };
+export const orientName = (tag) => ORIENT[tag] || tag;
+// case label for display: the bare tag in brackets becomes a readable orientation name
+export const niceLabel = (s) => String(s || '').replace(/\s*\((btw|hf|o3)\)/, (_, k) => ` (${{ btw: 'between-holes', hf: 'hole-facing', o3: 'third' }[k]} orientation)`);
 export const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));

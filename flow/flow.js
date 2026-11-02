@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { RunView, esc, cssVar, turbo, rdbu, env } from './flowview.js';
+import { RunView, esc, cssVar, turbo, rdbu, env, niceLabel } from './flowview.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -12,23 +12,24 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false
 const DPR = env.DPR;
 renderer.setPixelRatio(DPR);
 const camera = new THREE.PerspectiveCamera(40, 1, 0.003, 60);
+camera.up.set(0, 0, 1);   // solver frame: lift +z is up, the free stream +x runs left to right, the spin axis +y points away
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true; controls.dampingFactor = 0.09;
 controls.minDistance = 0.05; controls.maxDistance = 14;
 controls.zoomToCursor = true; controls.zoomSpeed = 1.2;
 env.target = () => controls.target;
-const HOME = { pos: new THREE.Vector3(1.2, 1.1, 5.4), tgt: new THREE.Vector3(0.7, 0, 0) };
+const HOME = { pos: new THREE.Vector3(1.2, -5.4, 1.1), tgt: new THREE.Vector3(0.7, 0, 0) };
 camera.position.copy(HOME.pos); controls.target.copy(HOME.tgt);
 
 let RUNS = [];
 let views = [null, null];
 const MAN = new Map();     // manifest cache by path
-const MODE = { avg: params.get('avg') === '1' };
+const MODE = { avg: params.get('avg') !== '0' };   // averaged by default, like the shot page
 const fmt = (x) => (Math.abs(x - Math.round(x)) < 1e-6 ? String(Math.round(x)) : String(+x.toFixed(2)));
 const niceCeil = (x) => { const s = [2, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30]; return s.find((v) => v >= x - 1e-9) || Math.ceil(x / 10) * 10; };
 
 // ---- transport (time series)
-const T = { t: 0, play: false, fps: 8, last: 0, shown: -1, lastUpd: 0 };
+const T = { t: 0, play: false, fps: 8, last: 0, shown: -1, lastUpd: 0, clock: 0 };
 const shown = () => views.filter((v, i) => v && (i === 0 || ($('cmp').checked && views[1])));
 const frameViews = () => shown().filter((v) => v.fr);
 function tCount() { const fv = frameViews(); return fv.length ? Math.min(...fv.map((v) => v.fr.n)) : 0; }
@@ -111,7 +112,7 @@ function drawLegend(s, vmax) {
 
 const planeName = (sl) => (sl ? `(plane ${sl.tag.replace('0', ' = 0')})` : '');
 async function loadRun(entry, slot) {
-  $('load').textContent = 'Loading ' + (entry.label || entry.id) + '...';
+  $('load').textContent = 'Loading ' + niceLabel(entry.label || entry.id) + '...';
   const url = `${BASE}/${entry.path}`;
   const dir = url.slice(0, url.lastIndexOf('/'));
   const tok = (loadTok[slot] = (loadTok[slot] || 0) + 1);
@@ -165,8 +166,8 @@ function focusOn(pt) {
   setView(pt.clone().add(dir.normalize().multiplyScalar(d)), pt.clone());
 }
 $('bReset').onclick = () => setView(HOME.pos.clone(), HOME.tgt.clone());
-$('bBody').onclick = () => setView(new THREE.Vector3(0.9, 0.7, 2.0), new THREE.Vector3(0.1, 0, 0));
-$('bWake').onclick = () => setView(new THREE.Vector3(2.6, 1.0, 2.8), new THREE.Vector3(1.0, 0, 0));
+$('bBody').onclick = () => setView(new THREE.Vector3(0.9, -2.0, 0.7), new THREE.Vector3(0.1, 0, 0));
+$('bWake').onclick = () => setView(new THREE.Vector3(2.6, -2.8, 1.0), new THREE.Vector3(1.0, 0, 0));
 
 // drawing area per view: on a wide screen the views start right of the panel, side by side when comparing
 function viewports() {
@@ -237,7 +238,17 @@ function render(t) {
     // one stored field per slice (time mean or single snapshot): recolour when layers or colours change
     for (const v of frameViews()) if (v.dirty) { v.setTime(0, st); need = true; }
   }
-  const animating = ($('lAnim').checked && $('lStream').checked) || ticking || T.play;
+  // ball spin about the solver's +y axis (backspin for S > 0). Instant series: locked to the CFD time, so the holes
+  // sit where the slice shows them; a single field (time mean): turns at 1 t* per second times the playback speed
+  T.clock += dtS * (+$('tSpd').value || 1);
+  let spinning = false;
+  for (const v of shown()) {
+    if (!v.spinRate) continue;
+    const series = nfr > 1 && v.fr && v.fr.n > 1;
+    v.setSpin(series ? v.tstarAt(Math.min(T.t, v.fr.n - 1)) : v.bodyT + T.clock);
+    if (!series && st.body) spinning = true;
+  }
+  const animating = ($('lAnim').checked && $('lStream').checked) || ticking || T.play || spinning;
   controls.update();
   if (!need && !animating) return;
   need = false;
@@ -289,7 +300,7 @@ async function boot() {
     return Object.assign({}, r, { speed_mps: sp, S: isFinite(S) ? S : 0 });
   });
   if (!RUNS.length) { $('empty').style.display = 'flex'; $('panel').style.display = 'none'; $('legend').style.display = 'none'; $('hint').style.display = 'none'; render(0); return; }
-  for (const sel of [$('runA'), $('runB')]) sel.innerHTML = RUNS.map((r, i) => `<option value="${i}">${esc(r.label || r.id)}</option>`).join('');
+  for (const sel of [$('runA'), $('runB')]) sel.innerHTML = RUNS.map((r, i) => `<option value="${i}">${esc(niceLabel(r.label || r.id))}</option>`).join('');
   $('runB').value = String(Math.min(1, RUNS.length - 1));
   if (RUNS.length < 2) { $('cmp').disabled = true; $('runB').disabled = true; }
   $('runA').onchange = () => pickA(+$('runA').value).catch(fail);
