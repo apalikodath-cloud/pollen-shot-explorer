@@ -4936,9 +4936,12 @@ const CFD = (() => {
     for (let v = xt.lo; v <= xt.hi + xt.st / 2; v += xt.st) s += `<line class="ax" x1="${X(v)}" x2="${X(v)}" y1="${H - B}" y2="${H - B + 4}"/><text x="${X(v)}" y="${H - B + 17}" text-anchor="middle">${+v.toFixed(4)}</text>`;
     s += `<line class="ax" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/><line class="ax" x1="${L}" x2="${L}" y1="${T}" y2="${H - B}"/>`;
     s += `<text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle">${o.xl}</text><text transform="translate(12 ${(T + H - B) / 2}) rotate(-90)" text-anchor="middle">${o.yl}</text>`;
+    // lines are clipped to the plot box, so a start-up spike above the axis does not run into the title
+    const clip = `${el.id}-clip`;
+    s += `<defs><clipPath id="${clip}"><rect x="${L}" y="${T}" width="${W - L - R}" height="${H - T - B}"/></clipPath></defs>`;
     for (const se of o.series) {
       const p = se.pts.map(([x, y]) => `${X(x).toFixed(1)},${Y(y).toFixed(1)}`);
-      if (p.length > 1 && !se.nol) s += `<polyline points="${p.join(" ")}" style="fill:none;stroke:${se.color}" stroke-width="${se.w || 2}" ${se.dash ? `stroke-dasharray="${se.dash}"` : ""} stroke-linejoin="round"/>`;
+      if (p.length > 1 && !se.nol) s += `<polyline clip-path="url(#${clip})" points="${p.join(" ")}" style="fill:none;stroke:${se.color}" stroke-width="${se.w || 2}" ${se.dash ? `stroke-dasharray="${se.dash}"` : ""} stroke-linejoin="round"/>`;
       if (se.mk) for (const [x, y, tip] of se.pts) {
         const cx = X(x), cy = Y(y), f = se.open ? "var(--panel)" : se.color;
         s += se.mk === "d" ? `<path d="M${cx} ${cy - 6.5}L${cx + 6.5} ${cy}L${cx} ${cy + 6.5}L${cx - 6.5} ${cy}Z" style="fill:${f};stroke:${se.color}" stroke-width="2"><title>${tip || ""}</title></path>`
