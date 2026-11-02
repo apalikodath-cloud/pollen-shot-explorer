@@ -10,6 +10,10 @@ Two pages, both showing **PREDICTED** results (CFD model output, not a measureme
   (+y) pointing away from the camera. The ball turns backspin about +y like the solver's body
   (2 S rad per unit t*): in Instant it follows the CFD time (`body_t_star` is the time of the
   body mesh), in Averaged it turns slowly to show the sense.
+  Bundles with a 3D velocity volume (`make_vol.py`, below) also get `particles.js`: GPU tracer
+  particles with fading trails (released upstream, all over the ball and in the wake), a glowing
+  ray-marched vortex volume, and lift pairs (see below). These replace the streamlines and tubes
+  as the default layers; the older layers stay in the panel.
 - `shot.html` + `shot.js`: a robot on the field with the HIVE, the predicted shot and its
   no-spin twin from the explorer physics, and the CFD flow drawn around each ball along the flight.
   The explorer's "3D flow" tab embeds this page and drives it with the Robot tab's current shot.
@@ -66,6 +70,34 @@ moving past); the elapsed flow time is t* x D/U. `--frame-step N` keeps every Nt
 incomplete frame files are skipped. `--add-index` adds or updates the bundle's entry in
 `index.json` (id, label, path, speed_mps, S, orientation, series, n_frames, mean).
 
+## 3D tracers, vortex volume and lift pairs (`make_vol.py`, `particles.js`)
+
+    python viz/flow/make_vol.py <bundle_dir> --series "<fields>/<run>_f*.json" [--ds 2]
+
+adds `vol/fNNN.vgz` (one per frame in the bundle's manifest) and, for a bundle with a time mean,
+`vol/mean.vgz`, plus a `vol` section in `manifest.json` (size, origin of the first voxel centre,
+dx, vel_scale, q_scale). Each file is a gzip of int8 RGBA voxels, x fastest, on the solver grid
+coarsened `ds` times (block mean): RGB = velocity / vel_scale x 127 (U units), A = sign of the
+streamwise vorticity x sqrt(max(Q, 0)) / q_scale x 127 (U/D), Q from the full-resolution field.
+About 0.6 MB per frame at `--ds 2`. Run it after `make_flow.py`, on the same snapshots.
+
+The viewer loads the volume into a 3D texture (WebGL2 with float render targets; without them
+the panel says so and the old layers stay). On the GPU, tracers are advected with RK2 through
+the two saved frames around the current time, blended linearly; a tracer that leaves the box,
+stops on the ball or ages out is released again. With tracers on, Play runs the CFD time at
+0.8 t* per second (x the speed menu) so tracers and field stay in step; paused, the tracers keep
+moving through the frozen field. The vortex volume ray-marches |A| above the vortex-level
+threshold, red for vortices turning with the flow and blue against; it fades out within 0.1 D
+of the wall, where the zeroed solid velocity spoils the Q estimate.
+
+Lift pairs: every 1.6 t* a vertical line of 37 tracers is released at x = -0.68 D (a timeline,
+advected on the CPU through the same field). The tracers at z = +0.6 D (orange) and -0.6 D
+(blue) are a pair joined by a thin line. When both have passed x = 1 D the page records how much
+sooner the top one got there and shows the mean of the last 8 pairs in t* and ms. Faster flow
+over the top than under the bottom means the air is turned down behind the ball, which is the
+lift. Always read it next to the no-spin twin. PREDICTED, and tracers are massless (they follow
+the air exactly; a real smoke speck would lag a little).
+
 ## Where bundles go
 
     viz/flow/flows/index.json            {"runs":[{"id","label","path":"<run_id>/manifest.json", ...}, ...]}
@@ -121,6 +153,10 @@ The scene needs the built explorer field data at `../explorer/data/field/index.j
 | `plane=a\|b\|ab` | which contour planes are on |
 | `field=speed\|vort` | colour slices by speed or vorticity |
 | `nostream=1`, `noanim=1`, `nopart=1`, `q=0` | turn off streamlines, flow dashes, particles, vortex cores |
+| `tracers=0\|1`, `vvol=0\|1`, `pairs=0\|1` | 3D tracers, vortex volume, lift pairs (bundles with a volume) |
+| `stream=1`, `cores=1` | keep streamlines / vortex tubes on with a volume bundle |
+| `pcol=0\|1\|2`, `pq=64\|128\|256` | tracer colour (speed, above/below, vortex sense), tracer texture side (4 k, 16 k, 65 k) |
+| `warm=<t*>` | run the tracers this long before the first draw |
 | `t=<s>`, `play=1` | start time, start playing |
 | `hidepanel=1` | hide the control panel (screenshots) |
 

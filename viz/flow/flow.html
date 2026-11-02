@@ -55,6 +55,10 @@ button{cursor:pointer}select{max-width:170px;min-width:0}input[type=range]{flex:
 #legend canvas{display:block;width:100%;height:10px;border-radius:3px;margin:2px 0}
 #legend .lab{display:flex;justify-content:space-between;font-family:var(--mono);color:var(--fg)}
 #legend .lr+.lr{margin-top:4px}
+#lift{position:fixed;right:262px;bottom:16px;width:min(330px,40vw);background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:6px 10px;z-index:3;font-size:12px;color:var(--fg);pointer-events:none}
+#lift .lt{display:block;font:600 14px var(--display);margin-bottom:2px}#lift .pred{font:600 10.5px var(--mono);color:var(--muted);margin-left:6px}
+#lift i{font:600 11px var(--mono);font-style:normal;color:var(--muted)}#lift b{color:var(--pollen)}#lift .sm{margin-top:3px;font-size:11px}
+body.series #lift{bottom:104px}
 body.series #legend{bottom:104px}
 #hint{position:fixed;left:16px;bottom:16px;max-width:calc(50vw - 340px);font-size:12px;color:var(--muted);pointer-events:none}
 body.series #hint{display:none}
@@ -73,6 +77,7 @@ body.series #hint{display:none}
  #tbar{bottom:8px;width:calc(100vw - 32px)}#tbar .tnote{display:none}
  #legend{right:16px;width:150px;bottom:70px;font-size:10.5px}
  body.series #legend{bottom:200px}
+ #lift{left:16px;right:auto;width:calc(100vw - 200px);bottom:70px;font-size:11px}#lift .sm{display:none}body.series #lift{bottom:200px}
  #hint{display:none}
 }
 </style>
@@ -94,6 +99,10 @@ body.series #hint{display:none}
  <label><input type="checkbox" id="cmp"> Side by side with a second case</label>
  <p class="note">A backspin case opens next to its no-spin twin at the same speed.</p>
  <h2>Layers</h2>
+ <label><input type="checkbox" id="lTrace" checked> Tracer particles (3D, with trails)</label>
+ <label><input type="checkbox" id="lVvol" checked> Vortex volume (glowing)</label>
+ <label><input type="checkbox" id="lPairs" checked> Lift pairs (timelines)</label>
+ <p class="note" id="fxNote">PREDICTED (CFD model output). Tracers are massless specks carried by the CFD air, released upstream, all over the ball and in the wake. Lift pairs: a line of tracers released together; the orange one passes above the ball, the blue one below.</p>
  <label><input type="checkbox" id="lStream" checked> Streamlines</label>
  <label><input type="checkbox" id="lVortex" checked> Vortex cores</label>
  <label><input type="checkbox" id="lY" checked> Slice through the ball <span class="sm" id="nA"></span></label>
@@ -106,6 +115,11 @@ body.series #hint{display:none}
  <details id="adv"><summary>Advanced</summary>
   <h2>Second case</h2>
   <div class="row"><span>Right side</span><select id="runB" aria-label="Second CFD case"></select></div>
+  <h2>Tracers</h2>
+  <div class="row"><span>Colour by</span><select id="pCol"><option value="0">Speed</option><option value="1">Above / below</option><option value="2">Vortex sense</option></select></div>
+  <div class="row"><span>Count</span><select id="pQual"><option value="64">4 k (light)</option><option value="128" selected>16 k</option><option value="256">65 k (fast GPU)</option></select></div>
+  <div class="row"><span>Trail length</span><input type="range" id="pTrail" min="4" max="40" step="1" value="26"></div>
+  <p class="note">The vortex level slider below also sets how strong a vortex must be to glow in the vortex volume. The tracers ride the CFD velocity coarsened 2x: PREDICTED.</p>
   <h2>More layers</h2>
   <div class="row"><span>Line width</span><input type="range" id="wStream" min="0.8" max="4" step="0.1" value="1.3"></div>
   <label><input type="checkbox" id="lAnim" checked> Animate flow dashes</label>
@@ -123,6 +137,7 @@ body.series #hint{display:none}
 </div>
 <div id="tbar" style="display:none"><div class="trow"><button type="button" id="tPlay">Play</button><input type="range" id="tSlide" min="0" max="1" step="0.01" value="0" aria-label="CFD time"><select id="tSpd" title="Playback speed"><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option></select><label><input type="checkbox" id="tLoop" checked> Loop</label><label><input type="checkbox" id="lPart" checked> Particles</label></div><div class="trow"><span id="tLab"></span></div><div class="tnote">Saved CFD frames of the turbulent wake, riding along with the ball.</div></div>
 <div id="legend"></div>
+<div id="lift" style="display:none"></div>
 <div id="hint">Drag: orbit. Right-drag or two-finger drag: pan. Wheel or pinch: zoom. Double-click: focus a point.</div>
 <div id="empty"><div><h2>No flow runs yet</h2>
 <p>This viewer reads <code>flows/index.json</code> and one folder per run. None were found.</p>

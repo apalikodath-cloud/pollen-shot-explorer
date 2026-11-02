@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RunView, esc, cssVar, turbo, rdbu, env, niceLabel } from './flowview.js';
+import { FlowFX, fxSupported } from './particles.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -25,6 +26,9 @@ let RUNS = [];
 let views = [null, null];
 const MAN = new Map();     // manifest cache by path
 const MODE = { avg: params.get('avg') !== '0' };   // averaged by default, like the shot page
+const FX_OK = fxSupported(renderer) && typeof DecompressionStream === 'function';
+const TRACE_RATE = 0.8;   // tracer time in t* per second of wall clock at 1x (both views run the same CFD time)
+const isDark = () => cssVar('--contour').startsWith('#f');
 const fmt = (x) => (Math.abs(x - Math.round(x)) < 1e-6 ? String(Math.round(x)) : String(+x.toFixed(2)));
 const niceCeil = (x) => { const s = [2, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30]; return s.find((v) => v >= x - 1e-9) || Math.ceil(x / 10) * 10; };
 
@@ -47,7 +51,7 @@ function updateTransport() {
 }
 function setPlay(on) { T.play = on; $('tPlay').textContent = on ? 'Pause' : 'Play'; need = true; }
 $('tPlay').onclick = () => setPlay(!T.play);
-$('tSlide').addEventListener('input', () => { T.t = +$('tSlide').value; need = true; });
+$('tSlide').addEventListener('input', () => { T.t = +$('tSlide').value; for (const v of views) v?.fx?.resetLines(); need = true; });
 
 const loadTok = [0, 0];
 let need = true, tween = null;
@@ -56,7 +60,10 @@ const state = () => ({
   stream: $('lStream').checked, anim: $('lAnim').checked, vortex: $('lVortex').checked, q: +$('qLevel').value,
   body: $('lBody').checked, planes: [$('lY').checked, $('lZ').checked], field: $('sField').value, cont: $('lCont').checked,
   sop: +$('sOp').value, width: +$('wStream').value,
+  tracers: $('lTrace').checked, vvol: $('lVvol').checked, pairs: $('lPairs').checked,
+  pcol: +$('pCol').value, trail: +$('pTrail').value, vth: [0.12, 0.22, 0.36][+$('qLevel').value] ?? 0.22,
 });
+const fxOn = (s) => s.tracers || s.vvol || s.pairs;
 
 // speed colours in m/s on one scale for both sides: a view's colour scale is speed_range[1] U / Vmax
 function colourScale() {
@@ -76,6 +83,7 @@ function applyLayers() {
     v.streams.material.uniforms.uWidth.value = s.width * DPR;
     v.streams.material.uniforms.uAnim.value = s.anim ? 1 : 0;
     v.body.visible = s.body;
+    if (v.fx) v.fx.group.visible = fxOn(s);
     v.vortex.forEach((m, i) => { m.visible = s.vortex && i === Math.min(s.q, v.vortex.length - 1); });
     v.slices.forEach((o, i) => {
       o.group.visible = !!s.planes[i];
@@ -103,6 +111,13 @@ function drawLegend(s, vmax) {
   if (s.stream || (s.planes.some(Boolean) && !showVort)) rows.push({ title: `${what}: air speed relative to the ball ${vmax ? '(m/s)' : '(|u|/U)'}`, ...spd, f: (t) => turbo(t) });
   if (showVort) rows.push({ title: 'Slice: vorticity (U/D)', lo: (-vr).toFixed(1), hi: '+' + vr.toFixed(1), f: (t) => rdbu(t * 2 - 1) });
   if (s.vortex) rows.push({ title: 'Vortex cores: turning sense along the flow', lo: 'against', hi: 'with flow', f: (t) => rdbu(t * 2 - 1) });
+  if (v.fx) {
+    if (s.tracers && s.pcol === 0) rows.push({ title: 'Tracers (PREDICTED): air speed relative to the ball (|u|/U)', lo: '0', mid: '0.8', hi: '1.6', f: (t) => turbo(0.08 + 0.9 * t) });
+    if (s.tracers && s.pcol === 1) rows.push({ title: 'Tracers (PREDICTED): released above / below the ball centre', lo: 'below', hi: 'above', f: (t) => (t < 0.5 ? [0.25, 0.65, 1.0] : [1.0, 0.55, 0.22]) });
+    if (s.tracers && s.pcol === 2) rows.push({ title: 'Tracers (PREDICTED): vortex turning sense where they are', lo: 'against', hi: 'with flow', f: (t) => rdbu(t * 2 - 1) });
+    if (s.vvol) rows.push({ title: 'Vortex volume (Q-criterion, PREDICTED): turning sense', lo: 'against', hi: 'with flow', f: (t) => (t < 0.5 ? [0.28, 0.6, 1] : [1, 0.32, 0.22]) });
+    if (s.pairs) rows.push({ title: 'Lift pairs (PREDICTED): the tracer above vs below the ball', lo: 'below', hi: 'above', f: (t) => (t < 0.5 ? [0.25, 0.65, 1.0] : [1.0, 0.55, 0.22]) });
+  }
   el.innerHTML = rows.map((r, i) => `<div class="lr"><div>${esc(r.title)}</div><canvas data-i="${i}" width="200" height="10"></canvas><div class="lab"><span>${esc(r.lo)}</span>${r.mid ? `<span>${esc(r.mid)}</span>` : ''}<span>${esc(r.hi)}</span></div></div>`).join('');
   el.querySelectorAll('canvas').forEach((c) => {
     const r = rows[+c.dataset.i], x = c.getContext('2d');
@@ -120,6 +135,9 @@ async function loadRun(entry, slot) {
   if (!m) { m = await (await fetch(url)).json(); MAN.set(url, m); }
   const v = new RunView(m, dir, { mean: MODE.avg });
   await v.load();
+  const base = v.dispose.bind(v);
+  v.dispose = () => { v.disposed = true; v.fx?.dispose(); v.fx = null; base(); };
+  if (tok === loadTok[slot]) await makeFX(v);
   if (tok !== loadTok[slot]) { v.dispose(); return; }
   const old = views[slot];
   views[slot] = v;
@@ -129,6 +147,39 @@ async function loadRun(entry, slot) {
   $('load').textContent = '';
   if (slot === 0) { $('nA').textContent = planeName(v.sinfo[0]); $('nB').textContent = planeName(v.sinfo[1]); }
   applyLayers(); updateChrome(); T.shown = -1; updateTransport();
+}
+
+// GPU tracers, vortex volume and lift pairs for a bundle with a 3D velocity volume (make_vol.py)
+async function makeFX(v) {
+  v.fx?.dispose(); v.fx = null;
+  if (!FX_OK || !v.m.vol) return;
+  const fx = new FlowFX(renderer, v, +$('pQual').value);
+  v.fxPending = fx;
+  try { await fx.load(MODE.avg); } catch (e) { console.warn('3D tracers off:', e); fx.dispose(); return; }
+  if (v.fxPending !== fx || v.disposed) { fx.dispose(); return; }   // superseded or the view went away meanwhile
+  v.fxPending = null;
+  fx.setRes(innerWidth * DPR, innerHeight * DPR, DPR); fx.applyTheme(isDark());
+  v.fx = fx; need = true;
+}
+$('pQual').addEventListener('change', async () => { for (const v of views.slice()) if (v && !v.disposed) await makeFX(v); applyLayers(); });
+
+// lift pairs: how much sooner the tracer passing above the ball gets 1 D behind it than the one passing below
+let liftUpd = 0;
+function drawLift(s) {
+  const el = $('lift'), vs = shown().filter((v) => v.fx);
+  if (!s.pairs || !vs.length) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  const cmp = vs.length > 1;
+  const line = (v, i) => {
+    const r = v.fx.pairLead(), who = cmp ? `<i>${i ? 'right' : 'left'}</i> ` : '';
+    if (!r) return `<div>${who}waiting for the first pair to pass 1 D behind the ball...</div>`;
+    const ms = v.m.U_mps && v.m.D_mm ? ` = ${(Math.abs(r.dt) * v.m.D_mm / v.m.U_mps).toFixed(2)} ms` : '';
+    const lead = Math.abs(r.dt) < 0.02 ? 'about the same time as' : r.dt > 0 ? `<b>${Math.abs(r.dt).toFixed(2)} t*${ms}</b> before` : `<b>${Math.abs(r.dt).toFixed(2)} t*${ms}</b> after`;
+    return `<div>${who}top tracer arrives ${lead} the bottom one <span class="sm">(mean of ${r.n})</span></div>`;
+  };
+  el.innerHTML = `<b class="lt">Lift pairs <span class="pred">PREDICTED</span></b>${vs.map((v) => line(v, views.indexOf(v))).join('')}`
+    + (!cmp && vs.some((v) => +v.m.S > 0) ? '<div class="sm"><b>No-spin twin not shown:</b> tick "Side by side" to see the same run without spin.</div>' : '')
+    + '<div class="sm">Air that goes over the top faster than under the bottom is turned down behind the ball; pushing air down pushes the ball up. Compare with the no-spin twin.</div>';
 }
 
 function updateChrome() {
@@ -147,11 +198,11 @@ function updateChrome() {
 function resize() {
   const w = innerWidth, h = innerHeight;
   renderer.setSize(w, h, false);
-  for (const v of views) v?.streams.material.uniforms.uRes.value.set(w * DPR, h * DPR);
+  for (const v of views) { v?.streams.material.uniforms.uRes.value.set(w * DPR, h * DPR); v?.fx?.setRes(w * DPR, h * DPR, DPR); }
   updateChrome(); need = true;
 }
 addEventListener('resize', resize);
-const retheme = () => { views.forEach((v) => v?.applyTheme()); need = true; };
+const retheme = () => { views.forEach((v) => { v?.applyTheme(); v?.fx?.applyTheme(isDark()); }); need = true; };
 matchMedia('(prefers-color-scheme: light)').addEventListener?.('change', retheme);
 addEventListener('storage', (e) => {
   if (e.key !== 'pollen-theme') return;
@@ -193,7 +244,7 @@ canvas.addEventListener('dblclick', onDbl);
 let lastTap = 0;
 canvas.addEventListener('pointerup', (e) => { if (e.pointerType === 'touch') { const n = performance.now(); if (n - lastTap < 300) onDbl(e); lastTap = n; } });
 
-for (const id of ['lStream', 'wStream', 'lAnim', 'lVortex', 'qLevel', 'lBody', 'lY', 'lZ', 'sField', 'lCont', 'sOp', 'lPart']) $(id).addEventListener('input', applyLayers);
+for (const id of ['lStream', 'wStream', 'lAnim', 'lVortex', 'qLevel', 'lBody', 'lY', 'lZ', 'sField', 'lCont', 'sOp', 'lPart', 'lTrace', 'lVvol', 'lPairs', 'pCol', 'pTrail']) $(id).addEventListener('input', applyLayers);
 
 // Averaged / Instant: rebuild the shown views from the cached manifests
 async function setMode(avg) {
@@ -224,8 +275,10 @@ function render(t) {
   const st = state();
   if (nfr > 1) {
     if (T.play) {
-      T.t += dtS * T.fps * +$('tSpd').value;
-      if (T.t > nfr - 1) { if ($('tLoop').checked) T.t = 0; else { T.t = nfr - 1; setPlay(false); } }
+      const fv = frameViews()[0], ts = fv.fr.info.t_star, dtf = ts && ts.length > 1 ? (ts[ts.length - 1] - ts[0]) / (ts.length - 1) : 0;
+      const fxs = shown().some((v) => v.fx) && fxOn(st);
+      T.t += dtS * +$('tSpd').value * (fxs && dtf > 0 ? TRACE_RATE / dtf : T.fps);
+      if (T.t > nfr - 1) { if ($('tLoop').checked) { T.t = 0; for (const v of views) v?.fx?.resetLines(); } else { T.t = nfr - 1; setPlay(false); } }
       $('tSlide').value = String(T.t);
     }
     if ((T.t !== T.shown || frameViews().some((v) => v.dirty)) && t - T.lastUpd > 30) {
@@ -248,7 +301,20 @@ function render(t) {
     v.setSpin(series ? v.tstarAt(Math.min(T.t, v.fr.n - 1)) : v.bodyT + T.clock);
     if (!series && st.body) spinning = true;
   }
-  const animating = ($('lAnim').checked && $('lStream').checked) || ticking || T.play || spinning;
+  // GPU tracers, vortex volume and lift pairs: always moving (through a frozen field when paused)
+  let fxa = false;
+  if (fxOn(st)) {
+    const dtx = dtS * (+$('tSpd').value || 1) * TRACE_RATE;
+    for (const v of shown()) {
+      if (!v.fx) continue;
+      const series = v.fr && v.fr.n > 1;
+      v.fx.step(dtx, series ? Math.min(T.t, v.fr.n - 1) : 0, st);
+      v.fx.vol.material.uniforms.uTime.value = (t / 1000) % 97;
+      fxa = true;
+    }
+  }
+  if (t - liftUpd > 400) { liftUpd = t; drawLift(st); }
+  const animating = ($('lAnim').checked && $('lStream').checked) || ticking || T.play || spinning || fxa;
   controls.update();
   if (!need && !animating) return;
   need = false;
@@ -318,7 +384,20 @@ async function boot() {
   if (params.get('nopart')) $('lPart').checked = false;
   if (params.get('q') === '0') $('lVortex').checked = false;
   const want = params.get('run'), i0 = Math.max(0, RUNS.findIndex((r) => r.id === want));
+  if (!FX_OK) { for (const id of ['lTrace', 'lVvol', 'lPairs']) { $(id).checked = false; $(id).disabled = true; } $('fxNote').textContent = '3D tracers need WebGL2 with float render targets; this browser has neither.'; }
+  if (params.has('tracers')) $('lTrace').checked = params.get('tracers') !== '0';
+  if (params.has('vvol')) $('lVvol').checked = params.get('vvol') !== '0';
+  if (params.has('pairs')) $('lPairs').checked = params.get('pairs') !== '0';
+  const setSel = (id, val) => { if (val !== null && [...$(id).options].some((o) => o.value === val)) $(id).value = val; };
+  setSel('pCol', params.get('pcol'));
+  setSel('pQual', params.get('pq'));
   await pickA(i0).catch(fail);
+  if (views[0]?.fx) {
+    const p = (k, d) => (params.has(k) ? params.get(k) !== '0' : d);
+    $('lStream').checked = p('stream', false) && !params.get('nostream'); $('lVortex').checked = p('cores', false);
+    if (!params.get('plane')) $('lY').checked = false;
+    $('lPart').checked = false;
+  }
   if (params.get('cmp') && RUNS.length > 1 && !views[1]) {
     $('runB').value = String(i0 === 1 ? 0 : 1); $('cmp').checked = true;
     await loadRun(RUNS[+$('runB').value], 1).catch(fail); updateChrome();
@@ -328,6 +407,9 @@ async function boot() {
   if (params.get('view') === 'zoom') setView(new THREE.Vector3(1.0, 0.5, 1.5), new THREE.Vector3(0.35, 0, 0.1));
   if (params.get('t')) { T.t = +params.get('t'); $('tSlide').value = String(T.t); }
   if (params.get('play')) setPlay(true);
+  // warm=N: run the tracers N t* ahead before the first draw (screenshots, or to open on a developed flow)
+  const warm = Math.min(20, +params.get('warm') || 0);
+  if (warm > 0) { const st = state(); for (let k = 0; k < warm / 0.05; k++) for (const v of shown()) v.fx?.step(0.05, Math.min(T.t, (v.fr?.n || 1) - 1), st); }
   applyLayers();
   render(0);
 }

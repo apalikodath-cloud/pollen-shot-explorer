@@ -42,7 +42,7 @@ import json, os
 fsrc = d.parent / "flow"
 fdst = site / "flow"
 fdst.mkdir()
-for name in ("flow.html", "flow.js", "flowview.js", "shot.html", "shot.js"):
+for name in ("flow.html", "flow.js", "flowview.js", "particles.js", "shot.html", "shot.js"):
     shutil.copy2(fsrc / name, fdst / name)
 shutil.copy2(d / "solver.js", site / "explorer" / "solver.js")
 for name in ("flow.html", "shot.html"):
