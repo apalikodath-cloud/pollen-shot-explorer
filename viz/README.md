@@ -1,5 +1,9 @@
 # viz/: shot videos, field map and web replay
 
+The web pages have their own folders and notes: `explorer/` (the 3D explorer and the site build, see
+`explorer/HOSTING.md` and `explorer/FIELD_DATA.md`), `flow/` (CFD flow pages, `flow/README.md`) and `measure/`
+(measurement kit, `measure/README.md`). This file covers the rest of `viz/`.
+
 This folder holds side-view animations of a backspinning POLLEN ball flying toward the
 **upward-facing HIVE CELL**, each with a no-spin twin launched at the same speed, angle and
 release point. Nothing in here is measured:
@@ -64,7 +68,7 @@ The default list is `viz/cases_default.json`. Each case takes these fields:
 
 ### Field map from the feasibility analysis
 
-`src/feasibility.py` (another team) writes `data/clean_feasibility_map.csv`, one row per
+`src/feasibility.py` writes `data/clean_feasibility_map.csv`, one row per
 (h, d) with columns `case, role, S, Cl, Cd, k, geometry, h, d, v_cap, n_clean, ...` and `#`
 comment lines at the top. `render_video.py` reads this format directly:
 
@@ -90,15 +94,15 @@ this was written. If the real column names differ, use those flags.
 ### Spin-dependent rim-assisted entries (not implemented yet)
 
 `outcome` is currently `clean`, `hit:<segment>` or `miss`. The flight is drawn up to the first
-contact, and there is no bounce model. When a contact model lands (for example `src/contact.py`),
-the plan is:
+contact, and these videos have no bounce model. The bounce study lives in `src/contact.py`
+(`docs/05_contact.md`) and is not wired into the videos. Wiring it in would mean:
 
 1. `make_shots.truncate()` continues the drawn path through the contact sequence.
 2. `outcome = "rim-assisted"` is written. Renderers already colour and label it as an entry, and
    the map counts it as entered.
 3. The banner keeps `PREDICTED`.
 
-The contact API is unknown, so none of this is wired yet.
+None of this is wired yet.
 
 ## DEMO run (no src/ or data/ needed)
 
@@ -133,7 +137,9 @@ page shows **"DEMO — placeholder geometry, not results"**. Do not quote any DE
 
 ## Current default cases (all PREDICTED, uncalibrated, not optimised)
 
-Release height 0.40 m is assumed, and S = 1 is the ideal hood. Whether the launcher can deliver
+These videos were made with the 2D HIVE section model (`src/hive.py`) and `data/aero_params.json`. The
+explorer now judges shots against the 3D CELL (`src/cell3d.py`) with the aero in `research/params_lit.json`,
+so use the explorer, not these videos, for current numbers. Release height 0.40 m is assumed, and S = 1 is the ideal hood. Whether the launcher can deliver
 these exact (v, S) pairs is not checked here.
 
 | id | pose / side | release, v, elev | aero | spin shot | no-spin twin |
@@ -146,8 +152,7 @@ these exact (v, S) pairs is not checked here.
 The cases were picked to show the spin effect in both directions. **U2 shows backspin
 making a shot worse**, so they are not evidence that more backspin always helps. None of the
 shots shows a mid-air horizontal reversal. Each one is a single deterministic trajectory and
-says nothing about repeatability. The sweep shows that unfavourable-side clean launches are
-rare: 15 of 3024 at S = 0 and 11 of 3024 at S = 1, for nominal aero over a coarse grid.
+says nothing about repeatability.
 
 ## Files
 
@@ -160,3 +165,5 @@ rare: 15 of 3024 at S = 0 and 11 of 3024 at S = 1, for nominal aero over a coars
 | `shots.schema.md` | The data format and provenance labels. |
 | `shots.json`, `web_data.json`, `replay.html`, `out/` | The current PREDICTED outputs. |
 | `demo/` | The DEMO outputs, which use placeholder geometry. |
+| `hero_search.py`, `hero/` | The far-side backspin shot `HERO_backspin_d175` and its no-spin twin `TWIN_nospin_d175` (cases, `shots.json`, videos; see `docs/08_shooter_spec.md`). |
+| `explorer/`, `flow/`, `measure/` | The web pages; see the notes at the top of this file. |

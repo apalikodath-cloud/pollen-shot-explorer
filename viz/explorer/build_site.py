@@ -5,13 +5,16 @@ from pathlib import Path
 d = Path(__file__).parent
 site = d / "site"
 subprocess.run([sys.executable, str(d / "build_page.py")], check=True)
-if site.exists():
-    shutil.rmtree(site)
-site.mkdir()
+# empty site/ rather than remove it, so a local preview server holding the folder open does not block a rebuild
+site.mkdir(exist_ok=True)
+for old in site.iterdir():
+    shutil.rmtree(old) if old.is_dir() else old.unlink()
 # index.html sits at the site root, so its link to the measurement kit (../measure/ in the source tree)
 # becomes measure/ here.
 idx = (d / "index.html").read_text(encoding="utf-8")
 assert idx.count('href="../measure/measure.html"') == 1, "explorer page must link the measurement kit once"
+assert idx.count('href="../flow/shot.html"') == 1 and idx.count('href="../flow/flow.html"') == 1, "explorer page must link the CFD pages"
+idx = idx.replace('href="../flow/shot.html"', 'href="flow/shot.html"').replace('href="../flow/flow.html"', 'href="flow/flow.html"')
 (site / "index.html").write_text(idx.replace('href="../measure/measure.html"', 'href="measure/measure.html"'), encoding="utf-8")
 # Measurement kit (viz/measure): site/measure/, with the physics.js it loads from ../explorer/ and its
 # back link pointed at the site root.

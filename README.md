@@ -1,23 +1,40 @@
 # POLLEN shot explorer
 
 A physics study and an interactive 3D explorer from **FTC Team 207 Critical Mass** (FIRST Tech Challenge
-2026-2027, BIOBUZZ).
+2026-2027, BIOBUZZ). **The question:** can one powered 98 mm flywheel, with a fixed hood or a passive upper
+roller, put enough backspin on POLLEN (71 mm, about 25 g, a perforated polyethylene ball) for it to drop into the
+upward-facing CELL of the HIVE from the unfavourable side, where the mouth faces away from the robot? The
+explorer answers that for any robot position: it solves the flight with drag, spin lift and spin decay against the
+official HIVE geometry, and gives the wheel rpm and hood angle that put the ball in clean, each next to the same
+shot with no spin.
 
-**The question.** Can one powered 98 mm flywheel, with a fixed hood or a passive upper roller, put enough
-backspin on POLLEN (71 mm, about 25 g, a perforated polyethylene ball) for it to drop into the upward-facing
-CELL of the HIVE from the unfavourable side, where the mouth faces away from the robot?
+## Open it
 
-**Live explorer:** https://apalikodath-cloud.github.io/pollen-shot-explorer/
-
-The explorer opens in the **Robot** view. Place a robot anywhere on the field, set its heading, turret,
-release height, backspin and wheel grip, and the page solves the clean-entry window for that spot in your
-browser. It reports the minimum wheel rpm, the minimum hood angle and the most forgiving shot, each beside its
-no-spin twin. The **Single plane** view shows the original model grid. The **Field map** view shows
-precomputed windows across the field.
+- **Explorer:** https://apalikodath-cloud.github.io/pollen-shot-explorer/
+- **CFD flow around the ball along a shot:** https://apalikodath-cloud.github.io/pollen-shot-explorer/flow/shot.html
+- **CFD case viewer (13 cases):** https://apalikodath-cloud.github.io/pollen-shot-explorer/flow/flow.html
+- **Measurement kit:** https://apalikodath-cloud.github.io/pollen-shot-explorer/measure/measure.html
+- **Write-up (PDF):** [`paper/main.pdf`](paper/main.pdf)
 
 > **Everything here is a model prediction.** No POLLEN drag, spin lift, spin decay, bounce or launcher grip
 > has been measured. The air coefficients are literature ranges (mostly pickleball and smooth-sphere data),
 > not POLLEN facts. One clean simulated shot says nothing about how repeatable a real shot is.
+
+## How to use
+
+1. Open the **Explorer**. It starts on the **Robot** tab ("Where can I shoot from?"). Drag the robot on the field
+   map, or drag the white knob to turn it. The turret aims at the up CELL by itself.
+2. Under **Shooter settings**, set the shooter height and the backspin. **Advanced settings** hold the rest: grip,
+   air, drafts, a moving robot, spin lift, shot scatter, flywheel droop, turret travel and HIVE tilt.
+3. Read the **answer card**: the wheel rpm and hood angle for a clean shot from that spot, always beside the
+   no-spin twin. "Details" shows the knife edges and clearances.
+4. The other tabs: **Side view** ("One shot up close") flies one shot straight down the HIVE tipping plane and
+   shows every clean speed and angle from that distance. **Field map** ("Every spot at once") shows where a clean
+   shot exists across the field. **CFD** ("Our wind-flow results") shows our CFD coefficients, each backspin case
+   beside its no-spin twin.
+5. The links under the tabs open the CFD flow pages and the **Measurement kit**. The kit fits drag (Cd) and spin
+   lift (Cl) from a slow-motion video of a no-spin shot and its backspin twin. Enter the results in the explorer's
+   Advanced settings. The protocol is in [`docs/MEASURE.md`](docs/MEASURE.md).
 
 ## How to read the labels
 
@@ -29,7 +46,7 @@ Every number carries one of these labels:
 | USER | Given by the team (for example the 98 mm wheel). |
 | ASSUMED | A modelling choice or a literature value used in place of a measurement (drag, spin lift, spin decay, grip, robot height limits). |
 | DERIVED | Computed from the values above (for example wheel rpm from exit speed and grip). |
-| PREDICTED | Model output (every clean window, minimum rpm and hood angle). |
+| PREDICTED | Model output (every clean window, minimum rpm, hood angle and CFD result). |
 
 Terms used in the explorer and the docs:
 
@@ -51,47 +68,56 @@ Two physics points the model is careful about:
 
 ## The model in brief
 
-- **Flight.** A planar flight with gravity, quadratic drag (constant Cd), Magnus lift
-  Cl = min(c1 S, Cl_max) at right angles to the velocity, and exponential spin decay with rate k.
-  It is integrated with RK4 at a 2 ms step (`src/feasibility.py`, `viz/explorer/physics.js`). An adaptive
-  integrator in `src/flight.py` serves as the reference. The parameter ranges (ASSUMED) are in
-  `research/params_lit.json`, graded against about 25 sources in `research/LITERATURE_SYNTHESIS.md`.
-- **HIVE.** The cross-section in its tipping plane comes from the official CAD for both tip states
-  (`docs/01_hive_geometry.md`, `src/hive.py`). The obstacles are grown by the ball radius, so the ball can be
-  tested as a point.
-- **Oblique shots.** A shot from off the tipping plane flies in the vertical plane of its bearing and is
-  projected onto the HIVE section at an ASSUMED lateral offset. The CELL side walls are not modelled, so
-  steep bearings are optimistic (`viz/explorer/FIELD_DATA.md`).
-- **Launcher.** A model of one wheel with a hood or passive roller that gives exit speed and spin
-  (`docs/04_launcher.md`, `src/launcher.py`). It is uncalibrated: grip and slip are unknown.
+- **Flight.** Gravity, quadratic drag (constant Cd), Magnus lift Cl = min(c1 S, Cl_max) at right angles to the
+  velocity, and exponential spin decay with rate k, integrated with RK4 at a 2 ms step (`src/feasibility.py`,
+  `viz/explorer/physics.js`). The shot flies in the vertical plane of its bearing; a sideways draft or a moving
+  robot switches the browser solver to full 3D flight. An adaptive integrator in `src/flight.py` is the
+  reference. The parameter ranges (ASSUMED) are in `research/params_lit.json`, graded in
+  `research/LITERATURE_SYNTHESIS.md`.
+- **HIVE.** The cross-section comes from the official CAD for both tip states (`docs/01_hive_geometry.md`,
+  `src/hive.py`). A 3D CELL built from it, with side walls, roof and lips (`src/cell3d.py`), judges every shot,
+  including oblique ones (`viz/explorer/FIELD_DATA.md`).
+- **Launcher.** One wheel with a hood or passive roller gives exit speed and spin (`docs/04_launcher.md`,
+  `src/launcher.py`). It is uncalibrated: grip and slip are unknown.
 - **Contact.** Rim and interior bounces with restitution and Coulomb friction (`docs/05_contact.md`,
-  `src/contact.py`). These are kept separate from clean entry.
+  `src/contact.py`), kept separate from clean entry.
 
-**What it finds (PREDICTED).** Clean entry from the unfavourable side is possible, but only as a precision
-shot. The clean shots form a narrow diagonal band in exit speed and elevation. Backspin moves the band but is
-not required for it, and the unknown aero moves the band more than the band is wide. The shooter has to be
-tuned on the field and then hold that tune. Over a whole-field grid, backspin never has a clearly higher model
-hit chance than the no-spin twin: tuned to the true lift it is level, and a setting picked without knowing the
-lift is lower (`research/SPIN_VS_TWIN.md`, paper section 8). Details are in `docs/08_shooter_spec.md` and
-`paper/main.pdf`.
+**What it finds (PREDICTED).** Clean entry from the unfavourable side is possible, but only as a precision shot.
+The clean shots form a narrow diagonal band in exit speed and elevation. Backspin moves the band but is not
+required for it, and the unknown aero moves the band more than the band is wide, so the shooter has to be tuned on
+the field. Over a whole-field grid, backspin never has a clearly higher model hit chance than the no-spin twin
+(`research/SPIN_VS_TWIN.md`). Details are in `docs/08_shooter_spec.md` and `paper/main.pdf`.
+
+## CFD
+
+We run our own **D3Q19 lattice-Boltzmann large-eddy simulation (LES)** on GPUs (OpenCL), with the grid refined
+near the ball, to see how air flows around POLLEN with and without backspin.
+
+- The explorer's **CFD** tab lists the mean drag (Cd), spin lift (Cl) and spin-down torque (CM) of each finished
+  case, with each backspin case beside its no-spin twin (`viz/explorer/cfd_runs.json`).
+- The flow pages show the air in the ball's frame: **streamlines** coloured by speed, **vortex cores**
+  (Q isosurfaces), which mark the turbulent wake behind the ball, and **slices** through the flow with contour
+  lines. The shot page draws the nearest CFD case around the ball along a predicted shot, beside its no-spin twin.
+- Every CFD number and picture is **PREDICTED**. The hole orientation of the ball in flight is **ASSUMED**. The
+  flight model still uses the literature aero, not the CFD.
+- Solver source, validation rules and run notes: `cfd/README.md`. Flow page tools: `viz/flow/README.md`.
 
 ## Repository map
 
 | Path | What it holds |
 |---|---|
-| `HANDOFF.md` | The original project brief and its binding rules (section 5) |
-| `docs/01`-`08` | Geometry, aero, clean entry, launcher, contact, required vs achievable, test plan, shooter design targets |
-| `docs/INTERFACES.md` | Frames, units and the provenance labels shared by the code |
-| `src/` | Python model: `flight`, `hive`, `feasibility`, `launcher`, `contact`, `robustness`, `shooter_spec`, `spec_figs` |
-| `tests/` | Python unit tests and Node checks of the browser solver |
-| `data/` | Model outputs (CSV/JSON, all PREDICTED unless labelled) and the first-pass aero set |
+| `cfd/` | Our lattice-Boltzmann CFD solver (`cfd/lbm/`), post-processing and the validation notes |
+| `crosscheck/` | Independent rebuilds of the HIVE geometry and the flight solver, plus empirical evidence notes |
+| `data/` | Model outputs (CSV/JSON, PREDICTED unless labelled) and the aero parameter set |
+| `docs/` | Write-ups 01-08 (geometry, aero, clean entry, launcher, contact, required vs achievable, test plan, shooter targets), `INTERFACES.md` (frames, units, labels) and `MEASURE.md` (measurement protocol) |
 | `figures/` | Figures used by the docs and the paper |
-| `research/` | Literature synthesis, per-paper notes and checks, the parameter file `params_lit.json` |
-| `RESEARCH_PAPERS.md` | Reading list of the main sources |
-| `crosscheck/` | Independent re-builds of the HIVE geometry and the flight solver, plus empirical evidence notes |
 | `paper/` | LaTeX write-up (`main.tex`, `sections/`) and the built `main.pdf` |
-| `viz/explorer/` | The 3D explorer: `page.html`, `physics.js`, `solver.js`, data exporters, site build and deploy scripts |
-| `viz/` (rest) | Side-view shot videos with their no-spin twins and a web replay (`viz/README.md`) |
+| `research/` | Literature synthesis, per-paper notes and checks, the parameter file `params_lit.json` |
+| `src/` | Python model: flight, HIVE and 3D cell, feasibility, launcher, contact, robustness, shooter spec, spin vs twin, aero fit |
+| `tests/` | Python unit tests and Node checks of the browser solver |
+| `viz/` | Web pages and videos: `explorer/` (the explorer and the site build), `flow/` (CFD flow pages), `measure/` (measurement kit), plus side-view shot videos and a replay (`viz/README.md`) |
+| `HANDOFF.md` | The original project brief and its rules (section 5) |
+| `RESEARCH_PAPERS.md` | Reading list of the main sources |
 
 ## Run it
 
@@ -105,35 +131,41 @@ python -B -m unittest discover -s tests
 node tests/js_solver_check.js
 ```
 
-The Python suite also drives `tests/js_oblique_check.js` through Node, and skips those checks if Node or the
-local run caches are missing. `tests/js_solver_check.js` needs the whole-field data in `viz/explorer/data/field/`,
-which is not committed: on a fresh clone it prints `SKIP field data missing` and exits with code 77 until
-`export_field.py` has been run (see **Rebuild the site** below).
+The Python suite also drives the Node checks, and skips them if Node or the local run caches are missing.
+`tests/js_solver_check.js` needs the whole-field data in `viz/explorer/data/field/`, which is not committed: on a
+fresh clone it prints `SKIP field data missing` and exits with code 77 until `export_field.py` has been run.
 
 **Model runs** (slow; each writes into `data/`)
 
 ```
-python -B -m src.shooter_spec --workers 4            # design targets (hours; caches runs in data/_spec_cache)
+python -B -m src.shooter_spec                        # design targets (slow; SPEC_WORKERS sets the workers; caches runs in data/_spec_cache)
 python -B -m src.feasibility --workers 4             # clean windows
 python -B -m src.contact --stage all --workers 4     # contact sweeps
 python -B -m src.robustness --steps req,map,mc --workers 3
 ```
 
-`--aero-path <json>` picks the aero file. The default is `research/params_lit.json`. The run caches
+The backspin-against-twin study has its own steps (`src/spin_vs_twin.py`, see `research/SPIN_VS_TWIN.md`).
+
+For the feasibility, contact and robustness runs, `--aero-path <json>` picks the aero file. The default is `research/params_lit.json`. The run caches
 (`data/_spec_cache/`) are not committed, so a fresh clone has to run `src.shooter_spec` before the explorer
 data can be rebuilt.
 
-**Rebuild the site**
+## Rebuild the site
 
 ```
-python -B viz/explorer/export_explorer.py            # single-plane data from data/_spec_cache
+python -B viz/explorer/export_explorer.py              # model grid for the Side view (from data/_spec_cache)
 python -B viz/explorer/export_field.py compute --workers 3
-python -B viz/explorer/export_field.py finalize      # whole-field data
-python -B viz/explorer/build_site.py                 # page.html + physics.js + solver.js -> viz/explorer/site/
+python -B viz/explorer/export_field.py finalize        # whole-field data for the Robot and Field map tabs
+python -B viz/explorer/export_cfd.py RUNS_DIR          # optional: CFD tab table from finished run CSVs
+python -B viz/explorer/build_site.py                   # explorer + flow pages + measurement kit -> viz/explorer/site/
 ```
 
-Open the result through a web server (for example `python -m http.server` inside `viz/explorer/site`),
-not as a `file://` page. `viz/explorer/HOSTING.md` explains how the site and this repo are published.
+- `viz/explorer/cfd_runs.json` is committed, so `export_cfd.py` is needed only when new CFD runs finish.
+- The CFD flow bundles are not committed. `build_site.py` reads them from `viz/flow/flows/` or from the folder in
+  the `FLOW_BUNDLES` environment variable, and publishes only real CFD bundles. `viz/flow/README.md` shows how to
+  make them.
+- Open the result through a web server (for example `python -m http.server` inside `viz/explorer/site`), not as a
+  `file://` page. `viz/explorer/HOSTING.md` explains how the site and this repo are published.
 
 **Rebuild the paper**
 
@@ -150,12 +182,14 @@ The figures are read from `../figures/`.
 - Nothing about POLLEN is measured: drag, spin lift, spin decay, restitution, friction, compression and
   launcher grip are all ASSUMED ranges. The windows move by more than their own width across those ranges.
 - Literature values come from other balls, mostly pickleballs and smooth spheres. They are not POLLEN facts.
-- Flight is planar. There is no sidespin, no wind, no spin-axis tilt and no ball-to-ball variation in the
-  flight model. The CELL side walls are not modelled for oblique shots.
+- The CFD is our own unvalidated model; its results are PREDICTED and are not used in the flight model.
+- Sidespin, spin-axis tilt and ball-to-ball variation are not modelled. Drafts and a moving robot are options,
+  not measurements.
 - Clean entry stops at the first touch. Bounce-in shots are studied separately and are less certain.
 - The model makes no claim about repeatability. A clean window is a band of shots the model says go in,
   not a hit rate.
-- The release point is the robot centre at the chosen height, and the turret is assumed to aim exactly.
+- The release point is the robot centre at the chosen height unless an offset is set, and the turret is assumed
+  to aim exactly.
 
 ## Credits
 

@@ -150,7 +150,7 @@ h1 { font-size: 28px; }
 .btn.reset { margin-left: auto; }
 .btn.themebtn { min-width: 64px; } .btn.themebtn + .btn.reset { margin-left: 0; }
 .sub { font-size: 14px; color: var(--fg); opacity: .85; }
-.tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
 .tabs button { display: grid; gap: 1px; text-align: left; font: 400 12px var(--body); color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 7px 12px; cursor: pointer; min-height: 44px; }
 .tabs button b { font: 600 16px var(--display); letter-spacing: .03em; color: var(--fg); }
 .tabs button:hover { border-color: var(--muted); }
@@ -239,6 +239,7 @@ body[data-view=field] .wrap > header { order: -2; } body[data-view=field] #fsec 
 }
 @media (max-width: 520px) {
   .tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tabs button:last-child { grid-column: 1 / -1; }
   .tabs button { padding: 6px 8px; } .tabs button b { font-size: 15px; } .tabs button span { font-size: 11px; }
   .rec .say b { font-size: 30px; }
   .tiles { grid-template-columns: minmax(0, 1fr); gap: 6px; }
@@ -293,6 +294,19 @@ table.cfd td.d192:first-child::after { content: " \25C6"; color: var(--clean); }
 #cfdsec, .cfd-grid > div, .cfd-tw { min-width: 0; max-width: 100%; }
 #cfdsec .card { overflow: hidden; }
 body[data-view=cfd] .wrap { min-width: 0; max-width: 100vw; overflow-x: hidden; }
+/* 3D flow view: shot.html in an iframe (created on first open), following the Robot tab's current shot */
+body[data-view=flow3d] .wrap > :not(header):not(footer):not(#flowsec) { display: none !important; }
+body[data-view=flow3d] .rbar, body[data-view=flow3d] .kitlink { display: none !important; }
+body[data-view=flow3d] .wrap { min-width: 0; max-width: 100vw; overflow-x: hidden; }
+#flowsec { display: grid; gap: 14px; min-width: 0; }
+#flowsec[hidden] { display: none; }
+#flowsec .card { min-width: 0; overflow: hidden; }
+#flowsec h2 { margin: 0; }
+.flowbox { position: relative; height: min(80vh, 780px); min-height: 440px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--bg); }
+.flowbox iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+.flowbox .fwait { position: absolute; inset: 0; display: grid; place-items: center; padding: 16px; margin: 0; text-align: center; color: var(--muted); font-size: 14px; background: var(--bg); z-index: 1; }
+.flowbox .fwait[hidden] { display: none; }
+@media (max-width: 520px) { .flowbox { height: 82vh; min-height: 400px; } }
 /* PM-023 polish: shared scales, focus, readable chart text */
 .wrap { gap: var(--s4); padding-block: var(--s4) var(--s5); }
 .card, .chart { padding: var(--s4); gap: var(--s3); }
@@ -330,7 +344,9 @@ a { color: var(--pollen); text-underline-offset: 3px; }
       <button type="button" data-v="plane"><b>Side view</b><span>One shot up close</span></button>
       <button type="button" data-v="field"><b>Field map</b><span>Every spot at once</span></button>
       <button type="button" data-v="cfd"><b>CFD</b><span>Our wind-flow results</span></button>
+      <button type="button" data-v="flow3d"><b>3D flow</b><span>CFD around the shot</span></button>
     </nav>
+    <p class="kitlink"><a href="../flow/shot.html" id="cfd-shot-link"><b>CFD flow around the ball</b></a> <span>· see the simulated airflow, streamlines and contour lines around POLLEN along the shot (PREDICTED) · </span><a href="../flow/flow.html" id="cfd-flow-link">all 13 CFD cases</a></p>
     <p class="kitlink"><a href="../measure/measure.html" id="measure-link">Measure your shooter</a> <span>· track a slow-motion video and fit drag (Cd) and spin lift (Cl) with the no-spin twin test, then enter them here (Advanced settings)</span></p>
   </header>
 
@@ -598,9 +614,18 @@ a { color: var(--pollen); text-underline-offset: 3px; }
     </div>
   </section>
 
+  <section id="flowsec" hidden aria-labelledby="h-flow3d">
+    <div class="card">
+      <div class="shead"><h2 id="h-flow3d">3D flow around your shot</h2><span class="badge">PREDICTED</span></div>
+      <p class="cfd-note">The shot set in the Robot tab (robot spot, heading, release height, wheel speed, hood angle and backspin) flown in 3D, with our CFD of the air around the backspin ball and, beside it, its no-spin twin. At each moment the flow is blended from the CFD cases nearest the ball's speed and spin there (a general solution, PREDICTED); the hole orientation is ASSUMED. Change the robot or the shot in the Robot tab and this view follows.</p>
+      <div class="flowbox" id="flow3d-box"><p class="fwait" id="flow3d-wait">Solving the shot at this spot...</p></div>
+      <p class="cfd-note"><a id="flow3d-open" target="_blank" rel="noopener">Open this shot full screen</a> · In Instant, the tubes are vortex cores (Q-criterion) of one moment of a turbulent wake and the blotchy slice is the same turbulence, not a model error; Averaged shows the mean flow.</p>
+    </div>
+  </section>
+
   <footer>
     <details class="about"><summary><b>About this model.</b> PREDICTED by a computer model; no POLLEN drag, spin lift, bounce or grip has been measured. Test on a real robot before a match.</summary>
-    <p><b>What this is.</b> Three views of one PREDICTED model (PM-001, Team 207 Critical Mass). <b>Robot</b> (the default): put a 0.457 m robot anywhere on the field at any heading, give it a turret, set the release height, backspin and grip, and the page solves the clean-entry window for that exact spot live in your browser (a background worker runs the same flight model), then gives the minimum wheel rpm, the minimum hood angle and the most forgiving shot, each beside its no-spin twin. <b>Side view</b> (single plane): the original model grid (<code>src/shooter_spec.py</code>: 111 speeds × 261 angles × 24 distances × 5 heights per case) for a shot straight down the HIVE tipping plane. <b>Field map</b>: the precomputed windows for every 0.05 m grid position (<code>data/field</code>). Air resistance is included in all three: quadratic drag (Cd), Magnus spin lift capped at a maximum, and spin decay during the flight. Those coefficients are ASSUMED literature values, not POLLEN measurements. The HIVE section is from the official field CAD; tilt 30° is confirmed.</p>
+    <p><b>What this is.</b> Five views of one PREDICTED model (Team 207 Critical Mass). <b>Robot</b> (the default): put a 0.457 m robot anywhere on the field at any heading, give it a turret, set the release height, backspin and grip, and the page solves the clean-entry window for that exact spot live in your browser (a background worker runs the same flight model), then gives the minimum wheel rpm, the minimum hood angle and the most forgiving shot, each beside its no-spin twin. <b>Side view</b>: one shot up close, straight down the HIVE tipping plane, from the original model grid (<code>src/shooter_spec.py</code>: 111 speeds × 261 angles × 24 distances × 5 heights per case). <b>Field map</b>: the precomputed windows for every 0.05 m grid position (<code>data/field</code>). <b>CFD</b>: our own GPU flow simulation of POLLEN, with its drag, backspin lift and spin-down torque coefficients (PREDICTED). <b>3D flow</b>: the Robot tab's current shot flown in 3D, with the CFD flow around the backspin ball and its no-spin twin, blended from the CFD cases nearest the ball's speed and spin at each moment (hole orientation ASSUMED). Air resistance is included in the Robot, Side view and Field map flights: quadratic drag (Cd), Magnus spin lift capped at a maximum, and spin decay during the flight. Those coefficients are ASSUMED literature values, not POLLEN measurements. The HIVE section is from the official field CAD; tilt 30° is confirmed.</p>
     <p><b>What the model includes.</b> Flight: quadratic drag, Magnus spin lift with a cap and spin decay, RK4 with a 2 ms step. Robot view: the shot flies along the bearing to the cell from the robot's exact spot (whole-field oblique model), and the up cell is 3D (side walls, pentagon roof, lips). The live solver reports two kinds of minimum: <b>knife edge</b> (the lowest clean shot found, a grazing one) and <b>with room for error</b> (still clean if speed and angle drift by the ASSUMED tolerance), each beside the no-spin twin. Options in Advanced settings: venue air (temperature, altitude, humidity; default 20 °C, sea level, dry = 1.204 kg/m³, derived), drag that changes with speed (reference or what-if, ASSUMED), extra drag from backspin (ASSUMED), a steady draft along, across or up the shot (user), a moving robot (speed toward the goal and sideways, turn rate, exit-angle offset d0; user / ASSUMED), a spin-lift table and reverse lift (ASSUMED), air carried with the ball (effective mass, ASSUMED), and a flag on any answer that needs more than the PREDICTED 8.9 m/s grip limit.</p>
     <p><b>Not modelled yet</b> (largest first, from the research ranking; each needs a measurement): the real spin-lift level of POLLEN (Cl); its real drag level (Cd); grip and slip at the wheel (v/u, ball squeeze); the hood angle not being the exit angle; the random side force on a low-spin holed ball (knuckle); exit skew and a tilted spin axis (sideways error); balls and NECTAR already in the cell, bounce (COR) and the HIVE tipping mid-volley; bounces after entry; the air carried inside the ball (effective mass: an ASSUMED option only); flywheel droop and battery voltage at launch (the answer shows a PREDICTED per-shot droop and recovery readout, but every shot is still solved at the set wheel speed; an encoder log is needed). Robot motion and sideways drafts are options (Advanced), not measurements. The "chance it goes in" line is a model probability under ASSUMED launch scatter, not a measured repeatability.</p>
     <p><b>What it is not.</b> No POLLEN drag, spin lift, bounce or launcher grip has been measured. The air cases are literature ranges (pickleball and smooth-sphere data), not POLLEN facts. A shot that touches the HIVE stops here; a bounce can still score (see docs/05). The second HIVE and the A-frame legs are drawn for context only. One clean simulated shot says nothing about repeatability: the tolerance shown is how far speed and angle can drift and still go in. In the Robot view the release point is the robot centre at your height (an offset can be set; the turned 18 × 18 in chassis must stay inside the walls and off the A-frame base) and the turret is assumed to aim exactly (ASSUMED). The Side view and the Field map are precomputed with the same 3D cell (side walls, pentagon roof) at 1.204 kg/m³ (derived); the Side view is a straight shot down the tipping plane only.</p>
@@ -4313,7 +4338,7 @@ function drawRWin() {
 // ---- readouts ("At this spot"), the selected-shot card, the verdict pills, the test hook
 function rDrawAll() {
   if (!R.on || !R.ready) return;
-  rSyncInputs(); drawRMap(); rRender(); drawRWin(); rBuild3D(); rTest();
+  rSyncInputs(); drawRMap(); rRender(); drawRWin(); rBuild3D(); rTest(); flowSync();
 }
 let rRaf = false;
 function rChanged(kind) {
@@ -4741,7 +4766,54 @@ async function setMode(m) {
   rHeatLoad(); rChanged("view");
 }
 const modeFromHash = () => { const t = location.hash + location.search; return /field/.test(t) ? "field" : /plane/.test(t) ? "plane" : "robot"; };
-window.addEventListener("hashchange", () => { setMode(modeFromHash()); });
+window.addEventListener("hashchange", () => {
+  const h = location.hash, v = /flow3d/.test(h) ? "flow3d" : /cfd/.test(h) ? "cfd" : modeFromHash();
+  $("mode-seg").querySelector(`[data-v=${v}]`).click();
+});
+
+// ---------------------------------------------------------------- 3D flow view
+// The Robot tab's current shot (spot, heading, release height, selected speed and hood angle, backspin and the
+// full model query) flown in ../flow/shot.html with the CFD around the ball. The iframe is created on first open;
+// later changes go over postMessage (same origin), so the flow library is loaded only once.
+const FL = { frame: null, ready: false, key: "", on: false };
+function flowUrl(embed) {
+  const r4 = x => String(Math.round(x * 1e4) / 1e4), p = new URLSearchParams();
+  if (embed) p.set("embed", "1");
+  p.set("x", r4(R.x)); p.set("y", r4(R.y)); p.set("hd", r4(R.heading)); p.set("h", r4(R.h)); p.set("S", r4(R.S));
+  if (R.sel) { p.set("v", r4(R.sel.v)); p.set("th", r4(R.sel.theta)); }
+  return $("cfd-shot-link").getAttribute("href") + "?" + p.toString();
+}
+function flowPost(m) {
+  if (FL.frame && FL.ready) try { FL.frame.contentWindow.postMessage(m, location.origin); } catch (_) { /* frame gone */ }
+}
+function flowVisible(on) { FL.on = on; flowPost({ type: "pollen-flow-visible", on }); }
+function flowSync(force) {
+  if (document.body.dataset.view !== "flow3d") return;
+  const wait = $("flow3d-wait"), ok = R.ready && R.pose && R.pose.ok && R.sel && !rStale();
+  if (!ok) {
+    wait.textContent = !R.ready || !R.pose || rStale() ? "Solving the shot at this spot..." :
+      !R.pose.ok ? "The robot is not in a legal spot. Move it in the Robot tab, then come back to 3D flow." :
+      "No clean shot found at this spot (PREDICTED). Move the robot or change the shot in the Robot tab.";
+    wait.hidden = false; $("flow3d-open").hidden = true; return;
+  }
+  wait.hidden = true; $("flow3d-open").hidden = false;
+  $("flow3d-open").href = flowUrl(false);
+  const q = JSON.parse(JSON.stringify(rQuery()));
+  const key = JSON.stringify([R.x, R.y, R.heading, R.h, R.S, R.sel.v, R.sel.theta, q]);
+  if (!FL.frame) {
+    const f = document.createElement("iframe");
+    f.title = "3D flow around the shot (PREDICTED)"; f.src = flowUrl(true); f.allow = "fullscreen";
+    $("flow3d-box").appendChild(f); FL.frame = f; FL.key = ""; return;   // the frame says when it is ready
+  }
+  if (!FL.ready || (key === FL.key && !force)) return;
+  const changed = key !== FL.key; FL.key = key;
+  flowPost({ type: "pollen-shot", x: R.x, y: R.y, hd: R.heading, h: R.h, v: R.sel.v, th: R.sel.theta, S: R.S, q, reset: changed });
+  flowPost({ type: "pollen-flow-visible", on: FL.on });
+}
+window.addEventListener("message", e => {
+  if (e.origin !== location.origin || !FL.frame || e.source !== FL.frame.contentWindow) return;
+  if (e.data && e.data.type === "pollen-flow-ready") { FL.ready = true; FL.key = ""; flowSync(true); }
+});
 
 // ---------------------------------------------------------------- boot
 async function boot() {
@@ -4801,11 +4873,20 @@ async function boot() {
     for (let k = 0; k < NH; k++) { const dist = Math.abs(data.count[k * ND + id] - n); if (dist < bd) { bd = dist; ih = k; } }
     st.d = G.d[id]; st.ih = ih; refresh();
   });
-  $("mode-seg").querySelectorAll("button").forEach(b => b.addEventListener("click", () => {
-    const v = b.dataset.v, cfd = v === "cfd";
-    $("cfdsec").hidden = !cfd;
-    document.body.dataset.view = cfd ? "cfd" : MODE;
-    if (cfd) {
+  let tabTok = 0;
+  $("mode-seg").querySelectorAll("button").forEach(b => b.addEventListener("click", async () => {
+    const v = b.dataset.v, cfd = v === "cfd", fl = v === "flow3d", tok = ++tabTok;
+    $("cfdsec").hidden = !cfd; $("flowsec").hidden = !fl;
+    document.body.dataset.view = cfd ? "cfd" : fl ? "flow3d" : MODE;
+    flowVisible(fl);
+    if (fl) {   // 3D flow follows the Robot tab's shot, so the robot view runs underneath
+      if (MODE !== "robot") { await setMode("robot"); if (tok !== tabTok) return; $("flowsec").hidden = false; $("cfdsec").hidden = true; }
+      document.body.dataset.view = "flow3d";
+      syncSeg($("mode-seg"), () => "flow3d");
+      try { history.replaceState(null, "", "#flow3d"); } catch (_) { /* ignore */ }
+      $("sub").textContent = "The Robot tab's current shot in 3D, with our CFD of the air around the ball along the flight. PREDICTED, not measured.";
+      window.scrollTo(0, 0); flowSync(true);
+    } else if (cfd) {
       syncSeg($("mode-seg"), () => "cfd");
       try { history.replaceState(null, "", "#cfd"); } catch (_) { /* ignore */ }
       $("sub").textContent = "Our own GPU flow simulation of POLLEN: drag, lift from backspin and spin-down torque. PREDICTED, not measured.";
@@ -4822,8 +4903,10 @@ async function boot() {
   const data = await loadCase(curCase().files[geomKey()].file);
   curSlice = slice(data, st.ih, nearest(G.d, st.d)); curSq = squareMap(curSlice.clean); pickBest();
   resize();
+  const wantFlow = /flow3d/.test(location.hash);   // setMode rewrites the hash to #robot
   await setMode(modeFromHash());
   if (window.WANT_CFD) $("mode-seg").querySelector('[data-v=cfd]').click();
+  else if (wantFlow) $("mode-seg").querySelector('[data-v=flow3d]').click();
   $("loading").hidden = true;
   requestAnimationFrame(loop);
 }

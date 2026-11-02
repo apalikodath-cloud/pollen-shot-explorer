@@ -3,50 +3,80 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>POLLEN shot flow</title>
+<title>POLLEN 3D shot flow</title>
 <link rel="icon" href="data:,">
+<script>try { var th = localStorage.getItem("pollen-theme"); if (th === "light" || th === "dark") document.documentElement.dataset.theme = th; } catch (_) { /* storage blocked: follow the system theme */ }</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-:root{--bg:#f3f5f8;--panel:rgba(255,255,255,.93);--ink:#16202e;--mute:#586579;--line:#c9d1dd;--accent:#1d5fd1;--warn:#b3261e;--warnbg:#fde7e5;--contour:#1a1f2b;--spin:#d9730d;--twin:#2a74d6}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0e16;--panel:rgba(18,24,36,.93);--ink:#e6ebf3;--mute:#98a4b8;--line:#2b3447;--accent:#6ea2ff;--warn:#ffb4ab;--warnbg:#5a1410;--contour:#f2f5fa;--spin:#ff9a3d;--twin:#6ea2ff}}
-:root[data-theme="dark"]{--bg:#0a0e16;--panel:rgba(18,24,36,.93);--ink:#e6ebf3;--mute:#98a4b8;--line:#2b3447;--accent:#6ea2ff;--warn:#ffb4ab;--warnbg:#5a1410;--contour:#f2f5fa;--spin:#ff9a3d;--twin:#6ea2ff}
+:root{--bg:#0b1015;--panel:rgba(17,25,33,.92);--panel-2:#16212b;--line:#24323f;--fg:#e3eaf0;--muted:#8d9caa;--pollen:#f4c430;--twin:#a9b4bf;--warn:#ff6b5a;--warnbg:#3a1410;--contour:#f2f5fa;
+ --display:"Barlow Condensed","Arial Narrow","Roboto Condensed",sans-serif;--body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;--mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;color-scheme:dark}
+:root[data-theme="light"]{--bg:#f3f5f7;--panel:rgba(255,255,255,.94);--panel-2:#eaeef2;--line:#c9d1d9;--fg:#141b22;--muted:#4f5d6a;--pollen:#9a6b00;--twin:#46535f;--warn:#c0392b;--warnbg:#fde7e5;--contour:#1a1f2b;color-scheme:light}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f3f5f7;--panel:rgba(255,255,255,.94);--panel-2:#eaeef2;--line:#c9d1d9;--fg:#141b22;--muted:#4f5d6a;--pollen:#9a6b00;--twin:#46535f;--warn:#c0392b;--warnbg:#fde7e5;--contour:#1a1f2b;color-scheme:light}}
 *{box-sizing:border-box}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:14px/1.45 var(--body);overflow:hidden}
 #gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
-#top{position:fixed;left:0;right:0;top:0;padding:8px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;pointer-events:none}
-#top h1{font-size:15px;margin:0;font-weight:650}
-#top a{color:var(--accent);pointer-events:auto;font-size:13px}
-#load{margin-left:auto;font-size:12px;color:var(--mute)}
-#banner{display:none;position:fixed;left:50%;top:40px;transform:translateX(-50%);z-index:5;background:var(--warnbg);color:var(--warn);border:2px solid var(--warn);padding:6px 16px;border-radius:8px;font-weight:800;font-size:clamp(14px,3.6vw,22px);text-align:center;pointer-events:none;white-space:nowrap}
-#caps{position:fixed;right:16px;top:40px;width:min(430px,46vw);z-index:3;display:flex;flex-direction:column;gap:6px;pointer-events:none}
-.cap{font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 9px}
+#top{position:fixed;left:16px;right:16px;top:8px;display:flex;gap:6px 14px;align-items:baseline;flex-wrap:wrap;pointer-events:none;z-index:2}
+#top h1{font:700 22px/1.1 var(--display);margin:0;letter-spacing:.01em}#top h1 b{color:var(--pollen)}
+#top a{color:var(--fg);opacity:.8;pointer-events:auto;font-size:13px}
+#load{margin-left:auto;font-size:12px;color:var(--muted)}
+.embed #top{display:none}
+#banner{display:none;position:fixed;left:50%;top:44px;transform:translateX(-50%);z-index:5;background:var(--warnbg);color:var(--warn);border:2px solid var(--warn);padding:6px 16px;border-radius:8px;font-weight:700;font-size:clamp(14px,3.6vw,20px);text-align:center;pointer-events:none;max-width:calc(100vw - 32px)}
+#caps{position:fixed;right:16px;top:44px;width:min(420px,44vw);z-index:3;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.embed #caps,.embed #panel{top:12px}
+.cap{font-size:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;color:var(--muted)}
 .cap:empty{display:none}
-.cap b{display:block;font-size:13px}
-.cap.m{border-left:4px solid var(--spin)}.cap.t{border-left:4px solid var(--twin)}
-.cap .pred{color:var(--mute)}.cap .syn{color:var(--warn);font-weight:700}
-#panel{position:fixed;left:16px;top:40px;width:290px;max-height:calc(100% - 150px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 12px;z-index:4}
-#panel summary{cursor:pointer;font-weight:650;padding:4px 0}
-#panel label{display:flex;gap:8px;align-items:center;padding:2px 0;cursor:pointer}
-#panel .row{display:flex;gap:8px;align-items:center;padding:2px 0}
-#panel .row span{min-width:74px;color:var(--mute);font-size:12px}
-#panel .row output{min-width:46px;text-align:right;font-variant-numeric:tabular-nums;font-size:12px}
-#panel h3{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin:10px 0 2px}
-select,button{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:4px 8px}
-button{cursor:pointer}button.on{border-color:var(--accent);color:var(--accent)}select{max-width:160px}input[type=range]{flex:1;min-width:0}
-#tbar{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;z-index:3;font-size:12px;width:min(640px,calc(100vw - 32px))}
-#tbar .trow{display:flex;gap:8px;align-items:center;margin:2px 0;flex-wrap:wrap}#tbar input[type=range]{flex:1;min-width:80px}
-#tbar .tnote{color:var(--mute);font-size:11px}
-#read{font-size:12px}
-#read table{border-collapse:collapse}#read td,#read th{padding:1px 8px 1px 0;text-align:left;font-weight:400}#read th{color:var(--mute)}
-#read .c1{color:var(--spin);font-weight:650}#read .c2{color:var(--twin);font-weight:650}
-#hint{position:fixed;right:16px;bottom:96px;font-size:11px;color:var(--mute);max-width:260px;text-align:right;pointer-events:none}
-#legend{position:fixed;right:16px;bottom:120px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:5px 9px;z-index:3;font-size:11px;color:var(--mute);pointer-events:none}
-#legend i{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:5px}
+.cap b{display:block;font:600 15px/1.2 var(--display);letter-spacing:.02em;color:var(--fg)}
+.cap.m{border-left:4px solid var(--pollen)}.cap.t{border-left:4px solid var(--twin)}
+.cap .pred{color:var(--fg);font-weight:600}.cap .syn{color:var(--warn);font-weight:700}
+#read table{border-collapse:collapse}#read td,#read th{padding:1px 8px 1px 0;text-align:left;font-weight:400}#read th{color:var(--muted)}#read td{color:var(--fg);font-family:var(--mono);font-size:11.5px}
+#read .c1{color:var(--pollen);font-weight:600}#read .c2{color:var(--twin);font-weight:600}
+.mute{color:var(--muted);margin-top:3px}
+#panel{position:fixed;left:16px;top:44px;width:300px;max-height:calc(100% - 150px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;z-index:4}
+#panel h2{font:600 13px/1.2 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:10px 0 4px}
+#panel h2:first-child{margin-top:0}
+.sum{font-family:var(--mono);font-size:12px;line-height:1.5}
+#panel label{display:flex;gap:8px;align-items:center;padding:3px 0;cursor:pointer}
+#panel .row{display:flex;gap:8px;align-items:center;padding:3px 0}
+#panel .row>span{min-width:86px;color:var(--muted);font-size:12px}
+#panel .row output{min-width:54px;text-align:right;font:12px var(--mono)}
+.note{font-size:11.5px;color:var(--muted);margin:6px 0 0}
+select,button{font:inherit;font-size:13px;color:var(--fg);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:4px 8px;min-height:30px}
+button{cursor:pointer}select{max-width:170px}input[type=range]{flex:1;min-width:0;accent-color:var(--pollen)}input[type=checkbox]{accent-color:var(--pollen)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:0;border-radius:0;background:transparent;min-width:84px}
+.seg button[aria-pressed="true"]{background:var(--pollen);color:#14110a;font-weight:600}
+#adv{margin-top:10px;border-top:1px solid var(--line);padding-top:6px}
+#adv summary{cursor:pointer;font:600 14px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:4px 0}
+.embed .standalone{display:none}
+.embedonly{display:none}.embed .embedonly{display:block}
+#tbar{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;z-index:3;font-size:12px;width:min(640px,calc(100vw - 32px))}
+#tbar .trow{display:flex;gap:8px;align-items:center;margin:2px 0}#tbar input[type=range]{flex:1;min-width:60px}
+#tPlay{min-width:64px;font-weight:600}
+#tLab{font-family:var(--mono);font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#legend{position:fixed;right:16px;bottom:92px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;z-index:3;font-size:11.5px;color:var(--muted);pointer-events:none;width:230px}
+#lgBar{display:block;width:100%;height:10px;border-radius:3px}
+#lgTicks{display:flex;justify-content:space-between;font-family:var(--mono);color:var(--fg)}
+#legend .vc{margin-top:4px}#legend .vc i{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:3px}
 @media (max-width:700px){
- #panel{left:8px;top:auto;bottom:122px;width:calc(100% - 16px);max-height:42%}
- #caps{left:8px;right:8px;width:auto;top:34px}.cap{font-size:11px;padding:3px 7px}
- #tbar{bottom:6px}#tbar .tnote{display:none}
- #hint,#legend{display:none}
+ #panel{left:16px;right:16px;width:auto;top:auto;bottom:112px;max-height:46%}
+ #panel:not([open]){padding:4px 12px}
+ #caps{left:16px;right:16px;width:auto;top:38px}.cap{font-size:11px;padding:4px 8px}.cap b{font-size:13px}
+ .embed #caps{top:8px}.embed #panel{top:auto}
+ #read{display:none}
+ #tbar{bottom:8px;width:calc(100vw - 32px)}
+ #legend{display:none}
 }
+#panelSum{display:none}
+@media (max-width:700px){
+ #panel{padding:0}#panel>.inner{padding:8px 12px}
+ #panelSum{display:block;cursor:pointer;font:600 14px var(--display);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:8px 12px}
+ #panel:not(.open)>.inner{display:none}
+ #mlegend{display:flex}
+}
+#mlegend{display:none;align-items:center;gap:6px;font-size:11px;color:var(--muted);margin-top:2px}
+#mlegend canvas{width:90px;height:8px;border-radius:2px}
 </style>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
@@ -56,42 +86,64 @@ button{cursor:pointer}button.on{border-color:var(--accent);color:var(--accent)}s
 <script src="../explorer/solver.js"></script>
 </head>
 <body>
-<canvas id="gl"></canvas>
-<div id="top"><h1>POLLEN shot flow</h1><a href="flow.html">flow viewer</a><a href="../explorer/">shot explorer</a><span id="load"></span></div>
+<canvas id="gl" aria-label="3D view of the shot with the CFD flow around the ball"></canvas>
+<div id="top"><h1><b>POLLEN</b> 3D shot flow</h1><a href="flow.html">flow viewer</a><a href="../explorer/">shot explorer</a><span id="load"></span></div>
 <div id="banner"></div>
 <div id="caps"><div class="cap m" id="capM"></div><div class="cap t" id="capT"></div><div class="cap" id="read"></div></div>
-<details id="panel" open><summary>Robot, shot and flow</summary>
- <h3>Robot (drag it on the field)</h3>
- <div class="row"><span>x (m)</span><input type="range" id="rx" min="-1.8" max="1.8" step="0.01"><output id="rxo"></output></div>
- <div class="row"><span>y (m)</span><input type="range" id="ry" min="-1.47" max="2.12" step="0.01"><output id="ryo"></output></div>
- <div class="row"><span>Heading</span><input type="range" id="rh" min="0" max="355" step="5"><output id="rho"></output></div>
- <div class="row"><span>Release height</span><input type="range" id="rz" min="0.2" max="0.737" step="0.01"><output id="rzo"></output></div>
- <h3>Shot</h3>
- <div class="row"><span>Ball speed</span><input type="range" id="sv" min="3" max="10" step="0.05"><output id="svo"></output></div>
- <div class="row"><span>Launch angle</span><input type="range" id="sth" min="30" max="88" step="0.1"><output id="stho"></output></div>
- <div class="row"><span>Spin S</span><select id="sS"></select></div>
- <div class="row"><button id="bSuggest">Suggest setting</button><span id="sgNote" style="min-width:0"></span></div>
- <h3>Display</h3>
- <div class="row"><span>Show</span><select id="dMode"><option value="both">Spin and no-spin twin</option><option value="twin">No-spin twin only</option></select></div>
- <label><input type="checkbox" id="dTwinFlow" checked> Flow around the twin</label>
- <div class="row"><span title="display only: shifts the twin sideways so the two flows do not overlap">Twin offset*</span><input type="range" id="dOff" min="0" max="0.6" step="0.05" value="0.3"><output id="dOffo"></output></div>
- <div class="row"><span>Flow size</span><select id="dMag"><option value="1">1x (true scale)</option><option value="2">2x</option><option value="4">4x</option></select></div>
- <h3>Flow layers</h3>
+<div id="panel">
+ <div id="panelSum" role="button" tabindex="0" aria-expanded="false">Shot and layers</div>
+ <div class="inner">
+ <h2>Shot</h2>
+ <div class="sum" id="sumRobot"></div>
+ <div class="sum" id="sumShot"></div>
+ <p class="note embedonly">Change the robot and shot in the Robot tab; this view follows it.</p>
+ <div class="row standalone"><span>Spin</span><select id="sS"></select></div>
+ <h2>Layers</h2>
  <label><input type="checkbox" id="lStream" checked> Streamlines</label>
- <label><input type="checkbox" id="lVortex" checked> Vortex cores (Q)</label>
- <div class="row"><span>Q level</span><input type="range" id="qLevel" min="0" max="2" step="1" value="2"></div>
- <label><input type="checkbox" id="lY" checked> Slice: plane y=0 (spin-axis normal)</label>
- <label><input type="checkbox" id="lZ"> Slice: plane z=0</label>
- <div class="row"><span>Colour by</span><select id="sField"><option value="speed">Speed</option><option value="vort">Vorticity</option></select></div>
- <label><input type="checkbox" id="lCont" checked> Contour lines</label>
- <div class="row"><span>Opacity</span><input type="range" id="sOp" min="0.1" max="1" step="0.05" value="0.8"></div>
- <label><input type="checkbox" id="lAnimCase"> Prefer animated time-series case</label>
- <h3>Camera</h3>
- <div class="row"><select id="cMode"><option value="follow">Follow spin ball</option><option value="followT">Follow twin ball</option><option value="free">Free orbit</option></select><button id="cOver">Overview</button></div>
-<p style="font-size:11px;color:var(--mute);margin:8px 0 2px">*Twin offset only shifts the twin drawing sideways (display only; 0 = true position). Drag the robot to move it. Drag empty space to orbit, wheel or pinch to zoom, right-drag to pan.</p>
-</details>
-<div id="legend"></div>
-<div id="tbar"><div class="trow"><button id="tPlay">Play</button><input type="range" id="tSlide" min="0" max="1" step="0.001" value="0"><select id="tSpd"><option value="0.1">0.1x</option><option value="0.25" selected>0.25x</option><option value="0.5">0.5x</option><option value="1">1x</option></select><label><input type="checkbox" id="tLoop" checked> Loop</label></div><div class="trow"><span id="tLab"></span></div><div class="tnote">Flow is drawn in the ball frame: the CFD free stream runs against the ball's motion through the air and the spin axis follows the ball's spin. Positions are field metres.</div></div>
+ <label><input type="checkbox" id="lVortex" checked> Vortex cores</label>
+ <label><input type="checkbox" id="lY" checked> Slice through the ball</label>
+ <h2>Flow</h2>
+ <div class="seg" id="vMode" role="group" aria-label="Averaged or instantaneous flow" title="Instant shows the turbulent wake's vortices; averaged shows the mean flow.">
+  <button type="button" data-m="avg" aria-pressed="true" title="Averaged: the mean flow (velocity averaged over the saved CFD frames)">Averaged</button>
+  <button type="button" data-m="inst" aria-pressed="false" title="Instant: one moment of the turbulent wake, with its vortices">Instant</button>
+ </div>
+ <p class="note">Instant shows the turbulent wake's vortices; averaged shows the mean flow. In Instant the tubes are vortex cores (Q-criterion) of one moment of a turbulent (LES) wake, and the blotchy slice is the same turbulence: not a model error.</p>
+ <details id="adv"><summary>Advanced</summary>
+  <div class="standalone">
+  <h2>Robot (or drag it on the field)</h2>
+  <div class="row"><span>x (m)</span><input type="range" id="rx" min="-1.8" max="1.8" step="0.01"><output id="rxo"></output></div>
+  <div class="row"><span>y (m)</span><input type="range" id="ry" min="-1.47" max="2.12" step="0.01"><output id="ryo"></output></div>
+  <div class="row"><span>Heading</span><input type="range" id="rh" min="0" max="355" step="5"><output id="rho"></output></div>
+  <div class="row"><span>Release height (m)</span><input type="range" id="rz" min="0.2" max="0.737" step="0.01"><output id="rzo"></output></div>
+  <h2>Shot</h2>
+  <div class="row"><span>Ball speed</span><input type="range" id="sv" min="3" max="10" step="0.05"><output id="svo"></output></div>
+  <div class="row"><span>Launch angle</span><input type="range" id="sth" min="30" max="88" step="0.1"><output id="stho"></output></div>
+  <div class="row"><button type="button" id="bSuggest">Suggest setting</button><span id="sgNote" style="min-width:0"></span></div>
+  </div>
+  <h2>Display</h2>
+  <div class="row"><span>Show</span><select id="dMode"><option value="both">Backspin and no-spin twin</option><option value="twin">No-spin twin only</option></select></div>
+  <label><input type="checkbox" id="dTwinFlow" checked> Flow around the twin</label>
+  <div class="row"><span title="display only: shifts the twin sideways so the two flows do not overlap">Twin offset*</span><input type="range" id="dOff" min="0" max="0.6" step="0.05" value="0.3"><output id="dOffo"></output></div>
+  <div class="row"><span>Flow size</span><select id="dMag"><option value="1">1x (true scale)</option><option value="2">2x</option><option value="4">4x</option></select></div>
+  <h2>More layers</h2>
+  <div class="row"><span>Vortex level</span><input type="range" id="qLevel" min="0" max="2" step="1" value="2" title="Q-criterion threshold: left = weaker vortices too"></div>
+  <label><input type="checkbox" id="lZ"> Second slice (across the spin axis)</label>
+  <div class="row"><span>Colour slices by</span><select id="sField"><option value="speed">Speed</option><option value="vort">Vorticity</option></select></div>
+  <label><input type="checkbox" id="lCont" checked> Contour lines</label>
+  <div class="row"><span>Slice opacity</span><input type="range" id="sOp" min="0.1" max="1" step="0.05" value="0.8"></div>
+  <label><input type="checkbox" id="lAnimCase"> Prefer the long time-series cases</label>
+  <h2>Camera and time</h2>
+  <div class="row"><select id="cMode"><option value="follow">Follow backspin ball</option><option value="followT">Follow twin ball</option><option value="free">Free orbit</option></select><button type="button" id="cOver">Overview</button></div>
+  <div class="row"><span>Speed</span><select id="tSpd"><option value="0.1">0.1x</option><option value="0.25" selected>0.25x</option><option value="0.5">0.5x</option><option value="1">1x</option></select><label><input type="checkbox" id="tLoop" checked> Loop</label></div>
+  <p class="note" id="libNote"></p>
+  <p class="note">The flow is drawn in the ball frame: the CFD free stream runs against the ball's motion through the air, and the spin axis follows the ball's spin. Flow speeds are scaled to the ball's speed at that moment. *Twin offset only shifts the twin drawing sideways (0 = true position). Drag empty space to orbit, wheel or pinch to zoom, right-drag to pan.</p>
+ </details>
+ </div>
+</div>
+<div id="legend"><div>Air speed relative to the ball (m/s), scale follows the ball's speed</div><canvas id="lgBar" width="230" height="10"></canvas><div id="lgTicks"></div>
+ <div class="vc"><i style="background:#c0392b"></i><i style="background:#2f6fdd"></i>vortex cores: colour = turning sense along the flow</div></div>
+<div id="tbar"><div class="trow"><button type="button" id="tPlay" aria-pressed="false">Play</button><input type="range" id="tSlide" min="0" max="1" step="0.001" value="0" aria-label="Flight time"></div><div class="trow"><span id="tLab"></span></div>
+ <div id="mlegend"><span>air speed, m/s</span><span id="mlo">0</span><canvas id="mlgBar" width="90" height="8"></canvas><span id="mhi"></span></div></div>
 <script type="module" src="shot.js"></script>
 </body>
 </html>

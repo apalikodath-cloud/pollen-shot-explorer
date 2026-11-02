@@ -4,6 +4,9 @@
   python make_flow.py <snapshot.json> [--fine <solid_fine.json>] -o <outdir> [--label "..."]
 
 Writes streamlines.bin, vortex.bin, body.bin, slices.bin, slice_*.png and manifest.json.
+With --series ... --mean it also writes a time-mean set (mean_streamlines.bin, mean_vortex.bin,
+mean_slices.bin, mean_slice_*.png): the velocity is averaged over the series frames first, then
+streamlines, Q cores, slices and contours are computed from that mean field (manifest key "mean").
 All binaries are little-endian typed arrays described by manifest.json (name, dtype,
 offset in bytes, length in elements). Lengths are in units of the body diameter D, with
 the origin at the body centre.
@@ -241,7 +244,7 @@ def nice_levels(lo, hi, n):
     return np.arange(np.ceil(lo / step) * step, hi + 1e-9, step)
 
 
-def slice_plane(F, normal_axis, outdir, up, vmax):
+def slice_plane(F, normal_axis, outdir, up, vmax, prefix=''):
     fa = int(np.argmax(np.abs(F.meta.get('flow_dir', [1, 0, 0]))))
     ia = [a for a in range(3) if a not in (fa, normal_axis)][0]  # vertical in-plane axis
     n = F.shape[::-1]
@@ -270,14 +273,15 @@ def slice_plane(F, normal_axis, outdir, up, vmax):
     ext_f = (float(F.org[fa] - F.dx / 2), float(F.hi[fa] + F.dx / 2))
     ext_v = (float(F.org[ia] - F.dx / 2), float(F.hi[ia] + F.dx / 2))
     tag = 'xyz'[normal_axis] + '0'
+    png = lambda nm: f'{prefix}slice_{tag}_{nm}.png'
     for nm, arr, cmap, lo, hi in (('speed', spd_u, 'turbo', 0, vmax), ('vort', vort_u, 'RdBu_r', -wlim, wlim)):
         rgba = (colormaps[cmap](np.clip((arr - lo) / (hi - lo), 0, 1)) * 255).astype(np.uint8)
         rgba[sol_u, 3] = 0
         Image.fromarray(np.ascontiguousarray(rgba[::-1]), 'RGBA').save(
-            os.path.join(outdir, f'slice_{tag}_{nm}.png'), optimize=True)
+            os.path.join(outdir, png(nm)), optimize=True)
     info = {'tag': tag, 'normal_axis': 'xyz'[normal_axis], 'flow_axis': 'xyz'[fa], 'vert_axis': 'xyz'[ia],
-            'extent_flow': ext_f, 'extent_vert': ext_v, 'speed_png': f'slice_{tag}_speed.png',
-            'vort_png': f'slice_{tag}_vort.png', 'size': list(spd_u.shape[::-1]), 'vort_range': [-wlim, wlim]}
+            'extent_flow': ext_f, 'extent_vert': ext_v, 'speed_png': png('speed'),
+            'vort_png': png('vort'), 'size': list(spd_u.shape[::-1]), 'vort_range': [-wlim, wlim]}
     segs = {}
     cu = 2  # extra smooth upsampling so contour lines are not polygonal
     sm = {'speed': ndi.zoom(ndi.gaussian_filter(spd_u, 0.6), cu, order=3, **zk),
@@ -352,6 +356,72 @@ def write_frames(paths, normals, sinfo, vmax, outdir):
     return info, {'n': len(paths), 't_star': tstars, 'size': size, 'vel_plane': sinfo[0]['tag'],
                   'vel_scale': vmax, 'vort_scale': wl}
 
+def mean_field(paths, ref):
+    """Time mean of ux, uy, uz over the series frames, on the reference frame's grid and solid mask."""
+    acc = [np.zeros(ref.shape, np.float64) for _ in range(3)]
+    for p in paths:
+        meta, blk = load_blocks(p)
+        if (meta['nz'], meta['ny'], meta['nx']) != ref.shape:
+            raise SystemExit(f'--mean: {os.path.basename(p)} has a different grid')
+        for a, k in zip(acc, ('ux', 'uy', 'uz')):
+            a += np.nan_to_num(np.asarray(blk[k], dtype=np.float64), nan=0.0, posinf=0.0, neginf=0.0)
+    blk = {k: (a / len(paths)).astype(np.float32) for a, k in zip(acc, ('ux', 'uy', 'uz'))}
+    blk['solid'] = ref.solid
+    return Field(ref.meta, blk)
+
+
+def static_layers(F, a, rng, outdir, vmax, normals, prefix=''):
+    """Streamlines, Q-criterion vortex cores and the two slices (with contours) of one field."""
+    t0 = time.time()
+    lo, hi = F.org.astype(np.float64), F.hi.astype(np.float64)
+    files = {}
+    L = streamlines(F, a, rng)
+    w = Writer(os.path.join(outdir, prefix + 'streamlines.bin'))
+    cnt = np.array([len(P) for P, _ in L], np.uint32)
+    allp = np.concatenate([P for P, _ in L]) if L else np.zeros((0, 3), np.float32)
+    alls = np.concatenate([S for _, S in L]) if L else np.zeros(0, np.float32)
+    w.add('counts', cnt)
+    w.add('pos', quant(allp, lo, hi))
+    w.add('speed', np.clip(alls / vmax * 255, 0, 255).astype(np.uint8))
+    files['streamlines'] = w.close()
+    files['streamlines'].update(n_lines=len(L), n_verts=int(cnt.sum()))
+    print(prefix + 'streamlines', len(L), int(cnt.sum()), f'{time.time()-t0:.0f}s')
+
+    levels, meshes, wmax = vortex(F, a)
+    w = Writer(os.path.join(outdir, prefix + 'vortex.bin'))
+    vinfo = []
+    for i, m in enumerate(meshes):
+        if m is None:
+            continue
+        v, f, om = m
+        w.add(f'pos{i}', quant(v, lo, hi))
+        w.add(f'omega{i}', om)
+        w.add(f'idx{i}', f.astype(np.uint32))
+        vinfo.append({'level': levels[i], 'index': i, 'n_verts': len(v), 'n_faces': len(f)})
+    files['vortex'] = w.close()
+    print(prefix + 'vortex', [(x['n_verts'], x['n_faces']) for x in vinfo], f'{time.time()-t0:.0f}s')
+
+    w = Writer(os.path.join(outdir, prefix + 'slices.bin'))
+    sinfo = []
+    for nax in normals:
+        info, segs = slice_plane(F, nax, outdir, a.slice_up, vmax, prefix)
+        for nm in ('speed', 'vort'):
+            w.add(f"{info['tag']}_{nm}_seg", segs[nm][0])
+            w.add(f"{info['tag']}_{nm}_lvl", segs[nm][1])
+        # raw slice fields on the snapshot grid (same layout as one frames.bin frame), so the viewer can
+        # recolour the slice itself (e.g. in m/s scaled by the ball's local speed)
+        uf, uv, vort, sol, spd = plane_fields(F, nax)
+        tag = info['tag']
+        w.add(f'{tag}_sol', sol.astype(np.uint8))
+        w.add(f'{tag}_s', np.clip(np.round(spd / vmax * 255), 0, 255).astype(np.uint8))
+        w.add(f'{tag}_w', np.clip(np.round(vort / info['vort_range'][1] * 127), -127, 127).astype(np.int8))
+        info['field_size'] = list(uf.shape[::-1])
+        sinfo.append(info)
+    files['slices'] = w.close()
+    print(prefix + 'slices', [s['tag'] for s in sinfo], f'{time.time()-t0:.0f}s')
+    return files, vinfo, sinfo, wmax
+
+
 # ---------------------------------------------------------------- body
 def body(meta_fine, blk_fine, F, body_faces=45000):
     if blk_fine is not None:
@@ -396,6 +466,7 @@ def main():
     ap.add_argument('--frame-step', type=int, default=1, dest='frame_step', help='series: keep every Nth complete frame')
     ap.add_argument('--orientation', default='btw', help='orientation tag stored in the manifest (ASSUMED)')
     ap.add_argument('--add-index', dest='add_index', help='index.json to add or update with this bundle (id, label, path, speed_mps, S, orientation)')
+    ap.add_argument('--mean', action='store_true', help='series: also write a time-mean frame (velocity averaged over the series frames, then all static layers from the mean)')
     ap.add_argument('--d-mm', type=float, default=71.12, dest='d_mm', help='body diameter in mm')
     a = ap.parse_args()
     t0 = time.time()
@@ -412,33 +483,6 @@ def main():
         print('WARNING: no --fine solid mask; the coarse mask can lose a 1-2 cell shell. Pass <base>_solid_fine.json.', file=sys.stderr)
     vmax = float(max(1.5, min(2.5, np.percentile(F.speed[~F.solid], 99.9))))
     lo, hi = F.org.astype(np.float64), F.hi.astype(np.float64)
-    files = {}
-
-    L = streamlines(F, a, rng)
-    w = Writer(os.path.join(a.out, 'streamlines.bin'))
-    cnt = np.array([len(P) for P, _ in L], np.uint32)
-    allp = np.concatenate([P for P, _ in L]) if L else np.zeros((0, 3), np.float32)
-    alls = np.concatenate([S for _, S in L]) if L else np.zeros(0, np.float32)
-    w.add('counts', cnt)
-    w.add('pos', quant(allp, lo, hi))
-    w.add('speed', np.clip(alls / vmax * 255, 0, 255).astype(np.uint8))
-    files['streamlines'] = w.close()
-    files['streamlines'].update(n_lines=len(L), n_verts=int(cnt.sum()))
-    print('streamlines', len(L), int(cnt.sum()), f'{time.time()-t0:.0f}s')
-
-    levels, meshes, wmax = vortex(F, a)
-    w = Writer(os.path.join(a.out, 'vortex.bin'))
-    vinfo = []
-    for i, m in enumerate(meshes):
-        if m is None:
-            continue
-        v, f, om = m
-        w.add(f'pos{i}', quant(v, lo, hi))
-        w.add(f'omega{i}', om)
-        w.add(f'idx{i}', f.astype(np.uint32))
-        vinfo.append({'level': levels[i], 'index': i, 'n_verts': len(v), 'n_faces': len(f)})
-    files['vortex'] = w.close()
-    print('vortex', [(x['n_verts'], x['n_faces']) for x in vinfo], f'{time.time()-t0:.0f}s')
 
     fa = int(np.argmax(np.abs(meta.get('flow_dir', [1, 0, 0]))))
     spin = np.array(meta.get('omega_axis') or [0, 0, 0], float)
@@ -448,18 +492,9 @@ def main():
         normals = [sax, third]  # normal to the spin axis (Magnus deflection visible) first, then the plane holding flow and spin axis
     else:
         normals = [x for x in range(3) if x != fa][:2]
-    w = Writer(os.path.join(a.out, 'slices.bin'))
-    sinfo = []
-    for nax in normals:
-        info, segs = slice_plane(F, nax, a.out, a.slice_up, vmax)
-        for nm in ('speed', 'vort'):
-            w.add(f"{info['tag']}_{nm}_seg", segs[nm][0])
-            w.add(f"{info['tag']}_{nm}_lvl", segs[nm][1])
-        sinfo.append(info)
-    files['slices'] = w.close()
-    print('slices', [s['tag'] for s in sinfo], f'{time.time()-t0:.0f}s')
+    files, vinfo, sinfo, wmax = static_layers(F, a, rng, a.out, vmax, normals)
 
-    frames = None
+    frames = mean = None
     if a.series:
         paths = sorted(glob.glob(a.series), key=lambda p: float(json.load(open(p)).get('t_star', 0)))
         paths = [p for p in paths if p.endswith('.json') and 'solid_fine' not in p]
@@ -476,6 +511,18 @@ def main():
         if len(paths) > 1:
             files['frames'], frames = write_frames(paths, normals, sinfo, vmax, a.out)
             print('frames', len(paths), f'{time.time()-t0:.0f}s')
+        if a.mean and len(paths) > 1:
+            M = mean_field(paths, F)
+            mfiles, mvinfo, msinfo, mwmax = static_layers(M, a, np.random.default_rng(a.seed), a.out, vmax, normals, 'mean_')
+            ts = [float(json.load(open(p)).get('t_star', n)) for n, p in enumerate(paths)]
+            mean = {'n_avg': len(paths), 't_star': [min(ts), max(ts)], 'files': mfiles, 'vortex_levels': mvinfo,
+                    'slices': msinfo, 'vort_range': msinfo[0]['vort_range'], 'streamwise_vort_scale': mwmax,
+                    'note': f'time mean of the velocity over {len(paths)} frames (t* {min(ts):g} to {max(ts):g}); layers computed from the mean field'}
+            print('mean', len(paths), f'{time.time()-t0:.0f}s')
+        elif a.mean:
+            print('WARNING: --mean needs a --series with at least 2 complete frames; no mean frame written', file=sys.stderr)
+    elif a.mean:
+        print('WARNING: --mean needs --series; no mean frame written', file=sys.stderr)
 
     bv, bf, bn = body(fm, fb, F, a.body_faces)
     w = Writer(os.path.join(a.out, 'body.bin'))
@@ -499,7 +546,7 @@ def main():
         'speed_range': [0, vmax], 'vort_range': sinfo[0]['vort_range'], 'streamwise_vort_scale': wmax,
         'colormaps': {'speed': 'turbo', 'vorticity': 'RdBu_r'},
         'frames': frames, 'D_mm': a.d_mm, 'U_mps': a.u_mps or (float(re.search(r'([0-9.]+)\s*m/s', label).group(1)) if re.search(r'([0-9.]+)\s*m/s', label) else None),
-        'vortex_levels': vinfo, 'slices': sinfo, 'files': files,
+        'vortex_levels': vinfo, 'slices': sinfo, 'files': files, 'mean': mean,
     }
     manifest['speed_mps'] = manifest['U_mps']
     json.dump(manifest, open(os.path.join(a.out, 'manifest.json'), 'w'), indent=1)
@@ -508,7 +555,8 @@ def main():
         idx = json.load(open(ip)) if os.path.exists(ip) else {'runs': []}
         rel = os.path.relpath(os.path.join(a.out, 'manifest.json'), os.path.dirname(os.path.abspath(ip))).replace(os.sep, '/')
         ent = {'id': run_id, 'label': label, 'path': rel, 'speed_mps': manifest['U_mps'], 'S': manifest['S'],
-               'orientation': a.orientation, 'series': bool(frames), 'n_frames': frames['n'] if frames else 0}
+               'orientation': a.orientation, 'series': bool(frames), 'n_frames': frames['n'] if frames else 0,
+               'mean': bool(mean), 'Re': manifest['Re']}
         idx['runs'] = [r for r in idx['runs'] if r.get('id') != run_id] + [ent]
         json.dump(idx, open(ip, 'w'), indent=1)
         print('index', ip, len(idx['runs']), 'runs')

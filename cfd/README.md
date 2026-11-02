@@ -1,5 +1,12 @@
 # PM-012 CFD: POLLEN in still room air (own GPU LBM-LES)
 
+> **Update (2026-11-01).** The sections below are the validation notebook as of 2026-10-31 14:20. Since then,
+> POLLEN runs have finished with an analytic POLLEN body (exact sphere with 26 holes) and interpolated bounce-back
+> walls at D 128 and D 192. Their mean Cd, Cl and CM are in `viz/explorer/cfd_runs.json` and the explorer's CFD tab,
+> each backspin case beside its no-spin twin. All of them are PREDICTED, and the hole orientation is ASSUMED. That
+> solver version is not yet in `cfd/lbm/`, and the flight model still uses the ASSUMED literature aero
+> (`cfd_aero.json` stays "not released").
+
 The coach asked to "add fluid sims of standard room temp static air so it's more accurate". Today the model's drag
 (Cd 0.48, range 0.35-0.65), Magnus lift (Cl = min(c1 S, Cl_max)) and spin decay are ASSUMED literature values
 (`data/aero_params.json`, sources in `research/params_lit.json`). This folder holds a GPU CFD setup meant to give

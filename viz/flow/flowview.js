@@ -1,5 +1,8 @@
 // Shared flow-bundle renderer: RunView (streamlines, Q surfaces, body, contour slices, time series).
 // Used by flow.js (viewer) and shot.js (shot scene).
+// new RunView(manifest, dir, { mean: true }) draws the bundle's time-mean layer set (manifest.mean)
+// when it has one; otherwise the instantaneous layers. setColorScale() rescales the speed colours
+// (streamlines and slices) and setFade() crossfades a whole run in or out.
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
@@ -70,7 +73,7 @@ function makeStreamlines(m, arr) {
   g.instanceCount = nseg;
   const mat = new THREE.ShaderMaterial({
     transparent: true, depthWrite: false,
-    uniforms: { uRes: { value: new THREE.Vector2(1, 1) }, uWidth: { value: 1.8 }, uTime: { value: 0 }, uAnim: { value: 1 }, uOpacity: { value: 0.72 } },
+    uniforms: { uRes: { value: new THREE.Vector2(1, 1) }, uWidth: { value: 1.8 }, uTime: { value: 0 }, uAnim: { value: 1 }, uOpacity: { value: 0.72 }, uScale: { value: 1 } },
     vertexShader: `
       attribute vec3 iStart; attribute vec3 iEnd; attribute vec4 iData;
       uniform vec2 uRes; uniform float uWidth;
@@ -96,11 +99,11 @@ function makeStreamlines(m, arr) {
         vSpeed = mix(iData.x, iData.y, tt); vArc = mix(iData.z, iData.w, tt); vSide = position.y;
       }`,
     fragmentShader: `
-      uniform float uTime; uniform float uAnim; uniform float uOpacity;
+      uniform float uTime; uniform float uAnim; uniform float uOpacity; uniform float uScale;
       varying float vSpeed; varying float vArc; varying float vSide;
       ${TURBO_GLSL}
       void main(){
-        vec3 col = turbo(vSpeed);
+        vec3 col = turbo(vSpeed * uScale);
         float a = uOpacity * (1. - smoothstep(0.55, 1.0, abs(vSide)));
         if (uAnim > 0.5) {
           float ph = fract(vArc/0.32 - uTime*0.9);
@@ -119,8 +122,11 @@ function makeStreamlines(m, arr) {
 
 // ------------------------------------------------------------ one run
 export class RunView {
-  constructor(manifest, dir) {
+  constructor(manifest, dir, opts = {}) {
     this.m = manifest; this.dir = dir;
+    this.mean = !!(opts.mean && manifest.mean);   // time-mean layer set (falls back to instantaneous)
+    this.src = this.mean ? manifest.mean : manifest;
+    this.sinfo = this.src.slices; this.cscale = 1; this.fade = 1;
     this.scene = new THREE.Scene();
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x556070, 1.1));
     this.key = new THREE.DirectionalLight(0xffffff, 2.2);
@@ -132,8 +138,8 @@ export class RunView {
   }
 
   async load() {
-    const m = this.m, f = m.files;
-    const [sl, vx, sc, bd] = await Promise.all(['streamlines', 'vortex', 'slices', 'body'].map((k) => loadArrays(this.dir, f[k])));
+    const m = this.m, src = this.src, f = src.files;
+    const [sl, vx, sc, bd] = await Promise.all([f.streamlines, f.vortex, f.slices, m.files.body].map((e) => loadArrays(this.dir, e)));
     const lo = m.bounds.lo, hi = m.bounds.hi;
     this.streams = makeStreamlines(m, sl);
     this.scene.add(this.streams);
@@ -147,7 +153,7 @@ export class RunView {
     this.body = new THREE.Mesh(bg, new THREE.MeshStandardMaterial({ color: 0xaeb4bd, roughness: 0.5, metalness: 0.15, side: THREE.DoubleSide }));
     this.scene.add(this.body);
 
-    for (const lv of m.vortex_levels) {
+    for (const lv of src.vortex_levels) {
       const g = new THREE.BufferGeometry();
       g.setAttribute('position', new THREE.BufferAttribute(dequant(vx['pos' + lv.index], lo, hi), 3));
       const om = vx['omega' + lv.index], col = new Float32Array(om.length * 3);
@@ -163,7 +169,7 @@ export class RunView {
     this.contourMats = [];
     const loader = new THREE.TextureLoader();
     const aniso = 8;
-    for (const s of m.slices) {
+    for (const s of src.slices) {
       const o = { info: s, group: new THREE.Group(), tex: {}, mat: null, lines: {} };
       const [f0, f1] = s.extent_flow, [v0, v1] = s.extent_vert;
       const fa = AX[s.flow_axis], va = AX[s.vert_axis], na = AX[s.normal_axis];
@@ -201,15 +207,42 @@ export class RunView {
       }
       this.scene.add(o.group); this.slices.push(o);
     }
-    if (m.frames) await this.loadFrames();
+    if (!this.mean && m.frames) await this.loadFrames();
+    else if (src.slices.length && src.slices.every((s) => s.field_size && sc[s.tag + '_s'])) {
+      // one stored field per slice (the time mean, or a single snapshot): drawn like a one-frame series
+      const A = {};
+      for (const s of src.slices) { A['sol_' + s.tag] = sc[s.tag + '_sol']; A[`f0_${s.tag}_s`] = sc[s.tag + '_s']; A[`f0_${s.tag}_w`] = sc[s.tag + '_w']; }
+      this.initFrames(A, { n: 1, t_star: this.mean ? src.t_star : [m.t_star], size: src.slices[0].field_size, vel_plane: null,
+        vel_scale: m.speed_range[1], vort_scale: src.slices.map((s) => s.vort_range[1]) });
+    }
     this.applyTheme();
+  }
+
+  // speed colours x c (streamlines and slices); 1 = the bundle's own |u|/U scale
+  setColorScale(c) {
+    if (Math.abs(c - this.cscale) < 1e-4) return;
+    this.cscale = c; this.streams.material.uniforms.uScale.value = c; this.dirty = true;
+  }
+
+  // crossfade weight w in [0,1]: alpha' = 1 - (1 - alpha)^w, so two runs with weights w and 1 - w
+  // together cover the same as one run at full weight (no dip in the middle of a blend)
+  setFade(w, sop) {
+    this.fade = w;
+    const a = (base) => 1 - Math.pow(1 - Math.min(base, 0.995), Math.max(0, w));
+    this.streams.material.uniforms.uOpacity.value = a(0.72);
+    for (const m of this.vortex) m.material.opacity = a(0.88);
+    for (const o of this.slices) o.mat.opacity = a(sop ?? 0.85);
+    for (const lm of this.contourMats) lm.opacity = a(lm.userData.base ?? 0.75);
   }
 
 
   // ---- time series: per-frame slice fields, colours and contours computed here
   async loadFrames() {
-    const m = this.m, fr = m.frames;
-    const A = await loadArrays(this.dir, m.files.frames);
+    const m = this.m;
+    this.initFrames(await loadArrays(this.dir, m.files.frames), m.frames);
+  }
+
+  initFrames(A, fr) {
     const W = fr.size[0], H = fr.size[1];
     this.fr = { A, n: fr.n, W, H, info: fr };
     this.dirty = true; this.curT = 0;
@@ -373,8 +406,9 @@ export class RunView {
       const F = vort ? o.fW : o.fS;
       for (let k = 0; k < N; k++) F[k] = xa[k] + (xb[k] - xa[k]) * f;
       const lut = vort ? this.lutW : this.lutS, lo = vort ? -127 : 0, hi = vort ? 127 : 255, off = vort ? 127 : 0;
+      const cs = vort ? 1 : this.cscale;
       for (let k = 0; k < N; k++) {
-        const ix = Math.round(Math.min(hi, Math.max(lo, F[k]))) + off;
+        const ix = Math.round(Math.min(hi, Math.max(lo, F[k] * cs))) + off;
         o.rgba[k * 4] = lut[ix * 3]; o.rgba[k * 4 + 1] = lut[ix * 3 + 1]; o.rgba[k * 4 + 2] = lut[ix * 3 + 2];
         o.rgba[k * 4 + 3] = o.sol[k] ? 0 : 255;
       }
@@ -391,7 +425,8 @@ export class RunView {
     const dark = cssVar('--contour').startsWith('#f');
     for (const lm of this.contourMats) {
       if (lm.userData.k === 'speed') lm.color.set(dark ? 0xffffff : 0x10151f);
-      lm.opacity = dark ? 0.75 : 0.7;
+      lm.userData.base = dark ? 0.75 : 0.7;
+      lm.opacity = lm.userData.base;
     }
   }
 
@@ -412,9 +447,11 @@ export class RunView {
     const parts = [];
     if (m.Re != null) parts.push('Re ' + Number(m.Re).toPrecision(3));
     if (m.S != null) parts.push('S ' + m.S);
-    if (m.t_star != null && !m.frames) parts.push('t* ' + m.t_star);
+    if (this.mean) parts.push(`time mean of ${m.mean.n_avg} frames`);
+    else if (m.t_star != null && !m.frames) parts.push('t* ' + m.t_star);
     const saved = Math.round(1 / g.dx_D);
     parts.push(`grid ${g.nx}x${g.ny}x${g.nz}, ` + (g.D_cells && g.D_cells !== saved ? `solver ${g.D_cells} cells/D, saved ${saved} cells/D` : `${saved} cells/D`));
+    if (m.orientation) parts.push(`hole orientation ${m.orientation} ASSUMED`);
     return `<b>${esc(m.label)}</b>${esc(parts.join(' | '))}<br><span class="${m.synthetic ? 'syn' : 'pred'}">${esc(m.status)}</span>`;
   }
 }

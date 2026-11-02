@@ -4,7 +4,8 @@ Public repo: https://github.com/apalikodath-cloud/pollen-shot-explorer
 
 - `main` holds the project source (built by `viz/explorer/export_public.ps1`).
 - `gh-pages` holds the built site (built by `viz/explorer/build_site.py`, published by `viz/explorer/deploy_pages.ps1`).
-- Live site: https://apalikodath-cloud.github.io/pollen-shot-explorer/
+- Live site: https://apalikodath-cloud.github.io/pollen-shot-explorer/. The explorer is at the root, the CFD flow
+  pages are `flow/shot.html` and `flow/flow.html`, and the measurement kit is `measure/measure.html`.
 
 Note: the repo is public, so the model data in `data/` is public.
 
@@ -24,9 +25,9 @@ Note: the repo is public, so the model data in `data/` is public.
 ## Update the source on main
 
 1. Commit the change in this repo.
-2. `powershell -File viz/explorer/export_public.ps1` builds the clean public tree in
-   `%LOCALAPPDATA%\pollen-shot-explorer-public` and commits it on a local `main` on top of the remote `main`.
-   It leaves out internal tooling (`.af/`, `.claude/`, `CLAUDE.md`, `docs/handoff/`).
+2. `powershell -File viz/explorer/export_public.ps1` builds the clean public tree from the committed `HEAD` in a
+   work folder outside the repo and commits it on a local `main` on top of the remote `main`. It leaves out
+   internal tooling and private notes, and stops if it finds personal paths or secrets.
 3. Check it, then rerun with `-Push` (a normal push to `main`, never a force push).
 
 Alternatives for the site: Netlify Drop (drag the `site` folder onto app.netlify.com/drop); Cloudflare Pages
