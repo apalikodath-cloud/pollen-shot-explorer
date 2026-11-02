@@ -27,7 +27,7 @@ let views = [null, null];
 const MAN = new Map();     // manifest cache by path
 const MODE = { avg: params.get('avg') !== '0' };   // averaged by default, like the shot page
 const FX_OK = fxSupported(renderer) && typeof DecompressionStream === 'function';
-const TRACE_RATE = 0.8;   // tracer time in t* per second of wall clock at 1x (both views run the same CFD time)
+const TRACE_RATE = 0.8;   // tracer time in t* per second of wall clock at 1x; Play uses it only with "Tracer pace" ticked
 const isDark = () => cssVar('--contour').startsWith('#f');
 const fmt = (x) => (Math.abs(x - Math.round(x)) < 1e-6 ? String(Math.round(x)) : String(+x.toFixed(2)));
 const niceCeil = (x) => { const s = [2, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30]; return s.find((v) => v >= x - 1e-9) || Math.ceil(x / 10) * 10; };
@@ -276,7 +276,7 @@ function render(t) {
   if (nfr > 1) {
     if (T.play) {
       const fv = frameViews()[0], ts = fv.fr.info.t_star, dtf = ts && ts.length > 1 ? (ts[ts.length - 1] - ts[0]) / (ts.length - 1) : 0;
-      const fxs = shown().some((v) => v.fx) && fxOn(st);
+      const fxs = $('tSync').checked && shown().some((v) => v.fx) && fxOn(st);   // opt-in; default = the old frame pace
       T.t += dtS * +$('tSpd').value * (fxs && dtf > 0 ? TRACE_RATE / dtf : T.fps);
       if (T.t > nfr - 1) { if ($('tLoop').checked) { T.t = 0; for (const v of views) v?.fx?.resetLines(); } else { T.t = nfr - 1; setPlay(false); } }
       $('tSlide').value = String(T.t);
@@ -388,16 +388,11 @@ async function boot() {
   if (params.has('tracers')) $('lTrace').checked = params.get('tracers') !== '0';
   if (params.has('vvol')) $('lVvol').checked = params.get('vvol') !== '0';
   if (params.has('pairs')) $('lPairs').checked = params.get('pairs') !== '0';
+  if (params.has('sync')) $('tSync').checked = params.get('sync') !== '0';
   const setSel = (id, val) => { if (val !== null && [...$(id).options].some((o) => o.value === val)) $(id).value = val; };
   setSel('pCol', params.get('pcol'));
   setSel('pQual', params.get('pq'));
   await pickA(i0).catch(fail);
-  if (views[0]?.fx) {
-    const p = (k, d) => (params.has(k) ? params.get(k) !== '0' : d);
-    $('lStream').checked = p('stream', false) && !params.get('nostream'); $('lVortex').checked = p('cores', false);
-    if (!params.get('plane')) $('lY').checked = false;
-    $('lPart').checked = false;
-  }
   if (params.get('cmp') && RUNS.length > 1 && !views[1]) {
     $('runB').value = String(i0 === 1 ? 0 : 1); $('cmp').checked = true;
     await loadRun(RUNS[+$('runB').value], 1).catch(fail); updateChrome();
