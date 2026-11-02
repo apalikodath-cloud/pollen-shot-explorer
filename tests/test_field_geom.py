@@ -1,4 +1,4 @@
-"""PM-015 tests for research/GEOMETRY_AUDIT.md fixes: robot footprint (fix 2), exact other-HIVE flag (fix 5),
+"""PM-015 tests for the geometry fixes: robot footprint (fix 2), exact other-HIVE flag (fix 5),
 symmetric grid on the aim line (fix 8), HIVE tilt bounds (fix 4), sloped-roof clearance option (fix 3), and the
 JS twins in viz/explorer/solver.js (run through node via tests/js_field_geom_check.js; skipped without node)."""
 import json

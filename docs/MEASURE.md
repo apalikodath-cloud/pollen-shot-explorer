@@ -1,19 +1,19 @@
 # MEASURE: filming POLLEN to get Cd, Cl and the exit state (PM-018)
 
-Nothing about POLLEN's flight has been measured yet (research/COMPLETENESS.md §1, last row). The three inputs that
+Nothing about POLLEN's flight has been measured yet. The three inputs that
 matter most are:
 
 - spin lift Cl(S)
 - drag Cd
 - exit speed and grip, v/u
 
-(research/MISSING_EFFECTS.md §3, tests T1 and T2.) This page explains how to measure them with one phone camera
+This page explains how to measure them with one phone camera
 and the kit in `viz/measure/`:
 
 - `measure.html`: click the ball frame by frame; it runs the fit in the page.
 - `src/fit_aero.py`: the same fit offline, from the page's CSV.
 
-Labels follow HANDOFF §5:
+Labels:
 
 - **user**: typed in or measured by you
 - **ASSUMED**: a default nobody has measured
@@ -83,7 +83,7 @@ Use the same hood angle, the same wheel rpm, the same camera and the same scale.
   detected at all: the 95 % interval either excludes 0 or does not.
 - **Order:** film n ≥ 10 of each, alternated A, B, A, B, so that drift in the shooter, battery or air shows up in
   both.
-- **Also film** (COMPLETENESS T1):
+- **Also film** (test T1):
   - wheel-above topspin at the same rpm, entered as a negative ball rpm (spin source: ball rpm)
   - 60–70° lobs, which reach the high S near the apex
   - a taped-hole ball, as the control for the holes
@@ -199,10 +199,10 @@ All of these are in **Advanced settings** (viz/explorer).
 
 ## 8. What each test settles, and what it does not
 
-| Test | Settles | Rows (COMPLETENESS / MISSING_EFFECTS) |
+| Test | Settles | Model rows it informs |
 |---|---|---|
 | T0 weigh and measure | mass and diameter for the fit (user) | mass, radius bounds |
-| Drop (3a) | Cd at zero spin, no launcher | T1 (Cd); MISSING_EFFECTS §3 |
+| Drop (3a) | Cd at zero spin, no launcher | T1 (Cd); drag row |
 | Twin A + B (3b) | Cl over the shot's S range, lift detected or not, Cd at launch speed, scale check | T1; Magnus row, perforation row |
 | Lobs, topspin, taped-hole ball | Cl at high S near the apex, the topspin sign, the effect of the holes | T1; near-apex row |
 | Wheel rpm + video (3c, 3d) | v/u and S_exit at each rpm | T2; max backspin row, friction row |

@@ -1,4 +1,4 @@
-# 03 - Clean air-only entry: no spin, drag, backspin (HANDOFF §3 Q1-Q3, §4B)
+# 03 - Clean air-only entry: no spin, drag, backspin
 
 Code: `src/hive.py` (section classifier), `src/cell3d.py` (3D cell), `src/feasibility.py` (sweep, analysis,
 figures), `tests/test_hive.py`.
@@ -10,8 +10,8 @@ sweep).
 Reproduce: `python -m src.feasibility --stage all --cache <dir>` (PM-019, 3D cell: about 85 min on 3-4 workers,
 then about 8 min of analysis; `--stage analyse --no-figs` skips the figures).
 
-Scope: this is channel (1) of HANDOFF §4E, **clean air-only entry** into the upward-facing CELL of the centre
-HIVE. That is hypothesis (A) of HANDOFF §0. Hypothesis (B), entry assisted by a contact with the rim or the
+Scope: this is entry channel (1), **clean air-only entry**, into the upward-facing CELL of the centre
+HIVE. That is hypothesis (A) of the project question. Hypothesis (B), entry assisted by a contact with the rim or the
 interior, is **not** covered here. Every "hit" below is a first contact, and it may still bounce in.
 
 Provenance labels: **confirmed** (official source), **derived** (computed, formula given), **assumed**,
@@ -330,7 +330,7 @@ Test: vx < 0 at any time above the release height, over the whole (v, elevation)
   windows sit at elevation ≤ 84.5 deg, below every reversal threshold.
 - A backspinning ball that does reverse goes almost straight up and drifts back toward the shooter. It does not
   enter the unfavourable mouth.
-- The "hook" the user observed (HANDOFF §0) is better explained by reduced horizontal progress, a higher and
+- The "hook" the team observed is better explained by reduced horizontal progress, a higher and
   shorter apex, and rim contact (hypothesis B) than by an air-only reversal into the cell.
 
 ## 5. Tolerance: is any unfavourable shot repeatable? (predicted, `clean_fine_tolerance.csv`)

@@ -1,6 +1,6 @@
 """Required vs achievable, Monte Carlo robustness and the "score from anywhere" field map.
 
-HANDOFF section 3 Q4, Q6, Q7; Phase 3 step 9; deliverables 5 and 8.
+Monte Carlo robustness and the score-from-anywhere map.
 Writes data/req_vs_ach_*.csv, data/robust_*.csv, figures/req_vs_ach_*.png, figures/map_*.png.
 Every output number is PREDICTED (model output from ASSUMED aero bounds, CAD-derived HIVE
 geometry and the PREDICTED launcher envelope). Nothing here is validated by a measured shot.
@@ -89,7 +89,7 @@ Y_WALL = (-1.8009 + 0.3236, 1.8009 + 0.3236)
 #: -> red frame x in [-0.494665, 0.494665], y in [-0.304542, 0.951742] (src/field_geom.py).
 BASE_X = fg.BASE_HALF_X
 BASE_Y = (fg.BASE_CY - fg.BASE_HALF_Y, fg.BASE_CY + fg.BASE_HALF_Y)
-#: derived box, ASSUMED as blocking (research/GEOMETRY_AUDIT.md fix 5): the other HIVE's plan
+#: derived box, ASSUMED as blocking (geometry fix 5): the other HIVE's plan
 #: envelope grown by R, |x| < 0.6745, y 0.3455-0.9495 (src/field_geom.py sight_blocked).
 OTHER_HIVE_X = fg.OTHER_HIVE_X
 OTHER_HIVE_Y = fg.OTHER_HIVE_Y
@@ -110,7 +110,7 @@ PSI_BINS = (0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0)
 HOOD_KEY = "hood_nominal"
 ROLLER_KEY = "roller_nominal_rest"
 
-#: Release-error sets (ASSUMED; no measured repeatability exists - HANDOFF 5: never infer
+#: Release-error sets (ASSUMED; no measured repeatability exists - never infer
 #: repeatability from one shot). sig_v_rel = shot-to-shot exit-speed spread (wheel rpm
 #: control ~1 % plus ball-to-ball ~1 %), sig_th elevation, sig_psi azimuth, sig_d in-plane
 #: release position (driving / localisation), sig_y lateral release position.
@@ -479,7 +479,7 @@ def mc_scenarios() -> dict:
         "k_high_transfer": dict(k="high"),
         # params_lit 'floor' set (c1 0.02, cap 0.04): spin lift nearly absent
         "Cl_floor_transfer": dict(Cl="floor"),
-        # same aim, ball launched without spin (HANDOFF rule: a no-spin twin next to every backspin result)
+        # same aim, ball launched without spin (rule: a no-spin twin next to every backspin result)
         "nospin_twin": dict(Cl="none"),
     }
 
@@ -612,7 +612,7 @@ def mc_shots(aim: dict, n: int = 1500, seed: int = 0, err: str = "nominal", phys
 
 
 # =========================================================================== moving robot / hit chance (PM-016)
-# research/MISSING_EFFECTS.md build-next 2a, 2b. Python twin of viz/explorer/solver.js frameFor / launch3 /
+# Shooting on the move. Python twin of viz/explorer/solver.js frameFor / launch3 /
 # fastShot3D / hitChance (tests/test_move.py checks them against tests/js_move_check.js --dump).
 #: ASSUMED launch scatter of the hit-chance readout = ERR_SETS nominal (speed, elevation, heading)
 HC_SIG = {"sig_v_rel": ERR_SETS["nominal"]["sig_v_rel"], "sig_th": ERR_SETS["nominal"]["sig_th"],
@@ -754,7 +754,7 @@ def hit_chance(cell, frame: dict, aim: dict, sets: dict, n: int = 1000, seed: in
     sets = {name: integrate3d params} (e.g. Cl low / nominal / high); every set and the no-spin twin use the
     same draws (mulberry32_normals(seed, 3 n)). The twin (S = 0) runs once, at twin_aim (its own recommended
     setting) or else at aim. Counts with a Wilson 95 % interval. A model probability under assumed scatter,
-    NOT a measured repeatability (HANDOFF 5)."""
+    NOT a measured repeatability."""
     err = dict(HC_SIG, **(sig or {}))
     Z = mulberry32_normals(seed, 3 * n)
     res = {"n": n, "seed": seed, "sig": err, "note": HC_NOTE, "sets": []}
@@ -787,7 +787,7 @@ def best_chance(cell, frame: dict, base_aim: dict, sets: dict, candidates: list,
     2. the kept ones extended to n2 shots on the same draws; winner = highest mean (ties: lower v, lower theta).
     3. the winner on fresh draws mulberry32_normals(seed, 3 n), per set with a Wilson 95 % interval.
     4. at the winner, on the nominal set (or Cl_table / the only set), one scatter source at a time.
-    A model probability under ASSUMED scatter, NOT a measured repeatability (HANDOFF 5)."""
+    A model probability under ASSUMED scatter, NOT a measured repeatability."""
     err = dict(HC_SIG, **(sig or {}))
     names = list(sets)
     nS = len(names)
@@ -894,7 +894,7 @@ def clean_masks(case_key: str, side: str, combos: list, h: float = H_MAP,
                   "mono": mono}
             # small path blocks: feasibility.evaluate_gate sizes its candidate chunks from the
             # SHORTEST window in the chunk, so its peak memory scales with the block size
-            # (reported to the lead; feasibility.py is read-only here).
+            # (feasibility.py is left unchanged here).
             cand = fz.evaluate_gate(fs, _geom(side, off), h, D_GRID[0] - 0.02,
                                     D_GRID[-1] + 0.02, chunk_elems=2_000_000)
             out[c][:, b0:b1] = fz.grid_from_candidates(cand, b1 - b0, D_GRID)[0]

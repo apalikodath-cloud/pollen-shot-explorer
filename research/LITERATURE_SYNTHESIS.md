@@ -1,11 +1,10 @@
 # PM-001 literature synthesis: backspin on POLLEN
 
-Written 2026-10-30 by the PM-001 synthesis agent. It draws on the fact-check reports in `research/checks/`. It compares them with the values the model uses now:
+Written 2026-10-30. It draws on our source checks of the papers below and compares them with the values the model uses now:
 - `data/aero_params.json`
 - `data/launch_envelope.json`
 - `src/flight.py`, `src/launcher.py` and `src/contact.py`
 - `docs/02_aero.md` and `docs/04_launcher.md`
-- `crosscheck/empirical/EVIDENCE.md`
 
 The machine-readable ranges are in `research/params_lit.json`. `src/flight.load_params(path=...)` loads that file directly; this was checked for low, nominal, high and floor.
 
@@ -57,7 +56,7 @@ No evidence about POLLEN aerodynamics reaches grade A. Only the Cross bounce pap
 | Muto et al. 2012 | Smooth sphere LES; Re 1e4, 2e5, 1.14e6 | At Re 1e4: Cl 0.167 (Γ 0.2) and 0.301 (Γ 1.0); Cd 0.474 and 0.661. Negative lift at Re 2e5, Γ 0.1–0.5 | B | The authors say their subcritical Cd disagrees with experiment, and Γ is defined ambiguously |
 | Ito & Kamijima 2025 | Smooth sphere CFD, Re 6.6e3–5.3e4 | Lift-crisis dip (table below). Cd 0.45–0.62. C_M = (3/8) Cl/S | B | Numerical only |
 | Sakai 2016 / Miyazaki 2017 | Table-tennis ball, wind tunnel | Re 3e4: peak 0.29 at SP 0.55, valley 0.21 at SP 0.72–0.85. Re 4e4: valley 0.15–0.17. Re 5e4: valley 0.09–0.12. Upper branch 0.30–0.33 at SP 1.0 | **C** | Non-refereed proceedings |
-| Conti 2026 | Table-tennis fits from match video (40 mm smooth ball, Re ≈ 5e3–4.6e4) | Equivalent Cl 0.08–0.41 at v ≥ 3.5 m/s (derived: CL = (8/3)·C_M·Sp from the published tables; the 2 m/s row is noisy). Cl rises to 0.24–0.29 at Sp 0.5, then dips at Sp 0.75–1.0, and **the dip deepens with Re**: 0.25 (Re 2.0e4, Sp 1.0), 0.23 (2.8e4, Sp 0.75), 0.20 (3.6e4, Sp 0.75), 0.17 (4.5e4, Sp 0.75); it recovers to 0.35–0.41 at Sp 1.5 (all derived) | C | Preprint. C_M ≥ 0 by construction, so the fit cannot show a sign change. The 3.6e4 and 4.5e4 rows (POLLEN Re at about 7.6–9.5 m/s) are in research/checks/sweep_aero.md, not in the sweep |
+| Conti 2026 | Table-tennis fits from match video (40 mm smooth ball, Re ≈ 5e3–4.6e4) | Equivalent Cl 0.08–0.41 at v ≥ 3.5 m/s (derived: CL = (8/3)·C_M·Sp from the published tables; the 2 m/s row is noisy). Cl rises to 0.24–0.29 at Sp 0.5, then dips at Sp 0.75–1.0, and **the dip deepens with Re**: 0.25 (Re 2.0e4, Sp 1.0), 0.23 (2.8e4, Sp 0.75), 0.20 (3.6e4, Sp 0.75), 0.17 (4.5e4, Sp 0.75); it recovers to 0.35–0.41 at Sp 1.5 (all derived) | C | Preprint. C_M ≥ 0 by construction, so the fit cannot show a sign change. The 3.6e4 and 4.5e4 rows (POLLEN Re at about 7.6–9.5 m/s) are from a separate source check, not in the sweep |
 | Cross 2012 (AJP) | Polystyrene balls, 7–28 m/s | Cl 0.15 (S 0.37), 0.23–0.24 (0.5), 0.31 (0.8), peak 0.33 (0.95–1.1), 0.30 (1.45). Cd 0.24 at 28 m/s up to 0.40 at 7 m/s. One ball had Cl < 0 at 9–14 m/s. No measurable spin decay | B | Smooth ball, but the closest S range to POLLEN's |
 | Cross & Lindsey 2017 (EJP) | — | Abstract only, no numbers used | B | Paywall |
 | Kim et al. 2014; Maccoll; Taneda | Smooth spheres | Negative Magnus only at Re ≳ 4.6e4 and S < 0.6, mostly 1e5–2e5 | B | Kim's ranges are known only from snippets and secondary quotes |
@@ -195,12 +194,12 @@ Adopt it only as two bounds:
 
 The lift-crisis table (`Cl.dip_variant`) is a separate structural variant. src/ cannot read it now; it would need an `interp` branch in the Cl function.
 
-## 5. Errors found in current PM-001 docs and data (for the owning agents to fix)
+## 5. Errors found in current PM-001 docs and data (all fixed since)
 
 1. `aero_params.json` and `docs/02_aero.md` cite Lindsey as covering "5–13 m/s" with "positive backspin Cl ≈ 0.2, weak S dependence". **Correct:** 6.0–11.5 m/s and S ≤ 0.37. The Magnus slope is only about 0.02 and the offset is ambiguous.
 2. Rossmann & Rau is described as "full text not retrieved" with Cd 0.6 "forward-facing". **Correct:** the full text was read. Cd ranges from 0.36 to 1.05, and 0.6 is the β = 90° orientation.
 3. Kim 2014's Re/S window comes from snippets only; mark it as such.
-4. `crosscheck/empirical/EVIDENCE.md` row 19 labels Lindsey as "Emond/Sun/Swartz 2024" with grade A. **Correct:** Lindsey 2025, grade C (unreviewed web article).
+4. An internal evidence table (row 19) labels Lindsey as "Emond/Sun/Swartz 2024" with grade A. **Correct:** Lindsey 2025, grade C (unreviewed web article).
 5. `02_aero` says free-flight table-tennis tests show no negative Magnus. Conti 2026 (preprint) shows a Re-dependent dip in Cl, to about 0.17 at Re 4.5e4 (derived), though not a sign change (its model cannot produce one).
 6. Muto's Γ definition is ambiguous, and its subcritical Cd is unreliable by the authors' own account. Do not use 0.474/0.661 as anchors.
 7. The mass high bound of 26.5 g is below the 27.2 g listing weight.

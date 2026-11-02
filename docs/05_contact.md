@@ -1,4 +1,4 @@
-# 05 - Spin-assisted contact entry, hypothesis (B) (HANDOFF §3 Q5, §4E channel 2)
+# 05 - Spin-assisted contact entry, hypothesis (B)
 
 Code: `src/contact.py` (impact law, contact flight, sweeps, report), `tests/test_contact.py`.
 Data: `data/contact_incidence_sweep.csv`, `data/contact_launch_sweep_t30.csv`, `data/contact_launch_sweep_t28.5.csv`,
@@ -8,7 +8,7 @@ Figures: `figures/contact_incidence_maps.png`, `figures/contact_retention_vs_spi
 Reproduce: `python -m src.contact --stage all --cache <dir>`. Stages are `incidence`, `launch`, `tilt` and `report`.
 The launch stage runs 64 parallel jobs and takes tens of minutes. Tests: `python -m unittest discover -s tests -v`.
 
-Scope: this file covers hypothesis (B) of HANDOFF §0: the ball touches the rim or the inside of the **upward-facing
+Scope: this file covers hypothesis (B) of the project question: the ball touches the rim or the inside of the **upward-facing
 CELL of the HIVE** and still stays in. It is kept separate from hypothesis (A), clean air-only entry, which is in
 docs/03_clean_entry.md. Where this file uses (A) numbers, it says so.
 

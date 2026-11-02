@@ -40,7 +40,7 @@ PSI = np.arange(0.0, 75.0 + 1e-9, 5.0)
 VG = {"unfav": np.round(np.arange(5.0, 11.0001, 0.05), 3), "fav": np.round(np.arange(2.0, 10.0001, 0.1), 3)}
 TG = {"unfav": np.round(np.arange(60.0, 89.8001, 0.2), 3), "fav": np.round(np.arange(20.0, 89.5001, 0.5), 3)}
 SPINS = (0.0, 0.5, 1.0, 1.5)
-# field geometry, typed in from FIELD_DATA.md / research/GEOMETRY_AUDIT.md (not imported from src/field_geom.py)
+# field geometry, typed in from viz/explorer/FIELD_DATA.md (not imported from src/field_geom.py)
 X_WALL, YC = 1.8009, 0.3236
 BASE_HX, BASE_HY = 38.95 / 2 * 0.0254, 49.46 / 2 * 0.0254          # CONFIRMED A-frame base, centred on y = YC
 OTHER_X, OTHER_Y, X_GATE = 0.6745, (0.3455, 0.9495), 0.401          # derived other-HIVE box, aim point

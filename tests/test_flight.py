@@ -113,8 +113,8 @@ class TestSigns(unittest.TestCase):
                 elif tr.t[i] > ta + 1e-3:
                     self.assertGreater(fm[0] * sign, 0.0)
 
-    def test_scale_check_handoff(self):
-        # HANDOFF 4A: 5 m/s, Cl=0.20 -> Magnus accel ~0.49 m/s^2
+    def test_scale_check_magnus(self):
+        # magnitude check: 5 m/s, Cl=0.20 -> Magnus accel ~0.49 m/s^2
         p = dict(BASE, Cl=lambda S: 0.20)
         v = np.array([5.0, 0, 0])
         a = fl.aero_forces(v, fl.backspin_omega(v, 100.0), p)["F_magnus"][2] / 0.025

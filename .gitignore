@@ -12,3 +12,4 @@ viz/explorer/site/
 viz/out/*.gif
 viz/demo/out/*.gif
 viz/hero/out/*.gif
+.claude/

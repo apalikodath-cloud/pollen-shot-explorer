@@ -121,19 +121,19 @@ usable yet (the solver fails its spin-down torque check). Each case ran once, so
 
 ## Repository map
 
+Ids such as PM-001 (this shooter study), PM-012 (our CFD solver) and PM-015 (field geometry) are our work-package numbers; they appear in file headers and data labels.
+
 | Path | What it holds |
 |---|---|
 | `cfd/` | Our lattice-Boltzmann CFD solver (`cfd/lbm/`), post-processing and the validation notes |
-| `crosscheck/` | Independent rebuilds of the HIVE geometry and the flight solver, plus empirical evidence notes |
 | `data/` | Model outputs (CSV/JSON, PREDICTED unless labelled) and the aero parameter set |
 | `docs/` | Write-ups 01-08 (geometry, aero, clean entry, launcher, contact, required vs achievable, test plan, shooter targets), `INTERFACES.md` (frames, units, labels) and `MEASURE.md` (measurement protocol) |
 | `figures/` | Figures used by the docs and the paper |
 | `paper/` | LaTeX write-up (`main.tex`, `sections/`) and the built `main.pdf` |
-| `research/` | Literature synthesis, per-paper notes and checks, the parameter file `params_lit.json` |
+| `research/` | Literature synthesis, the parameter file `params_lit.json` and the spin-vs-twin study |
 | `src/` | Python model: flight, HIVE and 3D cell, feasibility, launcher, contact, robustness, shooter spec, spin vs twin, aero fit |
 | `tests/` | Python unit tests and Node checks of the browser solver |
 | `viz/` | Web pages and videos: `explorer/` (the explorer and the site build), `flow/` (CFD flow pages), `measure/` (measurement kit), plus side-view shot videos and a replay (`viz/README.md`) |
-| `HANDOFF.md` | The original project brief and its rules (section 5) |
 | `RESEARCH_PAPERS.md` | Reading list of the main sources |
 
 ## Run it

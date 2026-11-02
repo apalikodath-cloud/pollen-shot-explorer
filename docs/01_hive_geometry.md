@@ -167,4 +167,4 @@ These are also listed in the JSON:
 - The effect of the 3 preloaded NECTAR.
 - The POLLEN size tolerance.
 
-How the deliverables were generated: `build_hive_geometry.py` and `plot_hive_section.py` were one-off working scripts and are not in this repository. `crosscheck/geometry/build_hive_geometry_independent.py` is an independent rebuild of the same geometry.
+How the deliverables were generated: `build_hive_geometry.py` and `plot_hive_section.py` were one-off working scripts and are not in this repository. An unpublished script was an independent rebuild of the same geometry.

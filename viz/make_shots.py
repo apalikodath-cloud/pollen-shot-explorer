@@ -479,7 +479,7 @@ def load_backend(mode, aero_path=None):
         if not missing:
             try:
                 return RealBackend(aero_path)
-            except Exception as exc:  # module mid-edit by another agent, etc.
+            except Exception as exc:  # module mid-edit, etc.
                 if mode == "real":
                     raise
                 print(f"[make_shots] real backend failed to import ({exc!r}); using DEMO", file=sys.stderr)

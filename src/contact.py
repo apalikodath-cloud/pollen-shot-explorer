@@ -1,6 +1,6 @@
 """Spin-assisted contact entry (hypothesis B): rigid-ball impact with the HIVE section.
 
-HANDOFF section 0 hypothesis (B), section 3 Q5, section 4E channel 2; contract: docs/INTERFACES.md
+Hypothesis (B) of the project question, entry channel 2; contract: docs/INTERFACES.md
 ("src/contact.py"). Uses src/hive.py (geometry) and src/flight.py (aero parameters) READ-ONLY.
 
 Every output of this module is PREDICTED. Restitution e, friction mu and tangential restitution e_t

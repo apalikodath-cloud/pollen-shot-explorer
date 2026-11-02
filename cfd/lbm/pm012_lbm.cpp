@@ -24,6 +24,7 @@
 #include <cstring>
 #include <functional>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -70,13 +71,14 @@ typedef cl_int(CLAPI* P_EnqueueNDRangeKernel)(cl_command_queue, cl_kernel, cl_ui
 typedef cl_int(CLAPI* P_EnqueueReadBuffer)(cl_command_queue, cl_mem, cl_bool, size_t, size_t, void*, cl_uint, const cl_event*, cl_event*);
 typedef cl_int(CLAPI* P_EnqueueWriteBuffer)(cl_command_queue, cl_mem, cl_bool, size_t, size_t, const void*, cl_uint, const cl_event*, cl_event*);
 typedef cl_int(CLAPI* P_Finish)(cl_command_queue);
+typedef cl_int(CLAPI* P_ReleaseMemObject)(cl_mem);
 
 static struct {
 	P_GetPlatformIDs GetPlatformIDs; P_GetDeviceIDs GetDeviceIDs; P_GetDeviceInfo GetDeviceInfo; P_CreateContext CreateContext;
 	P_CreateCommandQueue CreateCommandQueue; P_CreateBuffer CreateBuffer; P_CreateProgramWithSource CreateProgramWithSource;
 	P_BuildProgram BuildProgram; P_GetProgramBuildInfo GetProgramBuildInfo; P_CreateKernel CreateKernel; P_SetKernelArg SetKernelArg;
 	P_EnqueueNDRangeKernel EnqueueNDRangeKernel; P_EnqueueReadBuffer EnqueueReadBuffer; P_EnqueueWriteBuffer EnqueueWriteBuffer;
-	P_Finish Finish;
+	P_Finish Finish; P_ReleaseMemObject ReleaseMemObject;
 } cl;
 
 [[noreturn]] static void die(const char* fmt, ...) {
@@ -91,7 +93,7 @@ static void load_opencl() {
 #define GETP(name) cl.name = (P_##name)(void*)GetProcAddress(h, "cl" #name); if (!cl.name) die("OpenCL.dll lacks cl" #name)
 	GETP(GetPlatformIDs); GETP(GetDeviceIDs); GETP(GetDeviceInfo); GETP(CreateContext); GETP(CreateCommandQueue);
 	GETP(CreateBuffer); GETP(CreateProgramWithSource); GETP(BuildProgram); GETP(GetProgramBuildInfo); GETP(CreateKernel);
-	GETP(SetKernelArg); GETP(EnqueueNDRangeKernel); GETP(EnqueueReadBuffer); GETP(EnqueueWriteBuffer); GETP(Finish);
+	GETP(SetKernelArg); GETP(EnqueueNDRangeKernel); GETP(EnqueueReadBuffer); GETP(EnqueueWriteBuffer); GETP(Finish); GETP(ReleaseMemObject);
 #undef GETP
 }
 
@@ -507,6 +509,27 @@ int main(int argc, char** argv) {
 	// ---- memory plan ----
 	const size_t es = prec == "fp16" ? 2u : 4u;
 	double need = (double)occ.v.size(), maxbuf = 0.0, upd = 0.0;
+	const std::string dump_spec = arg_s("dump", "");
+	size_t dump_cells = 0;
+	if (!dump_spec.empty()) { // buffers are sized for the larger of the solid_fine box (stride 1) and the field box
+		for (int pass = 0; pass < 2; pass++) {
+			double box[6] = { -0.6, 0.6, -0.6, 0.6, -0.6, 0.6 };
+			double stride = 1.0;
+			if (pass == 1) {
+				for (int k = 0; k < 6; k++) box[k] = k % 2 ? 1e9 : -1e9;
+				stride = std::max(1.0, arg_d("dumpstride", 2.0));
+				if (g_arg.count("dumpbox") && sscanf(g_arg["dumpbox"].c_str(), "%lf,%lf,%lf,%lf,%lf,%lf", box, box + 1, box + 2, box + 3, box + 4, box + 5) != 6)
+					die("dumpbox needs x0,x1,y0,y1,z0,z1");
+			}
+			size_t cells = 1;
+			for (int k = 0; k < 3; k++) {
+				const double a = std::max(0.0, std::ceil(cc[k] + box[2 * k] * D)), b = std::min((double)F.n[k] - 1.0, std::floor(cc[k] + box[2 * k + 1] * D));
+				if (b < a) die("dumpbox is empty after clamping to the finest level (axis %d)", k);
+				cells *= (size_t)((cl_uint)((b - a) / stride) + 1u);
+			}
+			dump_cells = std::max(dump_cells, cells);
+		}
+	}
 	printf("levels (D = cells per body diameter; box in body diameters; memory = 2 lattices x 19 + flags):\n");
 	for (int l = 0; l < L; l++) {
 		const Level& c = lv[l];
@@ -518,6 +541,8 @@ int main(int argc, char** argv) {
 			l, c.D, use_stl ? Dmm / c.D : 71.12 / c.D, c.n[0], c.n[1], c.n[2], c.N * 1e-6, c.ext[0], c.ext[1], c.ext[2], c.o[0], c.o[1], c.o[2],
 			c.nu, c.tau0, mem / 1048576.0, (double)c.N * es / 1048576.0);
 	}
+	if (ibbq) need += (double)nbox * 18.0 * sizeof(float);
+	if (dump_cells) need += (double)dump_cells * (3.0 * sizeof(float) + sizeof(uint8_t));
 	printf("  total %.0f MiB, largest buffer %.1f MiB, %.1f M cell updates per level-0 step, finest box margin %g..%g cells from the body\n",
 		need / 1048576.0, maxbuf / 1048576.0, upd * 1e-6, (double)std::min({ lo[0], lo[1], lo[2] }), (double)std::min({ (int)Nx - 1 - hi[0], (int)Ny - 1 - hi[1], (int)Nz - 1 - hi[2] }));
 	printf("  finest dx = D/%g: %.2f-%.2f cells across a 10.2-11.2 mm hole, %.2f cells across the 1.778 mm wall (POLLEN scale)\n",
@@ -943,7 +968,7 @@ int main(int argc, char** argv) {
 	// ---- field dump (dump=t1,t2,...): velocity snapshots of the finest level, see usage ----
 	std::vector<std::pair<double, uint64_t>> dumps; // (t*, finest step)
 	{
-		const std::string ds = arg_s("dump", "");
+		const std::string ds = dump_spec;
 		size_t pos = 0;
 		while (pos < ds.size()) {
 			size_t e = ds.find(',', pos);
@@ -952,11 +977,21 @@ int main(int argc, char** argv) {
 			char* ee = nullptr;
 			const double t = strtod(tok.c_str(), &ee);
 			if (tok.empty() || ee == tok.c_str() || *ee != '\0' || !(t >= 0.0)) die("dump=%s: bad time \"%s\"", ds.c_str(), tok.c_str());
+			if (t > arg_d("T", stokes ? 40.0 : 55.0)) fprintf(stderr, "WARNING: dump time t*=%.6g is beyond T=%.6g\n", t, arg_d("T", stokes ? 40.0 : 55.0));
 			dumps.push_back({ t, (uint64_t)std::llround(t * tunit) });
 			pos = e + 1;
 		}
 		std::sort(dumps.begin(), dumps.end());
+		std::set<std::string> labels;
+		std::vector<std::pair<double, uint64_t>> unique;
+		for (const auto& d : dumps) {
+			char label[64]; snprintf(label, sizeof(label), "%.2f", d.first);
+			if (!labels.insert(label).second) { fprintf(stderr, "WARNING: dump time t*=%.6g duplicates file label %s; skipping\n", d.first, label); continue; }
+			if (d.first <= arg_d("T", stokes ? 40.0 : 55.0)) unique.push_back(d);
+		}
+		dumps.swap(unique);
 		if (!dumps.empty() && nobody) die("dump needs a body");
+		if (!dumps.empty() && u == 0.0) die("dump needs a body with nonzero inflow u");
 	}
 	size_t dump_next = 0;
 	bool solid_fine_done = false;
@@ -982,7 +1017,9 @@ int main(int argc, char** argv) {
 			org[k] = (a - cc[k]) / D;
 		}
 		const size_t cnt = (size_t)dn[0] * dn[1] * dn[2];
-		if (cnt > dump_cap) { // buffers only grow (the runtime wrapper has no release call; a run has one or two sizes)
+		if (cnt > dump_cap) {
+			if (dump_out) cl.ReleaseMemObject(dump_out);
+			if (dump_sol) cl.ReleaseMemObject(dump_sol);
 			dump_out = cl.CreateBuffer(ctx, CL_MEM_READ_WRITE, cnt * 3u * sizeof(float), nullptr, &err);
 			if (err != CL_SUCCESS) die("dump buffer allocation failed: %d", (int)err);
 			dump_sol = cl.CreateBuffer(ctx, CL_MEM_READ_WRITE, cnt, nullptr, &err);

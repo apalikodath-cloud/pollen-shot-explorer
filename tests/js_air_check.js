@@ -20,7 +20,7 @@ const CASES = [
   { name: "wind_down", p: { wind: [0, -0.3] } },
   { name: "all", p: { cd_model: "morrison", dcd_spin: 0.08, wind: [-0.2, 0.1] } },
   { name: "no_magnus_wind", p: { c1: 0, wind: [0.5, 0.5], dcd_spin: 0.18 } },
-  // PM-016 lift and mass options (MISSING_EFFECTS.md 2d, 2e; values ASSUMED)
+  // PM-016 lift and mass options (values ASSUMED)
   { name: "cl_table", p: { cl_table: [[0, 0], [0.5, 0.2], [1.5, 0.35]] } },
   { name: "cl_table_late", p: { cl_table: [[0.4, 0.15], [1.2, 0.3]], wind: [0.2, 0] } },
   { name: "rev_magnus", p: { cl_rev: 0.1 } },

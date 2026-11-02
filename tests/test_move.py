@@ -1,4 +1,4 @@
-"""PM-016 options (research/MISSING_EFFECTS.md build-next 2a-2f) in Python against the browser copy:
+"""PM-016 options (shooting on the move and related options) in Python against the browser copy:
 shooting on the move (robustness.launch_state / integrate3d / cell3d.classify_path3d vs solver.js launch3 /
 path3D / physics.js classifyPath3D), the hit-chance Monte Carlo (robustness.hit_chance / mc_shots(cell=...) vs
 solver.js hitChance, same seeded normals), plus unit checks of gyro-correct S, the Cl table, reverse Magnus and

@@ -1,4 +1,4 @@
-// JS side of tests/test_field_geom.py (PM-015, research/GEOMETRY_AUDIT.md fixes 2, 3, 5, 8): prints one JSON line
+// JS side of tests/test_field_geom.py (PM-015 geometry fixes 2, 3, 5, 8): prints one JSON line
 // with viz/explorer/solver.js footprint(), sightBlocked(), roofClearDrop() and roofClearSection() results for the
 // cases given on stdin (JSON). No field data needed. Run: node tests/js_field_geom_check.js < cases.json
 "use strict";

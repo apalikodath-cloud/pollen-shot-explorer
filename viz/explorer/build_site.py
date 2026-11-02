@@ -56,15 +56,19 @@ assert t.count("'../explorer/data/field/index.json'") == 1
 p.write_text(t.replace("'../explorer/data/field/index.json'", "'../data/field/index.json'"), encoding="utf-8")
 bsrc = Path(os.environ.get("FLOW_BUNDLES", fsrc / "flows"))
 runs = []
+(fdst / "flows").mkdir(exist_ok=True)
 if (bsrc / "index.json").exists():
     for r in json.loads((bsrc / "index.json").read_text(encoding="utf-8"))["runs"]:
-        man = json.loads((bsrc / r["path"]).read_text(encoding="utf-8"))
+        manifest = bsrc / r["path"]
+        if not manifest.exists():
+            print(f"WARN: missing flow manifest {r.get('path', '<missing path>')}; skipping {r.get('id', '<unknown>')}")
+            continue
+        man = json.loads(manifest.read_text(encoding="utf-8"))
         if man.get("synthetic"):
             continue
-        rid = Path(r["path"]).parent.name
-        shutil.copytree(bsrc / rid, fdst / "flows" / rid)
+        rel = manifest.parent.relative_to(bsrc)
+        shutil.copytree(manifest.parent, fdst / "flows" / rel)
         runs.append(r)
-(fdst / "flows").mkdir(exist_ok=True)
 (fdst / "flows" / "index.json").write_text(json.dumps({"runs": runs}), encoding="utf-8")
 print(f"flow bundles: {len(runs)} ({', '.join(r['id'] for r in runs)})")
 (site / ".nojekyll").write_text("", encoding="utf-8")

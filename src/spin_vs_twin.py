@@ -1,6 +1,6 @@
 """PM-021: does backspin beat the no-spin twin, field-wide, by hit chance?
 
-Question (HANDOFF 0 and 3): from where on the field, at which release height and spin ratio, does a backspin shot
+Question: from where on the field, at which release height and spin ratio, does a backspin shot
 have a higher hit chance than the same ball with no spin (the no-spin twin, each at ITS own best setting)? And how
 does the answer depend on the unmeasured lift level (Cl low / nominal / high, research/params_lit.json, ASSUMED)?
 
@@ -30,7 +30,7 @@ with no clean in-cap setting gets status no_clean_in_cap and chance 0 (k = n = 0
 even without scatter.
 
 Every chance is PREDICTED: a model probability under ASSUMED scatter and ASSUMED aero, NOT a measured
-repeatability (HANDOFF 5). The no-spin twin is a reference: the one-wheel hood launcher always spins the ball
+repeatability. The no-spin twin is a reference: the one-wheel hood launcher always spins the ball
 (S about 1.0 to 1.3 PREDICTED, src/launcher.py); a no-spin shooter is a different mechanism (out of scope).
 
 Run (hours; background):  python -m src.spin_vs_twin run --work <dir> --workers 10

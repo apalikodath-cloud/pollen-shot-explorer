@@ -1,20 +1,19 @@
-"""Venue air and optional drag / draft models for the planar shot (research/MISSING_EFFECTS.md build-next 1, 2, 4, 6).
+"""Venue air and optional drag / draft models for the planar shot.
 
 Everything here is an OPTION. With the defaults the planar model is unchanged except that the still-air
 reference state is now written down: 20 C, 101.325 kPa, dry air gives rho = 1.2041 kg/m^3 (derived below) instead
-of the rounded 1.20 in research/params_lit.json (about 1 mm at the reference shot, derived in MISSING_EFFECTS.md
-section 4 item 8). viz/explorer/physics.js carries a line-for-line copy (airState, cdOf, aeroExt); the two are
+of the rounded 1.20 in research/params_lit.json (about 1 mm at the reference shot). viz/explorer/physics.js carries a line-for-line copy (airState, cdOf, aeroExt); the two are
 cross-checked by tests/test_air.py against tests/js_air_check.js.
 
-Labels (HANDOFF section 5):
+Labels:
 - air_density: formulas CONFIRMED (sources below); the venue inputs (temperature, pressure, RH) are user inputs.
 - Cd models: 'const' = the ASSUMED literature Cd (params file). 'morrison' = smooth-sphere correlation (Morrison 2013,
   263000 in both places), a reference curve only, NOT a POLLEN fact. 'blend' = what-if partial drag crisis
   Cd_sub -> Cd_post between Re1 and Re2 (ASSUMED shape and values until the T1 drop/video test).
 - spin drag: Cd += dCd * min(S / S_sat, 1), dCd 0 / 0.08 / 0.18 and S_sat 0.6 ASSUMED (tennis and smooth-sphere data,
-  research/effects/aero.md E3). The no-spin twin has S = 0, so it never gets this term.
+  missing-effects review). The no-spin twin has S = 0, so it never gets this term.
 - draft (wind): constant per shot in the shot plane, w = (along-shot, vertical) m/s, user input. Drag, Magnus and S use
-  v_rel = v - w (HANDOFF 4A, src/flight.py does the same in 3D).
+  v_rel = v - w (src/flight.py does the same in 3D).
 - grip_limited: HOOD_V_MAX 8.9 m/s is PREDICTED (docs/04_launcher.md); a shot above it is flagged, not removed.
 """
 from __future__ import annotations
@@ -103,7 +102,7 @@ def cd_base(prm: dict, re: float) -> float:
     raise ValueError("unknown cd_model %r" % model)
 
 
-# --------------------------------------------------------------------------- lift options (MISSING_EFFECTS.md 2d)
+# --------------------------------------------------------------------------- lift options
 #: reverse-Magnus region (ASSUMED, Kim 2014 / Kray 2012 smooth-sphere data; not a POLLEN measurement):
 #: Cl blends toward -cl_rev when Re < 4.6e4 AND S < 0.5 (10 % smoothstep ramps on both edges)
 REV_RE = 4.6e4
@@ -169,5 +168,5 @@ HOOD_V_MAX = 8.9
 
 def grip_limited(v: float, vmax: float = HOOD_V_MAX) -> bool:
     """True when the required exit speed is above the PREDICTED hood cap: v/u and S there are uncertain, and a
-    'possible' answer must not rest on such a shot (MISSING_EFFECTS.md build-next 6)."""
+    'possible' answer must not rest on such a shot."""
     return v > vmax + 1e-9

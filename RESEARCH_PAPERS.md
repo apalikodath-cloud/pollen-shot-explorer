@@ -1,10 +1,10 @@
 # RESEARCH PAPERS & TECHNICAL SOURCES — FTC BIOBUZZ POLLEN MAGNUS-EFFECT SHOOTER
 
-**Source handoff for a second AI engineering agent**  
+**Source list and research brief for the shooter study**  
 **Research cutoff:** October 30, 2026  
-**Scope:** POLLEN ONLY; 98 mm single powered flywheel, with either stationary curved hood or passive upper roller. The user wants to use significant backspin to bend a high-arcing POLLEN shot into the **upward-facing CELL of the tipping BIOBUZZ HIVE from the unfavorable side**, possibly also leveraging spin-dependent impacts with the opening/rim. This is **not** a generic third-shot-drop pickleball problem, and the user does **not** want a second powered flywheel as the baseline design.
+**Scope:** POLLEN ONLY; 98 mm single powered flywheel, with either stationary curved hood or passive upper roller. The team wants to use significant backspin to bend a high-arcing POLLEN shot into the **upward-facing CELL of the tipping BIOBUZZ HIVE from the unfavorable side**, possibly also leveraging spin-dependent impacts with the opening/rim. This is **not** a generic third-shot-drop pickleball problem, and the team does **not** want a second powered flywheel as the baseline design.
 
-**Read the companion `HANDOFF.md` for full project context.** This is a source bibliography and research mandate, not proof of feasibility.
+This is a source bibliography and research plan, not proof of feasibility.
 
 ## READ FIRST — Directly useful to this concept
 
@@ -91,7 +91,7 @@
 
 - **FIRST 2026–27 BIOBUZZ competition manual, TU07, updated Oct. 29, 2026:** https://ftc-resources.firstinspires.org/ftc/game. Verify HIVE tilt, CELL mouth, rim geometry, field obstructions, legal robot constraints, and coordinates in current official diagrams before any claims of all-field feasibility. Photograph or measure a real HIVE if CAD/field drawings cannot be acquired.
 
-## Required instructions for the next AI agent
+## Research plan
 
 **Goal:** Decide quantitatively whether a POLLEN ball launched by a **single 98 mm powered flywheel with stationary curved hood or one optional freely spinning top roller** can generate a backspinning trajectory that enters the currently upward-facing HIVE CELL from either side, and whether a rim-assisted mechanism enlarges the feasible region. Do **not** conflate HIVE with a conventional horizontal basketball hoop, or assume the trajectory is purely ballistic.
 
@@ -104,15 +104,15 @@
 7. **Propose experiment:** side and overhead high-speed camera with visible ball fiducial; track center x/z and rotations before/after apex, compare matched nonspinning and backspinning shots at the same exit speed & angle, measure rim impacts; obtain error bars. Use slow-motion for launch and impact diagnostics.
 8. **Return:** source-backed conclusions, equations with defined signs/units, model assumptions, feasible region, shooter RPM and spin requirements (or impossible bound), and build/test recommendation, labeling ideal results versus measured results.
 
-**Do not assert 'shoot from anywhere on the field' without a full collision and control feasibility map.** The user's observations are that some balls both curved in flight and entered via spin-assisted rim contact; treat those as observations to reproduce and explain, not as proof of a specific mechanism.
+**Do not assert 'shoot from anywhere on the field' without a full collision and control feasibility map.** The team observed that some balls both curved in flight and entered via spin-assisted rim contact; treat those as observations to reproduce and explain, not as proof of a specific mechanism.
 
 **Research limitations:** This is a curated set of 25 relevant works and official sources identified through web research, not a claim to contain every paper ever published on ball aerodynamics or machines. Source dates and links were checked as of the cutoff; access to some PDF hosts may vary.
 
-## Addendum 2026-10-31: sources added by the six effects lenses
+## Addendum 2026-10-31: sources added in the missing-effects review
 
-Collected from `research/effects/*.md` for `research/MISSING_EFFECTS.md`. Access: **full** = full text read, **abstract**, **secondary** = via another source or repo note, **not read**. None of these give POLLEN coefficients; ball and sphere values from them are analogues only.
+Collected while reviewing which physical effects the model still leaves out. Access: **full** = full text read, **abstract**, **secondary** = via another source or repo note, **not read**. None of these give POLLEN coefficients; ball and sphere values from them are analogues only.
 
-### Aerodynamics (aero, numerics lenses)
+### Aerodynamics
 
 26. **B. Darbois Texier, C. Cohen, D. Quéré & C. Clanet (2016), "Physics of knuckleballs."** *New J. Phys.* 18, 073027. https://doi.org/10.1088/1367-2630/18/7/073027  
     Knuckle side force and its wavelength; used for the knuckle bracket. Access: full.
@@ -121,8 +121,8 @@ Collected from `research/effects/*.md` for `research/MISSING_EFFECTS.md`. Access
 28. **T. Kray (2008), dissertation, Univ. Siegen**, https://dspace.ub.uni-siegen.de/handle/ubsi/404 ; **T. Kray, J. Franke & W. Frank (2012)**, *J. Wind Eng. Ind. Aerodyn.* 110.  
     Negative Magnus effect on spinning spheres. Access: thesis record and abstract.
 29. **J. Kim, H. Choi, H. Park & J. Y. Yoo (2014), "Inverse Magnus effect on a rotating sphere: when and why."** *J. Fluid Mech.* 754, R2. https://doi.org/10.1017/jfm.2014.428  
-    Access: abstract and secondary review. The aero and numerics lenses quote different Re ranges, and the abstract gives neither (flagged in MISSING_EFFECTS.md).
-30. **Zhou et al. (2022)**, *Water* 14, 2593. https://doi.org/10.3390/w14172593 . Cited by the aero lens for the lift-crisis and reverse-lift regime.
+    Access: abstract and secondary review. Secondary sources quote different Re ranges, and the abstract gives neither.
+30. **Zhou et al. (2022)**, *Water* 14, 2593. https://doi.org/10.3390/w14172593 . Cited for the lift-crisis and reverse-lift regime.
 31. **A. Sareen, K. Hourigan & M. C. Thompson (2024)**, *Int. J. Heat Fluid Flow* 109, 109501. Access: highlights only (PDF unreachable).
 32. **P. W. Bearman & J. K. Harvey (1976), "Golf ball aerodynamics."** *Aeronautical Quarterly* 27, 112–122. Access: secondary.
 33. **E. Achenbach (1974)**, *J. Fluid Mech.* 65, 113–125. Cited for the direction of roughness effects only; values not retrieved.
@@ -135,7 +135,7 @@ Collected from `research/effects/*.md` for `research/MISSING_EFFECTS.md`. Access
 40. **E. K. W. Poon et al. (2014)**, rotating-sphere DNS (Re ≤ 1000), *J. Fluid Mech.* 759, 751–781. https://doi.org/10.1017/jfm.2014.570
 41. **C. E. Smith, N. Beratlis, E. Balaras, K. Squires & M. Tsunoda (2010)**, golf-ball DNS, *Int. J. Heat Fluid Flow*. Cited for the 1e8–1e9 grid-point cost.
 
-### Environment (env lens)
+### Environment
 
 42. **NASA-TM-X-74335, U.S. Standard Atmosphere 1976.** https://ntrs.nasa.gov/citations/19770009539 . Pressure vs altitude.
 43. **A. Picard, R. S. Davis, M. Gläser & K. Fujii (2008), "Revised formula for the density of moist air (CIPM-2007)."** *Metrologia* 45, 149. https://doi.org/10.1088/0026-1394/45/2/004
@@ -151,10 +151,10 @@ Collected from `research/effects/*.md` for `research/MISSING_EFFECTS.md`. Access
 53. **MDPI *Fluids* 6(6), 211 (2021).** https://www2.mdpi.com/2311-5521/6/6/211 . Near-wall forces on a cylinder (not a sphere).
 54. **Pickleball Science (July 2024)**, temperature test of a Franklin X-40 pickleball at −1, 23 and 49 °C (web article; a pickleball, not POLLEN).
 
-### Launch and spin (launch, spin lenses)
+### Launch and spin
 
 55. **M. Norris, S. Breen, R. Anderson & I. Kenny (2012)**, reliability of the Sports Tutor Tennis Cube, 30th ISBS Conference, pp. 381–384. https://ojs.ub.uni-konstanz.de/cpa/article/view/5397 . Access: full.
-56. **A. Dittrich et al. (2023), "AIMY."** IEEE ICRA. https://doi.org/10.1109/ICRA48891.2023.10160336 ; arXiv:2210.06048. Access: secondary (`research/sweeps/sweep_launch.md`).
+56. **A. Dittrich et al. (2023), "AIMY."** IEEE ICRA. https://doi.org/10.1109/ICRA48891.2023.10160336 ; arXiv:2210.06048. Access: secondary.
 57. **P. Drane et al. (2018), "A Study of the Interaction between Batting Cage Baseballs and Pitching Machine."** *Proceedings* 2(6), 203. https://doi.org/10.3390/proceedings2060203 . Access: not read (method only).
 58. **USA Pickleball (2021), *Equipment Standards Manual*, sections 2.D.3–2.D.8.** Copy: https://www.pickleball.ph/uploads/1/2/5/9/125919777/-_official_equipment_standards_manual.pdf (pickleball analogue).
 59. **ASTM F1888-09**, compression-displacement of baseballs and softballs. https://store.astm.org/f1888-09.html . Access: not read.
@@ -166,7 +166,7 @@ Collected from `research/effects/*.md` for `research/MISSING_EFFECTS.md`. Access
 65. **A. M. Nathan, golf spin-down note and "spin efficiency" (SABR 2018).** http://baseball.physics.illinois.edu/
 66. **Chief Delphi threads 374445 ("Hood Compression") and 448624.** https://www.chiefdelphi.com/ (forum).
 
-### Target and contact (target lens)
+### Target and contact
 
 67. **FIRST, BIOBUZZ Competition Manual TU07.** https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm . Rim-in and TIP rules.
 68. **FIRST field documents 2026-27:** Field Acceptance Checklist Rev 26-27.2 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-check), Event Field Setup Guide V1.0, Initial Field Element Assembly Guide V1.0, Field Mitigation Guide 26-27.1.
@@ -175,7 +175,7 @@ Collected from `research/effects/*.md` for `research/MISSING_EFFECTS.md`. Access
 71. **R. Cross (2014), "Oblique bounce of a rubber ball."** *Exp. Mech.* 54, 1523–1536. https://doi.org/10.1007/s11340-014-9938-3 . Access: abstract. Also R. Cross, bounce notes: https://www.physics.usyd.edu.au/~cross/BOUNCE.htm
 72. **Marzouk (2012), LDPE/PC friction.** *Tribologia* 5/2012. https://yadda.icm.edu.pl/baztech/element/bwmeta1.element.baztech-ea3f2d11-04a1-4d71-995a-58472f840ac4 . Access: abstract.
 
-### Numerics and test methods (numerics lens)
+### Numerics and test methods
 
 73. **E. Hairer, S. P. Nørsett & G. Wanner, *Solving Ordinary Differential Equations I*.** Springer 1993. https://doi.org/10.1007/978-3-540-78862-1 ; and the SciPy `solve_ivp` documentation.
 74. **S. Redon, A. Kheddar & S. Coquillart (2002)**, continuous collision detection, *Comput. Graph. Forum* 21(3), 279–287. https://doi.org/10.1111/1467-8659.t01-1-00587

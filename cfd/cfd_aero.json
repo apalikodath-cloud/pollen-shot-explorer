@@ -16,7 +16,7 @@
   "band_on_pollen_values": "Cd: X +- (b |X| + u_win); Cl: X +- (b |X| + u_win + L_twin); b = max(|V1 error|, |V2 error vs 0.275|, |change between the two finest grids|), so never below the V1 error",
   "withdrawn": {
    "rule": "30 % gate (Cd within 30 % of the reference, 0.317-0.589) and the phrase 'inside the gate'",
-   "when_who": "written into cfd/README.md in commit 28f95b1 (2026-10-31 10:18) by the AI coding agent that built the solver, 11 minutes after the first D 48 run (Cd 0.699, +54 %) failed the pre-registered band; commit ca68597 (10:32) then called the BGK run (+24 %) inside the gate",
+   "when_who": "written into cfd/README.md in commit 28f95b1 (2026-10-31 10:18) while the solver was being built, 11 minutes after the first D 48 run (Cd 0.699, +54 %) failed the pre-registered band; commit ca68597 (10:32) then called the BGK run (+24 %) inside the gate",
    "why": "no reason was recorded: a post-hoc relaxation after a failing result, about as wide as the ASSUMED model range Cd 0.35-0.65, so passing it would add nothing"
   },
   "torque_note": "the CM part of the STL-path and revox matches waits for the torque gate",

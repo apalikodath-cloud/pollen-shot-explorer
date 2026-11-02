@@ -20,7 +20,6 @@ choice), USER (given by the team), CONFIRMED (from official CAD), derived (compu
 - Earlier text called them "derived": the heading "Checks so far (derived, own solver ...)" in this README and the
   message of commit ca68597 ("README: Re 33057 diagnosis table (all derived)"). That label was wrong. Read every CFD
   number in those commits as PREDICTED.
-- The old line "Labels follow HANDOFF section 5" is replaced by the pointer above.
 - Commit IDs 208142e, 28f95b1 and ca68597 are from the development history before this repo was published; they
   are not in this repo's history. The later IDs in this file (44ce149, 34ad763, fe50df2, fc22cd5, 5e8dd38, 2dd78dd,
   b686e2d) are in it.
@@ -269,7 +268,7 @@ runs miss the band. CM and k stay unreleased.
 ### Withdrawn: the "30 % gate"
 
 - **What:** "Cd within 30 % of 0.4532", printed as "30 % gate 0.317-0.589".
-- **When and who:** the AI coding agent that built the solver wrote it into this README in commit 28f95b1 at 10:18
+- **When and who:** it was written into this README while the solver was being built, in commit 28f95b1 at 10:18
   on 2026-10-31 ("fails the 30 % gate"). That was 11 minutes after the first D 48 run (10:07, Cd 0.699, +54 %) had
   failed the pre-registered band. It was not in the task brief or in the pre-registered table. Commit ca68597 (10:32)
   then called the BGK run (Cd 0.563, +24 %) "inside the gate".
@@ -689,10 +688,11 @@ Nothing is queued or running. The cloud GPUs were released on 2026-11-01.
 - `runner.sh front|back [name]`, with `PM012_CFD_ROOT` set, pops the first (`front`) or last (`back`) line of
   `pm012_lbm/queue/todo.txt`. A line is `<case_id> <pm012_lbm.exe args>`; blank lines and `#` lines are skipped. The
   runner adds `out=` and writes `pm012_lbm/runs/<case_id>.csv` and `.log`. It keeps going until it is stopped.
-- GPU gate: a case starts only when `nvidia-smi` reports free memory of at least the estimate plus 1024 MiB. The
-  estimate is int(Lx D) x int(Ly D) x int(Lz D) cells x 77 B (FP16; 153 B for FP32) + 400 MiB, with a 4 x 4 x 4 D
-  box for `rotstokes`. It ignores `lv`, so it over-estimates refined runs (lv 3 D 128: 15,184 MiB against 7077 MiB
-  from `plan=1`).
+- GPU gate: the runner asks the solver for its memory plan (`plan=1`, which counts every grid level and the field
+  dump). If that fails it falls back to int(Lx D) x int(Ly D) x int(Lz D) cells x 77 B (FP16; 153 B for FP32) +
+  400 MiB, with a 4 x 4 x 4 D box for `rotstokes`. A case starts only when `nvidia-smi` reports free memory of at
+  least that estimate plus 1024 MiB. A case that could never fit (over 92 % of the card, or over the card minus
+  1024 MiB) goes straight to `failed.txt` instead of waiting forever.
 - The runner keeps the lock until the new process prints its `PM-012 ... N=` line (180 s at most), so a second
   runner sees the memory already taken.
 - A case goes to `done.txt` only when it exits with 0 and its CSV has a `# runtime_s=` line; otherwise to
@@ -899,7 +899,7 @@ Dr. Moritz Lehmann. Each term says how this project complies.
 1. **Use.** Allowed only for public research, education or personal use.
    - This is an FTC student-team (education) project.
    - **No commercial use.** That includes paid services whose value comes from FluidX3D, so it must not be used for
-     the firm's paid work.
+     any paid work.
 2. **Origin.** The origin must not be misrepresented, and altered source must be plainly marked.
    - `fluidx3d/setup.cpp` is headed "ALTERED FluidX3D SOURCE".
    - The kernel patch lines carry "PM-012 patch".
@@ -919,8 +919,8 @@ Dr. Moritz Lehmann. Each term says how this project complies.
 - Brown P.P., Lawler D.F. (2003) Sphere drag and settling velocity revisited. *J. Environ. Eng.* 129(3):222-231,
   doi 10.1061/(ASCE)0733-9372(2003)129:3(222). Eq. 19: Cd = 24/Re (1 + 0.150 Re^0.681) + 0.407/(1 + 8710/Re).
 - Sakai W., Miyazaki T., Komatsu T., Takahashi N., Himeno R. (2016) Aerodynamics of a spinning table tennis ball:
-  lift crisis. JSME Annual Meeting, J2340102, doi 10.1299/jsmemecj.2016.J2340102 (notes: `research/papers/sakai2016.md`).
-- Conti et al. (2026) arXiv:2606.28805v2, unreviewed preprint (checked in `research/checks/sweep_aero.md`).
+  lift crisis. JSME Annual Meeting, J2340102, doi 10.1299/jsmemecj.2016.J2340102.
+- Conti et al. (2026) arXiv:2606.28805v2, unreviewed preprint.
 - Muto M., Tsubokura M., Oshima N. (2012) Negative Magnus lift on a rotating sphere at around the critical Reynolds
   number. *Phys. Fluids* 24:014102, doi 10.1063/1.3673571.
 - Kim J., Choi H., Park H., Yoo J.Y. (2014) Inverse Magnus effect on a rotating sphere: when and why. *J. Fluid Mech.*

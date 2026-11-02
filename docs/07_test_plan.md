@@ -1,6 +1,6 @@
 # 07: Prototype test plan (what to measure, and how to judge it)
 
-This is HANDOFF deliverable 7. Every model number used here is PREDICTED (docs/08, docs/05, docs/06). The pass/fail
+Every model number used here is PREDICTED (docs/08, docs/05, docs/06). The pass/fail
 lines are ASSUMED criteria derived from those predictions. Nothing has been measured on POLLEN yet.
 
 Order matters. Tests 1–4 fix the numbers the model guesses at, so run them before tuning field shots (tests 6–7).

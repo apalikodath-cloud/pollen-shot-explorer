@@ -382,7 +382,7 @@ def cmd_finalize(cl_bounds):
         grid=dict(h=list(H_LIST), d=D_GRID.tolist(), psi=PSI_BINS.tolist(), psi_max_model=PSI_MAX_MODEL,
                   psi_max_export=PSI_MAX_EXPORT,
                   psi_side_wall=round(PSI_SIDE_WALL, 2),
-                  psi_side_wall_how="PREDICTED straight-line estimate: atan((0.254 - 0.0355) / 0.30556) with cell half-width 0.254, ball radius 0.0355, cell depth 0.30556 (all CONFIRMED/derived, hive_geometry.json); ball enters on the centre line, no lateral roof profile; near-side estimate; far side not checked (it depends on entry angle and height, 32-82 deg, research/GEOMETRY_AUDIT.md fix 6). The masks in this export (PM-019) and the live solver (solver.js, default sideWalls) model the side walls in 3D (PM-013), so this estimate is informational only (FIELD_DATA.md, 3D cell model)",
+                  psi_side_wall_how="PREDICTED straight-line estimate: atan((0.254 - 0.0355) / 0.30556) with cell half-width 0.254, ball radius 0.0355, cell depth 0.30556 (all CONFIRMED/derived, hive_geometry.json); ball enters on the centre line, no lateral roof profile; near-side estimate; far side not checked (it depends on entry angle and height, 32-82 deg, geometry fix 6). The masks in this export (PM-019) and the live solver (solver.js, default sideWalls) model the side walls in 3D (PM-013), so this estimate is informational only (FIELD_DATA.md, 3D cell model)",
                   side_wall_risk=[int(p + PSI_STEP / 2 > PSI_SIDE_WALL) for p in PSI_BINS],
                   v={s: SIDE_GRID[s]["v"].tolist() for s in SIDE_GRID},
                   theta={s: SIDE_GRID[s]["th"].tolist() for s in SIDE_GRID},

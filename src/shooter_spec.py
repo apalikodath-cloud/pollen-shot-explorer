@@ -42,9 +42,9 @@ CACHE = os.path.join(ROOT, "data", "_spec_cache")
 R_BALL = 0.0355
 WHEEL_D = 0.098                    # user: 98 mm flywheel
 V_OVER_U = (0.25, 0.30, 0.42, 0.50)  # params_lit launcher.v_over_surface_speed 0.30-0.50 (grade C);
-                                     # 0.25 = Sakai & Kitade 2017 low end (research/EXTRA_SOURCES.md)
+                                     # 0.25 = Sakai & Kitade 2017 low end
 
-# design spin levels; negative = topspin (exploratory, HANDOFF scope is backspin)
+# design spin levels; negative = topspin (exploratory; the study is about backspin)
 SPINS = (0.0, 0.5, 1.0, 1.5, -1.0)
 # geometries of the cache: the CORE sweep set of src/feasibility.py (3D cell, tilt 30 and the derived
 # bounds fz.TILT_BOUNDS 28.80 / 31.77, favourable at 30)

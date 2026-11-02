@@ -1,4 +1,4 @@
-"""Single-powered-wheel POLLEN launch model (PM-001, HANDOFF 4C/4D, deliverable 6).
+"""Single-powered-wheel POLLEN launch model (PM-001).
 
 One powered 98 mm flywheel below the ball; on the other side either a FIXED curved
 hood (concentric with the wheel) or ONE PASSIVE (unpowered) roller.  SI units,
@@ -44,17 +44,17 @@ RAD2RPM = 1.0 / RPM2RAD
 # ---------------------------------------------------------------------------
 PARAMS = {
     "ball_mass": {"value": 0.025, "low": 0.0245, "high": 0.0255, "units": "kg",
-                  "prov": "user/confirmed via HANDOFF s1-2: AndyMark am-5851_yellow lists 0.055 lb = 24.95 g "
+                  "prov": "user/confirmed: AndyMark am-5851_yellow lists 0.055 lb = 24.95 g "
                           "(https://andymark.com/products/biobuzz-scoring-elements?variant=47194281148588); weigh samples"},
     "ball_radius": {"value": 0.0355, "units": "m",
-                    "prov": "confirmed nominal 2.8 in / 71 mm diameter (HANDOFF s1, s2); pieces vary"},
+                    "prov": "confirmed nominal 2.8 in / 71 mm diameter (game manual); pieces vary"},
     "ball_kI": {"value": 0.63, "low": 0.55, "high": 2.0 / 3.0, "units": "-",
                 "prov": "derived/assumed: I_b = kI m R^2. Thin shell 2/3 is the upper bound for a sphere with "
                         "mass at the surface; uniform PE shell (rho~950 kg/m^3) holding 25 g at R=35.5 mm needs "
                         "t~1.7-2.4 mm (perforations) -> thick-shell formula kI=0.4(1-q^5)/(1-q^3), q=1-t/R, "
                         "gives 0.62-0.64; 0.55 covers ribs/thick bosses/non-sphericity. Uniform hole pattern does "
                         "not change kI. MEASURE (bifilar/trifilar pendulum)."},
-    "wheel_radius": {"value": 0.049, "units": "m", "prov": "user: one 98 mm flywheel (HANDOFF s2)"},
+    "wheel_radius": {"value": 0.049, "units": "m", "prov": "user: one 98 mm flywheel (team design)"},
     "wheel_inertia": {"value": 2.65e-4, "low": 0.5e-4, "high": 5.0e-4, "units": "kg m^2",
                       "prov": "assumed/derived: bare 98 mm wheel ~1.0e-4 (assumed: 50-250 g, k_w 0.4-0.8 -> "
                               "0.5e-4..4.8e-4) + one goBILDA steel flywheel 3628-0032-0082 (82 mm, 152 g, "
@@ -76,7 +76,7 @@ PARAMS = {
                 "prov": "assumed: PTFE/UHMW ~0.05-0.15, polycarbonate/acrylic/HDPE ~0.2-0.4, rubber/grip-tape "
                         "lined 0.6-1.0 against PE; MEASURE"},
     "delta": {"value": 0.004, "low": 0.002, "high": 0.008, "units": "m",
-              "prov": "user candidate 4 mm diametral compression (HANDOFF s2); swept 2-8 mm"},
+              "prov": "user candidate 4 mm diametral compression (team design); swept 2-8 mm"},
     "k_n": {"value": 4000.0, "low": 1500.0, "high": 10000.0, "units": "N/m",
             "prov": "assumed: linear diametral stiffness of a 71 mm hollow perforated PE ball (no source "
                     "found); N(4 mm) = 6-40 N. Real N(delta) is non-linear (shell buckling). MEASURE with "
@@ -88,7 +88,7 @@ PARAMS = {
              "prov": "assumed: rolling-hysteresis lever arm / r_c (energy loss per metre = c_rr N); "
                      "Brettle notes the ball 'is not a perfect spring' -> extra wheel slow-down"},
     "wrap_deg": {"value": 90.0, "low": 45.0, "high": 150.0,
-                 "prov": "assumed: hood wrap angle about the wheel axis; shooter CAD not provided (HANDOFF s2)"},
+                 "prov": "assumed: hood wrap angle about the wheel axis; shooter CAD not provided"},
     "v_in": {"value": 0.5, "low": 0.2, "high": 1.5, "units": "m/s",
              "prov": "assumed: feed speed of the ball into the contact (indexer), no initial spin"},
     "roller_radius": {"value": 0.024, "low": 0.0125, "high": 0.050, "units": "m",

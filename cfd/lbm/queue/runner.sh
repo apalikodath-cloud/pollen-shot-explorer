@@ -15,9 +15,21 @@ EXE=${PM012_EXE:-$ROOT/pm012_lbm/bin/pm012_lbm.exe}
 SIDE=${1:?front|back}
 NAME=${2:-$SIDE}
 mkdir -p "$Q" "$RUNS"; touch "$Q/todo.txt" "$Q/running.txt" "$Q/done.txt" "$Q/failed.txt"
-lock()   { until mkdir "$Q/.lock" 2>/dev/null; do sleep 1; done; }
-unlock() { rmdir "$Q/.lock" 2>/dev/null; }
+lock() {
+  while ! mkdir "$Q/.lock" 2>/dev/null; do
+    if [ -d "$Q/.lock" ] && find "$Q/.lock" -maxdepth 0 -type d -mmin +10 -print -quit | grep -q .; then
+      rmdir "$Q/.lock" 2>/dev/null && log "broke stale lock"
+    else
+      sleep 1
+    fi
+  done
+  trap 'rmdir "$Q/.lock" 2>/dev/null' EXIT INT TERM
+}
+unlock() { rmdir "$Q/.lock" 2>/dev/null; trap - EXIT INT TERM; }
 need_mb() { # estimate device memory from D, box and precision (2 lattices x 19 + flags)
+  local planned
+  planned=$("$EXE" $1 plan=1 2>/dev/null | awk -F= '$1 == "need_mib" {v=$2} END {if (v != "") printf "%d", v}')
+  if [ -n "$planned" ]; then printf '%s' "$planned"; return; fi
   awk -v a="$*" 'BEGIN{D=48;Lx=6;Ly=4;Lz=4;p="fp16";b="sphere";n=split(a,t," ");
     for(i=1;i<=n;i++){split(t[i],kv,"=");k=kv[1];v=kv[2];
       if(k=="D")D=v;if(k=="Lx")Lx=v;if(k=="Ly")Ly=v;if(k=="Lz")Lz=v;if(k=="prec")p=v;if(k=="body")b=v}
@@ -25,7 +37,9 @@ need_mb() { # estimate device memory from D, box and precision (2 lattices x 19 
     c=int(Lx*D)*int(Ly*D)*int(Lz*D); bpc=(p=="fp32")?153:77;
     printf "%d", c*bpc/1048576+400}'
 }
-free_mb() { nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits 2>/dev/null | head -1 | tr -dc 0-9; }
+device_id() { printf '%s\n' "$*" | awk '{for(i=1;i<=NF;i++) if($i ~ /^device=/) {sub(/^device=/,"",$i); print $i; exit}}'; }
+free_mb() { local d=${1:-0}; nvidia-smi -i "$d" --query-gpu=memory.free --format=csv,noheader,nounits 2>/dev/null | tr -dc 0-9; }
+total_mb() { local d=${1:-0}; nvidia-smi -i "$d" --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | tr -dc 0-9; }
 log() { echo "$(date '+%F %T') [$NAME] $*" >> "$Q/runner.log"; }
 log "start side=$SIDE"
 while true; do
@@ -34,11 +48,20 @@ while true; do
   else line=$(grep -v '^[[:space:]]*\(#\|$\)' "$Q/todo.txt" | head -1); fi
   if [ -z "$line" ]; then unlock; sleep 20; continue; fi
   id=${line%% *}; args=${line#* }
-  need=$(need_mb "$args"); free=$(free_mb); free=${free:-0}
+  need=$(need_mb "$args"); dev=$(device_id "$args"); dev=${dev:-0}; free=$(free_mb "$dev"); free=${free:-0}; total=$(total_mb "$dev"); total=${total:-0}
+  # the solver refuses a plan above 92 % of device memory, and the free-memory wait below needs need+1024 MiB:
+  # a case that can never pass either check fails now instead of waiting forever
+  if [ "$total" -gt 0 ] && { [ $((need * 100)) -gt $((total * 92)) ] || [ $((need + 1024)) -gt "$total" ]; }; then
+    n=$(grep -nxF -- "$line" "$Q/todo.txt" | if [ "$SIDE" = back ]; then tail -1; else head -1; fi | cut -d: -f1)
+    [ -n "$n" ] && sed -i "${n}d" "$Q/todo.txt"
+    echo "$id exit=memory need=${need}MiB total=${total}MiB $(date '+%F %T')" >> "$Q/failed.txt"
+    unlock; log "fail $id need=${need}MiB exceeds device=$dev total=${total}MiB"; continue
+  fi
   if [ "$free" -lt $((need + 1024)) ]; then unlock; log "wait $id need=${need}MiB free=${free}MiB"; sleep 20; continue; fi
   # remove exactly that line (first or last occurrence) from todo.txt
   if [ "$SIDE" = back ]; then n=$(grep -nxF -- "$line" "$Q/todo.txt" | tail -1 | cut -d: -f1)
   else n=$(grep -nxF -- "$line" "$Q/todo.txt" | head -1 | cut -d: -f1); fi
+  if [ -z "$n" ]; then unlock; log "skip $id: line left todo.txt meanwhile"; continue; fi
   sed -i "${n}d" "$Q/todo.txt"
   echo "$NAME $id need=${need}MiB $(date '+%F %T')" >> "$Q/running.txt"
   log "run $id need=${need}MiB free=${free}MiB: $args"

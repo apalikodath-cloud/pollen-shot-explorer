@@ -1,5 +1,5 @@
 {
-  "_note": "Default shot list for viz/make_shots.py (real backend). Release heights are ASSUMED (0.40 m ball-centre height, inside the 0.737 m robot height limit). Speeds/angles were picked from a coarse search because they show the spin effect clearly; they are NOT optimised or validated shots, and the launcher's ability to deliver them is not checked here (see data/launch_envelope.json). 'S' is the release spin parameter omega*R/v; S = 1 is the ideal no-slip hood value (HANDOFF 4C, derived). aero_set picks the Cd/Cl/spin-decay bound from data/aero_params.json.",
+  "_note": "Default shot list for viz/make_shots.py (real backend). Release heights are ASSUMED (0.40 m ball-centre height, inside the 0.737 m robot height limit). Speeds/angles were picked from a coarse search because they show the spin effect clearly; they are NOT optimised or validated shots, and the launcher's ability to deliver them is not checked here (see data/launch_envelope.json). 'S' is the release spin parameter omega*R/v; S = 1 is the ideal no-slip hood value (derived). aero_set picks the Cd/Cl/spin-decay bound from data/aero_params.json.",
   "cases": [
     {
       "id": "U1_pospose_unfav_high",

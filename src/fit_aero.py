@@ -9,7 +9,7 @@ with exponential spin decay) and the same fitting steps as viz/measure/measure.j
 Twin test (docs/MEASURE.md): shot A has no spin and sets (x0, z0, vx0, vz0, Cd); shot B is the backspin shot with the
 same settings, Cd is held at A's value and B sets (x0, z0, vx0, vz0, lift [, S0]). Uncertainty: Jacobian (Gauss-Newton
 covariance, isotropic pixel noise) and an optional residual bootstrap; B's lift error also carries A's Cd error.
-Every fitted number is *derived* (a fit to the user's video); the spin decay k is ASSUMED unless measured (T3).
+Every fitted number is *derived* (a fit to your video); the spin decay k is ASSUMED unless measured (T3).
 
 CLI:  python -B -m src.fit_aero track.csv [--lift single|linear|capped] [--boot 200] [--scale clicked|gravity]
       [--k 0.03]
@@ -463,7 +463,7 @@ def _clicked_scale_sd(meta):
 def report(data, lift="single", boot=0, p=None, scale="clicked"):
     """Text report. scale='clicked' keeps the clicked scale (its click error is carried) and shows the gravity check;
     scale='gravity' uses shot A's gravity-checked scale for both shots."""
-    lines = ["POLLEN aero fit (numbers are derived: fits to the user's video; k ASSUMED unless measured)"]
+    lines = ["POLLEN aero fit (numbers are derived: fits to your video; k ASSUMED unless measured)"]
     shots = data["shots"]
     sd_click = _clicked_scale_sd(data["meta"])
     A = shots.get("A")

@@ -2,7 +2,7 @@
 // spin lift (Cl) from a backspin shot with the same settings (the twin test). Flight equations = viz/explorer/physics.js
 // integrate (called directly); the fitting steps match src/fit_aero.py line for line (tests/test_fit_aero.py checks both
 // on synthetic physics.js tracks). Everything runs in the page: files are read locally, nothing is uploaded.
-// Labels: fitted numbers are derived (fits to the user's video); demo numbers and spin decay k are ASSUMED.
+// Labels: fitted numbers are derived (fits to your video); demo numbers and spin decay k are ASSUMED.
 (function (root, factory) {
   "use strict";
   const isNode = typeof module !== "undefined" && module.exports;

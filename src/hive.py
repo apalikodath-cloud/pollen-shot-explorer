@@ -1,6 +1,6 @@
 """HIVE collision geometry and clean (air-only) entry classification.
 
-HANDOFF sections 3 (Q1-Q3), 4E channel 1; contract: docs/INTERFACES.md ("src/hive.py").
+Entry channel 1; contract: docs/INTERFACES.md ("src/hive.py").
 
 Frames
 ------
@@ -144,7 +144,7 @@ class Hive:
         """roof_clearance (default False = unchanged): a sphere under the laterally sloped pentagon
         roof (slope k = (h0 - h_wall) / half-width, about 32.6 deg) needs a vertical gap R sqrt(1 + k^2),
         not R. True lowers the roof segments and the inside top by R (sqrt(1 + k^2) - 1) = 0.00663 m
-        (derived; research/GEOMETRY_AUDIT.md fix 3). It assumes a sharp roof apex (audit U3). The
+        (derived; geometry fix 3). It assumes a sharp roof apex (audit U3). The
         3D cell (src/cell3d.py, physics.js buildCell3D) already includes it; this option is for the
         section model only."""
         g = load_geometry(path)

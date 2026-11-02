@@ -147,7 +147,7 @@ to the grids). Load after `physics.js` (worker: `importScripts("physics.js", "so
 One set of functions for the export, `robustness.py`, the live solver and the page; `tests/test_field_geom.py`
 checks the Python against dense references and against the JS through node (`tests/js_field_geom_check.js`).
 
-| Item (research/GEOMETRY_AUDIT.md) | Now | Label | Status |
+| Item (geometry check) | Now | Label | Status |
 |---|---|---|---|
 | Robot footprint (fix 2, rows 5, 9) | turned chassis (default 18 x 18 in, option 18 x 24 in) inside the walls and off the A-frame base, separating-axis test; release point inside too; `chassis_ok` / `footprint()` in pose, export, robustness, page clamp and drag | CONFIRMED sizes, ASSUMED 5 deg scan | fixed |
 | A-frame keep-out (row 8) | the CONFIRMED base rectangle 38.95 x 49.46 in (the old +0.05 m box is gone); legs vs open mid-span not checked (U1) | CONFIRMED / UNVERIFIED | partly |
@@ -165,7 +165,7 @@ because the whole chassis must fit, not only the release point.
 
 ## Air, drag and draft options (2026-10-31, `physics.js` `airState` / `cdBase` / `aeroExt`, python `src/air.py`)
 
-From research/MISSING_EFFECTS.md build-next 1, 2, 4 and 6. Every option is off by default except the air state.
+Venue air and draft options. Every option is off by default except the air state.
 
 * `q.air`: default still air 20 C, 101.325 kPa, dry: rho = 1.2041 kg/m^3, nu = 1.506e-5 m^2/s (derived:
   `rho = (p - 0.378 e) / (287.06 T)`, simplified CIPM-2007; `e = RH 611.2 exp(17.62 t / (243.12 + t))`; Sutherland
@@ -190,7 +190,7 @@ From research/MISSING_EFFECTS.md build-next 1, 2, 4 and 6. Every option is off b
 
 ## Moving robot, hit chance and lift options (PM-016, `solver.js` `moveFor` / `launch3` / `fastShot3D` / `hitChance`, python `src/robustness.py`)
 
-From research/MISSING_EFFECTS.md build-next 2a-2f. Every option is off (or 0) by default; with all off the answer
+Shooting on the move and related options. Every option is off (or 0) by default; with all off the answer
 is unchanged (tests). Paper: Section 7, "Shooting on the move, hit chance and lift options".
 
 * `q.move = {along, across, vx, vy, wz, d0, lead, rExit}` (user): robot speed toward the goal / to the left of
@@ -267,7 +267,7 @@ flight. It is not a measured repeatability. Every backspin result is shown with 
   re-scored on `n` (1000) fresh shots per set (another seed, so the reported chance is not biased by the
   selection; Wilson 95 % range). Common random numbers: every candidate in a stage sees the same seeded normals
   (`P.normals`, prefix-stable). The score is the mean over the air sets, equal weight (Cl_low, nominal, Cl_high,
-  or the user's Cl table as one set). Stage 4 (`breakdown`, off with `opts.breakdown === false`) runs one source
+  or your own Cl table as one set). Stage 4 (`breakdown`, off with `opts.breakdown === false`) runs one source
   at a time (the other two at 0) on the nominal (or Cl table) set; the lowest chance names the dominant source.
 * `solve(q, onProgress, {part: "main" | "twin"})` solves one grid; the page runs the backspin grid and the twin
   grid in two Web Workers at once, then each worker searches its own grid. S = 0 with no Cl table: one worker

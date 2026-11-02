@@ -11,7 +11,7 @@ import argparse, json, math, re, sys
 from pathlib import Path
 
 WIN = (15.0, 150.0)
-ID_RE = re.compile(r"^p_ibb_d(\d+)_(btw|hf|o3)(?:_Re(\d+)k)?_S([0-9.]+)$")
+ID_RE = re.compile(r"^p_ibb_d(\d+)_([a-z0-9]+)(?:_Re(\d+)k)?_S(-?(?:\d+(?:\.\d*)?|\.\d+))$")
 RE_DEFAULT = 33057
 BIN = 1.0   # t* bin width for the downsampled history
 
@@ -19,16 +19,20 @@ BIN = 1.0   # t* bin width for the downsampled history
 def parse(path):
     m = ID_RE.match(path.stem)
     if not m:
-        return None
+        return None, "malformed id"
     meta, rows, done = {}, [], False
     with open(path, encoding="utf-8", errors="replace") as f:
         for line in f:
             if line.startswith("#"):
                 if line.startswith("# runtime_s="):
                     v = line.split("=", 1)[1].split()
-                    if v and math.isfinite(float(v[0])):   # empty or malformed value: run counts as unfinished
+                    try:
+                        runtime = float(v[0])
+                    except (IndexError, ValueError):
+                        continue
+                    if math.isfinite(runtime):
                         done = True
-                        meta["runtime_s"] = float(v[0])
+                        meta["runtime_s"] = runtime
                 elif "body=" in line and "D=" in line and "meta" not in meta:
                     meta["meta"] = 1
                     for k, v in re.findall(r"\b(D|Re|S)=([0-9.eE+-]+)", line):
@@ -44,12 +48,10 @@ def parse(path):
             if all(math.isfinite(x) for x in row):   # NaN / inf never reach the JSON
                 rows.append(row)
     if not done or not rows:
-        return None
+        return None, "unfinished or no data rows"
     D = int(m.group(1)); S = float(m.group(4))
-    tag = int(m.group(3)) if m.group(3) else None
-    Re_tag = {20: 20000, 47: 47224}.get(tag, RE_DEFAULT) if tag is not None else RE_DEFAULT
-    if tag is not None and tag not in (20, 47):
-        Re_tag = tag * 1000
+    tag = m.group(3)
+    Re_tag = {"20": 20000, "47": 47224}.get(tag, int(tag) * 1000 if tag else RE_DEFAULT)
     Re = meta.get("Re")
     if Re is None or not math.isfinite(Re) or abs(Re - Re_tag) > 0.02 * Re_tag:
         print(f"warn {path.stem}: header Re={Re} vs id tag {Re_tag}; using the tag", file=sys.stderr)
@@ -57,7 +59,7 @@ def parse(path):
     Re = int(round(Re))
     sel = [r for r in rows if WIN[0] <= r[0] <= WIN[1]]
     if not sel:
-        return None
+        return None, "no samples in the export window"
     n = len(sel)
     mean = lambda i: sum(r[i] for r in sel) / n
     # downsample: mean of each BIN-wide t* bin over the whole run
@@ -73,7 +75,7 @@ def parse(path):
     return {"id": path.stem, "D": D, "orient": m.group(2), "Re": Re, "S": S,
             "Cd": round(mean(1), 4), "Cy": round(mean(4), 4), "Cl": round(mean(2), 4), "CM": round(mean(3), 5),
             "n": n, "t_end": round(rows[-1][0], 1), "runtime_s": round(meta.get("runtime_s", 0)),
-            "series": {"t": t, "Cd": cd, "Cl": cl}}
+            "series": {"t": t, "Cd": cd, "Cl": cl}}, None
 
 
 def main():
@@ -84,14 +86,14 @@ def main():
     runs = []
     for p in sorted(a.runs_dir.glob("p_ibb_*.csv")):
         try:
-            r = parse(p)
+            r, reason = parse(p)
         except Exception as e:   # one bad CSV skips that run only
-            print("skip", p.stem, f"({type(e).__name__}: {e})", file=sys.stderr)
+            print(f"warn {p.stem}: skipped ({type(e).__name__}: {e})", file=sys.stderr)
             continue
         if r:
             runs.append(r)
         else:
-            print("skip", p.stem, file=sys.stderr)
+            print(f"warn {p.stem}: skipped ({reason})", file=sys.stderr)
     runs.sort(key=lambda r: (r["D"], r["orient"], r["Re"], r["S"]))
     out = {"label": "PREDICTED", "window": list(WIN),
            "method": "D3Q19 lattice-Boltzmann LES, analytic POLLEN geometry with 26 holes, interpolated bounce-back walls",

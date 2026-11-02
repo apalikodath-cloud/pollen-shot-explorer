@@ -5,7 +5,7 @@ Written 2026-10-31. Code: `src/spin_vs_twin.py` (subcommands run, csv, summary, 
 Paper: section 8, `paper/sections/07_spin_vs_twin.tex`. The tables in sections 3 to 5 are the output of
 `python -m src.spin_vs_twin tables`, pasted unchanged.
 
-Labels follow HANDOFF section 5: CONFIRMED / user / ASSUMED / derived / PREDICTED. Every chance here is PREDICTED:
+Labels: CONFIRMED / user / ASSUMED / derived / PREDICTED. Every chance here is PREDICTED:
 a model probability under ASSUMED launch scatter and ASSUMED aero. It is not a measured repeatability and not a hit
 rate. No aero property of POLLEN has been measured. The lift sets are bounds taken from pickleball and smooth-sphere
 literature, which are not POLLEN facts. Every backspin chance is shown beside the no-spin twin's chance at the same
@@ -318,13 +318,13 @@ matter again, in either direction. So "S 1.5 = S 1.0" is a statement about the m
   POLLEN measurements. POLLEN is perforated, so its lift may be well below the smooth-sphere values. The CFD study
   (PM-012, `cfd/`) has not produced a POLLEN lift yet. When it does, or when the twin test is done, the lift sets
   may move, and with them every number here.
-- **Drag does not depend on spin here.** Cd is 0.5 for both shots. The spin-raised drag option (`MISSING_EFFECTS.md`
-  item 14, off by default) acts on the backspin shot only and was not switched on.
+- **Drag does not depend on spin here.** Cd is 0.5 for both shots. The spin-raised drag option (off by
+  default) acts on the backspin shot only and was not switched on.
 - **Scatter is ASSUMED and the same for both shots.** There is no spin scatter. A real hood's spin will vary from
   shot to shot. In the model this would not matter while the lift stays capped, but on a ball whose lift keeps
   rising with S it would add scatter to the backspin shot only.
 - **Clean entry only.** Bounce-ins and retention are not scored. Unreviewed team build threads
-  (`research/sweeps/sweep_pollen.md`) report that backspin raises bounce-outs from the CELL, and the contact model
+  report that backspin raises bounce-outs from the CELL, and the contact model
   (paper section 5) finds that backspin can lower retention. Neither is in these chances.
 - **The grid is coarse and ASSUMED.** It has 0.3 m steps in x and 0.4 m in y. 72 of the 216 poses are not scored.
   The nearest far-side line is x -0.65 m, so closer spots are not sampled. At 33 of the 84 far-side poses the
@@ -335,7 +335,7 @@ matter again, in either direction. So "S 1.5 = S 1.0" is a statement about the m
   its own noise, which is not modelled.
 - **Matched shots.** All poses use the same seeded shots, so the 84 far-side poses are not 84 independent tests.
   The small tuned lean (backspin lower at 51 to 65 of 84 poses) is not evidence either way.
-- **A model chance, not a hit rate** (HANDOFF 5). Nothing here says how often a real shooter will score.
+- **A model chance, not a hit rate**. Nothing here says how often a real shooter will score.
 
 ## 8. What measurement would change the answer
 

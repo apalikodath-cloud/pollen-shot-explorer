@@ -1,4 +1,4 @@
-// Node checks for the PM-016 options (research/MISSING_EFFECTS.md build-next 2a-2f): shooting on the move
+// Node checks for the PM-016 options (shooting on the move and related options): shooting on the move
 // (solver.js moveFor / frameFor / launch3 / fastShot3D / moveSens), the hit-chance Monte Carlo (hitChance),
 // gyro-correct S, Cl table, reverse Magnus, effective mass and the 3D draft (physics.js makeAcc3 / integrate3D).
 // Run: node tests/js_move_check.js            -> checks, JSON summary as the last line

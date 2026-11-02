@@ -1,4 +1,4 @@
-# 06 - Required vs achievable, Monte Carlo robustness, "score from anywhere" map (HANDOFF §3 Q4, Q6, Q7)
+# 06 - Required vs achievable, Monte Carlo robustness, "score from anywhere" map
 
 Code: `src/robustness.py`. Phase 3 step 9; deliverables 5 and 8.
 Data: `data/req_vs_ach_rows.csv`, `data/req_vs_ach_summary.csv`, `data/robust_map_fractions.csv`,
@@ -24,7 +24,7 @@ Provenance labels follow docs/INTERFACES.md: **confirmed**, **user**, **assumed*
 - assumed release-error and disturbance sets (section 2.1).
 
 Nothing here has been checked against a real shot. The channel is **clean air-only entry** (hypothesis A of
-HANDOFF §0, as in docs/03). Rim-assisted entry (hypothesis B) is not credited, so where it works in reality
+as in docs/03). Rim-assisted entry (hypothesis B) is not credited, so where it works in reality
 these numbers are pessimistic. Written 2026-10-30.
 
 **Summary (all predicted):**
@@ -142,7 +142,7 @@ Reading the table:
 - The passive roller's cap is grip- and rest-limited (docs/04), not rpm-limited. The rpm gap is therefore
   only an equivalent figure: adding wheel rpm does not lift the roller cap in the model.
 - A no-spin shot is not a launcher option at all. Getting one would need a different mechanism, for example
-  a dual-wheel launcher, which HANDOFF §5 excludes here.
+  a dual-wheel launcher, which this project excludes.
 - Spin below saturation is a different case. With the Cl-low set and a required S = 0.5, the hood's S ≈ 1.06
   gives a *different* trajectory (spin_gap, S_gap 0.56). Its own window (the S1 Cl-low row) is still reachable,
   so the extra spin moves the window rather than enlarging it.
@@ -158,7 +158,7 @@ Reading the table:
 
 ### 2.1 Error and disturbance model (all assumed)
 
-There is **no measured repeatability** for any FTC launcher with this ball. HANDOFF §5 says one shot does not
+There is **no measured repeatability** for any FTC launcher with this ball. One shot does not
 show repeatability. Every spread below is therefore an assumption, chosen as plausible for a closed-loop
 flywheel shooter, and it is varied in the scenarios.
 
@@ -311,7 +311,7 @@ The other favourable-side aims:
   are already as wide as that band.
 - **Aero model error is the largest single risk on the unfavourable side.** If the real Cl is at the low or
   high bound and the aim is not re-tuned, p falls to 0.05-0.10. Re-tuning on the field recovers 0.27-0.33.
-  This number therefore depends on field calibration, and that cannot be inferred from one shot (HANDOFF §5).
+  This number therefore depends on field calibration, and that cannot be inferred from one shot.
 - **Wind and speed sag matter on the unfavourable side.** 1 m/s wind (σ) cuts p to 0.11. A 0-4 % open-loop
   sag or a partly recovered wheel cuts it to about 0.24.
 - **Favourable side: robust.** It stays ≥ 0.98 under every single disturbance except loose release errors

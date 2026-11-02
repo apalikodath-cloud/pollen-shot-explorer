@@ -1,6 +1,6 @@
 # Shared interfaces (PM-001)
 
-All parallel agents code against these contracts so their pieces fit. SI units everywhere (m, s, kg, rad). Python 3.13 + numpy/scipy/matplotlib only; no pytest, tests use `unittest` (`python -m unittest discover -s tests -v` from the repo root). Every numeric input carries provenance: `confirmed` (official source, cite URL + section), `measured` (none yet), `user` (user-stated), `assumed` (modeling assumption) or `derived` (computed from the others; give formula).
+All modules code against these contracts so their pieces fit. SI units everywhere (m, s, kg, rad). Python 3.13 + numpy/scipy/matplotlib only; no pytest, tests use `unittest` (`python -m unittest discover -s tests -v` from the repo root). Every numeric input carries provenance: `confirmed` (official source, cite URL + section), `measured` (none yet), `user` (user-stated), `assumed` (modeling assumption) or `derived` (computed from the others; give formula).
 
 ## Frames
 - HIVE frame for the 2D tipping-plane cross-section: origin on the tile surface directly below the alliance HIVE pivot axis; z up; x horizontal, perpendicular to the pivot axis (i.e. in the plane the CELLS tip in); y along the pivot axis.

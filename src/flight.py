@@ -1,6 +1,6 @@
 """Free-flight solver for POLLEN with drag, Magnus lift, spin decay and wind.
 
-HANDOFF section 4A / 4B; API contract: docs/INTERFACES.md ("src/flight.py").
+API contract: docs/INTERFACES.md ("src/flight.py").
 
 Frame: x horizontal toward the target, y sideways, z up (SI units: m, s, kg, rad).
 2D shots use y = 0 and omega along +/-y.
@@ -61,7 +61,7 @@ NU_AIR_DEFAULT = 1.5e-5
 EPS_V_DEFAULT = 1e-6
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-#: Shared aerodynamic parameter file (written by another agent; see INTERFACES.md).
+#: Shared aerodynamic parameter file (see docs/INTERFACES.md).
 #: PM001_AERO_PATH (set by ``set_aero_path``) overrides it; spawned worker processes inherit
 #: the environment, so a pool started after ``set_aero_path`` reads the same file.
 AERO_PARAMS_PATH = os.environ.get("PM001_AERO_PATH") or os.path.join(_ROOT, "data", "aero_params.json")
@@ -81,7 +81,7 @@ def aero_tag() -> str:
     """Short name of the active aero file, for cache directories ('params_lit', 'aero_params')."""
     return os.path.splitext(os.path.basename(AERO_PARAMS_PATH))[0]
 
-#: Fallback nominal parameters when data/aero_params.json is absent (HANDOFF 4A nominal).
+#: Fallback nominal parameters when data/aero_params.json is absent (nominal placeholders).
 FALLBACK_PARAMS: dict[str, Any] = {
     "rho": 1.2041,           # kg/m^3, still air 20 C / 101.325 kPa / dry (derived, src/air.py)
     "mass": 0.025,           # kg
@@ -97,11 +97,11 @@ FALLBACK_PROVENANCE: dict[str, str] = {
     "rho": "derived: still air 20 C, 101.325 kPa, dry -> 1.2041 kg/m^3 (src/air.py, simplified CIPM-2007; "
            "was ISA 15 C 1.225); venue air density varies ~1.15-1.23 with altitude/temperature (src/air.py "
            "air_state).",
-    "mass": "user/confirmed-vendor: HANDOFF section 1 cites AndyMark am-5851_yellow at 0.055 lb "
+    "mass": "user/confirmed-vendor: AndyMark am-5851_yellow is listed at 0.055 lb "
             "(~24.95 g); 0.025 kg first-pass value; weigh real balls.",
-    "radius": "confirmed nominal: 2.8 in (7.1 cm) diameter per BIOBUZZ manual TU07 / HANDOFF "
+    "radius": "confirmed nominal: 2.8 in (7.1 cm) diameter per BIOBUZZ manual TU07 "
               "section 1-2 (0.0355 m); actual pieces vary and are not perfectly spherical.",
-    "Cd": "assumed PLACEHOLDER: 0.5 (HANDOFF 4A nominal); uncalibrated for perforated POLLEN.",
+    "Cd": "assumed PLACEHOLDER: 0.5 (nominal); uncalibrated for perforated POLLEN.",
     "Cl": "assumed PLACEHOLDER: Cl = min(0.25*S, 0.4). c1=0.25 is the task-brief placeholder; "
           "Cl_max=0.4 is an arbitrary ceiling (no POLLEN source). Uncalibrated; pickleball "
           "data are not POLLEN measurements.",
@@ -191,7 +191,7 @@ def load_params(path: Optional[str] = None, which: Any = "nominal") -> dict[str,
 
 
 def default_params(which: Any = "nominal", path: Optional[str] = None) -> dict[str, Any]:
-    """data/aero_params.json if present (and parseable), else the HANDOFF fallback nominal."""
+    """data/aero_params.json if present (and parseable), else the fallback nominal."""
     path = path or AERO_PARAMS_PATH
     if os.path.exists(path):
         try:
@@ -200,7 +200,7 @@ def default_params(which: Any = "nominal", path: Optional[str] = None) -> dict[s
             pass
     p = dict(FALLBACK_PARAMS)
     p["prov"] = dict(FALLBACK_PROVENANCE)
-    p["source"] = "fallback (HANDOFF 4A nominal placeholders)"
+    p["source"] = "fallback (nominal placeholders)"
     return p
 
 
@@ -231,7 +231,7 @@ class _Prep:
     cd_const: Optional[float]
     cd_fn: Optional[Callable[[float, float], float]]
     cl_fn: Optional[Callable[[float, float], float]]
-    s_perp: bool = False       # gyro-correct spin ratio S_perp = |w x v| R / |v|^2 (MISSING_EFFECTS.md 2c)
+    s_perp: bool = False       # gyro-correct spin ratio S_perp = |w x v| R / |v|^2
     inv_eps: float = 1.0       # 1 / (1 + eps_mass), effective (added) mass (2e)
 
 

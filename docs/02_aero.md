@@ -1,4 +1,4 @@
-# 02 — POLLEN aerodynamics: literature bounds (HANDOFF §4A)
+# 02 — POLLEN aerodynamics: literature bounds
 
 Status: every aerodynamic coefficient here is **assumed (literature-bounded)**. None of it is a POLLEN measurement. The machine-readable values are in `research/params_lit.json`, the default for new runs, and this file explains where they come from. `data/aero_params.json` is the legacy first-pass set (Cd 0.35 / 0.48 / 0.65, Cl low 0.15 / 0.10, k 0.01 / 0.05 / 0.30 s⁻¹, no floor set). Written 2026-10-30; sets updated to `research/params_lit.json` 2026-10-31.
 
@@ -73,7 +73,7 @@ Terminal speed v_t = √(2·m·g / (ρ·Cd·A)) is ≈14.35 m/s at the nominal C
 So drag is larger than the nominal Magnus force at every speed (compare §5). In sensitivity runs, pair the high Cl set with the higher Cd values.
 
 ## 4. Lift coefficient, Cl = min(c1·S, Cl_max), with S = ωR/|v_rel|
-For context, an ideal hood (HANDOFF §4C) gives S_exit ≈ 1. As the ball slows near the apex, S rises, so the model must hold to S ≈ 2. That is why every set is capped. The low, nominal and high sets reach their caps by S ≈ 0.5–0.75; the floor set's slope runs on to S = 2.0 before its cap (derived: S_sat = Cl_max/c1).
+For context, an ideal no-slip hood (docs/04_launcher.md) gives S_exit ≈ 1. As the ball slows near the apex, S rises, so the model must hold to S ≈ 2. That is why every set is capped. The low, nominal and high sets reach their caps by S ≈ 0.5–0.75; the floor set's slope runs on to S = 2.0 before its cap (derived: S_sat = Cl_max/c1).
 
 | Set | c1 | Cl_max | Cap reached at S | Basis |
 |---|---|---|---|---|
@@ -87,7 +87,7 @@ Why each source does or does not transfer:
 - **Pickleball (Steyn, Lindsey)**
   - Transfers: same material class, similar size, mass and Re.
   - Does not transfer: pickleball S ≤ ~0.3–0.5, whereas POLLEN shots reach S ≈ 1–2. Steyn has 6 shots with large scatter and a figure inconsistent with its own fit. Lindsey's backspin Cl is nearly S-independent, which suggests early saturation.
-  - HANDOFF §5: these are not POLLEN measurements.
+  - These are not POLLEN measurements.
 - **Smooth rotating sphere (Muto LES, Tsuji, Zhou, RSM)**
   - Transfers: correct Re and S range, and it is the only source family that covers S ≈ 1 and above.
   - Does not transfer: no holes. Air through the holes and the internal cavity may vent the pressure difference (lower Cl) or change separation (either sign).
@@ -96,10 +96,10 @@ Why each source does or does not transfer:
   - Does not transfer: Re > 6e4–1e5, and seams or felt instead of holes.
 - **Wiffle (Rossmann & Rau)**
   - Transfers: the qualitative warning that holes create asymmetric forces.
-  - Does not transfer: one-sided slots, measured non-spinning. Full text read (research/checks/rossmann2007.md): Cd 0.36–1.05 by orientation and Re; the 0.6 used by Emond et al. is one (β = 90°) orientation.
+  - Does not transfer: one-sided slots, measured non-spinning. Full text read: Cd 0.36–1.05 by orientation and Re; the 0.6 used by Emond et al. is one (β = 90°) orientation.
 
 ## 5. Scale check: Magnus acceleration / g (derived)
-Inputs: ρ 1.20, A = π·0.0355² = 3.959e-3 m², m 24.95 g; a_M/g = ρ·Cl·A·v² / (2·m·g). The HANDOFF check (5 m/s, Cl 0.20, ρ 1.225 → 0.485 m/s²) is reproduced. The no-spin twin (S = 0) has Cl = 0, so its Magnus term is 0 at every speed.
+Inputs: ρ 1.20, A = π·0.0355² = 3.959e-3 m², m 24.95 g; a_M/g = ρ·Cl·A·v² / (2·m·g). A quick magnitude check (5 m/s, Cl 0.20, ρ 1.225 → 0.485 m/s²) is reproduced. The no-spin twin (S = 0) has Cl = 0, so its Magnus term is 0 at every speed.
 
 | v (m/s) | floor S=0.5 | floor S=1 | floor S=2 | low S=0.5 | low S=1 | low S=2 | nom S=0.5 | nom S=1 | nom S=2 | high S=0.5 | high S=1 | high S=2 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -110,7 +110,7 @@ Inputs: ρ 1.20, A = π·0.0355² = 3.959e-3 m², m 24.95 g; a_M/g = ρ·Cl·A·
 
 Reading the table:
 - Near the apex the speed is typically 2–4 m/s, where Magnus is only **≈1–6% of g**, even with the high set. The meaningful spin curvature happens on the faster parts of the path, at roughly 6–9 m/s, where it is 5–30% of g (about 1–3% with the floor set at S 1–2).
-- In this capped model, extra spin changes nothing once S exceeds S_sat: about 0.5–0.75 for the low, nominal and high sets, but 2.0 for the floor set (model statement, not a measurement). This supports HANDOFF §5's warning not to claim that more backspin always helps.
+- In this capped model, extra spin changes nothing once S exceeds S_sat: about 0.5–0.75 for the low, nominal and high sets, but 2.0 for the floor set (model statement, not a measurement). So we never claim that more backspin always helps.
 
 ## 6. Spin decay (derived / assumed)
 - **Model:** dω/dt = −k·ω.
@@ -136,7 +136,7 @@ Reading the table:
 3. Lindsey, C. (2025-05-12). The Physics of Pickleball Aerodynamics and Trajectories: A Revised Model of Lift and Drag. https://twu.tennis-warehouse.com/learning_center/pickleball/pickleball_aerodynamics.php
 4. Steyn, D. et al. (2025). Executing a Successful Third Shot Drop in Pickleball. SportRxiv preprint https://sportrxiv.org/index.php/server/preprint/download/499/1073/997 ; IJSSC https://doi.org/10.1177/17479541251365200
 5. Emond, Sun & Swartz (2024). Pickleball Flight Dynamics. https://doi.org/10.30827/ijrss.32618 (arXiv 2409.19000)
-6. Rossmann & Rau (2007). An experimental study of Wiffle ball aerodynamics. Am. J. Phys. https://doi.org/10.1119/1.2787013 (full text read later from the Lafayette repository PDF; research/checks/rossmann2007.md)
+6. Rossmann & Rau (2007). An experimental study of Wiffle ball aerodynamics. Am. J. Phys. https://doi.org/10.1119/1.2787013 (full text read later from the Lafayette repository PDF)
 7. Muto, Tsubokura & Oshima (2012). Negative Magnus lift on a rotating sphere at around the critical Reynolds number. Phys. Fluids 24, 014102. https://doi.org/10.1063/1.3673571
 8. Kim, Choi, Park & Yoo (2014). Inverse Magnus effect on a rotating sphere: when and why. JFM 754 R2. https://cambridge.org/core/journals/journal-of-fluid-mechanics/article/inverse-magnus-effect-on-a-rotating-sphere-when-and-why/0E9FEF2880AA45C8B12587374C6F10EE
 9. Nathan, A.M. The effect of spin on the flight of a baseball (SHS lift fit). https://arxiv.org/abs/physics/0605041
@@ -146,4 +146,4 @@ Reading the table:
 13. Ruchayosyothin et al. (2022), JRAME (abstract only). https://doi.nrct.go.th/ListDoi/listDetail/10.14456%2Fjrame.2022.5 ; Zhou et al. (2022) water-tank limit Cl ≈ 0.37 (abstract-level, via search summary).
 14. Ito & Kamijima (2025). CFD of a spinning smooth sphere. Trans. JSST 17(1):25–31 (J-STAGE).
 15. Sakai et al. (2016). Aerodynamics of a spinning table-tennis ball: lift crisis (JSME annual meeting, J-STAGE); Miyazaki et al. (2017), same campaign.
-16. Chief Delphi thread 154587 (2017 FRC FUEL terminal velocity; Cd recomputed 0.88 in research/checks/sweep_pollen.md). https://www.chiefdelphi.com/t/154587
+16. Chief Delphi thread 154587 (2017 FRC FUEL terminal velocity; Cd recomputed 0.88). https://www.chiefdelphi.com/t/154587

@@ -1,4 +1,4 @@
-"""Shared field geometry for the release-point tests (PM-015, research/GEOMETRY_AUDIT.md fixes 2, 5, 8).
+"""Shared field geometry for the release-point tests (PM-015 geometry fixes 2, 5, 8).
 
 One implementation of three things that used to be coded three different ways:
 
@@ -26,7 +26,7 @@ IN = 0.0254
 #: derived from the official field CAD (data/hive_geometry.json): inner wall |x| = 1.8009 m
 X_WALL = 1.8009
 #: CAD: red HIVE centre 0.3236 m from the field centre (HIVE c-c 0.6472 m; the audit keeps the CAD
-#: value, research/GEOMETRY_AUDIT.md section 3 and U2)
+#: value, geometry check, section 3 and U2)
 HIVE_HALF_SPACING = 0.3236
 Y_LO, Y_HI = -X_WALL + HIVE_HALF_SPACING, X_WALL + HIVE_HALF_SPACING
 #: CONFIRMED (TU07 9.6.1): A-frame base 38.95 in (x) x 49.46 in (y), centred on the field centre

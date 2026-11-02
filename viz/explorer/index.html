@@ -6,57 +6,25 @@
 <script>try { var th = localStorage.getItem("pollen-theme"); if (th === "light" || th === "dark") document.documentElement.dataset.theme = th; } catch (_) { /* storage blocked: follow the system theme */ }</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: a night-arena scope. The 3D field is the hero on the left, the shooter's dials sit on a
    rail to the right, and the two charts that answer "which shots work" run underneath.
    One committed dark look (WebGL scene + dark panels), colours set explicitly. */
 :root {
-  --bg: #0b1015;
-  --panel: #111921;
-  --panel-2: #16212b;
-  --line: #24323f;
-  --fg: #e3eaf0;
-  --muted: #8d9caa;
-  --pollen: #f4c430;      /* POLLEN yellow: the ball and the chosen shot */
-  --clean: #38d39f;       /* clean entry */
-  --hit: #ff6b5a;         /* touched the HIVE first */
-  --miss: #71808f;
-  --twin: #a9b4bf;
-  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
-  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
-  color-scheme: dark;
-  /* PM-023: extra tokens (surfaces, CFD series colours, spacing and type scales) */
-  --btn-bg: rgba(17,25,33,.86); --overlay: rgba(11,16,21,.86); --tipbg: #05080b; --rbarbg: rgba(5,8,11,.96);
-  --cv-accent: #f4c430; /* canvas accent: canvases keep a dark plotting surface in both themes */
-  --c1: #6cb4ff; --c2: #f4c430; --c3: #e58cff; --ink-on-pollen: #14110a;
-  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px;
-  --t-sm: 12px; --t-md: 14px; --t-lg: 16px; --t-xl: 28px;
-}
-:root[data-theme="light"] {
-  --bg: #f3f5f7; --panel: #ffffff; --panel-2: #eaeef2; --line: #c9d1d9; --fg: #141b22; --muted: #4f5d6a;
-  --pollen: #9a6b00; --clean: #0a7f5a; --hit: #c0392b; --miss: #5b6874; --twin: #46535f;
-  --tight: #9c5a00; --no: #c0392b; --out: #4f5d6a;
-  --btn-bg: rgba(255,255,255,.94); --overlay: rgba(255,255,255,.92); --tipbg: #ffffff; --rbarbg: rgba(255,255,255,.97);
-  --c1: #1a62a8; --c2: #946500; --c3: #8e3aba; --ink-on-pollen: #ffffff;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --bg: #f3f5f7; --panel: #ffffff; --panel-2: #eaeef2; --line: #c9d1d9; --fg: #141b22; --muted: #4f5d6a;
-    --pollen: #9a6b00; --clean: #0a7f5a; --hit: #c0392b; --miss: #5b6874; --twin: #46535f;
-    --tight: #9c5a00; --no: #c0392b; --out: #4f5d6a;
-    --btn-bg: rgba(255,255,255,.94); --overlay: rgba(255,255,255,.92); --tipbg: #ffffff; --rbarbg: rgba(255,255,255,.97);
-    --c1: #1a62a8; --c2: #946500; --c3: #8e3aba; --ink-on-pollen: #ffffff;
-    color-scheme: light;
-  }
+  --bg: #f4f6f7; --panel: #fff; --panel-2: #eef2f3; --line: #dce3e5; --fg: #172126; --muted: #66757b;
+  --ball: #f2c94c; --spin: #d6336c; --twin: #77858e; --hive: #d99028; --clean: #198754; --hit: #c0392b; --miss: var(--twin); --tight: #9c5a00; --no: #c0392b; --out: #4f5d6a;
+  --pollen: var(--ball); --display: "Space Grotesk", Inter, system-ui, sans-serif; --body: Inter, system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace; --ink-on-pollen: #172126; --cv-accent: var(--ball);
+  --btn-bg: rgba(255,255,255,.94); --overlay: rgba(255,255,255,.92); --tipbg: #fff; --rbarbg: rgba(255,255,255,.97); --c1: #1a62a8; --c2: #946500; --c3: #8e3aba;
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --t-sm: 12px; --t-md: 14px; --t-lg: 16px; --t-xl: 28px; color-scheme: light;
 }
 html, body { background: var(--bg); color: var(--fg); }
 body { font-family: var(--body); font-size: 14px; line-height: 1.45; }
 .wrap { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 14px 28px; max-width: 1480px; margin: 0 auto; display: grid; gap: 14px; }
 header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
 h1 { font-family: var(--display); font-weight: 700; font-size: 30px; letter-spacing: .01em; margin: 0; text-wrap: balance; }
+h2 { font-family: var(--display); }
+.titlerow h2 { font-size: 30px; letter-spacing: .01em; margin: 0; }
 h1 b { color: var(--pollen); font-weight: 700; }
 .sub { color: var(--muted); max-width: 78ch; margin: 0; }
 .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--bg); background: var(--pollen); padding: 2px 7px; border-radius: 3px; }
@@ -328,17 +296,79 @@ a { color: var(--pollen); text-underline-offset: 3px; }
 }
 .stage .hud .note, .stage .hudnote, .stage .hud .legend { --muted: #8d9caa; }
 .stage .hud .note, .stage .hudnote { color: #aab6c1; }
+/* Night flight lab redesign: the hero stays dark while the explorer becomes a quiet bench. */
+:root[data-theme="dark"] { --bg: #0d1518; --btn-bg: rgba(20,32,36,.92); --overlay: rgba(13,21,24,.88); --tipbg: #0a1114; --rbarbg: rgba(13,21,24,.96); --panel: #142024; --panel-2: #1a2b30; --line: #2a3d42; --fg: #e8f0ef; --muted: #9aacae; --ball: #f4d35e; --spin: #f06b94; --twin: #9aabb1; --hive: #e6a84c; --clean: #4bd39a; --hit: #ff7465; --pollen: var(--ball); --cv-accent: var(--ball); color-scheme: dark; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0d1518; --btn-bg: rgba(20,32,36,.92); --overlay: rgba(13,21,24,.88); --tipbg: #0a1114; --rbarbg: rgba(13,21,24,.96); --panel: #142024; --panel-2: #1a2b30; --line: #2a3d42; --fg: #e8f0ef; --muted: #9aacae; --ball: #f4d35e; --spin: #f06b94; --twin: #9aabb1; --hive: #e6a84c; --clean: #4bd39a; --hit: #ff7465; --pollen: var(--ball); --cv-accent: var(--ball); color-scheme: dark; } }
+body { font-family: var(--body); background: var(--bg); }
+.hero { min-height: 88vh; box-sizing: border-box; color: #f4f8f7; background-color: #05070d; background-image: radial-gradient(circle at 76% 26%, rgba(55,211,255,.55) 0 1px, transparent 1.5px), radial-gradient(circle at 63% 68%, rgba(255,255,255,.35) 0 1px, transparent 1.5px), linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px); background-size: 240px 210px, 310px 260px, 48px 48px, 48px 48px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, .9fr); gap: clamp(24px, 6vw, 92px); align-items: center; padding: clamp(32px, 7vw, 96px) max(24px, 7vw); }
+.hero-copy { max-width: 700px; }
+.hero-eyebrow, .hero-caption, .hero-stats, .hero-steps { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #59dbff; }
+.hero h1 { margin: 18px 0 16px; font: 700 clamp(52px, 8vw, 112px)/.88 var(--display); letter-spacing: -.05em; text-transform: uppercase; }
+.hero-sub { max-width: 62ch; margin: 0; color: #bbcbce; font-size: clamp(16px, 1.7vw, 20px); line-height: 1.5; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+.hero-actions a { border: 1px solid #59dbff; border-radius: 999px; padding: 12px 18px; color: #05070d; background: #59dbff; text-decoration: none; font-weight: 600; }
+.hero-actions a.ghost { color: #d7e9eb; background: transparent; border-color: #52727a; }
+.hero-art { width: 100%; max-width: 620px; justify-self: center; }
+.hero-art svg { width: 100%; overflow: visible; }
+.hero-art .arc { fill: none; stroke: #59dbff; stroke-width: 2; stroke-dasharray: 620; stroke-dashoffset: 620; animation: draw-arc 6s ease-in-out infinite; }
+.hero-art .arc.twin { stroke: #77858e; stroke-dasharray: 8 8; animation-delay: .2s; }
+.hero-art .ball { fill: #05070d; stroke: #59dbff; stroke-width: 2; filter: url(#glow); }
+.hero-art .ball.twin { fill: #77858e; stroke: #b5c0c7; opacity: .45; }
+.hero-art .hive { fill: none; stroke: #e6a84c; stroke-width: 3; filter: url(#glow); }
+@keyframes draw-arc { 0%, 12% { stroke-dashoffset: 620; } 48%, 82% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 620; } }
+.hero-caption { margin: 8px 0 0; color: #9fb2b5; text-align: center; letter-spacing: .02em; text-transform: none; }
+.hero-stats { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 12px 28px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.12); color: #b5c8ca; }
+.hero-stats span::before { content: "// "; color: #59dbff; }
+.bench-intro { margin: 0; color: var(--muted); }
+.tabs { position: sticky; top: 10px; z-index: 5; display: flex; flex-wrap: wrap; gap: 4px; padding: 5px; border: 1px solid var(--line); border-radius: 999px; background: color-mix(in srgb, var(--panel) 92%, transparent); box-shadow: 0 6px 20px rgb(0 0 0 / .08); }
+.tabs button { flex: 1 1 110px; min-height: 38px; border: 0; border-radius: 999px; padding: 7px 12px; background: transparent; text-align: center; }
+.tabs button b { font: 600 14px var(--display); }
+.tabs button[aria-pressed=true] { background: var(--fg); color: var(--bg); box-shadow: none; }
+.tabs button[aria-pressed=true] b { color: inherit; }
+.card, .chart { border: 0; border-radius: 14px; padding: 24px; box-shadow: 0 1px 2px rgb(0 0 0 / .06), 0 4px 16px rgb(0 0 0 / .05); }
+.card h2, .shead h2, .chart h3 { font-family: var(--display); letter-spacing: .02em; }
+.shead h2::before, .card > h2::before { content: attr(data-label); display: block; margin-bottom: 5px; font: 500 10px var(--mono); letter-spacing: .1em; color: var(--muted); }
+.mapcard h2::before { content: "THE FIELD"; } .answer h2::before { content: "YOUR SETTING"; } .rcol > .step h2::before, #prail > .card h2::before { content: "SHOOTER"; }
+.badge, .tag { border: 0; border-radius: 999px; background: var(--panel-2); color: var(--muted); font: 500 10px var(--mono); letter-spacing: .06em; }
+.rec { background: var(--panel-2); border: 0; border-left: 3px solid var(--spin); border-radius: 10px; padding: 18px; }
+.rec::before { content: "MODEL PREDICTION"; justify-self: start; padding: 3px 7px; border-radius: 999px; background: color-mix(in srgb, var(--spin) 13%, var(--panel)); color: var(--spin); font: 500 10px var(--mono); letter-spacing: .06em; }
+.rec .say .lab, .rec .droop .lab, .rec .which .lab, .rec .hc .lab { display: none; }
+.rec .say { font-size: 18px; }
+.rec .say b { color: var(--spin); }
+.twinline { border-left-color: var(--twin); }
+.hintbox { padding: 10px 12px; border-left: 3px solid var(--clean); border-radius: 6px; background: color-mix(in srgb, var(--clean) 10%, var(--panel)); color: var(--fg); }
+.labkey { color: var(--muted); }
+.flow-count { color: inherit; }
+@media (prefers-reduced-motion: reduce) { .hero-art .arc, .hero-art .ball { animation: none; stroke-dashoffset: 0; } .hero-art .ball { opacity: 1; } }
+@media (max-width: 760px) { .hero { min-height: auto; grid-template-columns: 1fr; padding: 56px 20px 28px; } .hero h1 { font-size: clamp(38px, 12vw, 82px); overflow-wrap: anywhere; } .hero-art { max-width: 520px; } .hero-stats { grid-column: auto; } .wrap { padding-left: 16px; padding-right: 16px; } .tabs { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; } .tabs button { flex: 0 0 auto; } .tabs button small, .tabs button .sub { display: none; } body { overflow-x: hidden; } }
 </style>
 
-<div class="wrap">
+<section class="hero" id="hero" aria-labelledby="hero-title">
+  <div class="hero-copy">
+    <div class="hero-eyebrow">FTC 207 Critical Mass · BioBuzz 2026-27</div>
+    <h1 id="hero-title">Score from<br>the back side.</h1>
+    <p class="hero-sub">One flywheel, a little backspin, a 71 mm ball full of holes. Find the wheel speed and hood angle that drop POLLEN into the far CELL from where your robot stands.</p>
+    <div class="hero-actions"><a href="#explorer">Place your robot</a><a class="ghost" href="#how-it-works">How it works</a></div>
+  </div>
+  <div class="hero-art" aria-label="A wireframe POLLEN ball follows a backspin arc into a HIVE cell beside a dashed no-spin arc">
+    <svg viewBox="0 0 620 330" role="img"><defs><filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><path id="arc-spin" d="M90 250 C190 55 365 45 505 130"/><path id="arc-twin" d="M90 258 C210 105 380 105 505 150"/></defs><path class="arc" d="M90 250 C190 55 365 45 505 130"/><path class="arc twin" d="M90 258 C210 105 380 105 505 150"/><g class="ball"><g><circle r="28"/><ellipse rx="28" ry="10"/><ellipse rx="10" ry="28"/><circle cx="-11" cy="-12" r="3"/><circle cx="14" cy="-7" r="3"/><circle cx="7" cy="14" r="3"/><animateTransform attributeName="transform" type="rotate" values="0;360" dur="6s" repeatCount="indefinite"/></g><animateMotion dur="6s" repeatCount="indefinite" rotate="0"><mpath href="#arc-spin"/></animateMotion></g><g class="ball twin"><circle r="22"/><ellipse rx="22" ry="8"/><animateMotion dur="6s" begin=".2s" repeatCount="indefinite" rotate="0"><mpath href="#arc-twin"/></animateMotion></g><path class="hive" d="M492 112 L585 112 L570 225 L507 225 Z M505 112 L520 92 L570 92 L585 112"/></svg>
+    <p class="hero-caption">Backspin shot (solid) and its no-spin twin (dashed) · model prediction</p>
+  </div>
+  <div class="hero-stats"><span>98 mm flywheel</span><span>71 mm POLLEN, 26 holes</span><span class="flow-count">24 CFD runs</span></div>
+</section>
+<div id="how-it-works" class="hero-steps" style="max-width:1480px;margin:0 auto;padding:18px 16px 0;color:#66757b">1 Place the robot · 2 Read the setting · 3 Test it on the field</div>
+<script>(async () => { for (const url of ["flow/flows/index.json", "../flow/flows/index.json"]) { try { const r = await fetch(url, { cache: "no-cache" }); if (!r.ok) throw new Error(r.status); const d = await r.json(); const n = (d.runs || []).length; if (n) document.querySelectorAll(".flow-count").forEach(e => e.textContent = n + " CFD cases"); break; } catch (_) {} } try { const r = await fetch("data/cfd_runs.json", { cache: "no-cache" }); const d = await r.json(); const n = (d.runs || []).length; if (n) document.querySelectorAll(".flow-count").forEach(e => e.textContent = n + " CFD runs"); } catch (_) {} })();</script>
+<script>if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) document.querySelectorAll(".hero-art animateMotion,.hero-art animateTransform").forEach(e => e.remove()); if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { document.querySelector(".hero-art .ball")?.setAttribute("transform", "translate(415 130)"); document.querySelector(".hero-art .ball.twin")?.setAttribute("transform", "translate(415 150)"); }</script>
+<div class="wrap" id="explorer">
   <header>
     <div class="titlerow">
-      <h1><b>POLLEN</b> Shot Explorer</h1>
+      <h2><b>POLLEN</b> Shot Explorer</h2>
       <span class="tag" title="Every number here comes from a computer model. Nothing has been measured on a real robot yet.">Predicted · not measured</span>
       <button class="btn themebtn" id="theme-btn" type="button" aria-label="Switch between light and dark theme" title="Switch between light and dark theme"></button>
       <button class="btn reset" id="reset" type="button" title="Put every setting back to its starting value">Reset</button>
     </div>
     <p class="sub" id="sub">Drag the robot on the map, set your shooter height and backspin, then read the wheel rpm and hood angle in the answer card.</p>
+    <p class="bench-intro">Every number here is a model prediction. Nothing about POLLEN has been measured yet - test on the field.</p>
     <nav class="tabs" id="mode-seg" aria-label="View">
       <button type="button" data-v="robot"><b>Robot</b><span>Where can I shoot from?</span></button>
       <button type="button" data-v="plane"><b>Side view</b><span>One shot up close</span></button>
@@ -346,7 +376,7 @@ a { color: var(--pollen); text-underline-offset: 3px; }
       <button type="button" data-v="cfd"><b>CFD</b><span>Our wind-flow results</span></button>
       <button type="button" data-v="flow3d"><b>3D flow</b><span>CFD around the shot</span></button>
     </nav>
-    <p class="kitlink"><a href="../flow/shot.html" id="cfd-shot-link"><b>CFD flow around the ball</b></a> <span>· see the simulated airflow, streamlines and contour lines around POLLEN along the shot (PREDICTED) · </span><a href="../flow/flow.html" id="cfd-flow-link">all 13 CFD cases</a></p>
+    <p class="kitlink"><a href="../flow/shot.html" id="cfd-shot-link"><b>CFD flow around the ball</b></a> <span>· see the simulated airflow around POLLEN along the shot · </span><a href="../flow/flow.html" id="cfd-flow-link">all <span class="flow-count">CFD cases</span></a></p>
     <p class="kitlink"><a href="../measure/measure.html" id="measure-link">Measure your shooter</a> <span>· track a slow-motion video and fit drag (Cd) and spin lift (Cl) with the no-spin twin test, then enter them here (Advanced settings)</span></p>
   </header>
 
@@ -378,7 +408,7 @@ a { color: var(--pollen); text-underline-offset: 3px; }
         <div class="rres" id="rres"></div>
         <p class="warn" id="rwarn"></p>
         <details class="more" id="rdet">
-          <summary>Details (knife edges, clearances, solver)</summary>
+          <summary>Show the math</summary>
           <dl class="stats rstats" id="rpose"></dl>
           <div id="rdetail"></div>
         </details>
@@ -630,11 +660,22 @@ a { color: var(--pollen); text-underline-offset: 3px; }
     <p><b>Not modelled yet</b> (largest first, from the research ranking; each needs a measurement): the real spin-lift level of POLLEN (Cl); its real drag level (Cd); grip and slip at the wheel (v/u, ball squeeze); the hood angle not being the exit angle; the random side force on a low-spin holed ball (knuckle); exit skew and a tilted spin axis (sideways error); balls and NECTAR already in the cell, bounce (COR) and the HIVE tipping mid-volley; bounces after entry; the air carried inside the ball (effective mass: an ASSUMED option only); flywheel droop and battery voltage at launch (the answer shows a PREDICTED per-shot droop and recovery readout, but every shot is still solved at the set wheel speed; an encoder log is needed). Robot motion and sideways drafts are options (Advanced), not measurements. The "chance it goes in" line is a model probability under ASSUMED launch scatter, not a measured repeatability.</p>
     <p><b>What it is not.</b> No POLLEN drag, spin lift, bounce or launcher grip has been measured. The air cases are literature ranges (pickleball and smooth-sphere data), not POLLEN facts. A shot that touches the HIVE stops here; a bounce can still score (see docs/05). The second HIVE and the A-frame legs are drawn for context only. One clean simulated shot says nothing about repeatability: the tolerance shown is how far speed and angle can drift and still go in. In the Robot view the release point is the robot centre at your height (an offset can be set; the turned 18 × 18 in chassis must stay inside the walls and off the A-frame base) and the turret is assumed to aim exactly (ASSUMED). The Side view and the Field map are precomputed with the same 3D cell (side walls, pentagon roof) at 1.204 kg/m³ (derived); the Side view is a straight shot down the tipping plane only.</p>
     </details>
+    <details class="more labels"><summary>What the labels mean</summary><p><b>CONFIRMED</b> is from an official field or component source. <b>USER</b> is a setting you chose. <b>ASSUMED</b> is an engineering estimate. <b>DERIVED</b> is computed from the model inputs. <b>PREDICTED</b> is a model result, not a measurement.</p></details>
     <p id="prov"></p>
   </footer>
 </div>
 <button type="button" class="rbar" id="rbar" hidden aria-label="Your answer: tap to see the full answer card"></button>
 <div class="tip" id="tip" hidden></div>
+<script>
+  const cfdIntro = document.querySelector("#cfdsec .cfd-lead");
+  const cfdNote = document.querySelector("#cfdsec .cfd-note");
+  if (cfdIntro) cfdIntro.textContent = "We ran a GPU flow model on the POLLEN shape. It estimates drag, lift from backspin and spin-down torque; it is not a measurement. The results below are predictions, and more runs can appear as they finish.";
+  if (cfdNote) {
+    const d = document.createElement("details"); d.className = "more";
+    d.innerHTML = "<summary>Definitions</summary><p class=\"cfd-note\">S = spin ratio (ω·R/U). Re = Reynolds number (U·D/ν); 20,000, 33,057 and 47,224 are about 4, 7 and 10 m/s. Means use 15 ≤ t* ≤ 150, where t* is flow travel in ball diameters. Cd and Cl are force coefficients; CM is torque coefficient, positive when the ball slows down. Orientations: btw = between holes, hf = hole facing the flow, o3 = third orientation.</p>";
+    cfdNote.replaceWith(d);
+  }
+</script>
 
 <script>
 // test hook: any uncaught error or console.error lands on <body data-js-error> for headless checks
@@ -656,8 +697,8 @@ a { color: var(--pollen); text-underline-offset: 3px; }
 (function (root) {
   "use strict";
 
-  // ---- venue air and optional drag / draft terms (line-for-line copy of src/air.py; MISSING_EFFECTS.md
-  // build-next 1, 2, 4). Params keys (same as Python): cd_model 'const' (default, params Cd ASSUMED) | 'morrison'
+  // ---- venue air and optional drag / draft terms (line-for-line copy of src/air.py).
+  // Params keys (same as Python): cd_model 'const' (default, params Cd ASSUMED) | 'morrison'
   // (smooth-sphere reference curve, Morrison 2013 with 263000 in both places; NOT POLLEN) | 'blend' (what-if partial
   // crisis cd_sub -> cd_post between re1 and re2, ASSUMED); dcd_spin (0 / 0.08 / 0.18 ASSUMED) with s_sat 0.6;
   // wind [along-shot, vertical] m/s (user, constant per shot); nu (m^2/s) for Re. Drag, Magnus and S use v_rel = v - w.
@@ -687,7 +728,7 @@ a { color: var(--pollen); text-underline-offset: 3px; }
     }
     throw new Error("unknown cd_model " + m);
   }
-  // ---- lift and mass options (MISSING_EFFECTS.md build-next: Cl table, reverse Magnus, effective mass; same keys and
+  // ---- lift and mass options (Cl table, reverse Magnus, effective mass; same keys and
   // arithmetic as src/air.py cl_of / eps_from_phi). cl_table [[S, Cl], ...] (user points, ASSUMED): linear between
   // points, from (0, 0) up to the first point when its S > 0, flat after the last point. cl_rev (0 = off; 0..0.1
   // ASSUMED, Kim et al. 2014 / Kray et al. 2012 smooth spheres, NOT POLLEN): when Re < re_rev (4.6e4) and S < s_rev
@@ -1201,7 +1242,7 @@ a { color: var(--pollen); text-underline-offset: 3px; }
     return { result: "miss", i: n - 1, hit: null, minClear: minC, s: null, entryAngle: null };
   }
 
-  // ---- 3D flight (MISSING_EFFECTS.md build-next: shooting on the move, gyro spin ratio, sideways draft, hit chance).
+  // ---- 3D flight (shooting on the move, gyro spin ratio, sideways draft, hit chance).
   // Same physics as aeroExt in 3D (src/robustness.py integrate3d is the Python twin): v_rel = v - wind3 everywhere,
   // spin vector w(t) = w0 exp(-k t), Magnus q Cl |v_rel|^2 unit(w x v_rel), S = |w| R / |v_rel| (default) or, with
   // p.s_perp (gyro-correct, as src/flight.py), S_perp = |w x v_rel| R / |v_rel|^2 (equal for pure backspin).
@@ -1342,7 +1383,7 @@ a { color: var(--pollen); text-underline-offset: 3px; }
 // model at the ASSUMED offset s_eff(psi) = min(0.3 tan psi, 0.2), side walls NOT modelled. Air drag (Cd) and capped Magnus
 // lift with exponential spin decay are included; their coefficients are ASSUMED (literature, not
 // POLLEN measurements). Every window is PREDICTED (model output), not a hit probability.
-// Air (2026-10-31, research/MISSING_EFFECTS.md build-next 1, 2, 4, 6): default still air 20 C / 101.325 kPa / dry,
+// Air (2026-10-31): default still air 20 C / 101.325 kPa / dry,
 // rho 1.2041 kg/m^3 (derived; q.air false keeps params.rho, the exports' rounded 1.20). Options q.air (venue),
 // q.drag (Cd(Re) model, spin drag), q.wind (draft); results carry gripLimited above the PREDICTED 8.9 m/s hood cap.
 //
@@ -1523,7 +1564,7 @@ a { color: var(--pollen); text-underline-offset: 3px; }
   // q.roofClear (section model only, default off = unchanged): lower the roof segments and the inside top by
   // R (sqrt(1 + k^2) - 1) = 0.00663 m (derived: a sphere under the 32.6 deg sloped pentagon roof needs a vertical
   // gap R sqrt(1 + k^2)); the JS twin of src/hive.py Hive.from_json(roof_clearance=True). The 3D cell
-  // (default model) already includes it. Assumes a sharp roof apex (research/GEOMETRY_AUDIT.md U3).
+  // (default model) already includes it. Assumes a sharp roof apex (geometry check U3).
   function roofClearDrop(R) { const k = P.CELL3D.ROOF_SLOPE; return R * (Math.sqrt(1 + k * k) - 1); }
   function roofClearSection(sec, R) {
     const ck = "_roofClear" + R;
@@ -1689,7 +1730,7 @@ a { color: var(--pollen); text-underline-offset: 3px; }
 
 
   // ---------------------------------------------------------------- shooting on the move / 3D flight (PM-016)
-  // research/MISSING_EFFECTS.md build-next 2a, 2b, 2f. Used only when q.move or a sideways draft is set (and by
+  // Shooting on the move. Used only when q.move or a sideways draft is set (and by
   // hitChance); with every option off the planar fast path above is untouched.
   // Cell frame (3D cell of fastShot): x toward the HIVE (release at x = -d), s lateral, z up (absolute, release at h).
   // Field -> frame is a proper rotation: sg = +1 on the far (unfav) side, -1 on the near (fav) side; x_s = sg x_f,
@@ -2587,7 +2628,7 @@ a { color: var(--pollen); text-underline-offset: 3px; }
       move: ctx.F ? { lead: ctx.F.lead, d0: ctx.F.d0, vRobot: [ctx.F.sg * ctx.F.vrx, ctx.F.sg * ctx.F.vry], rExit: ctx.F.rExit } : null });
   }
 
-  // side-wall verdict for one classified shot (research/GEOMETRY_AUDIT.md fix 6). 3D cell on: decided per shot
+  // side-wall verdict for one classified shot (geometry fix 6). 3D cell on: decided per shot
   // by the cell (hit on a *_side_wall* face, lateral offset s at entry vs the 0.2185 m ball-centre limit).
   // Section model: only the straight-line estimate from psi (near-side estimate; far side not checked).
   function sideWallInfo(ctx, cls) {
@@ -2668,7 +2709,13 @@ a { color: var(--pollen); text-underline-offset: 3px; }
 "use strict";
 const PH = window.PollenPhysics;
 const $ = id => document.getElementById(id);
-const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#f4c430";   // canvas 2D cannot resolve var(); read the token instead
+let cssThemeKey = "", cssCache = {};
+const cssv = n => {
+  const root = document.documentElement, mq = window.matchMedia("(prefers-color-scheme: dark)");
+  const key = (root.dataset.theme || (mq.matches ? "dark" : "light"));
+  if (key !== cssThemeKey) { cssThemeKey = key; cssCache = {}; }
+  return cssCache[n] || (cssCache[n] = getComputedStyle(root).getPropertyValue(n).trim() || "#f4c430");
+};   // canvas 2D cannot resolve var(); cache token reads until the theme changes
 const COL = { pollen: 0xf4c430, clean: 0x38d39f, hit: 0xff6b5a, twin: 0xa9b4bf };
 const AERO_NAMES = { nominal: "Nominal (literature middle)", Cd_low: "Low drag (Cd 0.33)", Cd_high: "High drag (Cd 0.9)",
   Cl_low: "Weak spin lift", Cl_high: "Strong spin lift", k_high: "Fast spin decay" };
@@ -4017,11 +4064,7 @@ function rBestText(b) {   // the best-chance setting's chance, per air set, with
 }
 function rDomText(b, bt) {   // which scatter source costs the most: one at a time, the other two off
   const bd = b.breakdown; if (!bd) return "";
-  const f = d => d.parts.map(q => `${SRC_NAMES[q.source]} only ${pc(q.p)}`).join(" · ");
-  let t = `Which scatter matters most here: <b>${bd.dominant ? SRC_NAMES[bd.dominant] : "none (all scatter set to 0)"}</b> <span class="lab">PREDICTED</span>` +
-    `<br><small>One source at a time (the other two off), ${HC_NAMES[bd.set] || bd.set}: ${f(bd)}; all three ${pc(bd.all.p)}. The lowest one loses the most shots in the model, so a tighter ${bd.dominant ? SRC_NAMES[bd.dominant] : "launch"} helps most.</small>`;
-  if (bt && bt.breakdown) t += `<br><span class="tw">No-spin twin: ${bt.breakdown.dominant ? SRC_NAMES[bt.breakdown.dominant] : "none"} matters most (${f(bt.breakdown)})</span>`;
-  return t;
+  return `hood angle matters most here - a tighter hood angle helps most.`;
 }
 function rSensText(ms, twms) {   // how much the setting moves per 0.1 m/s of robot speed (moving robot only)
   if (!ms) return "";
@@ -4418,7 +4461,7 @@ function rRender() {
     else html += status("ok", "Clean shot possible", "with room for error in speed and angle");
     if (pick) {
       const r = pick.m, twLine = S0 ? "This is already the no-spin case (S = 0)." : bm
-        ? (bt ? `No-spin twin (S = 0, no backspin) at its own best-chance setting: ${Math.round(rpmOf(bt.v))} rpm, hood ${bt.theta.toFixed(1)}° (${vert(bt.theta)}° from vertical), chance ${pc(bt.mean)} (95% range ${pc(bt.sets[0].lo)} to ${pc(bt.sets[0].hi)}) <span class="lab">PREDICTED</span>`
+        ? (bt ? `No-spin twin (no backspin): ${Math.round(rpmOf(bt.v))} rpm, hood ${bt.theta.toFixed(1)}°, chance ${pc(bt.mean)}`
               : bTwWait ? "No-spin twin (S = 0): finding its best-chance setting…" : "No-spin twin (S = 0): no clean shot without spin at this spot.")
         : rec.tw ? `No-spin twin (S = 0, no backspin): ${Math.round(rpmOf(rec.tw.v))} rpm, hood ${rec.tw.theta.toFixed(1)}° (${vert(rec.tw.theta)}° from vertical)`
         : "No-spin twin (S = 0): no clean shot without spin at this spot.";
@@ -4427,7 +4470,7 @@ function rRender() {
         const cmpH = mrT ? rHcGet(mrT.v, mrT.theta, tw && tw.minRpmTol ? { v: tw.minRpmTol.v, theta: tw.minRpmTol.theta } : null) : null;
         const cmp = !mrT ? "" : ` For comparison, the lowest rpm with room for error (${Math.round(rpmOf(mrT.v))} rpm, ${mrT.theta.toFixed(1)}°): ` +
           (!cmpH ? "working it out…" : !cmpH.ok ? "not available" : rHcShort(cmpH) + (cmpH.twin ? `; no-spin twin at its own lowest rpm ${pc(cmpH.twin.p)}` : "")) + " (PREDICTED).";
-        hcLine = `<p class="hc" id="rhc">${rBestText(bm)}</p><p class="hc" id="rdom">${rDomText(bm, S0 ? null : bt)}</p>`;
+        hcLine = `<p class="hc" id="rhc">Chance it goes in: ${pc(bm.mean)}${bm.sets.length > 1 ? " (air-set average)" : ""} <span class="muted">(twin ${bt ? pc(bt.mean) : "n/a"})</span></p><p class="hintbox" id="rdom">Hint: ${rDomText(bm, S0 ? null : bt)}</p>`;
         which = "Recommended: the best-chance setting, the clean setting with the highest chance to go in under the ASSUMED shot scatter (average over the air sets, equal weight)." +
           (bm.gripLimited ? ` No clean setting is inside the PREDICTED grip limit of ${res.gripCap ? res.gripCap.v : 8.9} m/s, so the wheel may slip here.` : " Searched inside the PREDICTED grip limit.") + cmp;
       } else {
@@ -4451,28 +4494,30 @@ function rRender() {
         `ball squeeze and rolling loss from the launcher model (ASSUMED) · closed form: within about 1.5 % of the launcher contact model (hood_model) at the default inertia, about 2 % at 2000-6000 rpm across this inertia range (it reads high below 2000 rpm with a light wheel) · not modelled: controller lag, current limit, motor rotor inertia, motor drive during the shot</dd>`;
       const dT = (d, v) => `${Math.round(rpmOf(v))}rpm/d${Math.round(d.dropRpm)}/${d.dropPct.toFixed(2)}%/rec${isFinite(d.recoverS) ? d.recoverS.toFixed(3) + "s" : "inf"}/min${isFinite(d.minIntervalS) ? d.minIntervalS.toFixed(3) + "s" : "inf"}`;
       R.droopTest = `main:${dT(dm, r.v)},twin:${S0 ? "same" : dtw ? dT(dtw, twS.v) : "none"},set:${R.dMot}/${R.dIw}/${R.dV}`;
-      html += `<div class="rec"><p class="say">Set the wheel to <b>${Math.round(rpmOf(r.v))}&nbsp;rpm</b> <span class="lab">derived</span><br>hood to <b>${r.theta.toFixed(1)}°</b> <span>from horizontal (${vert(r.theta)}° from vertical)</span> <span class="lab">PREDICTED</span></p>` +
+      html += `<div class="rec"><p class="say">Set the wheel to <b>${Math.round(rpmOf(r.v))}&nbsp;rpm</b> and the hood to <b>${r.theta.toFixed(1)}°</b> <span>(${vert(r.theta)}° from vertical)</span></p>` +
         `<p class="twinline">${twLine}</p>` + hcLine +
         (R.mvOn && res.moveSens ? `<p class="sens">${rSensText(res.moveSens, !S0 && tw ? tw.moveSens : null)}</p>` : "") +
-        droopLine + `<p class="which">${which}</p></div>`;
-      bar.body = `<span>Wheel <b>${Math.round(rpmOf(r.v))} rpm</b> <span class="lab">derived</span> · hood <b>${r.theta.toFixed(1)}°</b> (${vert(r.theta)}° from vertical) <span class="lab">PREDICTED</span>${bm ? ` · chance ${pc(bm.mean)}${bm.sets.length > 1 ? " (air-set average)" : ""}, ASSUMED scatter` : ""}</span>` +
-        `<span class="rb-tw">${twLine}</span>`;
+        `</div>`;
+      if (bm && bt && !S0) det += `<p class="which">No-spin twin (S = 0) at its own best-chance setting: ${Math.round(rpmOf(bt.v))} rpm, hood ${bt.theta.toFixed(1)}° (${vert(bt.theta)}° from vertical), chance ${pc(bt.mean)} (95% range ${pc(bt.sets[0].lo)} to ${pc(bt.sets[0].hi)}), PREDICTED.</p>`;
+      det += `<p class="which">${which}</p>${R.mvOn && res.moveSens ? `<p class="sens">${rSensText(res.moveSens, !S0 && tw ? tw.moveSens : null)}</p>` : ""}${droopLine}`;
+      bar.body = `<span>Wheel <b>${Math.round(rpmOf(r.v))} rpm</b> · hood <b>${r.theta.toFixed(1)}°</b> · chance ${bm ? pc(bm.mean) : "n/a"}</span>` +
+        `<span class="rb-tw">Twin: ${bt ? `${Math.round(rpmOf(bt.v))} rpm · ${bt.theta.toFixed(1)}° · ${pc(bt.mean)}` : "n/a"}</span>`;
     }
     const sel = R.sel ? R.sel.src.replace("Knife", "") : "";
     const tile = (src, label, tag, m, val, sub, twm, twTxt) => `<button type="button" class="tile" data-pick="${src}" aria-pressed="${sel === src}" title="Fly this shot in the 3D view">` +
       `<span class="tl">${label}${tag ? ` <span class="lab">${tag}</span>` : ""}</span>` +
-      (m ? `<span class="tv">${val}</span><span class="ts">${sub}${m.gripLimited ? " · above the grip limit (PREDICTED)" : ""}</span>` : `<span class="tv">–</span><span class="ts">${src === "best" ? (bWait ? "searching…" : "none") : "none with room for error" + (src === "mf" ? "" : "; knife edge in Details")}</span>`) +
+      (m ? `<span class="tv">${val}</span><span class="ts">${sub}${m.gripLimited ? " · above the grip limit" : ""}</span>` : `<span class="tv">–</span><span class="ts">${src === "best" ? (bWait ? "searching…" : "none") : "none with room for error" + (src === "mf" ? "" : "; knife edge in Details")}</span>`) +
       `<span class="tt">${S0 ? "no-spin case (S = 0)" : twm ? "twin S = 0: " + twTxt(twm) : src === "best" && bTwWait ? "twin S = 0: searching…" : "twin S = 0: none"}</span></button>`;
     html += `<div class="tiles">` +
-      tile("best", "Best chance", "ASSUMED scatter", bm, bm && `${Math.round(rpmOf(bm.v))} rpm`, bm && `hood ${bm.theta.toFixed(1)}° (${vert(bm.theta)}° from vert.) · chance ${pc(bm.mean)}${bm.sets.length > 1 ? " (air-set average)" : ""}`,
+      tile("best", "Best chance", "", bm, bm && `${Math.round(rpmOf(bm.v))} rpm`, bm && `hood ${bm.theta.toFixed(1)}° (${vert(bm.theta)}° from vert.) · chance ${pc(bm.mean)}${bm.sets.length > 1 ? " (air-set average)" : ""}`,
         bt, t => `${Math.round(rpmOf(t.v))} rpm, ${t.theta.toFixed(1)}°, chance ${pc(t.mean)}`) +
-      tile("minRpm", "Lowest rpm", "ASSUMED margin", mrT, mrT && `${Math.round(rpmOf(mrT.v))} rpm`, mrT && `hood ${mrT.theta.toFixed(1)}° (${vert(mrT.theta)}° from vert.)`,
+      tile("minRpm", "Lowest rpm", "", mrT, mrT && `${Math.round(rpmOf(mrT.v))} rpm`, mrT && `hood ${mrT.theta.toFixed(1)}° (${vert(mrT.theta)}° from vert.)`,
         tw && tw.minRpmTol, t => `${Math.round(rpmOf(t.v))} rpm, ${t.theta.toFixed(1)}° (${vert(t.theta)}° from vert.)`) +
-      tile("minAngle", "Lowest hood", "ASSUMED margin", maT, maT && `${maT.theta.toFixed(1)}°`, maT && `${vert(maT.theta)}° from vert. · ${Math.round(rpmOf(maT.v))} rpm`,
+      tile("minAngle", "Lowest hood", "", maT, maT && `${maT.theta.toFixed(1)}°`, maT && `${vert(maT.theta)}° from vert. · ${Math.round(rpmOf(maT.v))} rpm`,
         tw && tw.minAngleTol, t => `${t.theta.toFixed(1)}° (${vert(t.theta)}° from vert.), ${Math.round(rpmOf(t.v))} rpm`) +
       tile("mf", "Most forgiving", "", mf, mf && `${Math.round(rpmOf(mf.v))} rpm`, mf && `hood ${mf.theta.toFixed(1)}° (${vert(mf.theta)}° from vert.)`,
         tw && tw.mostForgiving, t => `${Math.round(rpmOf(t.v))} rpm, ${t.theta.toFixed(1)}° (${vert(t.theta)}° from vert.)`) + `</div>`;
-    html += `<p class="labkey">All answers PREDICTED (model, not measured); rpm is derived from the exit speed and the ASSUMED grip ${R.vu.toFixed(2)}. ASSUMED margin = still goes in if speed and angle drift by our guessed amount (see Details). Best chance = the highest model chance to go in under the ASSUMED shot scatter (not measured). Tap a tile to fly that shot in 3D. Labels: CONFIRMED = official · user = your setting · ASSUMED = our guess · derived = computed.</p>`;
+    det = `<p class="labkey">All answers PREDICTED (model, not measured); rpm is derived from the exit speed and the ASSUMED grip ${R.vu.toFixed(2)}. ASSUMED margin = still goes in if speed and angle drift by our guessed amount (see Details). Best chance = the highest model chance to go in under the ASSUMED shot scatter (not measured). Tap a tile to fly that shot in 3D. Labels: CONFIRMED = official · user = your setting · ASSUMED = our guess · derived = computed.</p>` + det;
     // everything for the paper: knife edges, clearances, runs, envelopes, solver grid, timing
     const tolTxt = `ASSUMED tolerance: clean over ${tl.theta.toFixed(1)}° of hood angle / ${tl.v.toFixed(2)} m/s of exit speed with ≥ ${Math.round(tl.margin * 1000)} mm clearance`;
     const knifeR = r => r ? `<b>Knife edge</b> (lowest clean found, a grazing shot: do not set the robot here): ${Math.round(rpmOf(r.v))} rpm (${r.v.toFixed(3)} m/s) at ${fmtAng(r.theta)}, clearance ${mm(r.margin)}, continuous clean hood run ${r.run.toFixed(3)}°. Envelope ${r.thetaLo.toFixed(2)}–${r.thetaHi.toFixed(2)}° is ${pct(r.envelopeCleanFrac)} clean.${ast(r)}` : "";
@@ -5005,8 +5050,8 @@ const CFD = (() => {
       const c = D.runs.find(r => r.D === 128 && r.orient === f.orient && r.Re === f.Re && r.S === f.S);
       if (!c) continue;
       pairs.push({ f, c });
-      const dl = 100 * (c.Cl - f.Cl) / c.Cl, dir = dl >= 0 ? "lower" : "higher";
-      lines.push(`At S ${f.S} (${OR_NAME[f.orient] || f.orient}, Re ${f.Re}) the finer D192 grid gives Cl <b>${fmt(f.Cl, 3)}</b> against <b>${fmt(c.Cl, 3)}</b> at D128, ${fmt(Math.abs(dl), 0)}% ${dir} (derived), and Cd ${fmt(f.Cd, 3)} against ${fmt(c.Cd, 3)}. D128 torque CM is ${fmt(c.CM, 4)} against ${fmt(f.CM, 4)} at D192.`);
+      const dl = c.Cl === 0 ? null : 100 * (c.Cl - f.Cl) / c.Cl, dir = dl == null ? "" : dl >= 0 ? "lower" : "higher";
+      lines.push(`At S ${f.S} (${OR_NAME[f.orient] || f.orient}, Re ${f.Re}) the finer D192 grid gives Cl <b>${fmt(f.Cl, 3)}</b> against <b>${fmt(c.Cl, 3)}</b> at D128, ${dl == null ? "n/a" : fmt(Math.abs(dl), 0) + "% " + dir} (derived), and Cd ${fmt(f.Cd, 3)} against ${fmt(c.Cd, 3)}. D128 torque CM is ${fmt(c.CM, 4)} against ${fmt(f.CM, 4)} at D192.`);
     }
     $("cfd-grid").innerHTML = (lines.join(" ") || "No D192 backspin run has finished yet.") + ` <span class="badge">PREDICTED</span>`;
     const covered = pairs.map(q => "S " + q.f.S + " (" + (OR_NAME[q.f.orient] || q.f.orient) + ", Re " + q.f.Re + ")").join(", ");
@@ -5031,7 +5076,7 @@ const CFD = (() => {
   }
   async function load() {
     if (!loading) loading = (async () => {
-      try { const r = await fetch("data/cfd_runs.json", { cache: "no-cache" }); if (!r.ok) throw new Error(r.status); D = await r.json(); }
+      try { let r = await fetch("data/cfd_runs.json", { cache: "no-cache" }); if (!r.ok) r = await fetch("./cfd_runs.json", { cache: "no-cache" }); if (!r.ok) throw new Error(r.status); D = await r.json(); }
       catch (e) { D = { runs: [], window: [15, 150], err: e.message }; }
       try { const r = await fetch("cfd/fields/index.json", { cache: "no-cache" }); if (r.ok) fields = await r.json(); } catch (_) { /* no field data yet */ }
       if (D.runs.length) { orient = D.runs.some(r => r.orient === "btw") ? "btw" : D.runs[0].orient; sel = (D.runs.find(r => r.id.includes("d128_btw_S0.5")) || D.runs[0]).id; }

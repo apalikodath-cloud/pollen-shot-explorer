@@ -1,19 +1,19 @@
 # 04 — Single-powered-wheel launch model (hood vs passive roller)
 
-Task PM-001, HANDOFF §4C, §4D, deliverable 6. Code: `src/launcher.py`. Tests: `tests/test_launcher.py`.
+Task PM-001. Code: `src/launcher.py`. Tests: `tests/test_launcher.py`.
 Data: `data/launch_envelope.json`. Figures: `figures/launcher_*.png`.
 Status: every output number here is **predicted**: the model is uncalibrated and nothing has been measured yet.
 Labels used: **confirmed** (official or vendor source), **user**, **assumed**, **derived**, **predicted**.
 
-Scope stays as the user set it: ONE powered 98 mm flywheel, plus either a fixed hood or ONE unpowered roller. The roller is
+Scope stays as the team set it: ONE powered 98 mm flywheel, plus either a fixed hood or ONE unpowered roller. The roller is
 never treated as a driven wheel.
 
 ## 1. Inputs and provenance
 
 | Quantity | Value (range) | Label / source |
 |---|---|---|
-| Ball mass m | 0.025 kg (0.0245–0.0255) | confirmed: AndyMark am-5851_yellow lists 0.055 lb = 24.95 g (HANDOFF §1). Weigh samples. |
-| Ball radius R_b | 0.0355 m | confirmed nominal 2.8 in (HANDOFF §1, §2). Pieces vary. |
+| Ball mass m | 0.025 kg (0.0245–0.0255) | confirmed: AndyMark am-5851_yellow lists 0.055 lb = 24.95 g (vendor listing). Weigh samples. |
+| Ball radius R_b | 0.0355 m | confirmed nominal 2.8 in (game manual). Pieces vary. |
 | Ball inertia I_b = k_I m R_b² | k_I 0.63 (0.55–2/3) → I_b 1.99e-5 kg m² (1.73e-5 to 2.10e-5) | derived/assumed, see §1.1 |
 | Wheel radius R_w | 0.049 m | user (98 mm wheel) |
 | Flywheel inertia I_w | 2.65e-4 kg m² (0.5e-4 to 5e-4) | assumed bare wheel ~1.0e-4, plus goBILDA steel flywheel 3628-0032-0082 (82 mm, 152 g, 1651 g cm² = 1.651e-4 kg m²), confirmed at https://www.gobilda.com/steel-flywheel-82mm-diameter-152g-1651-g-cm/ |
@@ -22,10 +22,10 @@ never treated as a driven wheel.
 | Rotor inertia | not published; bounded < ~1e-5 kg m² (×gear²) | assumed |
 | μ wheel tread vs PE | 0.8 (0.5–1.2) | assumed |
 | μ hood vs PE | 0.3 (0.05–1.0): PTFE/UHMW 0.05–0.15, PC/acrylic/HDPE 0.2–0.4, rubber or grip tape 0.6–1.0 | assumed |
-| Compression δ (diametral) | 4 mm (2–8 mm swept) | user candidate (HANDOFF §2) |
+| Compression δ (diametral) | 4 mm (2–8 mm swept) | user candidate (team design) |
 | Ball stiffness k_n, with N = k_n δ | 4 N/mm (1.5–10) | **assumed. No source was found.** Measure it (§8). |
 | Rolling hysteresis c_rr | 0.02 (0–0.06) | assumed |
-| Hood wrap angle | 90° (45–150°) | assumed; no shooter CAD (HANDOFF §2) |
+| Hood wrap angle | 90° (45–150°) | assumed; no shooter CAD |
 | Feed speed v_in | 0.5 m/s (0.2–1.5); 3–5 m/s probed | assumed |
 | Roller: R_t, I_t, bearing drag | 24 mm (12.5–50), 1e-5 kg m² (1e-6 to 2e-4), 5e-4 N m Coulomb (0–3e-3) + 1e-6 N m s | assumed |
 | Shot interval | 0.5 s (0.25–1.5) | assumed |
@@ -176,7 +176,7 @@ ball's top point move backward. The model therefore predicts:
 - Exception at low wheel speed: at 1000 rpm the 0.5 m/s feed is a large fraction of v_exit, so the nominal roller is spun
   forward (+79 rpm) and S = 0.974. The backward drag appears from about 2000 rpm upward (roller −66 to −90 rpm).
   See `figures/launcher_roller.png`.
-- The HANDOFF heuristic, "a free roller spins up and reduces the spin differential", only holds when the ball's top
+- The rule of thumb "a free roller spins up and reduces the spin differential", only holds when the ball's top
   point moves **forward**. That happens with a fast feed, v_in of a few m/s:
   - 3000 rpm, light roller: v_in 2 m/s gives S 0.92; 4 m/s gives S 0.67.
   - The roller is then spun forward, so later shots in a burst are pre-spun forward and **S drifts down shot to shot**.

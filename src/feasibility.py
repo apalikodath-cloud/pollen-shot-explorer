@@ -1,4 +1,4 @@
-"""Clean (air-only) HIVE entry feasibility sweeps (HANDOFF 3 Q1-Q3, 4B, 4E channel 1, Phase 2).
+"""Clean (air-only) HIVE entry feasibility sweeps (entry channel 1).
 
 Writes data/clean_*.csv and figures/clean_*.png (see ``main``). Every output number is
 PREDICTED from the uncalibrated aero bounds in data/aero_params.json and the CAD-derived

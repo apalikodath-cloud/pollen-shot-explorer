@@ -1,5 +1,5 @@
 {
- "_status": "Literature-derived parameter RANGES for PM-001 (research synthesis, 2026-10-30). NOT POLLEN measurements: no measured POLLEN Cd, Cl(S), spin decay, COR, friction or N(delta) exists anywhere (research/checks/sweep_pollen.md). Same layout as data/aero_params.json so src/flight.load_params(path=...) reads it (extra Cl set 'floor'; use which={'Cl':'floor'}); launcher and contact blocks are extra and not read by src/. Each entry has grade (A-D, see grades), source_ids (see sources) and vs_PM001 (how the current data/aero_params.json, data/launch_envelope.json or src/contact.py value compares). See research/LITERATURE_SYNTHESIS.md.",
+ "_status": "Literature-derived parameter RANGES for PM-001 (research synthesis, 2026-10-30). NOT POLLEN measurements: no measured POLLEN Cd, Cl(S), spin decay, COR, friction or N(delta) exists anywhere. Same layout as data/aero_params.json so src/flight.load_params(path=...) reads it (extra Cl set 'floor'; use which={'Cl':'floor'}); launcher and contact blocks are extra and not read by src/. Each entry has grade (A-D, see grades), source_ids (see sources) and vs_PM001 (how the current data/aero_params.json, data/launch_envelope.json or src/contact.py value compares). See research/LITERATURE_SYNTHESIS.md.",
  "units": "SI (m, s, kg, rad)",
  "grades": {
   "A": "peer-reviewed original measurement, transferable to POLLEN",
@@ -730,14 +730,14 @@
   },
   {
    "id": "crosscheck_evidence",
-   "cite": "PM-001 crosscheck/empirical/EVIDENCE.md kinematic sweep",
+   "cite": "PM-001 kinematic sweep (unpublished evidence table)",
    "url": "local",
    "status": "derived",
    "grade": "B"
   },
   {
    "id": "sweep_pollen_check",
-   "cite": "research/checks/sweep_pollen.md",
+   "cite": "our POLLEN source sweep (unpublished)",
    "url": "local",
    "status": "fact-check",
    "grade": "C"

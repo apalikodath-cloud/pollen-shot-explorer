@@ -10,7 +10,7 @@ the HIVE tipping plane.
 | label | meaning |
 |---|---|
 | **confirmed** | taken from an official source; the source and URL are in `data/hive_geometry.json` or `data/aero_params.json` |
-| **user** | stated by the user (HANDOFF.md section 2) |
+| **user** | set by the team |
 | **assumed** | chosen by us with no measurement behind it (release heights, aero bounds, retention after entry) |
 | **derived** | computed from confirmed or user inputs (S = omega R / v, rpm, the HIVE section polygon) |
 | **predicted** | output of the uncalibrated simulation: every trajectory, outcome and apex in this file |
@@ -83,7 +83,7 @@ No field in this file is a measurement.
 | `v` | m/s | **assumed** (chosen case) | The launch speed. |
 | `elev_deg` | deg | **assumed** | The launch elevation. |
 | `spin_rpm` | rpm | **derived** from S | The backspin at release. |
-| `S` | - | **assumed** / derived | The spin parameter omega R / v at release. S = 1 is the ideal no-slip hood (HANDOFF 4C). |
+| `S` | - | **assumed** / derived | The spin parameter omega R / v at release. S = 1 is the ideal no-slip hood (see docs/04_launcher.md). |
 | `aero_set` | str | **assumed** | One of `low`, `nominal` or `high`, from `data/aero_params.json`. |
 | `aero_desc` | str | | Cd, Cl law and spin decay, in words. |
 | `mass`, `radius` | kg, m | confirmed/derived (see `data/aero_params.json`) | The ball properties used. |

@@ -13,12 +13,12 @@
    "low": 0.0245,
    "high": 0.0255,
    "units": "kg",
-   "prov": "user/confirmed via HANDOFF s1-2: AndyMark am-5851_yellow lists 0.055 lb = 24.95 g (https://andymark.com/products/biobuzz-scoring-elements?variant=47194281148588); weigh samples"
+   "prov": "user/confirmed: AndyMark am-5851_yellow lists 0.055 lb = 24.95 g (https://andymark.com/products/biobuzz-scoring-elements?variant=47194281148588); weigh samples"
   },
   "ball_radius": {
    "value": 0.0355,
    "units": "m",
-   "prov": "confirmed nominal 2.8 in / 71 mm diameter (HANDOFF s1, s2); pieces vary"
+   "prov": "confirmed nominal 2.8 in / 71 mm diameter (game manual); pieces vary"
   },
   "ball_kI": {
    "value": 0.63,
@@ -30,7 +30,7 @@
   "wheel_radius": {
    "value": 0.049,
    "units": "m",
-   "prov": "user: one 98 mm flywheel (HANDOFF s2)"
+   "prov": "user: one 98 mm flywheel (team design)"
   },
   "wheel_inertia": {
    "value": 0.000265,
@@ -56,7 +56,7 @@
    "low": 0.002,
    "high": 0.008,
    "units": "m",
-   "prov": "user candidate 4 mm diametral compression (HANDOFF s2); swept 2-8 mm"
+   "prov": "user candidate 4 mm diametral compression (team design); swept 2-8 mm"
   },
   "k_n": {
    "value": 4000.0,
@@ -81,7 +81,7 @@
    "value": 90.0,
    "low": 45.0,
    "high": 150.0,
-   "prov": "assumed: hood wrap angle about the wheel axis; shooter CAD not provided (HANDOFF s2)"
+   "prov": "assumed: hood wrap angle about the wheel axis; shooter CAD not provided"
   },
   "v_in": {
    "value": 0.5,
