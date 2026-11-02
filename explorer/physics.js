@@ -5,8 +5,8 @@
 (function (root) {
   "use strict";
 
-  // ---- venue air and optional drag / draft terms (line-for-line copy of src/air.py; MISSING_EFFECTS.md
-  // build-next 1, 2, 4). Params keys (same as Python): cd_model 'const' (default, params Cd ASSUMED) | 'morrison'
+  // ---- venue air and optional drag / draft terms (line-for-line copy of src/air.py).
+  // Params keys (same as Python): cd_model 'const' (default, params Cd ASSUMED) | 'morrison'
   // (smooth-sphere reference curve, Morrison 2013 with 263000 in both places; NOT POLLEN) | 'blend' (what-if partial
   // crisis cd_sub -> cd_post between re1 and re2, ASSUMED); dcd_spin (0 / 0.08 / 0.18 ASSUMED) with s_sat 0.6;
   // wind [along-shot, vertical] m/s (user, constant per shot); nu (m^2/s) for Re. Drag, Magnus and S use v_rel = v - w.
@@ -36,7 +36,7 @@
     }
     throw new Error("unknown cd_model " + m);
   }
-  // ---- lift and mass options (MISSING_EFFECTS.md build-next: Cl table, reverse Magnus, effective mass; same keys and
+  // ---- lift and mass options (Cl table, reverse Magnus, effective mass; same keys and
   // arithmetic as src/air.py cl_of / eps_from_phi). cl_table [[S, Cl], ...] (user points, ASSUMED): linear between
   // points, from (0, 0) up to the first point when its S > 0, flat after the last point. cl_rev (0 = off; 0..0.1
   // ASSUMED, Kim et al. 2014 / Kray et al. 2012 smooth spheres, NOT POLLEN): when Re < re_rev (4.6e4) and S < s_rev
@@ -550,7 +550,7 @@
     return { result: "miss", i: n - 1, hit: null, minClear: minC, s: null, entryAngle: null };
   }
 
-  // ---- 3D flight (MISSING_EFFECTS.md build-next: shooting on the move, gyro spin ratio, sideways draft, hit chance).
+  // ---- 3D flight (shooting on the move, gyro spin ratio, sideways draft, hit chance).
   // Same physics as aeroExt in 3D (src/robustness.py integrate3d is the Python twin): v_rel = v - wind3 everywhere,
   // spin vector w(t) = w0 exp(-k t), Magnus q Cl |v_rel|^2 unit(w x v_rel), S = |w| R / |v_rel| (default) or, with
   // p.s_perp (gyro-correct, as src/flight.py), S_perp = |w x v_rel| R / |v_rel|^2 (equal for pure backspin).

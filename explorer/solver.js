@@ -15,7 +15,7 @@
 // model at the ASSUMED offset s_eff(psi) = min(0.3 tan psi, 0.2), side walls NOT modelled. Air drag (Cd) and capped Magnus
 // lift with exponential spin decay are included; their coefficients are ASSUMED (literature, not
 // POLLEN measurements). Every window is PREDICTED (model output), not a hit probability.
-// Air (2026-10-31, research/MISSING_EFFECTS.md build-next 1, 2, 4, 6): default still air 20 C / 101.325 kPa / dry,
+// Air (2026-10-31): default still air 20 C / 101.325 kPa / dry,
 // rho 1.2041 kg/m^3 (derived; q.air false keeps params.rho, the exports' rounded 1.20). Options q.air (venue),
 // q.drag (Cd(Re) model, spin drag), q.wind (draft); results carry gripLimited above the PREDICTED 8.9 m/s hood cap.
 //
@@ -196,7 +196,7 @@
   // q.roofClear (section model only, default off = unchanged): lower the roof segments and the inside top by
   // R (sqrt(1 + k^2) - 1) = 0.00663 m (derived: a sphere under the 32.6 deg sloped pentagon roof needs a vertical
   // gap R sqrt(1 + k^2)); the JS twin of src/hive.py Hive.from_json(roof_clearance=True). The 3D cell
-  // (default model) already includes it. Assumes a sharp roof apex (research/GEOMETRY_AUDIT.md U3).
+  // (default model) already includes it. Assumes a sharp roof apex (geometry check U3).
   function roofClearDrop(R) { const k = P.CELL3D.ROOF_SLOPE; return R * (Math.sqrt(1 + k * k) - 1); }
   function roofClearSection(sec, R) {
     const ck = "_roofClear" + R;
@@ -362,7 +362,7 @@
 
 
   // ---------------------------------------------------------------- shooting on the move / 3D flight (PM-016)
-  // research/MISSING_EFFECTS.md build-next 2a, 2b, 2f. Used only when q.move or a sideways draft is set (and by
+  // Shooting on the move. Used only when q.move or a sideways draft is set (and by
   // hitChance); with every option off the planar fast path above is untouched.
   // Cell frame (3D cell of fastShot): x toward the HIVE (release at x = -d), s lateral, z up (absolute, release at h).
   // Field -> frame is a proper rotation: sg = +1 on the far (unfav) side, -1 on the near (fav) side; x_s = sg x_f,
@@ -1260,7 +1260,7 @@
       move: ctx.F ? { lead: ctx.F.lead, d0: ctx.F.d0, vRobot: [ctx.F.sg * ctx.F.vrx, ctx.F.sg * ctx.F.vry], rExit: ctx.F.rExit } : null });
   }
 
-  // side-wall verdict for one classified shot (research/GEOMETRY_AUDIT.md fix 6). 3D cell on: decided per shot
+  // side-wall verdict for one classified shot (geometry fix 6). 3D cell on: decided per shot
   // by the cell (hit on a *_side_wall* face, lateral offset s at entry vs the 0.2185 m ball-centre limit).
   // Section model: only the straight-line estimate from psi (near-side estimate; far side not checked).
   function sideWallInfo(ctx, cls) {
