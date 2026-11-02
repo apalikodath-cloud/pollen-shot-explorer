@@ -360,7 +360,7 @@
   function makeUI() {
     const $ = function (id) { return document.getElementById(id); };
     const DPR = function () { return window.devicePixelRatio || 1; };
-    const shotDefaults = function (kind) { return { kind: kind, src: null, nFrames: 0, w: 1280, h: 720, fps: 240, fileFps: 240, pts: {}, fit: null, meta: {}, name: "" }; };
+    const shotDefaults = function (kind) { return { kind: kind, src: null, nFrames: 0, w: 1280, h: 720, fps: 240, fileFps: 240, pts: {}, conf: {}, fit: null, meta: {}, name: "" }; };
     const S = { shot: "A", mode: "track", step: 1, frame: 0, loupe: true, mouse: null,
       shots: { A: shotDefaults("nospin"), B: shotDefaults("backspin") },
       cal: { p: [], mm: 1000 }, level: { p: [] }, demoTruth: null, busy: false };
@@ -502,7 +502,8 @@
         if (!mine && (s2.w !== sh.w || s2.h !== sh.h)) return;
         sortedPts(s2).forEach(function (f) {
           const p = s2.pts[f], c = f2c(p[0], p[1]);
-          ctx.globalAlpha = mine ? 1 : 0.35; ctx.fillStyle = col;
+          const low = s2.conf && s2.conf[f] !== undefined && s2.conf[f] < 0.5;
+          ctx.globalAlpha = mine ? 1 : 0.35; ctx.fillStyle = low ? "#e8913a" : col;
           ctx.beginPath(); ctx.arc(c[0], c[1], mine && f === S.frame ? 5 : 3, 0, 2 * Math.PI); ctx.fill();
           if (mine && f === S.frame) { ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(c[0], c[1], 9, 0, 2 * Math.PI); ctx.stroke(); }
           ctx.globalAlpha = 1;
@@ -518,8 +519,9 @@
       // HUD
       const n = sortedPts(sh).length;
       $("hud").textContent = "Shot " + S.shot + (sh.kind === "nospin" ? " (no spin)" : " (backspin)") + " · frame " + (sh.nFrames ? S.frame + " / " + (sh.nFrames - 1) : "-") +
-        " · t " + (S.frame / sh.fps).toFixed(4) + " s · " + n + " points · mode: " + ({ track: "click the ball centre", cal: "click both ends of the scale", level: "click two points on a level line" })[S.mode];
+        " · t " + (S.frame / sh.fps).toFixed(4) + " s · " + n + " points · mode: " + ({ track: "click the ball centre", cal: "click both ends of the scale", level: "click two points on a level line", seed: "click the ball once to start the auto-tracker" })[S.mode];
       drawLoupe();
+      if (S.onDraw) S.onDraw();
     }
     function drawLoupe() {
       const show = S.loupe && S.mouse && cur().src;
@@ -547,6 +549,7 @@
       if (f[0] < 0 || f[1] < 0 || f[0] > sh.w || f[1] > sh.h) return;
       if (S.mode === "cal") { if (S.cal.p.length >= 2) S.cal.p = []; S.cal.p.push(f); if (S.cal.p.length === 2) setMode("track"); }
       else if (S.mode === "level") { if (S.level.p.length >= 2) S.level.p = []; S.level.p.push(f); if (S.level.p.length === 2) setMode("track"); }
+      else if (S.mode === "seed") { setMode("track"); if (S.onSeed) S.onSeed(f); return; }
       else { sh.pts[S.frame] = f; sh.fit = null; if (sh.nFrames) gotoFrame(S.frame + S.step); }
       refresh();
     });
@@ -556,12 +559,13 @@
       const big = e.shiftKey ? 10 : S.step;
       if (e.key === "ArrowRight" || e.key === ".") { gotoFrame(S.frame + big); e.preventDefault(); }
       else if (e.key === "ArrowLeft" || e.key === ",") { gotoFrame(S.frame - big); e.preventDefault(); }
-      else if (e.key === "Delete" || e.key === "Backspace") { delete cur().pts[S.frame]; cur().fit = null; refresh(); e.preventDefault(); }
+      else if (e.key === "Delete" || e.key === "Backspace") { delete cur().pts[S.frame]; delete cur().conf[S.frame]; cur().fit = null; refresh(); e.preventDefault(); }
       else if (e.key === "z" || e.key === "Z") { S.loupe = !S.loupe; $("loupe-on").checked = S.loupe; drawLoupe(); }
     });
     function setMode(m) {
       S.mode = m;
       Array.from($("mode-seg").children).forEach(function (b) { b.setAttribute("aria-pressed", String(b.dataset.v === m)); });
+      cv.style.cursor = m === "seed" ? "cell" : "crosshair";
       draw();
     }
     function setShot(k) {
@@ -627,7 +631,7 @@
         sh.fps = +m[k + ".capture_fps"] || sh.fps; sh.fileFps = +m[k + ".file_fps"] || sh.fileFps;
         sh.h = +m[k + ".frame_h_px"] || sh.h; sh.w = +m[k + ".frame_w_px"] || sh.w;
         sh.meta.ball_rpm = m[k + ".ball_rpm"] || ""; sh.meta.wheel_rpm = m[k + ".wheel_rpm"] || "";
-        sh.pts = {}; sh.fit = null;
+        sh.pts = {}; sh.conf = {}; sh.fit = null;
       });
       let ok = 0;
       d.rows.forEach(function (r) {
@@ -792,7 +796,7 @@
       const gauss = function () { const u1 = 1 - rnd(), u2 = rnd(); return Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2); };
       [["A", tA], ["B", tB]].forEach(function (pair) {
         const k = pair[0], tr = pair[1], sh = S.shots[k];
-        sh.w = W; sh.h = H; sh.fps = fps; sh.fileFps = fps; sh.nFrames = tr.frame.length; sh.pts = {}; sh.fit = null; sh.name = "synthetic demo";
+        sh.w = W; sh.h = H; sh.fps = fps; sh.fileFps = fps; sh.nFrames = tr.frame.length; sh.pts = {}; sh.conf = {}; sh.fit = null; sh.name = "synthetic demo";
         sh.meta = k === "B" ? { ball_rpm: "", wheel_rpm: "" } : { ball_rpm: "", wheel_rpm: "" };
         tr.frame.forEach(function (f, i) {
           if (f % 2) return;   // click every 2nd frame, as a person would
@@ -846,8 +850,8 @@
     $("prev10").onclick = function () { gotoFrame(S.frame - 10); };
     $("next10").onclick = function () { gotoFrame(S.frame + 10); };
     $("fslider").oninput = function () { gotoFrame(+$("fslider").value); };
-    $("delpt").onclick = function () { delete cur().pts[S.frame]; cur().fit = null; refresh(); };
-    $("clear").onclick = function () { cur().pts = {}; cur().fit = null; refresh(); };
+    $("delpt").onclick = function () { delete cur().pts[S.frame]; delete cur().conf[S.frame]; cur().fit = null; refresh(); };
+    $("clear").onclick = function () { cur().pts = {}; cur().conf = {}; cur().fit = null; refresh(); };
     $("fitA").onclick = function () { runFit("A"); };
     $("fitB").onclick = function () { runFit("B"); };
     $("demo").onclick = loadDemo;
@@ -858,6 +862,8 @@
     };
     $("import").onclick = function () { importCSV($("csv").value); };
     window.addEventListener("resize", sizeCanvas);
+    S.api = { cur: cur, refresh: refresh, gotoFrame: gotoFrame, setMode: setMode, setStatus: setStatus, mPerPx: mPerPx, ballP: ballP, trackOf: trackOf };
+    window.PollenMeasureUI = S;
     sizeCanvas(); setShot("A"); setMode("track");
     if (/demo/.test(location.hash)) { loadDemo(); if (/fit/.test(location.hash)) { runFit("A"); setTimeout(function () { runFit("B"); }, 60); } }
     return S;

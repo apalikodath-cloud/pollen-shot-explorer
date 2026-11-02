@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POLLEN Shot Lab</title>
+<meta name="description" content="Build shooter equations from your own measurements and the POLLEN shot model: exit-speed fit, battery-sag compensation, an rpm map, shoot-on-the-move and a near-lip hypothesis test. Runs in the browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Atkinson+Hyperlegible+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>window.addEventListener("error", function (e) { document.documentElement.setAttribute("data-js-error", String(e.message || e)); });</script>
+<style>
+  /* same theme tokens as measure.html and viz/explorer/page.html (dark only) */
+  :root {
+    color-scheme: dark;
+    --bg: #16181d; --panel: #1e2128; --panel-2: #262a32; --line: #363b45; --fg: #ece6d9; --muted: #a59f92;
+    --pollen: #f2c94c; --clean: #5fbf8a; --hit: #f0705f; --twin: #9aa1ab; --cal: #7fb2e0; --level: #c49bd6;
+    --display: "Zilla Slab", Rockwell, Georgia, serif; --sans: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+    --mono: "Atkinson Hyperlegible Mono", ui-monospace, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.45 var(--sans); }
+  body { overflow-x: hidden; }
+  a { color: var(--cal); }
+  code { font-family: var(--mono); font-size: 12.5px; background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
+  header { padding: 16px 20px 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: baseline; }
+  h1 { font: 700 26px/1.1 var(--display); margin: 0; }
+  h1 span { color: var(--pollen); }
+  header a.back { font: 600 14px/1.2 var(--sans); color: var(--pollen); }
+  header p { margin: 0; color: var(--muted); max-width: 80ch; }
+  h2 { font: 600 18px/1.2 var(--display); margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .wrap { padding: 14px 20px 40px; max-width: 1480px; margin: 0 auto; display: grid; gap: 16px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; min-width: 0; }
+  .cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .card-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+  .badge { font: 600 11px/1 var(--mono); color: #111; background: var(--pollen); border-radius: 3px; padding: 4px 6px; letter-spacing: .02em; }
+  .bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: end; }
+  .bar + .bar, .bar + .o, .o + .bar { margin-top: 8px; }
+  button, select, input, textarea { font: inherit; color: var(--fg); }
+  button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 6px 11px; cursor: pointer; min-height: 32px; }
+  button:hover:not(:disabled) { border-color: var(--muted); }
+  button:disabled { opacity: .45; cursor: default; }
+  button.primary { background: var(--pollen); color: #111; border-color: var(--pollen); font-weight: 600; }
+  input[type=number], input[type=text], select { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 5px 7px; min-height: 32px; width: 100%; }
+  label.f { display: grid; gap: 3px; font-size: 12.5px; color: var(--muted); min-width: 92px; flex: 1 1 92px; max-width: 170px; }
+  .file { font-size: 13px; color: var(--muted); max-width: 100%; }
+  .file::file-selector-button { background: var(--panel-2); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; margin-right: 8px; cursor: pointer; }
+  .o { font: 12.5px/1.45 var(--mono); color: var(--muted); }
+  .big { font: 600 20px/1.2 var(--mono); color: var(--fg); }
+  .lab { font: 11px var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; white-space: nowrap; }
+  .note { font-size: 12.5px; color: var(--muted); margin: 10px 0 0; }
+  .twin { font-size: 13px; margin: 10px 0 0; padding: 8px 10px; border-left: 3px solid var(--twin); background: var(--panel-2); border-radius: 0 6px 6px 0; }
+  .hyp { font-size: 13px; margin: 8px 0 0; padding: 8px 10px; border-left: 3px solid var(--level); background: var(--panel-2); border-radius: 0 6px 6px 0; }
+  .tbl { overflow-x: auto; margin-top: 8px; }
+  table.res { border-collapse: collapse; width: 100%; font-size: 13px; }
+  table.res th { text-align: left; font-weight: 500; color: var(--muted); border-bottom: 1px solid var(--line); padding: 4px 10px 4px 0; white-space: nowrap; }
+  table.res td { padding: 4px 10px 4px 0; border-bottom: 1px solid #262a32; font: 12.5px var(--mono); white-space: nowrap; }
+  table.res tr.bad td { color: var(--muted); }
+  pre.code { background: #121418; border: 1px solid var(--line); border-radius: 4px; padding: 10px; font: 12px/1.45 var(--mono); overflow-x: auto; margin: 8px 0 0; max-height: 260px; }
+  svg.chart { width: 100%; display: block; margin-top: 8px; background: #121418; border-radius: 4px; }
+  svg.chart .grid { stroke: var(--line); stroke-width: 1; }
+  svg.chart .ax { fill: var(--muted); font: 11px var(--mono); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 50%; flex: none; }
+  .ln { display: inline-block; width: 22px; border-top: 2px solid; }
+  .ln.d { border-top-style: dashed; }
+  .ramp { display: inline-block; width: 70px; height: 10px; border-radius: 2px; background: linear-gradient(90deg, #3d5a80, #f2c94c); }
+  progress { width: 160px; height: 8px; accent-color: var(--pollen); }
+  .pick { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin-top: 10px; }
+  .pick > div { background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 8px 10px; }
+  .pick h4 { margin: 0 0 4px; font: 600 14px/1.2 var(--display); }
+  #tip { position: fixed; display: none; pointer-events: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: 12px/1.4 var(--mono); z-index: 5; }
+  @media (max-width: 980px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 560px) { header, .wrap { padding-left: 16px; padding-right: 16px; } label.f { max-width: none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>POLLEN <span>Shot Lab</span></h1>
+  <a class="back" href="measure.html">&larr; Measure</a>
+  <a class="back" href="../index.html" id="explorer-link">Shot explorer</a>
+  <p>Turn your measurements into shooter code: an exit-speed fit from your tracked shots, battery-sag compensation from your robot log, an rpm map and shoot-on-the-move from the shot model, and a test of the near-lip idea. Everything runs in this page.</p>
+</header>
+<div class="wrap">
+  <section class="panel" aria-label="Setup">
+    <div class="card-head"><h2>Setup</h2><span class="o" id="fi-o">loading the field model…</span></div>
+    <div class="bar">
+      <label class="f">Release height h (m) <input id="h" type="number" step="0.01" value="0.737"></label>
+      <label class="f">Backspin S <select id="S"></select></label>
+      <label class="f">Aero case <select id="aero"></select></label>
+      <label class="f">Exit-speed ratio v/u <input id="vu" type="number" step="0.005" value="0.42"></label>
+      <label class="f">Battery (V) for droop <input id="volts" type="number" step="0.1" value="12.0"></label>
+      <button id="demo">Load demo data</button>
+    </div>
+    <p class="note" id="setup-note">Labels: <span class="lab">user</span> you entered or measured it, <span class="lab">derived</span> fitted from your data, <span class="lab">ASSUMED</span> a default nobody measured yet, <span class="lab">PREDICTED</span> the shot model's output. The defaults h 0.737 m and v/u 0.42 are ASSUMED until you replace them. Shots are from the far (unfavourable) side, straight on (y = 0); the side walls are modelled (3D cell).</p>
+  </section>
+
+  <div class="cols">
+    <section class="panel" aria-label="Exit-speed fit">
+      <div class="card-head"><h2>1 · Exit speed from wheel rpm</h2><span class="lab">derived</span></div>
+      <p class="note" style="margin-top:0">Ball exit speed v against wheel surface speed u = π·0.098 m·rpm/60, from the shots you logged on the Measure page (or imported here). The fitted ratio v/u replaces the ASSUMED 0.42.</p>
+      <div class="bar">
+        <input class="file" id="log-file" type="file" accept=".json,.csv,.txt" aria-label="Import a shot log">
+        <button id="log-clear">Clear log</button>
+        <button id="vu-use" disabled>Use fitted v/u</button>
+      </div>
+      <div class="o" id="log-o"></div>
+      <svg class="chart" id="vu-chart" viewBox="0 0 560 230" role="img" aria-label="Exit speed against wheel surface speed"></svg>
+      <div class="legend"><span><i class="sw" style="background:var(--pollen)"></i>logged shot</span><span><i class="ln" style="border-color:var(--cal)"></i>fit v = k·u</span></div>
+    </section>
+
+    <section class="panel" aria-label="Battery sag">
+      <div class="card-head"><h2>2 · Battery-sag compensation</h2><span class="lab">derived</span></div>
+      <p class="note" style="margin-top:0">Fits steady wheel rpm = a·(power·volts) + b from your robot log (rows on spin-up ramps are skipped). Then the power to hold a target rpm at any battery voltage is (target − b) / (a·volts).</p>
+      <div class="bar">
+        <input class="file" id="tel-file" type="file" accept=".csv,.txt,.tsv" aria-label="Import robot telemetry">
+        <label class="f">Speed column unit <select id="tel-unit"><option value="rpm">rpm</option><option value="tps">ticks / s</option></select></label>
+        <label class="f">Ticks / rev <input id="tel-tpr" type="number" value="28"></label>
+      </div>
+      <div class="o" id="tel-o"></div>
+      <div class="tbl" id="sag-tbl"></div>
+      <pre class="code" id="sag-java" hidden></pre>
+      <div class="bar"><button id="sag-copy" hidden>Copy Java</button></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-label="RPM map">
+    <div class="card-head"><h2>3 · RPM map against distance <span class="badge">MODEL PREDICTION</span></h2><span class="o" id="map-p"></span></div>
+    <div class="bar">
+      <label class="f">Mode <select id="map-mode"><option value="free">Free hood (most forgiving)</option><option value="fixed">Fixed hood angle</option></select></label>
+      <label class="f">Fixed exit angle (°) <input id="map-th" type="number" step="0.5" value="78"></label>
+      <label class="f">d from (m) <input id="d0" type="number" step="0.05" value="0.7"></label>
+      <label class="f">d to (m) <input id="d1" type="number" step="0.05" value="1.5"></label>
+      <label class="f">step (m) <input id="dst" type="number" step="0.05" value="0.1"></label>
+      <button class="primary" id="map-run">Build map</button>
+    </div>
+    <div class="cols" style="margin-top:6px">
+      <div>
+        <div class="tbl" id="map-tbl"></div>
+        <div class="o" id="map-fit"></div>
+      </div>
+      <div>
+        <svg class="chart" id="map-chart" viewBox="0 0 560 250" role="img" aria-label="Wheel rpm against distance"></svg>
+        <div class="legend"><span><i class="ln" style="border-color:var(--pollen)"></i>backspin S</span><span><i class="ln d" style="border-color:var(--twin)"></i>no-spin twin</span><span><i class="ln" style="border-color:var(--cal)"></i>quadratic fit</span></div>
+      </div>
+    </div>
+    <pre class="code" id="map-java" hidden></pre>
+    <div class="bar"><button id="map-copy" hidden>Copy Java</button></div>
+    <p class="note">d = horizontal distance from the release point to the HIVE axis on the far side (x = −d, the same d as the explorer). "Free hood" takes the explorer's most forgiving setting at each d; "fixed hood" keeps one exit angle and takes the middle of the widest clean speed range. "± v / ± °" = how far speed or angle alone can move from the setting before the first shot that is not clean (steps of 0.05 m/s and 0.1°, smaller side). rpm uses your v/u. Time of flight = launch to cell entry. All map values are PREDICTED by the model; check them on the robot.</p>
+  </section>
+
+  <div class="cols">
+    <section class="panel" aria-label="Shoot on the move">
+      <div class="card-head"><h2>4 · Shoot on the move <span class="badge">MODEL PREDICTION</span></h2></div>
+      <p class="note" style="margin-top:0">Virtual target: aim at target − robot velocity × time of flight, iterated (time of flight from the map). Robot velocity is in the shot frame: along = toward the HIVE (negative = backing away), across = to the left. Driving toward the HIVE makes the virtual target closer than the map's nearest legal distance quickly.</p>
+      <div class="bar">
+        <label class="f">d (m) <input id="sm-d" type="number" step="0.05" value="1.0"></label>
+        <label class="f">along (m/s) <input id="sm-a" type="number" step="0.1" value="-0.2"></label>
+        <label class="f">across (m/s) <input id="sm-c" type="number" step="0.1" value="0"></label>
+        <label class="f">latency (s) <input id="sm-l" type="number" step="0.01" value="0.05"></label>
+        <button id="sm-run" disabled>Compute</button>
+        <button id="sm-check" disabled>Check in 3D model</button>
+      </div>
+      <div class="o" id="sm-o">Build the map first.</div>
+      <pre class="code" id="sm-java" hidden></pre>
+    </section>
+
+    <section class="panel" aria-label="Wheel droop">
+      <div class="card-head"><h2>Wheel droop per shot <span class="badge">MODEL PREDICTION</span></h2></div>
+      <p class="note" style="margin-top:0">rpm lost when the ball goes through and the time to spin back up, from the explorer's launcher model at each map setting (motor goBILDA 5203 1:1, CONFIRMED datasheet; wheel inertia and contact numbers ASSUMED). Set the battery voltage in Setup.</p>
+      <div class="tbl" id="droop-tbl"><div class="o">Build the map first.</div></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-label="Near-lip hypothesis">
+    <div class="card-head"><h2>5 · Hypothesis test: high energy, just over the lower lip <span class="badge">MODEL PREDICTION</span></h2><span class="o" id="lip-p"></span></div>
+    <p class="hyp"><b>Your hypothesis:</b> the best shots carry the most energy and pass right at the edge of the lower lip but still go in. This card tests one part the model can test: are shots that pass close to the lower lip (and carry more energy) <i>more forgiving</i> of normal launch scatter than shots with room to spare?</p>
+    <div class="bar">
+      <label class="f">d (m) <input id="lip-d" type="number" step="0.05" value="0.8"></label>
+      <label class="f">"near the lip" (cm) <input id="lip-near" type="number" step="0.5" value="1"></label>
+      <button class="primary" id="lip-run">Run test</button>
+    </div>
+    <div class="cols" style="margin-top:6px">
+      <div>
+        <svg class="chart" id="lip-chart" viewBox="0 0 560 300" role="img" aria-label="Lip clearance against robustness, coloured by energy"></svg>
+        <div class="legend"><span><i class="sw" style="background:#3d5a80"></i>clean shot (colour = kinetic energy at cell entry <i class="ramp"></i> low → high)</span><span><i class="sw" style="background:none;border:2px solid var(--hit)"></i>your rule's pick</span><span><i class="sw" style="background:none;border:2px solid var(--clean)"></i>most forgiving</span></div>
+      </div>
+      <div>
+        <div id="lip-o" class="o">Not run yet.</div>
+        <div class="pick" id="lip-picks"></div>
+        <div class="twin" id="lip-twin" hidden></div>
+      </div>
+    </div>
+    <p class="note"><b>What the model cannot say:</b> it has no contact physics. Any touch of the lip counts as a hit and ends the shot, so it cannot show a ball that kisses the lip and still drops in, and it has no "impulse torque" from a lip contact. It can only compare clean shots that pass close to the lip with clean shots that pass farther away. Robustness = the share of clean shots in a Gaussian window of ASSUMED launch scatter (speed 1.5 %, angle 0.4°, 1 σ) around each setting, in a local scan (speed ±2 m/s, angle ±6°) centred on the explorer's most forgiving setting; the two picks and 20 shots across the clearance range also get a 3D Monte Carlo that adds 0.5° heading scatter (Wilson 95 % interval). Energy = ½·m·v² at cell entry, m 0.025 kg. None of this is a measured repeatability.</p>
+  </section>
+
+  <p class="note">MODEL PREDICTION = output of the shot model (PREDICTED): flight from the literature-middle aero set unless you pick another case, with the CFD output also PREDICTED and the hole orientation ASSUMED. Every backspin result sits next to its no-spin twin. Protocol and limits: <code>docs/MEASURE.md</code>.</p>
+</div>
+<div id="tip"></div>
+<script src="shotcore.js"></script>
+<script src="assist.js"></script>
+<script src="../explorer/physics.js"></script>
+<script src="../explorer/solver.js"></script>
+<script src="shotlab.js"></script>
+</body>
+</html>
