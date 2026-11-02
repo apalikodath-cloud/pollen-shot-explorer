@@ -84,9 +84,11 @@ About 0.6 MB per frame at `--ds 2`. Run it after `make_flow.py`, on the same sna
 The viewer loads the volume into a 3D texture (WebGL2 with float render targets; without them
 the panel says so and the old layers stay). On the GPU, tracers are advected with RK2 through
 the two saved frames around the current time, blended linearly; a tracer that leaves the box,
-stops on the ball or ages out is released again. With tracers on, Play runs the CFD time at
-0.8 t* per second (x the speed menu) so tracers and field stay in step; paused, the tracers keep
-moving through the frozen field. The vortex volume ray-marches |A| above the vortex-level
+stops on the ball or ages out is released again. These layers are added on top of the old ones:
+streamlines, vortex cores, slices and the 2D particles keep their usual defaults. Play keeps the
+usual frame pace; tick "Tracer pace" (`sync=1`) to run the CFD time at 0.8 t* per second (x the
+speed menu) so tracers and field stay in step. Paused, the tracers keep moving through the frozen
+field. The vortex volume ray-marches |A| above the vortex-level
 threshold, red for vortices turning with the flow and blue against; it fades out within 0.1 D
 of the wall, where the zeroed solid velocity spoils the Q estimate.
 
@@ -154,7 +156,7 @@ The scene needs the built explorer field data at `../explorer/data/field/index.j
 | `field=speed\|vort` | colour slices by speed or vorticity |
 | `nostream=1`, `noanim=1`, `nopart=1`, `q=0` | turn off streamlines, flow dashes, particles, vortex cores |
 | `tracers=0\|1`, `vvol=0\|1`, `pairs=0\|1` | 3D tracers, vortex volume, lift pairs (bundles with a volume) |
-| `stream=1`, `cores=1` | keep streamlines / vortex tubes on with a volume bundle |
+| `sync=1` | play the frames at the tracer pace |
 | `pcol=0\|1\|2`, `pq=64\|128\|256` | tracer colour (speed, above/below, vortex sense), tracer texture side (4 k, 16 k, 65 k) |
 | `warm=<t*>` | run the tracers this long before the first draw |
 | `t=<s>`, `play=1` | start time, start playing |

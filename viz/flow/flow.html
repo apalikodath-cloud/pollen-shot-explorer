@@ -99,13 +99,13 @@ body.series #hint{display:none}
  <label><input type="checkbox" id="cmp"> Side by side with a second case</label>
  <p class="note">A backspin case opens next to its no-spin twin at the same speed.</p>
  <h2>Layers</h2>
- <label><input type="checkbox" id="lTrace" checked> Tracer particles (3D, with trails)</label>
- <label><input type="checkbox" id="lVvol" checked> Vortex volume (glowing)</label>
- <label><input type="checkbox" id="lPairs" checked> Lift pairs (timelines)</label>
- <p class="note" id="fxNote">PREDICTED (CFD model output). Tracers are massless specks carried by the CFD air, released upstream, all over the ball and in the wake. Lift pairs: a line of tracers released together; the orange one passes above the ball, the blue one below.</p>
  <label><input type="checkbox" id="lStream" checked> Streamlines</label>
  <label><input type="checkbox" id="lVortex" checked> Vortex cores</label>
  <label><input type="checkbox" id="lY" checked> Slice through the ball <span class="sm" id="nA"></span></label>
+ <label><input type="checkbox" id="lTrace" checked> Tracer particles (3D, with trails)</label>
+ <label><input type="checkbox" id="lVvol" checked> Vortex volume (glowing)</label>
+ <label><input type="checkbox" id="lPairs" checked> Lift pairs (timelines)</label>
+ <p class="note" id="fxNote">Added 3D layers, on top of the ones above. PREDICTED (CFD model output). Tracers are massless specks carried by the CFD air, released upstream, all over the ball and in the wake. Lift pairs: a line of tracers released together; the orange one passes above the ball, the blue one below.</p>
  <h2>Flow</h2>
  <div class="seg" id="vMode" role="group" aria-label="Averaged or instantaneous flow" title="Instant shows the turbulent wake's vortices; averaged shows the mean flow.">
   <button type="button" data-m="avg" aria-pressed="true" title="Averaged: the mean flow (velocity averaged over the saved CFD frames)">Averaged</button>
@@ -135,7 +135,7 @@ body.series #hint{display:none}
  </details>
  </div>
 </div>
-<div id="tbar" style="display:none"><div class="trow"><button type="button" id="tPlay">Play</button><input type="range" id="tSlide" min="0" max="1" step="0.01" value="0" aria-label="CFD time"><select id="tSpd" title="Playback speed"><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option></select><label><input type="checkbox" id="tLoop" checked> Loop</label><label><input type="checkbox" id="lPart" checked> Particles</label></div><div class="trow"><span id="tLab"></span></div><div class="tnote">Saved CFD frames of the turbulent wake, riding along with the ball.</div></div>
+<div id="tbar" style="display:none"><div class="trow"><button type="button" id="tPlay">Play</button><input type="range" id="tSlide" min="0" max="1" step="0.01" value="0" aria-label="CFD time"><select id="tSpd" title="Playback speed"><option value="0.25">0.25x</option><option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option></select><label><input type="checkbox" id="tLoop" checked> Loop</label><label><input type="checkbox" id="lPart" checked> Particles</label><label title="Play the saved frames at the 3D tracer pace (0.8 t* per second) so the tracers and the field stay in step"><input type="checkbox" id="tSync"> Tracer pace</label></div><div class="trow"><span id="tLab"></span></div><div class="tnote">Saved CFD frames of the turbulent wake, riding along with the ball.</div></div>
 <div id="legend"></div>
 <div id="lift" style="display:none"></div>
 <div id="hint">Drag: orbit. Right-drag or two-finger drag: pan. Wheel or pinch: zoom. Double-click: focus a point.</div>
