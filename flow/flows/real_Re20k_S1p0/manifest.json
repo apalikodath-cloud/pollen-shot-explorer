@@ -887,5 +887,33 @@
   "note": "time mean of the velocity over 3 frames (t* 20 to 22); layers computed from the mean field"
  },
  "speed_mps": 4.0,
- "body_t_star": 20.0
+ "body_t_star": 20.0,
+ "vol": {
+  "size": [
+   96,
+   51,
+   51
+  ],
+  "origin": [
+   -0.78515625,
+   -0.78515625,
+   -0.78515625
+  ],
+  "dx": 0.03125,
+  "vel_scale": 2.0,
+  "q_scale": 16.0,
+  "format": "gzip int8 RGBA, x fastest: velocity (U) and signed sqrt(Q) (U/D)",
+  "frames": [
+   "vol/f000.vgz",
+   "vol/f001.vgz",
+   "vol/f002.vgz"
+  ],
+  "t_star": [
+   20.0,
+   21.0,
+   22.0
+  ],
+  "mean": "vol/mean.vgz",
+  "note": "PREDICTED (CFD model output). Velocity coarsened 2x for particle tracers."
+ }
 }
