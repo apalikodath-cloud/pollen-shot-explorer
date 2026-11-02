@@ -36,7 +36,7 @@ const scene = new THREE.Scene();
 scene.add(new THREE.HemisphereLight(0xffffff, 0x556070, 1.1));
 const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(-2, -3, 5); scene.add(key);
 scene.add(new THREE.DirectionalLight(0xbcd0ff, 0.6).translateX(2).translateY(2).translateZ(-1));
-let BG = new THREE.Color(cssVar('--bg') || '#0b1015');
+let BG = new THREE.Color(cssVar('--bg') || '#16181d');
 
 // ------------------------------------------------------------ field, HIVE
 const line = (pts, color, op = 1) => new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts.map((p) => new THREE.Vector3(...p))), new THREE.LineBasicMaterial({ color, transparent: op < 1, opacity: op }));
@@ -483,7 +483,7 @@ function resize() {
 addEventListener('resize', resize);
 // theme: follows the explorer's saved choice (same storage key), live when the explorer switches it
 function retheme() {
-  BG = new THREE.Color(cssVar('--bg') || '#0b1015');
+  BG = new THREE.Color(cssVar('--bg') || '#16181d');
   for (const k in slots) for (const o of slots[k].views.values()) if (o.view) { o.view.applyTheme(); o.fadeW = -1; }
 }
 addEventListener('storage', (e) => {

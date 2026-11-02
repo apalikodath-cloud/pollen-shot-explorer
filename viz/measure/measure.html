@@ -7,16 +7,16 @@
 <meta name="description" content="Track a slow-motion side video of a POLLEN shot by hand and fit drag (Cd) and spin lift (Cl) with the no-spin twin test. Runs in the browser; files never leave the page.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Atkinson+Hyperlegible+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script>window.addEventListener("error", function (e) { document.documentElement.setAttribute("data-js-error", String(e.message || e)); });</script>
 <style>
   /* same theme tokens as viz/explorer/page.html (the explorer is dark only) */
   :root {
     color-scheme: dark;
-    --bg: #0b1015; --panel: #111921; --panel-2: #16212b; --line: #24323f; --fg: #e3eaf0; --muted: #8d9caa;
-    --pollen: #f4c430; --clean: #38d39f; --hit: #ff6b5a; --twin: #a9b4bf; --cal: #5fb3ff; --level: #c792ea;
-    --display: "Barlow Condensed", "Arial Narrow", sans-serif; --sans: "IBM Plex Sans", system-ui, sans-serif;
-    --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+    --bg: #16181d; --panel: #1e2128; --panel-2: #262a32; --line: #363b45; --fg: #ece6d9; --muted: #a59f92;
+    --pollen: #f2c94c; --clean: #5fbf8a; --hit: #f0705f; --twin: #9aa1ab; --cal: #7fb2e0; --level: #c49bd6;
+    --display: "Zilla Slab", Rockwell, Georgia, serif; --sans: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+    --mono: "Atkinson Hyperlegible Mono", ui-monospace, Consolas, monospace;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.45 var(--sans); }
@@ -24,30 +24,30 @@
   a { color: var(--cal); }
   code { font-family: var(--mono); font-size: 12.5px; background: var(--panel-2); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
   header { padding: 16px 20px 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: baseline; }
-  h1 { font: 700 26px/1.1 var(--display); letter-spacing: .02em; margin: 0; text-transform: uppercase; }
+  h1 { font: 700 26px/1.1 var(--display); letter-spacing: 0; margin: 0; text-transform: none; }
   h1 span { color: var(--pollen); }
   header a.back { font: 600 14px/1.2 var(--sans); color: var(--pollen); }
   header p { margin: 0; color: var(--muted); max-width: 72ch; }
-  h2 { font: 600 17px/1.2 var(--display); letter-spacing: .04em; text-transform: uppercase; margin: 0 0 8px; color: var(--fg); }
-  h3 { font: 600 16px/1.25 var(--display); letter-spacing: .03em; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+  h2 { font: 600 17px/1.2 var(--display); letter-spacing: 0; text-transform: none; margin: 0 0 8px; color: var(--fg); }
+  h3 { font: 600 16px/1.25 var(--display); letter-spacing: 0; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
   .wrap { padding: 14px 20px 40px; max-width: 1480px; margin: 0 auto; }
   .top { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
-  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; }
   .side { display: grid; gap: 12px; }
   .stage { position: relative; }
-  #cv { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 8px; background: #05080b; cursor: crosshair; touch-action: manipulation; }
-  #loupe { position: absolute; top: 8px; right: 8px; width: 150px; height: 150px; border: 1px solid var(--line); border-radius: 8px; pointer-events: none; display: none; }
+  #cv { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 4px; background: #121418; cursor: crosshair; touch-action: manipulation; }
+  #loupe { position: absolute; top: 8px; right: 8px; width: 150px; height: 150px; border: 1px solid var(--line); border-radius: 4px; pointer-events: none; display: none; }
   #hud { font: 12.5px/1.4 var(--mono); color: var(--muted); margin: 8px 0 6px; min-height: 18px; }
   .bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .bar + .bar { margin-top: 8px; }
   #fslider { flex: 1 1 90px; min-width: 60px; accent-color: var(--pollen); }
   button, select, input, textarea { font: inherit; color: var(--fg); }
-  button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px; padding: 6px 11px; cursor: pointer; min-height: 32px; }
+  button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 4px; padding: 6px 11px; cursor: pointer; min-height: 32px; }
   button:hover:not(:disabled) { border-color: var(--muted); }
   button:disabled { opacity: .45; cursor: default; }
   button.primary { background: var(--pollen); color: #111; border-color: var(--pollen); font-weight: 600; }
   button.primary:disabled { background: var(--panel-2); color: var(--fg); border-color: var(--line); }
-  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
   .seg button { border: 0; border-radius: 0; background: transparent; }
   .seg button + button { border-left: 1px solid var(--line); }
   .seg button[aria-pressed="true"] { background: var(--panel-2); box-shadow: inset 0 -2px 0 var(--pollen); }
@@ -57,7 +57,7 @@
   .o { font: 12px/1.4 var(--mono); color: var(--muted); margin-top: 6px; }
   .chk { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; }
   .file { display: block; width: 100%; font-size: 13px; color: var(--muted); }
-  .file::file-selector-button { background: var(--panel-2); color: var(--fg); border: 1px solid var(--line); border-radius: 7px; padding: 6px 10px; margin-right: 8px; cursor: pointer; }
+  .file::file-selector-button { background: var(--panel-2); color: var(--fg); border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; margin-right: 8px; cursor: pointer; }
   #status { font-size: 13px; color: var(--muted); margin-top: 8px; min-height: 20px; }
   .keys { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; }
   kbd { font: 11.5px var(--mono); background: var(--panel-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
@@ -82,7 +82,7 @@
   .twin { font-size: 13px; margin: 10px 0 0; padding: 8px 10px; border-left: 3px solid var(--twin); background: var(--panel-2); border-radius: 0 6px 6px 0; }
   .ok { color: var(--clean); font-size: 13px; margin: 8px 0 0; }
   ul.flags { margin: 8px 0 0; padding-left: 18px; color: var(--hit); font-size: 13px; }
-  textarea#csv { width: 100%; min-height: 180px; background: #070b0f; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: 12px/1.4 var(--mono); resize: vertical; }
+  textarea#csv { width: 100%; min-height: 180px; background: #121418; border: 1px solid var(--line); border-radius: 4px; padding: 8px; font: 12px/1.4 var(--mono); resize: vertical; }
   #tip { position: fixed; display: none; pointer-events: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: 12px/1.4 var(--mono); z-index: 5; }
   .note { font-size: 12.5px; color: var(--muted); margin: 14px 0 0; }
   @media (max-width: 980px) {

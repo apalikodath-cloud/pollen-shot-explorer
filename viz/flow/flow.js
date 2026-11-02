@@ -253,7 +253,7 @@ function render(t) {
   if (!need && !animating) return;
   need = false;
   const H = innerHeight, vp = viewports();
-  const bg = new THREE.Color(cssVar('--bg') || '#0b1015');
+  const bg = new THREE.Color(cssVar('--bg') || '#16181d');
   renderer.setScissorTest(false); renderer.setClearColor(bg, 1); renderer.clear();
   renderer.setScissorTest(true);
   vp.forEach(([x, w], i) => {

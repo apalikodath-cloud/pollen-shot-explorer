@@ -6,16 +6,16 @@
 <script>try { var th = localStorage.getItem("pollen-theme"); if (th === "light" || th === "dark") document.documentElement.dataset.theme = th; } catch (_) { /* storage blocked: follow the system theme */ }</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Atkinson+Hyperlegible+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: a night-arena scope. The 3D field is the hero on the left, the shooter's dials sit on a
+/* Layout: an engineering notebook. The 3D field is the hero on the left, the shooter's dials sit on a
    rail to the right, and the two charts that answer "which shots work" run underneath.
    One committed dark look (WebGL scene + dark panels), colours set explicitly. */
 :root {
-  --bg: #f4f6f7; --panel: #fff; --panel-2: #eef2f3; --line: #dce3e5; --fg: #172126; --muted: #66757b;
-  --ball: #f2c94c; --spin: #d6336c; --twin: #77858e; --hive: #d99028; --clean: #198754; --hit: #c0392b; --miss: var(--twin); --tight: #9c5a00; --no: #c0392b; --out: #4f5d6a;
-  --pollen: var(--ball); --display: "Space Grotesk", Inter, system-ui, sans-serif; --body: Inter, system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace; --ink-on-pollen: #172126; --cv-accent: var(--ball);
-  --btn-bg: rgba(255,255,255,.94); --overlay: rgba(255,255,255,.92); --tipbg: #fff; --rbarbg: rgba(255,255,255,.97); --c1: #1a62a8; --c2: #946500; --c3: #8e3aba;
+  --bg: #f3efe6; --panel: #fffcf5; --panel-2: #ebe5d8; --line: #d6ccb8; --fg: #22252b; --muted: #6a6457;
+  --ball: #e0b10f; --spin: #c2410c; --twin: #6f7682; --hive: #8a5a14; --clean: #2e7d4f; --hit: #b42318; --miss: var(--twin); --tight: #9c5a00; --no: #c0392b; --out: #4f5d6a;
+  --pollen: var(--ball); --display: "Zilla Slab", Rockwell, Georgia, serif; --body: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, sans-serif; --mono: "Atkinson Hyperlegible Mono", ui-monospace, Consolas, monospace; --ink-on-pollen: #22252b; --cv-accent: var(--ball);
+  --btn-bg: rgba(255,252,245,.95); --overlay: rgba(255,252,245,.92); --tipbg: #fffcf5; --rbarbg: rgba(255,252,245,.97); --c1: #1f5f99; --c2: #946500; --c3: #7b3fa0;
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --t-sm: 12px; --t-md: 14px; --t-lg: 16px; --t-xl: 28px; color-scheme: light;
 }
 html, body { background: var(--bg); color: var(--fg); }
@@ -27,10 +27,10 @@ h2 { font-family: var(--display); }
 .titlerow h2 { font-size: 30px; letter-spacing: .01em; margin: 0; }
 h1 b { color: var(--pollen); font-weight: 700; }
 .sub { color: var(--muted); max-width: 78ch; margin: 0; }
-.tag { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--bg); background: var(--pollen); padding: 2px 7px; border-radius: 3px; }
+.tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0; text-transform: none; color: var(--bg); background: var(--pollen); padding: 2px 7px; border-radius: 3px; }
 .main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 14px; }
 @media (max-width: 960px) { .main { grid-template-columns: minmax(0, 1fr); } }
-.stage { position: relative; min-width: 0; background: #070b0f; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; height: min(68vh, 680px); min-height: 380px; }
+.stage { position: relative; min-width: 0; background: #1b1c1f; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; height: min(68vh, 680px); min-height: 380px; }
 #gl { width: 100%; height: 100%; display: block; touch-action: none; }
 .hud { position: absolute; left: 12px; top: 12px; right: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; pointer-events: none; flex-wrap: wrap; }
 .hud > * { pointer-events: auto; }
@@ -43,10 +43,10 @@ button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px s
 .verdict { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; pointer-events: none; }
 .pill { font: 600 13px var(--mono); letter-spacing: .04em; padding: 4px 9px; border-radius: 999px; border: 1px solid currentColor; background: var(--overlay); }
 .pill.clean { color: var(--clean); } .pill.hit { color: var(--hit); } .pill.miss { color: var(--miss); } .pill.twin { color: var(--twin); font-weight: 500; }
-.loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-family: var(--mono); background: #070b0f; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-family: var(--mono); background: #1b1c1f; }
 .rail { display: grid; gap: 12px; align-content: start; min-width: 0; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 12px; display: grid; gap: 10px; }
-.card h2 { font-family: var(--display); font-weight: 600; font-size: 17px; letter-spacing: .05em; text-transform: uppercase; margin: 0; color: var(--muted); }
+.card h2 { font-family: var(--display); font-weight: 600; font-size: 17px; letter-spacing: 0; text-transform: none; margin: 0; color: var(--muted); }
 .row { display: grid; gap: 4px; }
 .row label { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; color: var(--muted); }
 .row label output, .num { font-family: var(--mono); color: var(--fg); font-variant-numeric: tabular-nums; }
@@ -98,7 +98,7 @@ html, body { overflow-x: hidden; }
 .rres.stale { opacity: .4; filter: grayscale(1); }
 .big { border-left: 3px solid var(--pollen); padding: 2px 0 2px 10px; display: grid; gap: 2px; min-width: 0; }
 .big.none { border-left-color: var(--miss); }
-.big .bl { font: 600 14px var(--display); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.big .bl { font: 600 14px var(--display); letter-spacing: 0; text-transform: none; color: var(--muted); }
 .big .bl i { font: 500 10px var(--mono); font-style: normal; color: var(--bg); background: var(--muted); padding: 1px 5px; border-radius: 3px; margin-left: 6px; letter-spacing: .04em; vertical-align: 1px; }
 .big .bv { font: 700 30px/1.1 var(--display); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .big .bv small { font: 500 16px var(--display); color: var(--muted); }
@@ -111,7 +111,7 @@ input[type=number], input.tx { width: 100%; box-sizing: border-box; font: 13px v
 @media (max-width: 520px) { #rwin { aspect-ratio: 4 / 3; } .big .bv { font-size: 26px; } }
 /* PM-011: simpler layout. Type scale: 28 title, 34 answer, 18 tile value, 16 headings, 14 body, 12 small, 10 badges.
    Colour carries status only (green clean, amber tight, red no shot, grey outside); yellow marks your shot / selection. */
-:root { --tight: #f4a43c; --no: #ff6b5a; --out: #8d9caa; }
+:root { --tight: #f4a43c; --no: #ff6b5a; --out: #a59f92; }
 header { display: grid; gap: 8px; }
 .titlerow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 h1 { font-size: 28px; }
@@ -179,7 +179,7 @@ body[data-view=robot] .stage { min-height: 460px; }
 .tile { display: grid; gap: 2px; align-content: start; text-align: left; font: 400 12px/1.35 var(--body); color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px; cursor: pointer; min-width: 0; min-height: 44px; }
 .tile:hover { border-color: var(--muted); }
 .tile[aria-pressed=true] { border-color: var(--pollen); }
-.tile .tl { font: 600 12px var(--display); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.tile .tl { font: 600 12px var(--display); letter-spacing: 0; text-transform: none; color: var(--muted); }
 .tile .tv { font: 700 18px/1.15 var(--display); color: var(--fg); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .tile .tt { color: var(--twin); }
 /* PM-011 review: charts sit at the top of their card (no stretched gaps); phone sticky answer bar; field map first in the Field view */
@@ -246,7 +246,7 @@ body[data-view=cfd] .rbar, body[data-view=cfd] .kitlink { display: none !importa
 .cfd-leg i { display: inline-block; width: 18px; height: 0; border-top: 3px solid; vertical-align: middle; margin-right: 5px; }
 .cfd-tw { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 table.cfd { border-collapse: collapse; width: 100%; font: 13px var(--mono); font-variant-numeric: tabular-nums; min-width: 760px; }
-table.cfd th { font: 600 11px var(--body); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.cfd th { font: 600 11px var(--body); text-transform: none; letter-spacing: 0; color: var(--muted); text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 table.cfd td { text-align: right; padding: 5px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 table.cfd th:first-child, table.cfd td:first-child { text-align: left; }
 table.cfd tr.s0 td { color: var(--twin); }
@@ -294,51 +294,58 @@ a { color: var(--pollen); text-underline-offset: 3px; }
   .cfd-svg text { font-size: 17px; } .cfd-svg .tt { font-size: 19px; }
   .tabs button { min-height: 48px; }
 }
-.stage .hud .note, .stage .hudnote, .stage .hud .legend { --muted: #8d9caa; }
+.stage .hud .note, .stage .hudnote, .stage .hud .legend { --muted: #a59f92; }
 .stage .hud .note, .stage .hudnote { color: #aab6c1; }
-/* Night flight lab redesign: the hero stays dark while the explorer becomes a quiet bench. */
-:root[data-theme="dark"] { --bg: #0d1518; --btn-bg: rgba(20,32,36,.92); --overlay: rgba(13,21,24,.88); --tipbg: #0a1114; --rbarbg: rgba(13,21,24,.96); --panel: #142024; --panel-2: #1a2b30; --line: #2a3d42; --fg: #e8f0ef; --muted: #9aacae; --ball: #f4d35e; --spin: #f06b94; --twin: #9aabb1; --hive: #e6a84c; --clean: #4bd39a; --hit: #ff7465; --pollen: var(--ball); --cv-accent: var(--ball); color-scheme: dark; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0d1518; --btn-bg: rgba(20,32,36,.92); --overlay: rgba(13,21,24,.88); --tipbg: #0a1114; --rbarbg: rgba(13,21,24,.96); --panel: #142024; --panel-2: #1a2b30; --line: #2a3d42; --fg: #e8f0ef; --muted: #9aacae; --ball: #f4d35e; --spin: #f06b94; --twin: #9aabb1; --hive: #e6a84c; --clean: #4bd39a; --hit: #ff7465; --pollen: var(--ball); --cv-accent: var(--ball); color-scheme: dark; } }
+/* Notebook look: graph-paper hero, slab headings, square corners, ink and paper colours. */
+:root[data-theme="dark"] { --bg: #16181d; --btn-bg: rgba(30,33,40,.94); --overlay: rgba(22,24,29,.9); --tipbg: #121418; --rbarbg: rgba(22,24,29,.96); --panel: #1e2128; --panel-2: #262a32; --line: #363b45; --fg: #ece6d9; --muted: #a59f92; --ball: #f2c94c; --spin: #f0804a; --twin: #9aa1ab; --hive: #d9a24e; --clean: #5fbf8a; --hit: #f0705f; --pollen: var(--ball); --cv-accent: var(--ball); color-scheme: dark; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #16181d; --btn-bg: rgba(30,33,40,.94); --overlay: rgba(22,24,29,.9); --tipbg: #121418; --rbarbg: rgba(22,24,29,.96); --panel: #1e2128; --panel-2: #262a32; --line: #363b45; --fg: #ece6d9; --muted: #a59f92; --ball: #f2c94c; --spin: #f0804a; --twin: #9aa1ab; --hive: #d9a24e; --clean: #5fbf8a; --hit: #f0705f; --pollen: var(--ball); --cv-accent: var(--ball); color-scheme: dark; } }
 body { font-family: var(--body); background: var(--bg); }
-.hero { min-height: 88vh; box-sizing: border-box; color: #f4f8f7; background-color: #05070d; background-image: radial-gradient(circle at 76% 26%, rgba(55,211,255,.55) 0 1px, transparent 1.5px), radial-gradient(circle at 63% 68%, rgba(255,255,255,.35) 0 1px, transparent 1.5px), linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px); background-size: 240px 210px, 310px 260px, 48px 48px, 48px 48px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, .9fr); gap: clamp(24px, 6vw, 92px); align-items: center; padding: clamp(32px, 7vw, 96px) max(24px, 7vw); }
+.hero { min-height: min(82vh, 860px); align-content: center; box-sizing: border-box; color: var(--fg); background-color: var(--bg); background-image: linear-gradient(color-mix(in srgb, var(--c1) 16%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--c1) 16%, transparent) 1px, transparent 1px), linear-gradient(color-mix(in srgb, var(--c1) 7%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--c1) 7%, transparent) 1px, transparent 1px); background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px; border-bottom: 2px solid var(--fg); display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, .9fr); gap: clamp(24px, 6vw, 92px); align-items: center; padding: clamp(32px, 7vw, 96px) max(24px, 7vw); }
+a, .kitlink a { color: var(--link, #1f5f99); }
+:root[data-theme="dark"] { --link: #8cbbe8; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --link: #8cbbe8; } }
 .hero-copy { max-width: 700px; }
-.hero-eyebrow, .hero-caption, .hero-stats, .hero-steps { font: 500 11px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: #59dbff; }
-.hero h1 { margin: 18px 0 16px; font: 700 clamp(52px, 8vw, 112px)/.88 var(--display); letter-spacing: -.05em; text-transform: uppercase; }
-.hero-sub { max-width: 62ch; margin: 0; color: #bbcbce; font-size: clamp(16px, 1.7vw, 20px); line-height: 1.5; }
+.hero-eyebrow { font: 700 14px var(--body); color: var(--spin); }
+.hero h1 { margin: 14px 0 18px; font: 700 clamp(44px, 6.5vw, 92px)/.98 var(--display); letter-spacing: -.01em; }
+.hero-sub { max-width: 58ch; margin: 0; color: color-mix(in srgb, var(--fg) 82%, var(--bg)); font-size: clamp(16px, 1.6vw, 19px); line-height: 1.55; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
-.hero-actions a { border: 1px solid #59dbff; border-radius: 999px; padding: 12px 18px; color: #05070d; background: #59dbff; text-decoration: none; font-weight: 600; }
-.hero-actions a.ghost { color: #d7e9eb; background: transparent; border-color: #52727a; }
-.hero-art { width: 100%; max-width: 620px; justify-self: center; }
+.hero-actions a { border: 2px solid var(--fg); border-radius: 3px; padding: 10px 18px; color: var(--bg); background: var(--fg); text-decoration: none; font-weight: 700; }
+.hero-actions a.ghost { color: var(--fg); background: var(--panel); }
+.hero-actions a:hover { background: var(--spin); border-color: var(--spin); color: #fff; }
+.hero-art { width: 100%; max-width: 620px; justify-self: center; background: var(--panel); border: 1px solid var(--line); padding: 14px 14px 10px; box-sizing: border-box; }
 .hero-art svg { width: 100%; overflow: visible; }
-.hero-art .arc { fill: none; stroke: #59dbff; stroke-width: 2; stroke-dasharray: 620; stroke-dashoffset: 620; animation: draw-arc 6s ease-in-out infinite; }
-.hero-art .arc.twin { stroke: #77858e; stroke-dasharray: 8 8; animation-delay: .2s; }
-.hero-art .ball { fill: #05070d; stroke: #59dbff; stroke-width: 2; filter: url(#glow); }
-.hero-art .ball.twin { fill: #77858e; stroke: #b5c0c7; opacity: .45; }
-.hero-art .hive { fill: none; stroke: #e6a84c; stroke-width: 3; filter: url(#glow); }
+.hero-art .arc { fill: none; stroke: var(--spin); stroke-width: 2.5; stroke-dasharray: 620; stroke-dashoffset: 620; animation: draw-arc 6s ease-in-out infinite; }
+.hero-art .arc.twin { stroke: var(--twin); stroke-width: 2; stroke-dasharray: 7 6; animation-delay: .2s; }
+.hero-art .ball { fill: var(--ball); stroke: var(--fg); stroke-width: 1.5; }
+.hero-art .ball.twin { fill: var(--panel-2); stroke: var(--twin); opacity: .8; }
+.hero-art .hive { fill: none; stroke: var(--hive); stroke-width: 3; }
 @keyframes draw-arc { 0%, 12% { stroke-dashoffset: 620; } 48%, 82% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 620; } }
-.hero-caption { margin: 8px 0 0; color: #9fb2b5; text-align: center; letter-spacing: .02em; text-transform: none; }
-.hero-stats { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 12px 28px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.12); color: #b5c8ca; }
-.hero-stats span::before { content: "// "; color: #59dbff; }
+.hero-caption { margin: 8px 0 0; font: italic 400 13px var(--body); color: var(--muted); text-align: left; }
+.hero-caption::before { content: "Fig. 1. "; font-style: normal; font-weight: 700; color: var(--fg); }
+.hero-stats { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px 0; padding-top: 16px; border-top: 1px solid var(--line); font: 500 13px var(--mono); color: var(--muted); }
+.hero-stats span + span::before { content: "|"; margin: 0 14px; color: var(--line); }
+.hero-steps { font: 500 13px var(--body); color: var(--muted); }
 .bench-intro { margin: 0; color: var(--muted); }
-.tabs { position: sticky; top: 10px; z-index: 5; display: flex; flex-wrap: wrap; gap: 4px; padding: 5px; border: 1px solid var(--line); border-radius: 999px; background: color-mix(in srgb, var(--panel) 92%, transparent); box-shadow: 0 6px 20px rgb(0 0 0 / .08); }
-.tabs button { flex: 1 1 110px; min-height: 38px; border: 0; border-radius: 999px; padding: 7px 12px; background: transparent; text-align: center; }
-.tabs button b { font: 600 14px var(--display); }
-.tabs button[aria-pressed=true] { background: var(--fg); color: var(--bg); box-shadow: none; }
+.tabs { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 0; padding: 0; border: 0; border-bottom: 2px solid var(--fg); border-radius: 0; background: var(--bg); box-shadow: none; }
+.tabs button { flex: 1 1 110px; min-height: 40px; border: 0; border-bottom: 4px solid transparent; border-radius: 0; margin-bottom: -2px; padding: 8px 12px; background: transparent; text-align: center; }
+.tabs button b { font: 600 16px var(--display); }
+.tabs button[aria-pressed=true] { background: transparent; color: var(--fg); border-bottom-color: var(--spin); box-shadow: none; }
 .tabs button[aria-pressed=true] b { color: inherit; }
-.card, .chart { border: 0; border-radius: 14px; padding: 24px; box-shadow: 0 1px 2px rgb(0 0 0 / .06), 0 4px 16px rgb(0 0 0 / .05); }
-.card h2, .shead h2, .chart h3 { font-family: var(--display); letter-spacing: .02em; }
-.shead h2::before, .card > h2::before { content: attr(data-label); display: block; margin-bottom: 5px; font: 500 10px var(--mono); letter-spacing: .1em; color: var(--muted); }
-.mapcard h2::before { content: "THE FIELD"; } .answer h2::before { content: "YOUR SETTING"; } .rcol > .step h2::before, #prail > .card h2::before { content: "SHOOTER"; }
-.badge, .tag { border: 0; border-radius: 999px; background: var(--panel-2); color: var(--muted); font: 500 10px var(--mono); letter-spacing: .06em; }
-.rec { background: var(--panel-2); border: 0; border-left: 3px solid var(--spin); border-radius: 10px; padding: 18px; }
-.rec::before { content: "MODEL PREDICTION"; justify-self: start; padding: 3px 7px; border-radius: 999px; background: color-mix(in srgb, var(--spin) 13%, var(--panel)); color: var(--spin); font: 500 10px var(--mono); letter-spacing: .06em; }
+.card, .chart { border: 1px solid var(--line); border-radius: 4px; padding: 22px; box-shadow: none; }
+.card h2, .shead h2, .chart h3 { font-family: var(--display); letter-spacing: 0; text-transform: none; }
+.shead h2::before, .card > h2::before { content: attr(data-label); display: block; margin-bottom: 4px; font: 700 12px var(--body); letter-spacing: 0; color: var(--spin); }
+.mapcard h2::before { content: "The field"; } .answer h2::before { content: "Your setting"; } .rcol > .step h2::before, #prail > .card h2::before { content: "Shooter"; }
+.badge, .tag { border: 1px solid var(--line); border-radius: 3px; background: var(--panel-2); color: var(--muted); font: 500 11px var(--mono); letter-spacing: 0; text-transform: none; }
+.rec { background: var(--panel-2); border: 0; border-left: 4px solid var(--spin); border-radius: 0 4px 4px 0; padding: 18px; }
+.rec::before { content: "Model prediction"; justify-self: start; padding: 2px 7px; border-radius: 3px; background: color-mix(in srgb, var(--spin) 14%, var(--panel)); color: var(--spin); font: 700 12px var(--body); }
 .rec .say .lab, .rec .droop .lab, .rec .which .lab, .rec .hc .lab { display: none; }
 .rec .say { font-size: 18px; }
 .rec .say b { color: var(--spin); }
 .twinline { border-left-color: var(--twin); }
-.hintbox { padding: 10px 12px; border-left: 3px solid var(--clean); border-radius: 6px; background: color-mix(in srgb, var(--clean) 10%, var(--panel)); color: var(--fg); }
+.hintbox { padding: 10px 12px; border-left: 4px solid var(--clean); border-radius: 0 4px 4px 0; background: color-mix(in srgb, var(--clean) 10%, var(--panel)); color: var(--fg); }
 .labkey { color: var(--muted); }
 .flow-count { color: inherit; }
+.loading { background: #1b1c1f; }
 @media (prefers-reduced-motion: reduce) { .hero-art .arc, .hero-art .ball { animation: none; stroke-dashoffset: 0; } .hero-art .ball { opacity: 1; } }
 @media (max-width: 760px) { .hero { min-height: auto; grid-template-columns: 1fr; padding: 56px 20px 28px; } .hero h1 { font-size: clamp(38px, 12vw, 82px); overflow-wrap: anywhere; } .hero-art { max-width: 520px; } .hero-stats { grid-column: auto; } .wrap { padding-left: 16px; padding-right: 16px; } .tabs { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; } .tabs button { flex: 0 0 auto; } .tabs button small, .tabs button .sub { display: none; } body { overflow-x: hidden; } }
 </style>
@@ -351,12 +358,12 @@ body { font-family: var(--body); background: var(--bg); }
     <div class="hero-actions"><a href="#explorer">Place your robot</a><a class="ghost" href="#how-it-works">How it works</a></div>
   </div>
   <div class="hero-art" aria-label="A wireframe POLLEN ball follows a backspin arc into a HIVE cell beside a dashed no-spin arc">
-    <svg viewBox="0 0 620 330" role="img"><defs><filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><path id="arc-spin" d="M90 250 C190 55 365 45 505 130"/><path id="arc-twin" d="M90 258 C210 105 380 105 505 150"/></defs><path class="arc" d="M90 250 C190 55 365 45 505 130"/><path class="arc twin" d="M90 258 C210 105 380 105 505 150"/><g class="ball"><g><circle r="28"/><ellipse rx="28" ry="10"/><ellipse rx="10" ry="28"/><circle cx="-11" cy="-12" r="3"/><circle cx="14" cy="-7" r="3"/><circle cx="7" cy="14" r="3"/><animateTransform attributeName="transform" type="rotate" values="0;360" dur="6s" repeatCount="indefinite"/></g><animateMotion dur="6s" repeatCount="indefinite" rotate="0"><mpath href="#arc-spin"/></animateMotion></g><g class="ball twin"><circle r="22"/><ellipse rx="22" ry="8"/><animateMotion dur="6s" begin=".2s" repeatCount="indefinite" rotate="0"><mpath href="#arc-twin"/></animateMotion></g><path class="hive" d="M492 112 L585 112 L570 225 L507 225 Z M505 112 L520 92 L570 92 L585 112"/></svg>
+    <svg viewBox="0 0 620 330" role="img"><defs><path id="arc-spin" d="M90 250 C190 55 365 45 505 130"/><path id="arc-twin" d="M90 258 C210 105 380 105 505 150"/></defs><path class="arc" d="M90 250 C190 55 365 45 505 130"/><path class="arc twin" d="M90 258 C210 105 380 105 505 150"/><g class="ball"><g><circle r="28"/><ellipse rx="28" ry="10"/><ellipse rx="10" ry="28"/><circle cx="-11" cy="-12" r="3"/><circle cx="14" cy="-7" r="3"/><circle cx="7" cy="14" r="3"/><animateTransform attributeName="transform" type="rotate" values="0;360" dur="6s" repeatCount="indefinite"/></g><animateMotion dur="6s" repeatCount="indefinite" rotate="0"><mpath href="#arc-spin"/></animateMotion></g><g class="ball twin"><circle r="22"/><ellipse rx="22" ry="8"/><animateMotion dur="6s" begin=".2s" repeatCount="indefinite" rotate="0"><mpath href="#arc-twin"/></animateMotion></g><path class="hive" d="M492 112 L585 112 L570 225 L507 225 Z M505 112 L520 92 L570 92 L585 112"/></svg>
     <p class="hero-caption">Backspin shot (solid) and its no-spin twin (dashed) · model prediction</p>
   </div>
   <div class="hero-stats"><span>98 mm flywheel</span><span>71 mm POLLEN, 26 holes</span><span class="flow-count">24 CFD runs</span></div>
 </section>
-<div id="how-it-works" class="hero-steps" style="max-width:1480px;margin:0 auto;padding:18px 16px 0;color:#66757b">1 Place the robot · 2 Read the setting · 3 Test it on the field</div>
+<div id="how-it-works" class="hero-steps" style="max-width:1480px;margin:0 auto;padding:18px 16px 0">1 Place the robot · 2 Read the setting · 3 Test it on the field</div>
 <script>(async () => { for (const url of ["flow/flows/index.json", "../flow/flows/index.json"]) { try { const r = await fetch(url, { cache: "no-cache" }); if (!r.ok) throw new Error(r.status); const d = await r.json(); const n = (d.runs || []).length; if (n) document.querySelectorAll(".flow-count").forEach(e => e.textContent = n + " CFD cases"); break; } catch (_) {} } try { const r = await fetch("data/cfd_runs.json", { cache: "no-cache" }); const d = await r.json(); const n = (d.runs || []).length; if (n) document.querySelectorAll(".flow-count").forEach(e => e.textContent = n + " CFD runs"); } catch (_) {} })();</script>
 <script>if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) document.querySelectorAll(".hero-art animateMotion,.hero-art animateTransform").forEach(e => e.remove()); if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) { document.querySelector(".hero-art .ball")?.setAttribute("transform", "translate(415 130)"); document.querySelector(".hero-art .ball.twin")?.setAttribute("transform", "translate(415 150)"); }</script>
 <div class="wrap" id="explorer">
@@ -2716,7 +2723,7 @@ const cssv = n => {
   if (key !== cssThemeKey) { cssThemeKey = key; cssCache = {}; }
   return cssCache[n] || (cssCache[n] = getComputedStyle(root).getPropertyValue(n).trim() || "#f4c430");
 };   // canvas 2D cannot resolve var(); cache token reads until the theme changes
-const COL = { pollen: 0xf4c430, clean: 0x38d39f, hit: 0xff6b5a, twin: 0xa9b4bf };
+const COL = { pollen: 0xf2c94c, clean: 0x5fbf8a, hit: 0xf0705f, twin: 0x9aa1ab };
 const AERO_NAMES = { nominal: "Nominal (literature middle)", Cd_low: "Low drag (Cd 0.33)", Cd_high: "High drag (Cd 0.9)",
   Cl_low: "Weak spin lift", Cl_high: "Strong spin lift", k_high: "Fast spin decay" };
 // backspin in plain words; the S = ωR/v value stays beside it for the paper
@@ -2805,8 +2812,8 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x070b0f);
-scene.fog = new THREE.Fog(0x070b0f, 6, 14);
+scene.background = new THREE.Color(0x1b1c1f);
+scene.fog = new THREE.Fog(0x1b1c1f, 6, 14);
 const camera = new THREE.PerspectiveCamera(42, 1, 0.01, 60);
 const controls = new THREE.OrbitControls(camera, canvas);
 controls.enableDamping = true; controls.dampingFactor = 0.08;
@@ -3079,7 +3086,7 @@ function drawWindow() {
     if (robustSlice && robustSlice[k]) { x.strokeStyle = cssv("--cv-accent"); x.lineWidth = 1; x.strokeRect(L + (j - j0) * cw + 0.5, T + (i1 - i) * chh + 0.5, cw - 1, chh - 1); }
   }
   // axes: angle (x) and exit speed (y, left) with flywheel rpm on the right
-  x.fillStyle = "#8d9caa"; x.font = "11px 'IBM Plex Mono', monospace"; x.strokeStyle = "#24323f"; x.lineWidth = 1;
+  x.fillStyle = "#a59f92"; x.font = "11px 'Atkinson Hyperlegible Mono', monospace"; x.strokeStyle = "#363b45"; x.lineWidth = 1;
   const tStep = (G.theta[j1] - G.theta[j0]) > 8 ? 2 : (G.theta[j1] - G.theta[j0]) > 3 ? 1 : 0.5;
   for (let a = Math.ceil(G.theta[j0] / tStep) * tStep; a <= G.theta[j1] + 1e-9; a += tStep) {
     const px = L + (a - G.theta[j0] + 0.05) / 0.1 * cw;
@@ -3104,9 +3111,9 @@ function drawWindow() {
     x.beginPath(); x.moveTo(px - 12, py); x.lineTo(px - 6, py); x.moveTo(px + 6, py); x.lineTo(px + 12, py);
     x.moveTo(px, py - 12); x.lineTo(px, py - 6); x.moveTo(px, py + 6); x.lineTo(px, py + 12); x.stroke();
   }
-  x.strokeStyle = "#24323f"; x.strokeRect(L + 0.5, T + 0.5, pw - 1, ph - 1);
+  x.strokeStyle = "#363b45"; x.strokeRect(L + 0.5, T + 0.5, pw - 1, ph - 1);
   if (i1 - i0 === NV - 1 && !curSlice.clean.some(Boolean)) {
-    x.fillStyle = "#e3eaf0"; x.font = "14px 'IBM Plex Sans', sans-serif"; x.textAlign = "center";
+    x.fillStyle = "#ece6d9"; x.font = "14px 'Atkinson Hyperlegible Next', sans-serif"; x.textAlign = "center";
     x.fillText("No clean shot from this spot. The HIVE blocks the way in.", L + pw / 2, T + ph / 2);
   }
 }
@@ -3129,7 +3136,7 @@ function drawStand(caseData) {
   for (let i = 0; i < NH * ND; i++) max = Math.max(max, caseData.count[i]);
   standGeom = { L, T, pw, ph, max };
   const X = d => L + (d - G.d[0]) / (G.d[ND - 1] - G.d[0]) * pw, Y = n => T + ph - n / max * ph;
-  x.strokeStyle = "#24323f"; x.fillStyle = "#8d9caa"; x.font = "11px 'IBM Plex Mono', monospace"; x.lineWidth = 1;
+  x.strokeStyle = "#363b45"; x.fillStyle = "#a59f92"; x.font = "11px 'Atkinson Hyperlegible Mono', monospace"; x.lineWidth = 1;
   const nStep = max > 300 ? 100 : max > 100 ? 50 : 10;
   for (let n = 0; n <= max; n += nStep) { x.beginPath(); x.moveTo(L, Y(n)); x.lineTo(L + pw, Y(n)); x.stroke(); x.textAlign = "right"; x.fillText(n, L - 5, Y(n) + 4); }
   for (let d = 0.6; d <= 1.751; d += 0.2) { x.textAlign = "center"; x.fillText(d.toFixed(1), X(d), T + ph + 14); }
@@ -3141,7 +3148,7 @@ function drawStand(caseData) {
   const gap = 10, wid = a => a.reduce((s, t) => s + x.measureText(t).width + gap, 0);
   const useFull = wid(full) <= pw, labs = useFull ? full : short;
   let lx = L + 6;
-  if (!useFull) { x.fillStyle = "#8d9caa"; x.textAlign = "left"; x.fillText("height (m):", lx, 14); lx += x.measureText("height (m):").width + gap; }
+  if (!useFull) { x.fillStyle = "#a59f92"; x.textAlign = "left"; x.fillText("height (m):", lx, 14); lx += x.measureText("height (m):").width + gap; }
   const legX = labs.map(t => { const p = lx; lx += x.measureText(t).width + gap; return p; });
   for (let ih = 0; ih < NH; ih++) {
     x.strokeStyle = hues[ih]; x.lineWidth = ih === st.ih ? 2.5 : 1.4; x.beginPath();
@@ -3521,7 +3528,7 @@ function drawMap(MD) {
   const cv = $("fmap"), { x, w, h } = setupCanvas(cv);
   if (w < 20) return;
   const FG = F.FI.field_grid, ST = MD.ST, g = mapGeom(w, h), N = ST.N, cw = FG.step * g.s, psiMax = F.FI.grid.psi_max_model * 100, swPsi = sideWallPsi();
-  x.fillStyle = "#0b1015"; x.fillRect(0, 0, w, h);
+  x.fillStyle = "#16181d"; x.fillRect(0, 0, w, h);
   const chance = F.metric === "chance" || F.metric === "chance0", cPart = F.metric === "chance0" ? "twin" : "main";
   const key = [F.ih, F.S, F.aero, F.metric, Math.round(w), Math.round(h), window.devicePixelRatio || 1, chance ? fcKeyNow() + "#" + FC.done : ""].join("|");
   if (!F.layer || F.layer.key !== key) {   // heat layer cached: drags only redraw the marker
@@ -3549,7 +3556,7 @@ function drawMap(MD) {
   x.setLineDash([3, 4]); x.strokeStyle = "rgba(141,156,170,.5)"; x.lineWidth = 1;
   x.beginPath(); x.moveTo(g.X(-FLD_X), g.Y(FLD_YC)); x.lineTo(g.X(FLD_X), g.Y(FLD_YC)); x.stroke();
   const GE = FGEO(), bR = g.rect(-GE.base_half_x, GE.base_cy - GE.base_half_y, GE.base_half_x, GE.base_cy + GE.base_half_y);
-  x.strokeStyle = "#e3eaf0"; x.strokeRect(bR[0], bR[1], bR[2], bR[3]); x.setLineDash([]);
+  x.strokeStyle = "#ece6d9"; x.strokeRect(bR[0], bR[1], bR[2], bR[3]); x.setLineDash([]);
   const gm = IDX.geoms.unfav_t30; let hx0 = 9, hx1 = -9; gm.P0.concat(gm.P1).forEach(p => { hx0 = Math.min(hx0, p[0]); hx1 = Math.max(hx1, p[0]); });
   [[hx0, hx1, -0.26, 0.26, "#e8edf2", "HIVE (up cell)"], [-GE.other_hive_x, GE.other_hive_x, GE.other_hive_y[0], GE.other_hive_y[1], "#8796a4", "other HIVE"]].forEach(([a0, a1, y0, y1, col, lab]) => {
     const r = g.rect(a0, y0, a1, y1);
@@ -3590,13 +3597,13 @@ function drawFWin(win, side, kSel) {
   if (win) for (let k = 0; k < nV * nT; k++) if (win.clean[k]) { const i = Math.floor(k / nT), j = k % nT; i0 = Math.min(i0, i); i1 = Math.max(i1, i); j0 = Math.min(j0, j); j1 = Math.max(j1, j); }
   if (i1 < 0) { i0 = 0; i1 = nV - 1; j0 = 0; j1 = nT - 1; } else { i0 = Math.max(0, i0 - 3); i1 = Math.min(nV - 1, i1 + 3); j0 = Math.max(0, j0 - 3); j1 = Math.min(nT - 1, j1 + 3); }
   const cw = pw / (j1 - j0 + 1), chh = ph / (i1 - i0 + 1);
-  x.fillStyle = "#0b1015"; x.fillRect(Lm, Tm, pw, ph);
+  x.fillStyle = "#16181d"; x.fillRect(Lm, Tm, pw, ph);
   if (win) for (let k = 0; k < nV * nT; k++) if (win.clean[k]) {
     const i = Math.floor(k / nT), j = k % nT, t = Math.min(1, (win.sq[k] - 1) / 4);
     x.fillStyle = `rgb(${Math.round(255 * (0.12 + 0.1 * t))},${Math.round(255 * (0.42 + 0.41 * t))},${Math.round(255 * (0.36 + 0.26 * t))})`;
     x.fillRect(Lm + (j - j0) * cw, Tm + (i1 - i) * chh, cw + 0.5, chh + 0.5);
   }
-  x.fillStyle = "#8d9caa"; x.strokeStyle = "#24323f"; x.font = MONO();
+  x.fillStyle = "#a59f92"; x.strokeStyle = "#363b45"; x.font = MONO();
   const spanT = (j1 - j0 + 1) * dth, spanV = (i1 - i0 + 1) * dv, tS = spanT > 20 ? 5 : spanT > 10 ? 2 : spanT > 4 ? 1 : 0.5, vS = spanV > 4 ? 1 : spanV > 2 ? 0.5 : spanV > 1 ? 0.25 : 0.1;
   x.textAlign = "center";
   for (let a = Math.ceil((TH[j0] - dth / 2) / tS) * tS; a <= TH[j1] + dth / 2; a += tS) { const px = Lm + (a - TH[j0] + dth / 2) / dth * cw; x.fillText(a.toFixed(tS < 1 ? 1 : 0), px, Tm + ph + 14); x.beginPath(); x.moveTo(px, Tm + ph); x.lineTo(px, Tm + ph + 3); x.stroke(); }
@@ -4202,7 +4209,7 @@ function drawRMap() {
   const cv = $("rmap"), { x, w, h } = setupCanvas(cv);
   if (w < 20) return;
   const g = mapGeom(w, h), FG = F.FI.field_grid, GG = F.FI.grid, C = PS().constants;
-  x.fillStyle = "#0b1015"; x.fillRect(0, 0, w, h);
+  x.fillStyle = "#16181d"; x.fillRect(0, 0, w, h);
   const fx0 = g.fx0, fy0 = g.fy0, fs = g.fs;
   x.fillStyle = "#1a2229"; x.fillRect(fx0, fy0, fs, fs);
   x.strokeStyle = "#232d36"; x.lineWidth = 1;
@@ -4275,12 +4282,12 @@ function drawRMap() {
   x.fillRect(-hl, -hw, 2 * hl, 2 * hw); x.strokeRect(-hl, -hw, 2 * hl, 2 * hw);
   x.fillStyle = cssv("--cv-accent"); x.fillRect(hl - 4, -hw * 0.7, 4, 1.4 * hw);
   x.strokeStyle = "rgba(227,234,240,.55)"; x.lineWidth = 1.5; x.beginPath(); x.moveTo(hl, 0); x.lineTo(hd - 7, 0); x.stroke();
-  x.beginPath(); x.arc(hd, 0, 7, 0, 6.3); x.fillStyle = "#e3eaf0"; x.fill();
+  x.beginPath(); x.arc(hd, 0, 7, 0, 6.3); x.fillStyle = "#ece6d9"; x.fill();
   x.restore();
   x.fillStyle = "#4d5965"; x.beginPath(); x.arc(0, 0, 0.09 * s, 0, 6.3); x.fill();
   if (T) {
     x.rotate(-T.yawDraw * Math.PI / 180);
-    x.strokeStyle = T.ok ? "#e3eaf0" : "#ff6b5a"; x.lineWidth = Math.max(3, 0.06 * s); x.lineCap = "round";
+    x.strokeStyle = T.ok ? "#ece6d9" : "#ff6b5a"; x.lineWidth = Math.max(3, 0.06 * s); x.lineCap = "round";
     x.beginPath(); x.moveTo(0, 0); x.lineTo(0.3 * s, 0); x.stroke(); x.lineCap = "butt";
   }
   x.restore();
@@ -4307,8 +4314,8 @@ function drawRWin() {
   if (w < 20) return;
   x.fillStyle = "#16212b"; x.fillRect(0, 0, w, h);
   const Lm = 48, Rm = 46, Tm = 10, Bm = 36, pw = w - Lm - Rm, ph = h - Tm - Bm;
-  x.fillStyle = "#0b1015"; x.fillRect(Lm, Tm, pw, ph);
-  const msg = t => { x.fillStyle = "#8d9caa"; x.font = "13px 'IBM Plex Sans', sans-serif"; x.textAlign = "center"; x.fillText(t, Lm + pw / 2, Tm + ph / 2); };
+  x.fillStyle = "#16181d"; x.fillRect(Lm, Tm, pw, ph);
+  const msg = t => { x.fillStyle = "#a59f92"; x.font = "13px 'Atkinson Hyperlegible Next', sans-serif"; x.textAlign = "center"; x.fillText(t, Lm + pw / 2, Tm + ph / 2); };
   const res = R.res;
   if (!res || R.resKey !== rKey()) { msg(R.err ? "solve failed: " + R.err : "solving…"); return; }
   if (!res.grid) { msg("no shot: illegal spot"); return; }
@@ -4346,7 +4353,7 @@ function drawRWin() {
     x.stroke(); x.setLineDash([]);
   }
   // axes
-  x.fillStyle = "#8d9caa"; x.strokeStyle = "#24323f"; x.font = MONO(); x.lineWidth = 1;
+  x.fillStyle = "#a59f92"; x.strokeStyle = "#363b45"; x.font = MONO(); x.lineWidth = 1;
   const rLo = rpmOf(vLo), rHi = rpmOf(vHi), rs = rHi - rLo, rStep = rs > 4000 ? 1000 : rs > 2000 ? 500 : rs > 800 ? 200 : rs > 300 ? 100 : 50;
   x.textAlign = "center";
   for (let r = Math.ceil(rLo / rStep) * rStep; r <= rHi; r += rStep) { const px = X(vOfRpm(r)); x.beginPath(); x.moveTo(px, Tm); x.lineTo(px, Tm + ph); x.stroke(); x.fillText(String(r), px, Tm + ph + 14); }
@@ -4366,7 +4373,7 @@ function drawRWin() {
   if (res.minAngle) dia(X(res.minAngle.v), Y(res.minAngle.theta), false, "#ff9d3c");
   if (res.minRpmTol) tri(X(res.minRpmTol.v), Y(res.minRpmTol.theta), true, cssv("--cv-accent"));
   if (res.minAngleTol) dia(X(res.minAngleTol.v), Y(res.minAngleTol.theta), true, "#ff9d3c");
-  if (res.mostForgiving) { x.strokeStyle = "#e3eaf0"; x.lineWidth = 2; x.beginPath(); x.arc(X(res.mostForgiving.v), Y(res.mostForgiving.theta), 7, 0, 6.3); x.stroke(); }
+  if (res.mostForgiving) { x.strokeStyle = "#ece6d9"; x.lineWidth = 2; x.beginPath(); x.arc(X(res.mostForgiving.v), Y(res.mostForgiving.theta), 7, 0, 6.3); x.stroke(); }
   { const B = rBestCur(), sq = (b, fill, col) => { if (!b || !b.ok) return; x.beginPath(); x.rect(X(b.v) - 6, Y(b.theta) - 6, 12, 12); if (fill) { x.fillStyle = col; x.fill(); } else { x.strokeStyle = col; x.lineWidth = 1.5; x.stroke(); } };
     if (B) { if (tc && B.twin !== B.main) sq(B.twin, false, "#a9b4bf"); sq(B.main, true, "#5ec8ff"); } }   // best chance (PM-017)
   if (R.sel) {
@@ -4374,7 +4381,7 @@ function drawRWin() {
     x.beginPath(); x.moveTo(px - 14, py); x.lineTo(px - 8, py); x.moveTo(px + 8, py); x.lineTo(px + 14, py); x.moveTo(px, py - 14); x.lineTo(px, py - 8); x.moveTo(px, py + 8); x.lineTo(px, py + 14); x.stroke();
   }
   x.restore();
-  x.strokeStyle = "#24323f"; x.strokeRect(Lm + 0.5, Tm + 0.5, pw - 1, ph - 1);
+  x.strokeStyle = "#363b45"; x.strokeRect(Lm + 0.5, Tm + 0.5, pw - 1, ph - 1);
   R.winGeom = { Lm, Tm, pw, ph, vLo, vHi, tLo, tHi };
 }
 
@@ -4557,7 +4564,7 @@ function rRender() {
   const sw = (c, t) => `<span><i style="background:${c}"></i>${t}</span>`;
   $("rwin-leg").innerHTML = sw("#5ad49e", "clean with this spin") + (S0 ? "" : `<span><i style="background:transparent;border:1.5px dashed #a9b4bf"></i>no-spin twin (S = 0) clean area</span>`) +
     sw("#5ec8ff", "■ best chance (ASSUMED scatter)") + (S0 ? "" : "<span>hollow grey square = twin best chance</span>") +
-    sw("var(--cv-accent)", "▶ lowest rpm (filled: with room for error, hollow: knife edge)") + sw("#ff9d3c", "◆ lowest hood angle (same)") + `<span><i style="background:transparent;border:2px solid #e3eaf0;border-radius:50%"></i>most forgiving</span>` +
+    sw("var(--cv-accent)", "▶ lowest rpm (filled: with room for error, hollow: knife edge)") + sw("#ff9d3c", "◆ lowest hood angle (same)") + `<span><i style="background:transparent;border:2px solid #ece6d9;border-radius:50%"></i>most forgiving</span>` +
     (S0 ? "" : "<span>hollow grey = twin lowest points</span>");
   // selected shot card + verdict
   const s = R.shot, sel = R.sel, rows = [];

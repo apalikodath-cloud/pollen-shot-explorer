@@ -479,11 +479,11 @@
     function draw() {
       const d = DPR(), W = cv.width / d, H = cv.height / d, sh = cur();
       ctx.setTransform(d, 0, 0, d, 0, 0);
-      ctx.fillStyle = "#05080b"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#121418"; ctx.fillRect(0, 0, W, H);
       if (sh.src && frameReady === S.frame) ctx.drawImage(frameCanvas, view.ox, view.oy, sh.w * view.s, sh.h * view.s);
       else if (!sh.src) {
-        ctx.strokeStyle = "#24323f"; ctx.strokeRect(view.ox + 0.5, view.oy + 0.5, sh.w * view.s - 1, sh.h * view.s - 1);
-        ctx.fillStyle = "#8d9caa"; ctx.font = "14px system-ui, sans-serif"; ctx.textAlign = "center";
+        ctx.strokeStyle = "#363b45"; ctx.strokeRect(view.ox + 0.5, view.oy + 0.5, sh.w * view.s - 1, sh.h * view.s - 1);
+        ctx.fillStyle = "#a59f92"; ctx.font = "14px system-ui, sans-serif"; ctx.textAlign = "center";
         ctx.fillText(sortedPts(sh).length ? "No video for shot " + S.shot + " (points from pasted CSV)" : "Load a slow-motion video or image sequence for shot " + S.shot + ", or press Load demo", W / 2, H / 2);
         ctx.textAlign = "left";
       }
@@ -494,11 +494,11 @@
         ctx.setLineDash([]);
         pts.forEach(function (p) { const c = f2c(p[0], p[1]); ctx.beginPath(); ctx.moveTo(c[0] - 7, c[1]); ctx.lineTo(c[0] + 7, c[1]); ctx.moveTo(c[0], c[1] - 7); ctx.lineTo(c[0], c[1] + 7); ctx.stroke(); });
       };
-      mark(S.cal.p, "#5fb3ff", S.cal.mm + " mm");
-      mark(S.level.p, "#c792ea", "level");
+      mark(S.cal.p, "#7fb2e0", S.cal.mm + " mm");
+      mark(S.level.p, "#c49bd6", "level");
       // other shot faint, this shot bright
       ["A", "B"].forEach(function (k) {
-        const s2 = S.shots[k], mine = k === S.shot, col = k === "A" ? "#a9b4bf" : "#f4c430";
+        const s2 = S.shots[k], mine = k === S.shot, col = k === "A" ? "#9aa1ab" : "#f2c94c";
         if (!mine && (s2.w !== sh.w || s2.h !== sh.h)) return;
         sortedPts(s2).forEach(function (f) {
           const p = s2.pts[f], c = f2c(p[0], p[1]);
@@ -511,7 +511,7 @@
         if (fp) {
           const line = function (arr, dash) { ctx.beginPath(); arr.forEach(function (q, i) { const c = f2c(q.px, q.py); if (i) ctx.lineTo(c[0], c[1]); else ctx.moveTo(c[0], c[1]); }); ctx.setLineDash(dash); ctx.stroke(); ctx.setLineDash([]); };
           ctx.strokeStyle = col; ctx.globalAlpha = mine ? 0.9 : 0.35; ctx.lineWidth = 2; line(fp.fit, []);
-          if (fp.twin) { ctx.strokeStyle = "#a9b4bf"; line(fp.twin, [5, 5]); }
+          if (fp.twin) { ctx.strokeStyle = "#9aa1ab"; line(fp.twin, [5, 5]); }
           ctx.globalAlpha = 1;
         }
       });
@@ -529,11 +529,11 @@
       lp.width = Math.round(L * d); lp.height = Math.round(L * d);
       lctx.setTransform(d, 0, 0, d, 0, 0);
       lctx.imageSmoothingEnabled = false;
-      lctx.fillStyle = "#05080b"; lctx.fillRect(0, 0, L, L);
+      lctx.fillStyle = "#121418"; lctx.fillRect(0, 0, L, L);
       const f = c2f(S.mouse[0], S.mouse[1]), half = L / Z / 2;
       if (frameReady === S.frame) lctx.drawImage(frameCanvas, f[0] - half, f[1] - half, 2 * half, 2 * half, 0, 0, L, L);
       const p = cur().pts[S.frame];
-      if (p) { lctx.fillStyle = cur().kind === "nospin" ? "#a9b4bf" : "#f4c430"; lctx.beginPath(); lctx.arc(L / 2 + (p[0] - f[0]) * Z, L / 2 + (p[1] - f[1]) * Z, 3, 0, 2 * Math.PI); lctx.fill(); }
+      if (p) { lctx.fillStyle = cur().kind === "nospin" ? "#9aa1ab" : "#f2c94c"; lctx.beginPath(); lctx.arc(L / 2 + (p[0] - f[0]) * Z, L / 2 + (p[1] - f[1]) * Z, 3, 0, 2 * Math.PI); lctx.fill(); }
       lctx.strokeStyle = "#ffffff"; lctx.lineWidth = 1; lctx.beginPath();
       lctx.moveTo(L / 2, 0); lctx.lineTo(L / 2, L / 2 - 6); lctx.moveTo(L / 2, L / 2 + 6); lctx.lineTo(L / 2, L);
       lctx.moveTo(0, L / 2); lctx.lineTo(L / 2 - 6, L / 2); lctx.moveTo(L / 2 + 6, L / 2); lctx.lineTo(L, L / 2); lctx.stroke();
@@ -677,7 +677,7 @@
         if (ck) rows.push({ lab: "Gravity check: video length / true length", v: gs, sdv: gsd, d: 4, label: "derived" });
         const disagree = ck && Math.abs(gs - 1) > 1.96 * Math.hypot(gsd, A.clickSd || 0);
         const near = A.value.Cd < 0.415 ? "Low drag (Cd 0.33)" : A.value.Cd < 0.7 ? "Nominal (Cd 0.5)" : "High drag (Cd 0.9)";
-        out.push('<div class="rblock"><h3><i class="sw" style="background:#a9b4bf"></i>Shot A, no spin (the twin): drag</h3>' + resultTable(A, rows) +
+        out.push('<div class="rblock"><h3><i class="sw" style="background:#9aa1ab"></i>Shot A, no spin (the twin): drag</h3>' + resultTable(A, rows) +
           '<p class="hint">' + A.n + " points, rms residual " + fmt(A.rms_m * 1000, 1) + " mm. " + (truth ? "Demo truth (ASSUMED synthetic): Cd " + truth.Cd.toFixed(2) + ". " : "") +
           "Scale used: " + (A.scaleMode === "gravity" ? "gravity check from this shot" : "clicked bar, ± " + fmt(1.96 * (A.clickSd || 0) * 100, 2) + " % (ASSUMED 0.5 px clicks), carried into Cd") + ". " +
           (ck ? (disagree ? '<b style="color:var(--hit)">The clicked scale and gravity disagree by ' + sgnF((gs - 1) * 100, 2) + " %:</b> check that the scale bar is in the flight plane, or that the no-spin ball had no spin. "
@@ -689,7 +689,7 @@
         const rows = [{ lab: "Launch speed v0 (m/s)", v: B.v0, d: 2, label: "derived" }, { lab: "Launch angle (°)", v: B.theta_deg, d: 1, label: "derived" }]
           .concat(ln.map(function (nm) { return { lab: nm === "Cl" ? "Lift coefficient Cl (one value)" : nm === "c1" ? "Lift slope c1 (Cl = c1 S)" : "Lift cap Cl_max", nm: nm, d: 3, label: "derived" }; }))
           .concat(B.names.indexOf("S0") >= 0 ? [{ lab: "Spin ratio S0", nm: "S0", d: 2, label: "derived" }] : [{ lab: "Spin ratio S0 = ωR/v at the first tracked frame", v: B.S0, d: 2, label: sp.spin.rpm !== undefined ? "user" : "ASSUMED" }]);
-        out.push('<div class="rblock"><h3><i class="sw" style="background:#f4c430"></i>Shot B, backspin: spin lift (Cd held at A\'s ' + fmt(B.cd_used, 3) + ")</h3>" + resultTable(B, rows) +
+        out.push('<div class="rblock"><h3><i class="sw" style="background:#f2c94c"></i>Shot B, backspin: spin lift (Cd held at A\'s ' + fmt(B.cd_used, 3) + ")</h3>" + resultTable(B, rows) +
           '<p class="twin"><b>No-spin twin</b> (same launch, same Cd, no lift; dashed): by the last tracked frame the lift has moved the ball ' + fmt(B.twin_dmax * 1000, 0) + " mm (height " + (B.twin_dz_end >= 0 ? "+" : "") + fmt(B.twin_dz_end * 1000, 0) + " mm), against a click noise of " + fmt(B.rms_m * 1000, 1) + " mm rms. " +
           "Lift " + (B.lift_detected ? "<b>detected</b> (95 % interval excludes 0)." : "<b>not detected</b> (95 % interval includes 0).") + " PREDICTED twin, derived fit.</p>" +
           '<p class="hint">Spin: ' + sp.label + "; S along the tracked part " + fmt(B.S_range[0], 2) + " … " + fmt(B.S_range[1], 2) + " (derived, k " + ballP().k + " 1/s ASSUMED). The lift error includes A's Cd error and the scale error (" + (B.scaleMode === "gravity" ? "gravity-checked scale from A" : "clicked bar") + ")." +
@@ -708,7 +708,7 @@
       ["A", "B"].forEach(function (k) {
         const tr = trackOf(k), sh = S.shots[k]; if (!tr) return;
         const pts = tr.t.map(function (t, i) { return { t: t, x: tr.x[i], z: tr.z[i], f: tr.frames[i] }; });
-        const s = { k: k, col: k === "A" ? "#a9b4bf" : "#f4c430", pts: pts, fit: null, twin: null };
+        const s = { k: k, col: k === "A" ? "#9aa1ab" : "#f2c94c", pts: pts, fit: null, twin: null };
         if (sh.fit) {
           const tt = []; const t1 = tr.t[tr.t.length - 1]; for (let i = 0; i <= 100; i++) tt.push(t1 * i / 100);
           const m = sh.fit.path(tt); s.fit = tt.map(function (_, i) { return { x: m.x[i] * sh.fit.sign, z: m.z[i] }; });
@@ -734,7 +734,7 @@
       });
       ser.forEach(function (s) {
         if (s.fit) h += '<path d="' + pl(s.fit) + '" fill="none" stroke="' + s.col + '" stroke-width="2" pointer-events="none"/>';
-        if (s.twin) h += '<path d="' + pl(s.twin) + '" fill="none" stroke="#a9b4bf" stroke-width="2" stroke-dasharray="6 5" pointer-events="none"/>';
+        if (s.twin) h += '<path d="' + pl(s.twin) + '" fill="none" stroke="#9aa1ab" stroke-width="2" stroke-dasharray="6 5" pointer-events="none"/>';
       });
       ser.forEach(function (s) {   // direct labels at the apex: B above its path, A below its path
         let top = s.pts[0];
@@ -811,16 +811,16 @@
       for (let x = 0; x < W; x += 0.5 / mpp) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
       for (let y = H; y > 0; y -= 0.5 / mpp) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
       g.fillStyle = "#3a4048"; g.fillRect(0, H - 40, W, 40);
-      g.fillStyle = "#e3eaf0"; g.fillRect(100, 652, 250, 16);
-      for (let i = 0; i <= 10; i++) { g.fillStyle = i % 2 ? "#e3eaf0" : "#111921"; g.fillRect(100 + i * 25, 652, 25, 16); }
-      g.fillStyle = "#e3eaf0"; g.font = "16px system-ui, sans-serif"; g.fillText("1 m scale bar", 110, 690);
+      g.fillStyle = "#ece6d9"; g.fillRect(100, 652, 250, 16);
+      for (let i = 0; i <= 10; i++) { g.fillStyle = i % 2 ? "#ece6d9" : "#1e2128"; g.fillRect(100 + i * 25, 652, 25, 16); }
+      g.fillStyle = "#ece6d9"; g.font = "16px system-ui, sans-serif"; g.fillText("1 m scale bar", 110, 690);
       g.fillStyle = "#5a6470"; g.fillRect(20, H - 40 - 0.3 / mpp, 0.32 / mpp, 0.3 / mpp);
-      g.fillStyle = "#8d9caa"; g.font = "15px ui-monospace, Consolas, monospace";
+      g.fillStyle = "#a59f92"; g.font = "15px ui-monospace, Consolas, monospace";
       g.fillText("SYNTHETIC DEMO (physics.js, ASSUMED) · shot " + k + (k === "A" ? " no spin" : " backspin") + " · frame " + f, 20, 26);
       const i = tr.frame.indexOf(f);
       if (i >= 0) {
         const cx = tr.xTrue[i] / mpp, cy = H - tr.zTrue[i] / mpp, r = 0.0355 / mpp;
-        g.fillStyle = "#f4c430"; g.beginPath(); g.arc(cx, cy, r, 0, 2 * Math.PI); g.fill();
+        g.fillStyle = "#f2c94c"; g.beginPath(); g.arc(cx, cy, r, 0, 2 * Math.PI); g.fill();
         g.fillStyle = "#8a6d12"; for (let a = 0; a < 6; a++) { const an = a * Math.PI / 3 + (k === "B" ? -f * 0.35 : 0); g.beginPath(); g.arc(cx + 0.55 * r * Math.cos(an), cy + 0.55 * r * Math.sin(an), 1.6, 0, 2 * Math.PI); g.fill(); }
       }
     }
