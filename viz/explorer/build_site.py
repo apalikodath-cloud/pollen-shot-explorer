@@ -54,6 +54,17 @@ p = fdst / "shot.js"
 t = p.read_text(encoding="utf-8")
 assert t.count("'../explorer/data/field/index.json'") == 1
 p.write_text(t.replace("'../explorer/data/field/index.json'", "'../data/field/index.json'"), encoding="utf-8")
+# Shot Lab (viz/measure/shotlab.*): same explorer link and field-data rewrites; its worker loads
+# ../explorer/physics.js and solver.js, both copied above.
+p = site / "measure" / "shotlab.html"
+t = p.read_text(encoding="utf-8")
+assert t.count('href="../explorer/index.html"') == 1 and t.count('src="../explorer/solver.js"') == 1
+p.write_text(t.replace('href="../explorer/index.html"', 'href="../index.html"'), encoding="utf-8")
+p = site / "measure" / "shotlab.js"
+t = p.read_text(encoding="utf-8")
+assert t.count('"../explorer/data/field/index.json"') == 1
+p.write_text(t.replace('"../explorer/data/field/index.json"', '"../data/field/index.json"'), encoding="utf-8")
+assert (site / "measure" / "shotlab_worker.js").read_text(encoding="utf-8").count('"../explorer/solver.js"') == 1
 bsrc = Path(os.environ.get("FLOW_BUNDLES", fsrc / "flows"))
 runs = []
 (fdst / "flows").mkdir(exist_ok=True)

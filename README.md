@@ -14,6 +14,7 @@ shot with no spin.
 - **CFD flow around the ball along a shot:** https://apalikodath-cloud.github.io/pollen-shot-explorer/flow/shot.html
 - **CFD case viewer (17 cases):** https://apalikodath-cloud.github.io/pollen-shot-explorer/flow/flow.html
 - **Measurement kit:** https://apalikodath-cloud.github.io/pollen-shot-explorer/measure/measure.html
+- **Shot Lab** (rpm map, battery-sag compensation, shoot-on-the-move, Java tables): https://apalikodath-cloud.github.io/pollen-shot-explorer/measure/shotlab.html
 - **Write-up (PDF):** [`paper/main.pdf`](paper/main.pdf)
 
 > **Everything here is a model prediction.** No POLLEN drag, spin lift, spin decay, bounce or launcher grip
@@ -35,6 +36,11 @@ shot with no spin.
 5. The links under the tabs open the CFD flow pages and the **Measurement kit**. The kit fits drag (Cd) and spin
    lift (Cl) from a slow-motion video of a no-spin shot and its backspin twin. Enter the results in the explorer's
    Advanced settings. The protocol is in [`docs/MEASURE.md`](docs/MEASURE.md).
+6. The kit can also **auto-track** the ball (click it once, then check every point) and read a **robot telemetry**
+   log (wheel rpm, volts, power). The **Shot Lab** turns the logged shots and telemetry into a v/u fit, battery-sag
+   compensation, an rpm map against distance, a shoot-on-the-move virtual target and Java tables to paste into
+   robot code, all labelled PREDICTED where they come from the model. It also tests one idea, that the best shots
+   carry the most energy and just clear the lower lip; in the model they are not more forgiving (MEASURE.md §10).
 
 ## How to read the labels
 

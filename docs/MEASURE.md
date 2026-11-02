@@ -216,3 +216,65 @@ All of these are in **Advanced settings** (viz/explorer).
 - the repeatability of the shooter (docs/07_test_plan.md Test 3)
 
 One shot pair is one measurement.
+
+## 9. Auto-track and robot telemetry (measure page)
+
+**Auto-track.** Press **Auto-track** and click the ball once. The tracker follows it frame by frame by its colour
+against the still background (median background, colour taken from the clicked frame). Points it is unsure of are
+drawn amber. Check every point and fix any wrong one by hand before you fit: the tracker is a helper, not a
+measurement. On the synthetic demo clip it recovers the ASSUMED truth (v 7.00 m/s, 55.0°, Cd 0.500); on a real
+clip, motion blur, the ball crossing a ball-coloured background and partial frames will need fixes.
+
+**Telemetry (optional).** Load a CSV or text log from the robot: time, flywheel speed (rpm, or ticks per second
+with ticks per rev and gear ratio), and if you have them battery volts, motor power, target speed and hood. The
+page guesses each column from its name; check the drop-downs. A launch shows as a short dip in the wheel speed.
+Sync puts the dip on the first tracked frame, and the readout gives the wheel rpm, target and volts just before
+the launch, the dip size and the recovery time (all from your log: user).
+
+**Add shot to the Shot Lab log** saves the fitted launch speed and angle with that wheel rpm and battery voltage.
+The log is kept in this browser only (local storage).
+
+## 10. Shot Lab
+
+`viz/measure/shotlab.html` turns those numbers into shooter code. Every number on it carries a label (user,
+derived, ASSUMED, PREDICTED). The model cards carry a MODEL PREDICTION badge and every backspin result sits beside
+its no-spin twin.
+
+1. **Exit speed from wheel rpm.** Fits v = k·u through the logged shots (u = wheel surface speed, π·0.098 m·rpm/60)
+   and a line v = a·u + b as a check. "Use fitted v/u" replaces the ASSUMED 0.42 in the rest of the page.
+2. **Battery-sag compensation.** Fits steady rpm = a·(power·volts) + b from the telemetry (spin-up rows are
+   skipped), then gives the power to hold each map rpm from 13 V to 11 V, and a Java `compPower(targetRpm, volts)`.
+   A cell marked "max" means the motor cannot hold that rpm at that voltage.
+3. **RPM map.** For each distance d to the HIVE axis (far side), the explorer's most forgiving setting (free hood)
+   or the middle of the widest clean speed range at one exit angle (fixed hood): v, exit angle, wheel rpm, time of
+   flight and how far speed or angle alone can move before the shot stops being clean. It gives a quadratic fit and
+   a Java `ShotTable` with linear interpolation. All PREDICTED. EXIT_DEG is the ball's exit angle, not a servo
+   position: map it to your hood yourself.
+4. **Shoot on the move.** Virtual target = target − robot velocity × time of flight, iterated with the map's time
+   of flight, with the robot position led by your latency. "Check in 3D model" flies the virtual-target setting and
+   the standing-still setting from the moving robot (one shot each, no scatter). Driving toward the HIVE moves the
+   virtual target inside the nearest legal distance quickly; the page says so when it clamps.
+5. **Wheel droop per shot.** The rpm lost as the ball goes through and the spin-back-up time, from the explorer's
+   launcher model (motor datasheet CONFIRMED; wheel inertia and contact ASSUMED). Compare with the dips in your log.
+6. **Hypothesis test: high energy, just over the lower lip.** The idea under test (yours, not the model's): the best
+   shots carry the most energy and pass right at the edge of the lower lip. The model has **no contact physics**:
+   any touch of the lip ends the shot as a hit, so it cannot show a ball that kisses the lip and drops in, or any
+   impulse torque from a lip contact. What it can test: are clean shots that pass close to the lip (and carry more
+   energy) more forgiving of launch scatter than clean shots with room to spare? It scans an 81 × 121 grid of speed
+   and angle around the most forgiving setting, measures each clean shot's closest approach to the lower lip up to
+   cell entry and its kinetic energy there, and scores robustness as the clean share in a Gaussian window of ASSUMED
+   scatter (1.5 % speed, 0.4° angle). Cells within 3 σ of the scan edge are left out. The two picks and 20 shots
+   across the clearance range also get a 3D Monte Carlo with 0.5° heading scatter.
+
+   **Result at d 0.8 m, h 0.737 m, S 1, nominal aero (PREDICTED, model only):** 374 clean settings (317 used), 16
+   within 1 cm of the lip. Rank correlation of lip clearance with robustness: 0.00; of entry energy with
+   robustness: 0.03; 3D Monte Carlo over 20 shots: clearance −0.36. The rule's pick (most energy within 1 cm:
+   9.35 m/s, 81.7°, 0.65 J) has a 32 % (29–35 %) 3D hit chance; the most forgiving setting (7.35 m/s, 79.9°, 12 cm
+   clear, 0.38 J) has 41 % (38–44 %); the no-spin twin has 40 % (37–43 %). This is one run at one pose with ASSUMED
+   scatter, in a local scan around the explorer's pick. In it, no relation was found between passing close to the
+   lip and being forgiving (the −0.36 from 20 shots is too few to call a trend), and the near-lip, high-energy pick
+   was less forgiving than the most forgiving setting. It is not a repeatability result. This says nothing
+   about real lip contacts: testing that needs filmed shots that touch the lip (T5, rim bounce e and μ) and a
+   contact model.
+
+The worker runs in the browser; a map of 9 distances takes about 15 s and the lip test about 10 s.

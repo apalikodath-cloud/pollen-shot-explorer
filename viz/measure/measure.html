@@ -85,6 +85,12 @@
   textarea#csv { width: 100%; min-height: 180px; background: #121418; border: 1px solid var(--line); border-radius: 4px; padding: 8px; font: 12px/1.4 var(--mono); resize: vertical; }
   #tip { position: fixed; display: none; pointer-events: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: 12px/1.4 var(--mono); z-index: 5; }
   .note { font-size: 12.5px; color: var(--muted); margin: 14px 0 0; }
+  #tel-chart { width: 100%; display: block; margin-top: 10px; background: #121418; border-radius: 4px; }
+  #tel-chart .grid { stroke: var(--line); stroke-width: 1; }
+  #tel-chart .ax { fill: var(--muted); font: 11px var(--mono); }
+  .tel-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 10px; }
+  .tel-cols { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 980px) { .tel-cols { grid-template-columns: minmax(0, 1fr); } }
   @media (max-width: 980px) {
     .top, .low { grid-template-columns: minmax(0, 1fr); }
   }
@@ -102,6 +108,7 @@
 <header>
   <h1>POLLEN <span>Measure</span></h1>
   <a class="back" href="../explorer/index.html" id="explorer-link">&larr; Shot explorer</a>
+  <a class="back" href="shotlab.html">Shot Lab &rarr;</a>
   <p>Track a slow-motion side video by hand, then fit drag from a no-spin shot (A) and spin lift from a backspin shot with the same settings (B). Files stay in this page; nothing is uploaded. Protocol: <code>docs/MEASURE.md</code>.</p>
 </header>
 <div class="wrap">
@@ -134,6 +141,13 @@
         <button id="delpt">Delete point</button>
         <button id="clear">Clear shot</button>
       </div>
+      <div class="bar" id="auto-bar">
+        <button id="autotrack" title="Click the ball once, then the tracker follows it through the frames">Auto-track</button>
+        <button id="autostop" disabled>Stop</button>
+        <button id="autoundo" disabled>Undo auto-track</button>
+        <label class="chk">Direction <select id="autodir" style="width:auto"><option value="both" selected>both ways</option><option value="fwd">forward</option><option value="back">backward</option></select></label>
+      </div>
+      <div class="o" id="auto-o">Auto-track: press it, then click the ball once. It follows the ball by colour against the still background; amber points are low confidence. Check every point before fitting.</div>
       <p class="keys"><kbd>←</kbd> <kbd>→</kbd> step · <kbd>Shift</kbd> ×10 · <kbd>Backspace</kbd> delete this frame's point · a click moves on by the step. <span id="npts"></span></p>
       <div id="status" role="status"></div>
     </section>
@@ -203,6 +217,11 @@
     <section class="panel" aria-label="Results">
       <h2>Results</h2>
       <div id="results" class="tbl"></div>
+      <div class="bar" style="margin-top:10px">
+        <button id="log-add" title="Save this shot's fitted launch speed and angle, with the wheel rpm and battery from the log, for the Shot Lab">Add shot to the Shot Lab log</button>
+        <a href="shotlab.html">Open the Shot Lab</a>
+      </div>
+      <div class="o" id="log-o"></div>
       <p class="note">Labels: <b>derived</b> = fitted to your video; <b>user</b> = typed in or measured by you; <b>ASSUMED</b> = a default you have not measured; the twin path is PREDICTED. One shot pair is one measurement, not a repeatability result: repeat it (docs/MEASURE.md).</p>
     </section>
     <section class="panel" aria-label="Path">
@@ -223,10 +242,54 @@
       <p class="o">Fit offline with <code>python -B -m src.fit_aero track.csv --boot 200</code> (same equations).</p>
     </section>
   </div>
+
+  <section class="panel" aria-label="Robot telemetry" style="margin-top:16px">
+    <h2>Robot telemetry (optional)</h2>
+    <p class="hint" style="margin-top:0">Load a CSV or text log from your robot (time, flywheel speed, battery volts, motor power, target, hood). The launch shows as a short dip in the wheel speed; sync puts that dip on this shot's first tracked frame. The log stays in this page.</p>
+    <div class="bar">
+      <input id="tel-file" class="file" type="file" accept=".csv,.txt,.tsv,text/*" aria-label="Telemetry log" style="width:auto;flex:1 1 220px">
+      <button id="tel-demo">Load demo log</button>
+    </div>
+    <div class="o" id="tel-o"></div>
+    <div id="tel-main" hidden>
+      <div class="tel-grid">
+        <label class="f">Time<select id="tc-time"></select></label>
+        <label class="f">Wheel speed<select id="tc-rpm"></select></label>
+        <label class="f">Target speed<select id="tc-target"></select></label>
+        <label class="f">Battery volts<select id="tc-volts"></select></label>
+        <label class="f">Motor power<select id="tc-power"></select></label>
+        <label class="f">Hood<select id="tc-hood"></select></label>
+        <label class="f">Speed unit<select id="tel-speed"><option value="rpm">rpm</option><option value="tps">ticks per second</option></select></label>
+        <label class="f">Ticks per rev (ASSUMED)<input id="tel-tpr" type="number" min="1" step="any" value="28"></label>
+        <label class="f">Motor to wheel ratio<input id="tel-ratio" type="number" min="0" step="any" value="1"></label>
+        <label class="f">Log time − video time (s)<input id="tel-off" type="number" step="any" value="0"></label>
+      </div>
+      <div class="bar" style="margin-top:10px">
+        <button id="tel-sync">Sync on the launch dip</button>
+        <button id="tel-use" class="primary">Use for this shot</button>
+        <button id="tel-send">Send the log to the Shot Lab</button>
+      </div>
+      <div class="tel-cols">
+        <div>
+          <svg id="tel-chart" role="img" aria-label="Wheel speed, target and battery volts over time"></svg>
+          <div class="legend">
+            <span><i class="ln" style="border-color:var(--pollen)"></i>wheel speed</span>
+            <span><i class="ln d" style="border-color:var(--twin)"></i>target</span>
+            <span><i class="ln" style="border-color:var(--cal)"></i>battery volts</span>
+            <span><i class="ln d" style="border-color:var(--hit)"></i>launch dips</span>
+            <span><i class="ln" style="border-color:var(--fg)"></i>this frame</span>
+          </div>
+        </div>
+        <div id="tel-read" class="tbl" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </section>
 </div>
 <div id="tip"></div>
 </div>
 <script src="../explorer/physics.js"></script>
 <script src="measure.js"></script>
+<script src="tracker.js"></script>
+<script src="assist.js"></script>
 </body>
 </html>
