@@ -1,0 +1,12 @@
+# PM-012: keep every tracked file under 1 MB. Meshes, CAD, raw fields and console logs stay out of git
+# (they live under $PM012_CFD_ROOT, a folder outside the repo, or cfd/results/raw; cfd/README.md says how to regenerate them).
+*.stl
+*.STL
+*.step
+*.STEP
+*.stp
+*.vtk
+*.bin
+*.log
+results/raw/
+__pycache__/

@@ -1,0 +1,1238 @@
+{
+ "units": "m",
+ "schema": "docs/INTERFACES.md data/hive_geometry.json; extra keys are additive",
+ "frame": {
+  "definition": "HIVE frame per INTERFACES.md: origin on the tile surface directly below the HIVE pivot axis (at the HIVE centre plane), z up, x horizontal in the tipping plane, y along the pivot axis.",
+  "cad_mapping": "official CAD: X = red(-)/blue(+) axis = pivot axis direction, Y = up (tile top Y=0), Z = audience(+)/scoring(-) axis, origin field centre. HIVE frame: x = Z_cad (positive toward the AUDIENCE side), z = Y_cad, y = X_cad - X_hive (right-handed). Red HIVE centre X_cad = -12.74 in, blue +12.74 in.",
+  "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step"
+ },
+ "ball_radius": {
+  "value": 0.0355,
+  "prov": "confirmed: Competition Manual TU07 9.8 (POLLEN approx 2.8 in / 7.1 cm diameter), https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm; 'approximately', so treat +-1 mm as uncertain"
+ },
+ "pivot": {
+  "x": 0.0,
+  "z": 1.11633,
+  "low": 1.09093,
+  "high": 1.14173,
+  "prov": "confirmed: Competition Manual TU07 9.6.1 (pivot axis 43.95 in / 111.65 cm above TILES), https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm; CAD axle at Y=43.95 in; low/high = manual 9.1 general +-1 in tolerance"
+ },
+ "poses": {
+  "pose_neg": {
+   "tilt_deg": {
+    "value": 30.0,
+    "low": 28.8,
+    "high": 31.77,
+    "low_wide": 25.9,
+    "high_wide": 34.83,
+    "prov": "confirmed nominal 30 deg: confirmed: Competition Manual TU07 9.6.2 Fig 9-10 (angle labelled 30 deg), https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm; and CAD base tube axis measured 30.0 deg (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step). low/high derived: confirmed: Field Acceptance Checklist Rev 26-27.2 item 1.13, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-check lip height 53.5+-0.5 in, solved exactly for the tilt with the pivot at nominal -> 28.80-31.77 deg (PM-015, research/GEOMETRY_AUDIT.md row 14; the earlier linear +-1.5 deg estimate 28.5-31.5 is only the label of sweeps precomputed before PM-015). low_wide/high_wide derived: also allow the manual's +-1 in field tolerance (9.1) on pivot height -> 25.90-34.83 deg (exact solve; earlier rounded estimate 25.5-34.5).",
+    "sense": "angle of the cell axis above horizontal; the neg-side cell is up, the other cell is down by the same angle"
+   },
+   "obstacles": [
+    {
+     "name": "up_back_wall",
+     "p0": [
+      -0.24185,
+      1.17648
+     ],
+     "p1": [
+      -0.04081,
+      1.52469
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; back skin am-5871 at u=9.43 in",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_roof_outer",
+     "p0": [
+      -0.04081,
+      1.52469
+     ],
+     "p1": [
+      -0.30543,
+      1.67747
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; envelope of rib tops (ribs u 9.44-11.44 and 19.46-21.46 reach w=13.12 in; top skin between ribs at 12.70 in)",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_upper_lip",
+     "p0": [
+      -0.30543,
+      1.67747
+     ],
+     "p1": [
+      -0.31204,
+      1.66603
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; outer rib roof band at the mouth",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_roof_inner",
+     "p0": [
+      -0.31204,
+      1.66603
+     ],
+     "p1": [
+      -0.04741,
+      1.51325
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; underside of roof at the pentagon peak",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_floor",
+     "p0": [
+      -0.2261,
+      1.20376
+     ],
+     "p1": [
+      -0.49073,
+      1.35654
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; bottom skin am-5888 floor",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_lower_lip",
+     "p0": [
+      -0.49073,
+      1.35654
+     ],
+     "p1": [
+      -0.50978,
+      1.32354
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; outer rib bottom bar at the mouth",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_underside",
+     "p0": [
+      -0.50978,
+      1.32354
+     ],
+     "p1": [
+      -0.18928,
+      1.1385
+     ],
+     "prov": "derived: envelope of rib bottom bars (w=-2.97 in) and base tube (w=-2.71 in) from confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_tube_top_gap",
+     "p0": [
+      -0.17328,
+      1.16622
+     ],
+     "p1": [
+      -0.22915,
+      1.19848
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; base tube top between bearing plate and back wall",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_back_wall",
+     "p0": [
+      0.17302,
+      0.93696
+     ],
+     "p1": [
+      0.37406,
+      1.28517
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; back skin am-5871 at u=9.43 in",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_roof_outer",
+     "p0": [
+      0.37406,
+      1.28517
+     ],
+     "p1": [
+      0.63868,
+      1.13239
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; envelope of rib tops (ribs u 9.44-11.44 and 19.46-21.46 reach w=13.12 in; top skin between ribs at 12.70 in)",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_upper_lip",
+     "p0": [
+      0.63868,
+      1.13239
+     ],
+     "p1": [
+      0.63208,
+      1.12095
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; outer rib roof band at the mouth",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_roof_inner",
+     "p0": [
+      0.63208,
+      1.12095
+     ],
+     "p1": [
+      0.36745,
+      1.27373
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; underside of roof at the pentagon peak",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_floor",
+     "p0": [
+      0.18876,
+      0.96423
+     ],
+     "p1": [
+      0.45339,
+      0.81145
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; bottom skin am-5888 floor",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_lower_lip",
+     "p0": [
+      0.45339,
+      0.81145
+     ],
+     "p1": [
+      0.43434,
+      0.77846
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; outer rib bottom bar at the mouth",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_underside",
+     "p0": [
+      0.43434,
+      0.77846
+     ],
+     "p1": [
+      0.11384,
+      0.9635
+     ],
+     "prov": "derived: envelope of rib bottom bars (w=-2.97 in) and base tube (w=-2.71 in) from confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_tube_top_gap",
+     "p0": [
+      0.12984,
+      0.99121
+     ],
+     "p1": [
+      0.18572,
+      0.95895
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; base tube top between bearing plate and back wall",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "pivot_plate_top",
+     "p0": [
+      0.16261,
+      1.04796
+     ],
+     "p1": [
+      -0.14051,
+      1.22297
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; Goal Pivot Bearing Plates am-5873 at s=+-0.5 in (dampers am-5865 sit inside this box)",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "pivot_plate_end_up",
+     "p0": [
+      -0.18598,
+      1.14422
+     ],
+     "p1": [
+      -0.14051,
+      1.22297
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; Goal Pivot Bearing Plates am-5873 at s=+-0.5 in (dampers am-5865 sit inside this box)",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "pivot_plate_end_down",
+     "p0": [
+      0.11714,
+      0.96922
+     ],
+     "p1": [
+      0.16261,
+      1.04796
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; Goal Pivot Bearing Plates am-5873 at s=+-0.5 in (dampers am-5865 sit inside this box)",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "pivot_plate_bottom",
+     "p0": [
+      0.11714,
+      0.96922
+     ],
+     "p1": [
+      -0.18598,
+      1.14422
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; Goal Pivot Bearing Plates am-5873 at s=+-0.5 in (dampers am-5865 sit inside this box)",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "frame_leg_outer_face_pos",
+     "p0": [
+      0.02481,
+      1.04784
+     ],
+     "p1": [
+      0.48303,
+      0.01863
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; PROJECTED onto the section: the leg slants laterally, occupying s from -11.5 in (foot) to +0.5 in (top) relative to the HIVE centre, so at s=0 only its top ~2 in is present",
+     "body": "frame_static",
+     "projected": true
+    },
+    {
+     "name": "frame_leg_outer_face_neg",
+     "p0": [
+      -0.02481,
+      1.04784
+     ],
+     "p1": [
+      -0.48303,
+      0.01863
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; PROJECTED onto the section: the leg slants laterally, occupying s from -11.5 in (foot) to +0.5 in (top) relative to the HIVE centre, so at s=0 only its top ~2 in is present",
+     "body": "frame_static",
+     "projected": true
+    },
+    {
+     "name": "frame_leg_inner_face_pos",
+     "p0": [
+      0.00161,
+      1.0375
+     ],
+     "p1": [
+      0.45982,
+      0.0083
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; PROJECTED onto the section: the leg slants laterally, occupying s from -11.5 in (foot) to +0.5 in (top) relative to the HIVE centre, so at s=0 only its top ~2 in is present",
+     "body": "frame_static",
+     "projected": true
+    },
+    {
+     "name": "frame_leg_inner_face_neg",
+     "p0": [
+      -0.00161,
+      1.0375
+     ],
+     "p1": [
+      -0.45982,
+      0.0083
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; PROJECTED onto the section: the leg slants laterally, occupying s from -11.5 in (foot) to +0.5 in (top) relative to the HIVE centre, so at s=0 only its top ~2 in is present",
+     "body": "frame_static",
+     "projected": true
+    },
+    {
+     "name": "frame_acm_panel_pos",
+     "p0": [
+      0.03937,
+      1.01651
+     ],
+     "p1": [
+      0.10871,
+      0.86538
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; ACM Panel am-5877 + sticker, lateral extent CAD X -15.07..15.09 in (s >= -2.33 in for the red HIVE, i.e. inner half of the cell width)",
+     "body": "frame_static",
+     "projected": false
+    },
+    {
+     "name": "frame_acm_panel_neg",
+     "p0": [
+      -0.03937,
+      1.01651
+     ],
+     "p1": [
+      -0.10871,
+      0.86538
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; ACM Panel am-5877 + sticker, lateral extent CAD X -15.07..15.09 in (s >= -2.33 in for the red HIVE, i.e. inner half of the cell width)",
+     "body": "frame_static",
+     "projected": false
+    },
+    {
+     "name": "frame_top_corner_side_pos",
+     "p0": [
+      0.03886,
+      1.00305
+     ],
+     "p1": [
+      0.03886,
+      1.12497
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; A-Frame Top Corner am-5874 (axle cradle) |x|<=1.53 in, z 39.49-44.29 in",
+     "body": "frame_static",
+     "projected": false
+    },
+    {
+     "name": "frame_top_corner_side_neg",
+     "p0": [
+      -0.03886,
+      1.00305
+     ],
+     "p1": [
+      -0.03886,
+      1.12497
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; A-Frame Top Corner am-5874 (axle cradle) |x|<=1.53 in, z 39.49-44.29 in",
+     "body": "frame_static",
+     "projected": false
+    },
+    {
+     "name": "frame_top_corner_top",
+     "p0": [
+      -0.03886,
+      1.12497
+     ],
+     "p1": [
+      0.03886,
+      1.12497
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; A-Frame Top Corner top face (inside the rotating pivot plates' envelope)",
+     "body": "frame_static",
+     "projected": false
+    }
+   ],
+   "mouth": {
+    "p0": [
+     -0.49073,
+     1.35654
+    ],
+    "p1": [
+     -0.31204,
+     1.66603
+    ],
+    "note": "p0 = lower lip (inner edge of mouth rib bottom bar, flush with floor), p1 = upper lip (inner edge of roof band at pentagon peak), centre plane s=0",
+    "normal_out": [
+     -0.86603,
+     0.5
+    ],
+    "prov": "derived: CAD cell section rotated by nominal tilt; check: z(p0)=53.41 in vs checklist 53.5+-0.5 in, z(p1)=65.59 in vs Fig 9-10 65.6 in"
+   },
+   "inside": [
+    [
+     -0.2391,
+     1.25225
+    ],
+    [
+     -0.47298,
+     1.38728
+    ],
+    [
+     -0.32979,
+     1.63529
+    ],
+    [
+     -0.09591,
+     1.50026
+    ]
+   ],
+   "inside_prov": "assumed criterion + derived geometry: ball centre behind the mouth plane and at least R from floor, roof and back wall (centre-plane section). The floor slopes 30 deg down toward the back wall, so a ball that settles inside rolls back and is retained; rebounds back out are for contact.py. NOTE: 3 NECTAR start in each up cell against the back skin and the perimeter-side wall (Event Field Setup Guide 11.1).",
+   "favorable_side": "neg",
+   "reason": "The upward CELL is on the neg side and its mouth faces outward and upward: outward normal n = (-cos30, sin30), i.e. 30 deg above horizontal away from the pivot. Entry needs v.n < 0. A shooter on the neg side (ball moving toward +x) enters for any flight-path angle from 90 deg below horizontal up to 60 deg ABOVE horizontal; projected mouth = 0.3574*cos(phi-30deg) m where phi = descent angle (best: descending 30 deg, full 0.357 m; ball-centre window ~0.357-2R = 0.286 m). From the pos side the ball must pass over the roof (ball centre above ~1.713 m = roof top 66.04 in + R) and then descend steeper than 60 deg (geometrically > ~71.5 deg for the ball to fit: 60 + asin(2R/0.3574)); projected mouth = 0.3574*sin(phi-60deg); a vertical drop has a ball-centre window of only ~0.108 m (|x| 0.347-0.455 m). Derived from CAD geometry; tilt 30 deg confirmed."
+  },
+  "pose_pos": {
+   "tilt_deg": {
+    "value": 30.0,
+    "low": 28.8,
+    "high": 31.77,
+    "low_wide": 25.9,
+    "high_wide": 34.83,
+    "prov": "confirmed nominal 30 deg: confirmed: Competition Manual TU07 9.6.2 Fig 9-10 (angle labelled 30 deg), https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm; and CAD base tube axis measured 30.0 deg (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step). low/high derived: confirmed: Field Acceptance Checklist Rev 26-27.2 item 1.13, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-check lip height 53.5+-0.5 in, solved exactly for the tilt with the pivot at nominal -> 28.80-31.77 deg (PM-015, research/GEOMETRY_AUDIT.md row 14; the earlier linear +-1.5 deg estimate 28.5-31.5 is only the label of sweeps precomputed before PM-015). low_wide/high_wide derived: also allow the manual's +-1 in field tolerance (9.1) on pivot height -> 25.90-34.83 deg (exact solve; earlier rounded estimate 25.5-34.5).",
+    "sense": "angle of the cell axis above horizontal; the pos-side cell is up, the other cell is down by the same angle"
+   },
+   "obstacles": [
+    {
+     "name": "up_back_wall",
+     "p0": [
+      0.24185,
+      1.17648
+     ],
+     "p1": [
+      0.04081,
+      1.52469
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; back skin am-5871 at u=9.43 in",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_roof_outer",
+     "p0": [
+      0.04081,
+      1.52469
+     ],
+     "p1": [
+      0.30543,
+      1.67747
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; envelope of rib tops (ribs u 9.44-11.44 and 19.46-21.46 reach w=13.12 in; top skin between ribs at 12.70 in)",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_upper_lip",
+     "p0": [
+      0.30543,
+      1.67747
+     ],
+     "p1": [
+      0.31204,
+      1.66603
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; outer rib roof band at the mouth",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_roof_inner",
+     "p0": [
+      0.31204,
+      1.66603
+     ],
+     "p1": [
+      0.04741,
+      1.51325
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; underside of roof at the pentagon peak",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_floor",
+     "p0": [
+      0.2261,
+      1.20376
+     ],
+     "p1": [
+      0.49073,
+      1.35654
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; bottom skin am-5888 floor",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_lower_lip",
+     "p0": [
+      0.49073,
+      1.35654
+     ],
+     "p1": [
+      0.50978,
+      1.32354
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; outer rib bottom bar at the mouth",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_underside",
+     "p0": [
+      0.50978,
+      1.32354
+     ],
+     "p1": [
+      0.18928,
+      1.1385
+     ],
+     "prov": "derived: envelope of rib bottom bars (w=-2.97 in) and base tube (w=-2.71 in) from confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "up_tube_top_gap",
+     "p0": [
+      0.17328,
+      1.16622
+     ],
+     "p1": [
+      0.22915,
+      1.19848
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; base tube top between bearing plate and back wall",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_back_wall",
+     "p0": [
+      -0.17302,
+      0.93696
+     ],
+     "p1": [
+      -0.37406,
+      1.28517
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; back skin am-5871 at u=9.43 in",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_roof_outer",
+     "p0": [
+      -0.37406,
+      1.28517
+     ],
+     "p1": [
+      -0.63868,
+      1.13239
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; envelope of rib tops (ribs u 9.44-11.44 and 19.46-21.46 reach w=13.12 in; top skin between ribs at 12.70 in)",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_upper_lip",
+     "p0": [
+      -0.63868,
+      1.13239
+     ],
+     "p1": [
+      -0.63208,
+      1.12095
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; outer rib roof band at the mouth",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_roof_inner",
+     "p0": [
+      -0.63208,
+      1.12095
+     ],
+     "p1": [
+      -0.36745,
+      1.27373
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; underside of roof at the pentagon peak",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_floor",
+     "p0": [
+      -0.18876,
+      0.96423
+     ],
+     "p1": [
+      -0.45339,
+      0.81145
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; bottom skin am-5888 floor",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_lower_lip",
+     "p0": [
+      -0.45339,
+      0.81145
+     ],
+     "p1": [
+      -0.43434,
+      0.77846
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; outer rib bottom bar at the mouth",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_underside",
+     "p0": [
+      -0.43434,
+      0.77846
+     ],
+     "p1": [
+      -0.11384,
+      0.9635
+     ],
+     "prov": "derived: envelope of rib bottom bars (w=-2.97 in) and base tube (w=-2.71 in) from confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "down_tube_top_gap",
+     "p0": [
+      -0.12984,
+      0.99121
+     ],
+     "p1": [
+      -0.18572,
+      0.95895
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; centre-plane (s=0) section; base tube top between bearing plate and back wall",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "pivot_plate_top",
+     "p0": [
+      -0.16261,
+      1.04796
+     ],
+     "p1": [
+      0.14051,
+      1.22297
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; Goal Pivot Bearing Plates am-5873 at s=+-0.5 in (dampers am-5865 sit inside this box)",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "pivot_plate_end_up",
+     "p0": [
+      0.18598,
+      1.14422
+     ],
+     "p1": [
+      0.14051,
+      1.22297
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; Goal Pivot Bearing Plates am-5873 at s=+-0.5 in (dampers am-5865 sit inside this box)",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "pivot_plate_end_down",
+     "p0": [
+      -0.11714,
+      0.96922
+     ],
+     "p1": [
+      -0.16261,
+      1.04796
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; Goal Pivot Bearing Plates am-5873 at s=+-0.5 in (dampers am-5865 sit inside this box)",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "pivot_plate_bottom",
+     "p0": [
+      -0.11714,
+      0.96922
+     ],
+     "p1": [
+      0.18598,
+      1.14422
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; Goal Pivot Bearing Plates am-5873 at s=+-0.5 in (dampers am-5865 sit inside this box)",
+     "body": "hive_rotating"
+    },
+    {
+     "name": "frame_leg_outer_face_pos",
+     "p0": [
+      0.02481,
+      1.04784
+     ],
+     "p1": [
+      0.48303,
+      0.01863
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; PROJECTED onto the section: the leg slants laterally, occupying s from -11.5 in (foot) to +0.5 in (top) relative to the HIVE centre, so at s=0 only its top ~2 in is present",
+     "body": "frame_static",
+     "projected": true
+    },
+    {
+     "name": "frame_leg_outer_face_neg",
+     "p0": [
+      -0.02481,
+      1.04784
+     ],
+     "p1": [
+      -0.48303,
+      0.01863
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; PROJECTED onto the section: the leg slants laterally, occupying s from -11.5 in (foot) to +0.5 in (top) relative to the HIVE centre, so at s=0 only its top ~2 in is present",
+     "body": "frame_static",
+     "projected": true
+    },
+    {
+     "name": "frame_leg_inner_face_pos",
+     "p0": [
+      0.00161,
+      1.0375
+     ],
+     "p1": [
+      0.45982,
+      0.0083
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; PROJECTED onto the section: the leg slants laterally, occupying s from -11.5 in (foot) to +0.5 in (top) relative to the HIVE centre, so at s=0 only its top ~2 in is present",
+     "body": "frame_static",
+     "projected": true
+    },
+    {
+     "name": "frame_leg_inner_face_neg",
+     "p0": [
+      -0.00161,
+      1.0375
+     ],
+     "p1": [
+      -0.45982,
+      0.0083
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; PROJECTED onto the section: the leg slants laterally, occupying s from -11.5 in (foot) to +0.5 in (top) relative to the HIVE centre, so at s=0 only its top ~2 in is present",
+     "body": "frame_static",
+     "projected": true
+    },
+    {
+     "name": "frame_acm_panel_pos",
+     "p0": [
+      0.03937,
+      1.01651
+     ],
+     "p1": [
+      0.10871,
+      0.86538
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; ACM Panel am-5877 + sticker, lateral extent CAD X -15.07..15.09 in (s >= -2.33 in for the red HIVE, i.e. inner half of the cell width)",
+     "body": "frame_static",
+     "projected": false
+    },
+    {
+     "name": "frame_acm_panel_neg",
+     "p0": [
+      -0.03937,
+      1.01651
+     ],
+     "p1": [
+      -0.10871,
+      0.86538
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; ACM Panel am-5877 + sticker, lateral extent CAD X -15.07..15.09 in (s >= -2.33 in for the red HIVE, i.e. inner half of the cell width)",
+     "body": "frame_static",
+     "projected": false
+    },
+    {
+     "name": "frame_top_corner_side_pos",
+     "p0": [
+      0.03886,
+      1.00305
+     ],
+     "p1": [
+      0.03886,
+      1.12497
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; A-Frame Top Corner am-5874 (axle cradle) |x|<=1.53 in, z 39.49-44.29 in",
+     "body": "frame_static",
+     "projected": false
+    },
+    {
+     "name": "frame_top_corner_side_neg",
+     "p0": [
+      -0.03886,
+      1.00305
+     ],
+     "p1": [
+      -0.03886,
+      1.12497
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; A-Frame Top Corner am-5874 (axle cradle) |x|<=1.53 in, z 39.49-44.29 in",
+     "body": "frame_static",
+     "projected": false
+    },
+    {
+     "name": "frame_top_corner_top",
+     "p0": [
+      -0.03886,
+      1.12497
+     ],
+     "p1": [
+      0.03886,
+      1.12497
+     ],
+     "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step; A-Frame Top Corner top face (inside the rotating pivot plates' envelope)",
+     "body": "frame_static",
+     "projected": false
+    }
+   ],
+   "mouth": {
+    "p0": [
+     0.49073,
+     1.35654
+    ],
+    "p1": [
+     0.31204,
+     1.66603
+    ],
+    "note": "p0 = lower lip (inner edge of mouth rib bottom bar, flush with floor), p1 = upper lip (inner edge of roof band at pentagon peak), centre plane s=0",
+    "normal_out": [
+     0.86603,
+     0.5
+    ],
+    "prov": "derived: CAD cell section rotated by nominal tilt; check: z(p0)=53.41 in vs checklist 53.5+-0.5 in, z(p1)=65.59 in vs Fig 9-10 65.6 in"
+   },
+   "inside": [
+    [
+     0.2391,
+     1.25225
+    ],
+    [
+     0.47298,
+     1.38728
+    ],
+    [
+     0.32979,
+     1.63529
+    ],
+    [
+     0.09591,
+     1.50026
+    ]
+   ],
+   "inside_prov": "assumed criterion + derived geometry: ball centre behind the mouth plane and at least R from floor, roof and back wall (centre-plane section). The floor slopes 30 deg down toward the back wall, so a ball that settles inside rolls back and is retained; rebounds back out are for contact.py. NOTE: 3 NECTAR start in each up cell against the back skin and the perimeter-side wall (Event Field Setup Guide 11.1).",
+   "favorable_side": "pos",
+   "reason": "The upward CELL is on the pos side and its mouth faces outward and upward: outward normal n = (+cos30, sin30), i.e. 30 deg above horizontal away from the pivot. Entry needs v.n < 0. A shooter on the pos side (ball moving toward -x) enters for any flight-path angle from 90 deg below horizontal up to 60 deg ABOVE horizontal; projected mouth = 0.3574*cos(phi-30deg) m where phi = descent angle (best: descending 30 deg, full 0.357 m; ball-centre window ~0.357-2R = 0.286 m). From the neg side the ball must pass over the roof (ball centre above ~1.713 m = roof top 66.04 in + R) and then descend steeper than 60 deg (geometrically > ~71.5 deg for the ball to fit: 60 + asin(2R/0.3574)); projected mouth = 0.3574*sin(phi-60deg); a vertical drop has a ball-centre window of only ~0.108 m (|x| 0.347-0.455 m). Derived from CAD geometry; tilt 30 deg confirmed."
+  }
+ },
+ "y_extent": {
+  "cell_width": 0.508,
+  "prov": "confirmed: Competition Manual TU07 9.6.2 + Fig 9-11 (opening approx 20 in wide x 14 in tall x 12 in deep), https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm; CAD side walls at s=+-10.1 in",
+  "opening_profile": {
+   "shape": "pentagon (house shape) in the s-w plane, symmetric in s; roof apex at s=0",
+   "height_above_floor_at_s0": 0.3556,
+   "height_above_floor_at_wall": 0.19329,
+   "half_width": 0.254,
+   "formula": "inner height h(s) = 0.3556 - (0.3556-0.1933)*|s|/0.254 m for |s|<=0.254 m (straight roof slopes)",
+   "prov": "confirmed: Competition Manual TU07 9.6.2 Fig 9-11 (14 in to peak, 7.61 in / 19.35 cm to shoulder, 20 in wide), https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm; CAD top skin consistent (w 12.70 at s=0, ~5-7 in at |s|=9-10 in)"
+  },
+  "cell_depth": {
+   "value": 0.30556,
+   "prov": "derived from CAD: back skin u=9.43 in to mouth rib face u=21.46 in (manual: approx 12 in deep)"
+  },
+  "hive_centre_spacing": {
+   "value": 0.6477,
+   "prov": "confirmed: Competition Manual TU07 9.6.2 Fig 9-10 (HIVE centre-to-centre 25.5 in / 64.75 cm), https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm; CAD +-12.74 in. The other alliance's HIVE body spans y 0.381-0.914 m (CAD, derived; plan envelope |x| <= 0.639 m at 30 deg); the robot-view sight test grows it by the ball radius to |x| < 0.6745, 0.3455 < y < 0.9495 (src/field_geom.py, PM-015). It is not in the s=0 section"
+  },
+  "cell_spacing_along_axis": {
+   "gap_between_cells": 0.47854,
+   "overall_length": 1.08991,
+   "prov": "confirmed: Competition Manual TU07 9.6.2 Fig 9-9 (18.84 in gap, 12.04 in cell, 42.91 in overall), https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm"
+  }
+ },
+ "key_points_pose_pos": {
+  "lower_lip": [
+   0.49073,
+   1.35654
+  ],
+  "upper_lip": [
+   0.31204,
+   1.66603
+  ],
+  "roof_top_at_mouth": [
+   0.30543,
+   1.67747
+  ],
+  "roof_top_at_back": [
+   0.04081,
+   1.52469
+  ],
+  "down_cell_lowest": [
+   -0.43434,
+   0.77846
+  ],
+  "checks": "derived vs official: lower lip z 53.41 in (checklist 53.5+-0.5), upper lip 65.59 in (Fig 9-10 65.6), lowest 30.65 in (Fig 9-10 'bottom of HIVE' 30.6), overall top 66.04 in"
+ },
+ "body_local": {
+  "description": "Rotating HIVE body in the cell-local frame (metres) for tilt sweeps: x = s_pose*(u cos t - w sin t), z = pivot_z + u sin t + w cos t, s_pose = +1 for pose_pos, -1 for pose_neg. u>0 = up cell.",
+  "segments": [
+   {
+    "name": "up_back_wall",
+    "p0": [
+     0.23952,
+     -0.06883
+    ],
+    "p1": [
+     0.23952,
+     0.33325
+    ]
+   },
+   {
+    "name": "up_roof_outer",
+    "p0": [
+     0.23952,
+     0.33325
+    ],
+    "p1": [
+     0.54508,
+     0.33325
+    ]
+   },
+   {
+    "name": "up_upper_lip",
+    "p0": [
+     0.54508,
+     0.33325
+    ],
+    "p1": [
+     0.54508,
+     0.32004
+    ]
+   },
+   {
+    "name": "up_roof_inner",
+    "p0": [
+     0.54508,
+     0.32004
+    ],
+    "p1": [
+     0.23952,
+     0.32004
+    ]
+   },
+   {
+    "name": "up_floor",
+    "p0": [
+     0.23952,
+     -0.03734
+    ],
+    "p1": [
+     0.54508,
+     -0.03734
+    ]
+   },
+   {
+    "name": "up_lower_lip",
+    "p0": [
+     0.54508,
+     -0.03734
+    ],
+    "p1": [
+     0.54508,
+     -0.07544
+    ]
+   },
+   {
+    "name": "up_underside",
+    "p0": [
+     0.54508,
+     -0.07544
+    ],
+    "p1": [
+     0.17501,
+     -0.07544
+    ]
+   },
+   {
+    "name": "up_tube_top_gap",
+    "p0": [
+     0.17501,
+     -0.04343
+    ],
+    "p1": [
+     0.23952,
+     -0.04343
+    ]
+   },
+   {
+    "name": "down_back_wall",
+    "p0": [
+     -0.23952,
+     -0.06883
+    ],
+    "p1": [
+     -0.23952,
+     0.33325
+    ]
+   },
+   {
+    "name": "down_roof_outer",
+    "p0": [
+     -0.23952,
+     0.33325
+    ],
+    "p1": [
+     -0.54508,
+     0.33325
+    ]
+   },
+   {
+    "name": "down_upper_lip",
+    "p0": [
+     -0.54508,
+     0.33325
+    ],
+    "p1": [
+     -0.54508,
+     0.32004
+    ]
+   },
+   {
+    "name": "down_roof_inner",
+    "p0": [
+     -0.54508,
+     0.32004
+    ],
+    "p1": [
+     -0.23952,
+     0.32004
+    ]
+   },
+   {
+    "name": "down_floor",
+    "p0": [
+     -0.23952,
+     -0.03734
+    ],
+    "p1": [
+     -0.54508,
+     -0.03734
+    ]
+   },
+   {
+    "name": "down_lower_lip",
+    "p0": [
+     -0.54508,
+     -0.03734
+    ],
+    "p1": [
+     -0.54508,
+     -0.07544
+    ]
+   },
+   {
+    "name": "down_underside",
+    "p0": [
+     -0.54508,
+     -0.07544
+    ],
+    "p1": [
+     -0.17501,
+     -0.07544
+    ]
+   },
+   {
+    "name": "down_tube_top_gap",
+    "p0": [
+     -0.17501,
+     -0.04343
+    ],
+    "p1": [
+     -0.23952,
+     -0.04343
+    ]
+   },
+   {
+    "name": "pivot_plate_top",
+    "p0": [
+     -0.17501,
+     0.0221
+    ],
+    "p1": [
+     0.17501,
+     0.0221
+    ]
+   },
+   {
+    "name": "pivot_plate_end_up",
+    "p0": [
+     0.17501,
+     -0.06883
+    ],
+    "p1": [
+     0.17501,
+     0.0221
+    ]
+   },
+   {
+    "name": "pivot_plate_end_down",
+    "p0": [
+     -0.17501,
+     -0.06883
+    ],
+    "p1": [
+     -0.17501,
+     0.0221
+    ]
+   },
+   {
+    "name": "pivot_plate_bottom",
+    "p0": [
+     -0.17501,
+     -0.06883
+    ],
+    "p1": [
+     0.17501,
+     -0.06883
+    ]
+   }
+  ],
+  "mouth_local": {
+   "p0": [
+    0.54508,
+    -0.03734
+   ],
+   "p1": [
+    0.54508,
+    0.32004
+   ]
+  },
+  "prov": "confirmed: official field CAD STEP (assembly 'am-5850 BIOBUZZ'), parsed vertices, https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step"
+ },
+ "field": {
+  "hive_position": "Both HIVES hang from one A-frame structure at the FIELD centre; pivot axes collinear along the red-blue (alliance wall to alliance wall) axis at 1.1163 m, red HIVE centre 0.3236 m toward the red alliance wall, blue 0.3236 m toward blue. The tipping plane is the audience-scoring axis, so in-plane shots come from the audience side (+x) or the far/scoring side (-x). Frame base 49.46 x 38.95 in (1.256 x 0.989 m); foot bars at x = +-0.495 m. Source: confirmed: Competition Manual TU07 9.6, 9.6.1, https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm + CAD.",
+  "start_pose": "Match start: red HIVE audience-side cell up = pose_pos; blue HIVE scoring-side cell up = pose_neg (x toward audience). Each TIP flips the pose. confirmed: Event Field Setup Guide V1.0 11.1 (https://ftc-resources.firstinspires.org/ftc/archive/2027/field/eventfieldguide), Manual 10.3.1 ('the CELL which points at a FLOWER is tilted down'), and the CAD as delivered.",
+  "in_plane_extent": {
+   "x_inner_wall": 1.8009,
+   "prov": "CAD: perimeter wall inner face at 70.90 in from the field centre line (x=0 is the field centre line); manual 9.1 field approx 144 in square"
+  },
+  "legal_shooting_region": "No launch zone, launch line or no-go zone for LAUNCHING found in Manual TU07 (zones defined: ALLIANCE AREA, LOADING ZONE, GARDEN only, 9.3). A ROBOT may LAUNCH from anywhere on the FIELD. Constraints: G417 (no HIVE contact/meddling), R105/G416 size, G409 (no catching elements spilled by a TIPPED HIVE). Under-HIVE space is not a zone but the down cell bottom is at 0.778 m and the ACM panel/legs fill the centre. confirmed absence by full-text search of TU07; re-check later Team Updates.",
+  "robot_limits": {
+   "max_height": 0.7366,
+   "footprint": [
+    0.457,
+    0.61
+   ],
+   "start_cube": 0.457,
+   "prov": "confirmed: Competition Manual TU07 12 R102 (18 in start cube), R105.A (expanded 18 x 24 x 29 in tall, 29 in measured from FIELD surface), G416, https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm",
+   "release_height_note": "assumed: ball centre at release <= 0.737 m (ball inside the sizing volume; LAUNCHED elements no longer in contact are not ROBOT parts) - a ball partly outside the volume while still in the mechanism is a G416 risk"
+  },
+  "hive_rules": [
+   "G417 (MAJOR FOUL + YELLOW CARD if STRATEGIC): ROBOTS may not manipulate HIVE motion except by LAUNCHING into an upward-facing CELL. Likely STRATEGIC: C deliberately LAUNCHING into the external bottom, sides or top faces of a CELL; D LAUNCHING at an opponent HIVE to impede its TIP; E contacting a HIVE directly or through a CONTROLLED element. NOT strategic (H): attempting to LAUNCH into the up CELL and missing so the ball hits the bottom, sides or top of the CELL.",
+   "10.5.1: LAUNCHING into the upward-facing CELL is the only allowed way to earn a TIP; LAUNCHING at the down CELL while tipping may disrupt the TIP.",
+   "Consequence for design: a planned bank shot off the roof/outer faces is G417 C risk; lip/rim contact during a genuine scoring attempt is covered by example H; contact inside the mouth is part of scoring.",
+   "G409: a ROBOT may not catch or deflect a SCORING ELEMENT released by a TIPPED HIVE until it contacts something else.",
+   "T405 J: no LAUNCHING during field calibration/measurement time."
+  ],
+  "tip_calibration": "Field Acceptance Checklist 2.3-2.6 / Event Field Setup Guide 12: 3 NECTAR + 2 POLLEN no tip, +1 tossed POLLEN tips; 7 POLLEN no tip, 8th tossed POLLEN tips (each up cell starts with 3 NECTAR)."
+ },
+ "sources": [
+  {
+   "cite": "FTC BIOBUZZ Competition Manual TU07 (sections 9.1, 9.3, 9.6, 9.8, 10.3.1, 10.5.1, 11 G409/G416/G417, 12 R102/R105)",
+   "url": "https://ftc-resources.firstinspires.org/ftc/game/cm-html/BIOBUZZ%20Competition%20Manual%20-%20TU07.htm"
+  },
+  {
+   "cite": "Official field CAD, STEP AP242 (am-5850 BIOBUZZ)",
+   "url": "https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-cad-step"
+  },
+  {
+   "cite": "Field Acceptance Checklist Rev 26-27.2 (1.8, 1.11, 1.13, 2.3-2.6)",
+   "url": "https://ftc-resources.firstinspires.org/ftc/archive/2027/field/field-check"
+  },
+  {
+   "cite": "Event Field Setup Guide V1.0 (11.1, 12)",
+   "url": "https://ftc-resources.firstinspires.org/ftc/archive/2027/field/eventfieldguide"
+  },
+  {
+   "cite": "Initial Field Element Assembly Guide (7.x pivot/hive assembly, built 'flat')",
+   "url": "https://ftc-resources.firstinspires.org/ftc/archive/2027/field/initialfieldguide"
+  }
+ ],
+ "open_questions": [
+  "Tilt in play: nominal 30 deg (Fig 9-10 + CAD) is the damper-stop angle; real fields vary (Cells may be 'tweaked' by hand per Setup Guide 12.1, dampers compress). Bounds from checklist 1.13 (lip 53.5 +- 0.5 in), exact solve: 28.80-31.77 deg with the pivot at nominal height; 25.90-34.83 deg if the pivot is also off by 1 in (derived, PM-015; the precomputed sweeps still use the older linear +-1.5 / +-4.5 deg labels until re-swept). A field measurement would settle it.",
+  "2D section is the HIVE centre plane s=0 where the mouth is tallest (0.356 m). Off-centre the roof is lower (pentagon, 0.193 m at the side walls) - a 3D or y-offset check is needed for shots that are not centred.",
+  "A-frame legs are drawn as projected segments; at s=0 only their top exists. hive.py should either ignore 'projected' obstacles for centred shots or treat them as conservative.",
+  "Rib geometry simplified: roof outer drawn at rib-top height 13.12 in over the full cell length (skin between ribs is 12.70 in); underside drawn at rib-bottom 2.97 in (tube is 2.71 in). Errors <= 0.42 in (11 mm).",
+  "Ballast washers / wing nut on a 10-32 x 2 in screw 'at the end of each Cell nearest its opening' (Setup Guide 12.1) are not in the CAD section; location and protrusion unknown.",
+  "G417 C vs H: whether an intentional shot that grazes the rim/roof edge on the way in counts as 'deliberately LAUNCHING into the external top' is a referee judgement; ask on the Q&A forum before designing a bank shot.",
+  "No launch zone found in TU07; later Team Updates could add one - re-check the current manual before relying on this.",
+  "3 NECTAR (3.6 in) preloaded in each up cell occupy the back corner on the perimeter side; their effect on retention/bounce is not modelled here.",
+  "POLLEN diameter is 'approximately 2.8 in (7.1 cm)'; real ball-to-ball variation not given."
+ ]
+}

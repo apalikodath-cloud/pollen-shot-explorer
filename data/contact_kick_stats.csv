@@ -1,0 +1,12 @@
+# PREDICTED. Controlled first-contact comparison at identical mouth-plane crossing states (s, phi grid of Part A, v_i 5 m/s) with pre-impact S = 0 vs S_pre (backspin); e 0.6, mu 0.4 ASSUMED; nominal aero ASSUMED. Only balls whose FIRST contact is in the same zone in both runs with approach speed > 0.1 m/s.
+# extra_dv_inward = (velocity change at first contact, spin run) - (same, no-spin run), projected on the CELL inward axis -normal_out = (-0.866, -0.5) (m/s). near_rim = upper lip / roof end, far_rim = lower lip, interior = inside the CELL, external = roof top / outer faces. retained_frac = final outcome.
+# CAUTION near_rim / external: the derived backspin kick there is backward-and-down AROUND the roof corner, away from the mouth; it projects positively on the CELL axis but does not push the ball into the mouth. Use retained_frac_* for the effect on scoring.
+S_pre,zone,n_same_zone_contacts,median_extra_dv_inward_mps,frac_extra_dv_inward_positive,frac_extra_dv_inward_negative,frac_stick_S0,frac_stick_spin,retained_frac_S0,retained_frac_spin
+1,near_rim,755,1.70288,0.966887,0.0331126,0.903311,0.630464,0.0278146,0.0145695
+1,far_rim,240,1.80055,1,0,1,0.8625,0.3625,0.6
+1,interior,384,1.93524,1,0,1,1,1,0.0859375
+1,external,265,1.9334,1,0,1,1,0,0
+2,near_rim,755,2.18074,0.966887,0.0331126,0.903311,0,0.0278146,0.00264901
+2,far_rim,240,2.74637,1,0,1,0,0.3625,0.395833
+2,interior,384,3.80299,1,0,1,0.333333,1,0
+2,external,265,3.58468,1,0,1,0,0,0

@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+data/_spec_cache/
+data/_spec_run.log
+*.tmp.npz
+.venv/
+data/_spec_cache_stale/
+.contact_cache*/
+viz/explorer/data/
+viz/explorer/site/
+# GIF copies of the committed MP4s (render_video.py writes both; regenerate)
+viz/out/*.gif
+viz/demo/out/*.gif
+viz/hero/out/*.gif

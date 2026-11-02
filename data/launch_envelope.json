@@ -1,0 +1,2257 @@
+{
+ "units": {
+  "v_exit": "m/s",
+  "spin_rpm": "rev/min (+ = backspin)",
+  "S": "omega*R_b/v (R_b nominal 0.0355 m)",
+  "rpm_drop": "flywheel rev/min lost during one shot (coasting wheel)"
+ },
+ "label": "predicted (uncalibrated model; no measurements exist yet)",
+ "model": "src/launcher.py simulate_shot: planar 1-D contact path, Coulomb stick/slip at wheel and top contact, linear N(delta), centripetal unloading of the wheel contact on a curved hood, rolling hysteresis c_rr, coasting flywheel, passive roller with bearing drag",
+ "common_assumptions": {
+  "ball_mass": {
+   "value": 0.025,
+   "low": 0.0245,
+   "high": 0.0255,
+   "units": "kg",
+   "prov": "user/confirmed via HANDOFF s1-2: AndyMark am-5851_yellow lists 0.055 lb = 24.95 g (https://andymark.com/products/biobuzz-scoring-elements?variant=47194281148588); weigh samples"
+  },
+  "ball_radius": {
+   "value": 0.0355,
+   "units": "m",
+   "prov": "confirmed nominal 2.8 in / 71 mm diameter (HANDOFF s1, s2); pieces vary"
+  },
+  "ball_kI": {
+   "value": 0.63,
+   "low": 0.55,
+   "high": 0.6666666666666666,
+   "units": "-",
+   "prov": "derived/assumed: I_b = kI m R^2. Thin shell 2/3 is the upper bound for a sphere with mass at the surface; uniform PE shell (rho~950 kg/m^3) holding 25 g at R=35.5 mm needs t~1.7-2.4 mm (perforations) -> thick-shell formula kI=0.4(1-q^5)/(1-q^3), q=1-t/R, gives 0.62-0.64; 0.55 covers ribs/thick bosses/non-sphericity. Uniform hole pattern does not change kI. MEASURE (bifilar/trifilar pendulum)."
+  },
+  "wheel_radius": {
+   "value": 0.049,
+   "units": "m",
+   "prov": "user: one 98 mm flywheel (HANDOFF s2)"
+  },
+  "wheel_inertia": {
+   "value": 0.000265,
+   "low": 5e-05,
+   "high": 0.0005,
+   "units": "kg m^2",
+   "prov": "assumed/derived: bare 98 mm wheel ~1.0e-4 (assumed: 50-250 g, k_w 0.4-0.8 -> 0.5e-4..4.8e-4) + one goBILDA steel flywheel 3628-0032-0082 (82 mm, 152 g, 1651 g cm^2 = 1.651e-4, confirmed https://www.gobilda.com/steel-flywheel-82mm-diameter-152g-1651-g-cm/). Motor rotor inertia not published (bounded <~1e-5, assumed, reflected x gear^2)."
+  },
+  "mu_wheel": {
+   "value": 0.8,
+   "low": 0.5,
+   "high": 1.2,
+   "prov": "assumed: rubber/TPU tread on PE; MEASURE (incline/pull test)"
+  },
+  "mu_hood": {
+   "value": 0.3,
+   "low": 0.05,
+   "high": 1.0,
+   "prov": "assumed: PTFE/UHMW ~0.05-0.15, polycarbonate/acrylic/HDPE ~0.2-0.4, rubber/grip-tape lined 0.6-1.0 against PE; MEASURE"
+  },
+  "delta": {
+   "value": 0.004,
+   "low": 0.002,
+   "high": 0.008,
+   "units": "m",
+   "prov": "user candidate 4 mm diametral compression (HANDOFF s2); swept 2-8 mm"
+  },
+  "k_n": {
+   "value": 4000.0,
+   "low": 1500.0,
+   "high": 10000.0,
+   "units": "N/m",
+   "prov": "assumed: linear diametral stiffness of a 71 mm hollow perforated PE ball (no source found); N(4 mm) = 6-40 N. Real N(delta) is non-linear (shell buckling). MEASURE with plates + scale at 2/4/6/8 mm."
+  },
+  "lam_radius": {
+   "value": 1.0,
+   "low": 0.0,
+   "high": 1.0,
+   "prov": "assumed: r_c = R_b - lam*delta/2; lam=1 all squeeze in the ball split evenly, lam=0 rigid-radius rolling (flattened patch)"
+  },
+  "c_rr": {
+   "value": 0.02,
+   "low": 0.0,
+   "high": 0.06,
+   "prov": "assumed: rolling-hysteresis lever arm / r_c (energy loss per metre = c_rr N); Brettle notes the ball 'is not a perfect spring' -> extra wheel slow-down"
+  },
+  "wrap_deg": {
+   "value": 90.0,
+   "low": 45.0,
+   "high": 150.0,
+   "prov": "assumed: hood wrap angle about the wheel axis; shooter CAD not provided (HANDOFF s2)"
+  },
+  "v_in": {
+   "value": 0.5,
+   "low": 0.2,
+   "high": 1.5,
+   "units": "m/s",
+   "prov": "assumed: feed speed of the ball into the contact (indexer), no initial spin"
+  },
+  "roller_radius": {
+   "value": 0.024,
+   "low": 0.0125,
+   "high": 0.05,
+   "units": "m",
+   "prov": "assumed: 1-4 in class passive top roller"
+  },
+  "roller_inertia": {
+   "value": 1e-05,
+   "low": 1e-06,
+   "high": 0.0002,
+   "units": "kg m^2",
+   "prov": "assumed: 48 mm compliant wheel ~25-40 g + shaft ~ 0.7-1.5e-5; light 1e-6; with an added flywheel up to ~2e-4"
+  },
+  "roller_tau_coulomb": {
+   "value": 0.0005,
+   "low": 0.0,
+   "high": 0.003,
+   "units": "N m",
+   "prov": "assumed: two small sealed ball bearings + seals; MEASURE by spin-down"
+  },
+  "roller_c_visc": {
+   "value": 1e-06,
+   "low": 0.0,
+   "high": 1e-05,
+   "units": "N m s",
+   "prov": "assumed: viscous/air drag of roller"
+  },
+  "shot_interval": {
+   "value": 0.5,
+   "low": 0.25,
+   "high": 1.5,
+   "units": "s",
+   "prov": "assumed: time between consecutive shots (roller coasts with bearing drag)"
+  }
+ },
+ "motors": {
+  "motor_gobilda_5203_1to1": {
+   "free_rpm": 6000,
+   "stall_torque": 0.144,
+   "stall_current": 9.2,
+   "prov": "confirmed goBILDA 5203-2402-0001 page: 6000 rpm @12 V, 1.47 kg cm (=0.144 N m), 9.2 A stall (https://gobilda.com/5203-series-yellow-jacket-motor-1-1-ratio-24mm-length-8mm-rex-shaft-6000-rpm-3-3-5v-encoder); related 5202 tested free speed ~5400 rpm (vendor listing) -> real free speed lower"
+  },
+  "motor_rev_hdhex_bare": {
+   "free_rpm": 6000,
+   "stall_torque": 0.105,
+   "stall_current": 8.5,
+   "prov": "confirmed REV docs HD Hex Motor: 6000 rpm, 0.105 N m, 8.5 A @12 V (https://docs.revrobotics.com/duo-build/motion/motors/hd-hex-motor); UltraPlanetary 5:1 (5.23:1) 1147 rpm 0.55 N m (same page)"
+  }
+ },
+ "configs": {
+  "hood_ideal_brettle": {
+   "note": "derived: rigid, no slip at both contacts at exit, v_in=0, Brettle RPM drop with kI=0.63, I_w=2.65e-4; v=R_w*Omega_exit/2, omega=v/R_b, S=1",
+   "points": [
+    {
+     "wheel_rpm": 1000,
+     "v_exit": 2.3488,
+     "spin_rpm": 631.8,
+     "S": 1.0,
+     "rpm_drop": 84.5
+    },
+    {
+     "wheel_rpm": 1500,
+     "v_exit": 3.5232,
+     "spin_rpm": 947.7,
+     "S": 1.0,
+     "rpm_drop": 126.8
+    },
+    {
+     "wheel_rpm": 2000,
+     "v_exit": 4.6977,
+     "spin_rpm": 1263.6,
+     "S": 1.0,
+     "rpm_drop": 169.0
+    },
+    {
+     "wheel_rpm": 2500,
+     "v_exit": 5.8721,
+     "spin_rpm": 1579.6,
+     "S": 1.0,
+     "rpm_drop": 211.3
+    },
+    {
+     "wheel_rpm": 3000,
+     "v_exit": 7.0465,
+     "spin_rpm": 1895.5,
+     "S": 1.0,
+     "rpm_drop": 253.5
+    },
+    {
+     "wheel_rpm": 3500,
+     "v_exit": 8.2209,
+     "spin_rpm": 2211.4,
+     "S": 1.0,
+     "rpm_drop": 295.8
+    },
+    {
+     "wheel_rpm": 4000,
+     "v_exit": 9.3953,
+     "spin_rpm": 2527.3,
+     "S": 1.0,
+     "rpm_drop": 338.0
+    },
+    {
+     "wheel_rpm": 4500,
+     "v_exit": 10.5697,
+     "spin_rpm": 2843.2,
+     "S": 1.0,
+     "rpm_drop": 380.3
+    },
+    {
+     "wheel_rpm": 5000,
+     "v_exit": 11.7442,
+     "spin_rpm": 3159.1,
+     "S": 1.0,
+     "rpm_drop": 422.5
+    },
+    {
+     "wheel_rpm": 5500,
+     "v_exit": 12.9186,
+     "spin_rpm": 3475.0,
+     "S": 1.0,
+     "rpm_drop": 464.8
+    },
+    {
+     "wheel_rpm": 6000,
+     "v_exit": 14.093,
+     "spin_rpm": 3790.9,
+     "S": 1.0,
+     "rpm_drop": 507.0
+    }
+   ]
+  },
+  "hood_nominal": {
+   "note": "mu_w 0.8, mu_hood 0.3 (polycarbonate-like), delta 4 mm, k_n 4 N/mm, wrap 90 deg",
+   "points": [
+    {
+     "wheel_rpm": 1000,
+     "v_exit": 2.239,
+     "spin_rpm": 638.2,
+     "S": 1.0597,
+     "rpm_drop": 127.3,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 57.87,
+     "sliding_loss_J": 0.1041,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 1500,
+     "v_exit": 3.4504,
+     "spin_rpm": 983.5,
+     "S": 1.0597,
+     "rpm_drop": 155.2,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 39.72,
+     "sliding_loss_J": 0.2529,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 2000,
+     "v_exit": 4.6397,
+     "spin_rpm": 1322.6,
+     "S": 1.0597,
+     "rpm_drop": 191.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 31.43,
+     "sliding_loss_J": 0.4673,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 2500,
+     "v_exit": 5.8202,
+     "spin_rpm": 1659.1,
+     "S": 1.0597,
+     "rpm_drop": 231.5,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 27.02,
+     "sliding_loss_J": 0.7476,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 3000,
+     "v_exit": 6.9962,
+     "spin_rpm": 1994.3,
+     "S": 1.0597,
+     "rpm_drop": 273.1,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 24.59,
+     "sliding_loss_J": 1.0941,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 3500,
+     "v_exit": 8.1691,
+     "spin_rpm": 2328.6,
+     "S": 1.0597,
+     "rpm_drop": 316.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 23.42,
+     "sliding_loss_J": 1.5075,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 4000,
+     "v_exit": 8.9085,
+     "spin_rpm": 2539.4,
+     "S": 1.0597,
+     "rpm_drop": 343.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.945,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 23.21,
+     "sliding_loss_J": 1.9844,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 4500,
+     "v_exit": 8.9085,
+     "spin_rpm": 2539.4,
+     "S": 1.0597,
+     "rpm_drop": 343.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 3.511,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 23.21,
+     "sliding_loss_J": 2.4753,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 5000,
+     "v_exit": 8.9085,
+     "spin_rpm": 2539.4,
+     "S": 1.0597,
+     "rpm_drop": 343.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 6.076,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 23.21,
+     "sliding_loss_J": 2.9661,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 5500,
+     "v_exit": 8.9085,
+     "spin_rpm": 2539.4,
+     "S": 1.0597,
+     "rpm_drop": 343.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 8.642,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 23.21,
+     "sliding_loss_J": 3.4569,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 6000,
+     "v_exit": 8.9085,
+     "spin_rpm": 2539.4,
+     "S": 1.0597,
+     "rpm_drop": 343.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 11.208,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 23.21,
+     "sliding_loss_J": 3.9478,
+     "top_sliding_loss_J": 0.0009
+    }
+   ]
+  },
+  "hood_grippy": {
+   "note": "rubber/grip-tape lined hood mu 0.9",
+   "points": [
+    {
+     "wheel_rpm": 1000,
+     "v_exit": 2.2389,
+     "spin_rpm": 638.2,
+     "S": 1.0597,
+     "rpm_drop": 127.3,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 57.89,
+     "sliding_loss_J": 0.1041,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 1500,
+     "v_exit": 3.4503,
+     "spin_rpm": 983.5,
+     "S": 1.0597,
+     "rpm_drop": 155.2,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 39.73,
+     "sliding_loss_J": 0.2528,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 2000,
+     "v_exit": 4.6396,
+     "spin_rpm": 1322.5,
+     "S": 1.0597,
+     "rpm_drop": 191.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 31.44,
+     "sliding_loss_J": 0.4673,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 2500,
+     "v_exit": 5.8202,
+     "spin_rpm": 1659.1,
+     "S": 1.0597,
+     "rpm_drop": 231.5,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 27.03,
+     "sliding_loss_J": 0.7476,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 3000,
+     "v_exit": 6.9962,
+     "spin_rpm": 1994.3,
+     "S": 1.0597,
+     "rpm_drop": 273.1,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 24.6,
+     "sliding_loss_J": 1.0941,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 3500,
+     "v_exit": 8.1691,
+     "spin_rpm": 2328.6,
+     "S": 1.0597,
+     "rpm_drop": 316.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 23.42,
+     "sliding_loss_J": 1.5075,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 4000,
+     "v_exit": 8.9086,
+     "spin_rpm": 2539.4,
+     "S": 1.0597,
+     "rpm_drop": 343.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.945,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 23.21,
+     "sliding_loss_J": 1.9844,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 4500,
+     "v_exit": 8.9086,
+     "spin_rpm": 2539.4,
+     "S": 1.0597,
+     "rpm_drop": 343.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 3.511,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 23.21,
+     "sliding_loss_J": 2.4753,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 5000,
+     "v_exit": 8.9086,
+     "spin_rpm": 2539.4,
+     "S": 1.0597,
+     "rpm_drop": 343.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 6.076,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 23.21,
+     "sliding_loss_J": 2.9661,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 5500,
+     "v_exit": 8.9086,
+     "spin_rpm": 2539.4,
+     "S": 1.0597,
+     "rpm_drop": 343.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 8.642,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 23.21,
+     "sliding_loss_J": 3.4569,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 6000,
+     "v_exit": 8.9086,
+     "spin_rpm": 2539.4,
+     "S": 1.0597,
+     "rpm_drop": 343.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 11.207,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 23.21,
+     "sliding_loss_J": 3.9478,
+     "top_sliding_loss_J": 0.0011
+    }
+   ]
+  },
+  "hood_slick": {
+   "note": "PTFE/UHMW hood mu 0.08",
+   "points": [
+    {
+     "wheel_rpm": 1000,
+     "v_exit": 2.239,
+     "spin_rpm": 638.2,
+     "S": 1.0597,
+     "rpm_drop": 127.3,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 57.85,
+     "sliding_loss_J": 0.1041,
+     "top_sliding_loss_J": 0.0007
+    },
+    {
+     "wheel_rpm": 1500,
+     "v_exit": 3.4503,
+     "spin_rpm": 983.5,
+     "S": 1.0597,
+     "rpm_drop": 155.2,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 39.73,
+     "sliding_loss_J": 0.2528,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 2000,
+     "v_exit": 4.6396,
+     "spin_rpm": 1322.5,
+     "S": 1.0597,
+     "rpm_drop": 191.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 31.47,
+     "sliding_loss_J": 0.4671,
+     "top_sliding_loss_J": 0.0015
+    },
+    {
+     "wheel_rpm": 2500,
+     "v_exit": 5.8201,
+     "spin_rpm": 1659.0,
+     "S": 1.0597,
+     "rpm_drop": 231.5,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 27.06,
+     "sliding_loss_J": 0.7473,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 3000,
+     "v_exit": 6.9961,
+     "spin_rpm": 1994.3,
+     "S": 1.0597,
+     "rpm_drop": 273.1,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 24.62,
+     "sliding_loss_J": 1.0938,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 3500,
+     "v_exit": 8.169,
+     "spin_rpm": 2328.6,
+     "S": 1.0597,
+     "rpm_drop": 316.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 23.44,
+     "sliding_loss_J": 1.5071,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 4000,
+     "v_exit": 8.9144,
+     "spin_rpm": 2541.1,
+     "S": 1.0597,
+     "rpm_drop": 343.8,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.932,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 23.22,
+     "sliding_loss_J": 1.9842,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 4500,
+     "v_exit": 8.9144,
+     "spin_rpm": 2541.1,
+     "S": 1.0597,
+     "rpm_drop": 343.8,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 3.498,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 23.22,
+     "sliding_loss_J": 2.4754,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 5000,
+     "v_exit": 8.9144,
+     "spin_rpm": 2541.1,
+     "S": 1.0597,
+     "rpm_drop": 343.8,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 6.063,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 23.22,
+     "sliding_loss_J": 2.9665,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 5500,
+     "v_exit": 8.9144,
+     "spin_rpm": 2541.1,
+     "S": 1.0597,
+     "rpm_drop": 343.8,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 8.629,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 23.22,
+     "sliding_loss_J": 3.4577,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 6000,
+     "v_exit": 8.9144,
+     "spin_rpm": 2541.1,
+     "S": 1.0597,
+     "rpm_drop": 343.8,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 11.195,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 23.22,
+     "sliding_loss_J": 3.9488,
+     "top_sliding_loss_J": 0.0019
+    }
+   ]
+  },
+  "hood_slick_short": {
+   "note": "PTFE hood, 45 deg wrap",
+   "points": [
+    {
+     "wheel_rpm": 1000,
+     "v_exit": 2.3013,
+     "spin_rpm": 656.0,
+     "S": 1.0597,
+     "rpm_drop": 103.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 29.31,
+     "sliding_loss_J": 0.1041,
+     "top_sliding_loss_J": 0.0007
+    },
+    {
+     "wheel_rpm": 1500,
+     "v_exit": 3.49,
+     "spin_rpm": 994.8,
+     "S": 1.0597,
+     "rpm_drop": 139.7,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 21.06,
+     "sliding_loss_J": 0.2528,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 2000,
+     "v_exit": 4.668,
+     "spin_rpm": 1330.6,
+     "S": 1.0597,
+     "rpm_drop": 180.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 17.55,
+     "sliding_loss_J": 0.4671,
+     "top_sliding_loss_J": 0.0015
+    },
+    {
+     "wheel_rpm": 2500,
+     "v_exit": 5.8416,
+     "spin_rpm": 1665.2,
+     "S": 1.0597,
+     "rpm_drop": 223.1,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.95,
+     "sliding_loss_J": 0.7473,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 3000,
+     "v_exit": 7.0128,
+     "spin_rpm": 1999.0,
+     "S": 1.0597,
+     "rpm_drop": 266.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.37,
+     "sliding_loss_J": 1.0938,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 3500,
+     "v_exit": 7.3416,
+     "spin_rpm": 2092.8,
+     "S": 1.0597,
+     "rpm_drop": 279.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 1.845,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.34,
+     "sliding_loss_J": 1.4897,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 4000,
+     "v_exit": 7.3416,
+     "spin_rpm": 2092.8,
+     "S": 1.0597,
+     "rpm_drop": 279.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 4.41,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.34,
+     "sliding_loss_J": 1.8883,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 4500,
+     "v_exit": 7.3416,
+     "spin_rpm": 2092.8,
+     "S": 1.0597,
+     "rpm_drop": 279.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 6.976,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.34,
+     "sliding_loss_J": 2.2868,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 5000,
+     "v_exit": 7.3416,
+     "spin_rpm": 2092.8,
+     "S": 1.0597,
+     "rpm_drop": 279.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 9.542,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.34,
+     "sliding_loss_J": 2.6854,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 5500,
+     "v_exit": 7.3416,
+     "spin_rpm": 2092.8,
+     "S": 1.0597,
+     "rpm_drop": 279.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 12.107,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.34,
+     "sliding_loss_J": 3.084,
+     "top_sliding_loss_J": 0.0019
+    },
+    {
+     "wheel_rpm": 6000,
+     "v_exit": 7.3416,
+     "spin_rpm": 2092.8,
+     "S": 1.0597,
+     "rpm_drop": 279.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 14.673,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.34,
+     "sliding_loss_J": 3.4825,
+     "top_sliding_loss_J": 0.0019
+    }
+   ]
+  },
+  "hood_soft_ball": {
+   "note": "low stiffness bound k_n 1.5 N/mm (N(4mm)=6 N)",
+   "points": [
+    {
+     "wheel_rpm": 1000,
+     "v_exit": 2.3181,
+     "spin_rpm": 660.8,
+     "S": 1.0597,
+     "rpm_drop": 96.5,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 59.56,
+     "sliding_loss_J": 0.1041,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 1500,
+     "v_exit": 3.5018,
+     "spin_rpm": 998.2,
+     "S": 1.0597,
+     "rpm_drop": 135.1,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 44.07,
+     "sliding_loss_J": 0.2532,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 2000,
+     "v_exit": 4.677,
+     "spin_rpm": 1333.2,
+     "S": 1.0597,
+     "rpm_drop": 177.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 38.38,
+     "sliding_loss_J": 0.4684,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 2500,
+     "v_exit": 5.4547,
+     "spin_rpm": 1554.9,
+     "S": 1.0597,
+     "rpm_drop": 205.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.862,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 37.38,
+     "sliding_loss_J": 0.7473,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 3000,
+     "v_exit": 5.4547,
+     "spin_rpm": 1554.9,
+     "S": 1.0597,
+     "rpm_drop": 205.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 3.428,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 37.38,
+     "sliding_loss_J": 1.0415,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 3500,
+     "v_exit": 5.4547,
+     "spin_rpm": 1554.9,
+     "S": 1.0597,
+     "rpm_drop": 205.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 5.993,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 37.38,
+     "sliding_loss_J": 1.3356,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 4000,
+     "v_exit": 5.4547,
+     "spin_rpm": 1554.9,
+     "S": 1.0597,
+     "rpm_drop": 205.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 8.559,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 37.38,
+     "sliding_loss_J": 1.6298,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 4500,
+     "v_exit": 5.4547,
+     "spin_rpm": 1554.9,
+     "S": 1.0597,
+     "rpm_drop": 205.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 11.125,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 37.38,
+     "sliding_loss_J": 1.924,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 5000,
+     "v_exit": 5.4547,
+     "spin_rpm": 1554.9,
+     "S": 1.0597,
+     "rpm_drop": 205.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 13.69,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 37.38,
+     "sliding_loss_J": 2.2181,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 5500,
+     "v_exit": 5.4547,
+     "spin_rpm": 1554.9,
+     "S": 1.0597,
+     "rpm_drop": 205.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 16.256,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 37.38,
+     "sliding_loss_J": 2.5123,
+     "top_sliding_loss_J": 0.0009
+    },
+    {
+     "wheel_rpm": 6000,
+     "v_exit": 5.4547,
+     "spin_rpm": 1554.9,
+     "S": 1.0597,
+     "rpm_drop": 205.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 18.822,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 37.38,
+     "sliding_loss_J": 2.8064,
+     "top_sliding_loss_J": 0.0009
+    }
+   ]
+  },
+  "hood_stiff_ball_8mm": {
+   "note": "high stiffness 10 N/mm and 8 mm squeeze (N=80 N)",
+   "points": [
+    {
+     "wheel_rpm": 1000,
+     "v_exit": 1.6735,
+     "spin_rpm": 507.3,
+     "S": 1.127,
+     "rpm_drop": 347.7,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 63.17,
+     "sliding_loss_J": 0.1106,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 1500,
+     "v_exit": 3.1026,
+     "spin_rpm": 940.6,
+     "S": 1.127,
+     "rpm_drop": 290.7,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 38.77,
+     "sliding_loss_J": 0.2674,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 2000,
+     "v_exit": 4.3769,
+     "spin_rpm": 1326.9,
+     "S": 1.127,
+     "rpm_drop": 294.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 28.69,
+     "sliding_loss_J": 0.4929,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 2500,
+     "v_exit": 5.6029,
+     "spin_rpm": 1698.5,
+     "S": 1.127,
+     "rpm_drop": 316.2,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 23.08,
+     "sliding_loss_J": 0.7872,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 3000,
+     "v_exit": 6.8068,
+     "spin_rpm": 2063.5,
+     "S": 1.127,
+     "rpm_drop": 346.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 19.51,
+     "sliding_loss_J": 1.1502,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 3500,
+     "v_exit": 7.9985,
+     "spin_rpm": 2424.8,
+     "S": 1.127,
+     "rpm_drop": 382.4,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 17.06,
+     "sliding_loss_J": 1.582,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 4000,
+     "v_exit": 9.1827,
+     "spin_rpm": 2783.8,
+     "S": 1.127,
+     "rpm_drop": 420.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.3,
+     "sliding_loss_J": 2.0828,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 4500,
+     "v_exit": 10.362,
+     "spin_rpm": 3141.3,
+     "S": 1.127,
+     "rpm_drop": 461.2,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 14.0,
+     "sliding_loss_J": 2.6525,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 5000,
+     "v_exit": 11.5377,
+     "spin_rpm": 3497.7,
+     "S": 1.127,
+     "rpm_drop": 503.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 13.02,
+     "sliding_loss_J": 3.2913,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 5500,
+     "v_exit": 12.7108,
+     "spin_rpm": 3853.3,
+     "S": 1.127,
+     "rpm_drop": 545.7,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 12.27,
+     "sliding_loss_J": 3.9994,
+     "top_sliding_loss_J": 0.0011
+    },
+    {
+     "wheel_rpm": 6000,
+     "v_exit": 13.8821,
+     "spin_rpm": 4208.4,
+     "S": 1.127,
+     "rpm_drop": 589.2,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 11.69,
+     "sliding_loss_J": 4.7769,
+     "top_sliding_loss_J": 0.0011
+    }
+   ]
+  },
+  "roller_light_rest": {
+   "note": "light 48 mm roller (2e-6) from rest, mu_top 0.8",
+   "points": [
+    {
+     "wheel_rpm": 1000,
+     "v_exit": 2.5151,
+     "spin_rpm": 616.8,
+     "S": 0.9117,
+     "rpm_drop": 88.2,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 19.4,
+     "sliding_loss_J": 0.1037,
+     "top_sliding_loss_J": 0.0003,
+     "roller_exit_rpm": 139.8
+    },
+    {
+     "wheel_rpm": 1500,
+     "v_exit": 3.5024,
+     "spin_rpm": 1006.1,
+     "S": 1.0679,
+     "rpm_drop": 129.6,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 16.96,
+     "sliding_loss_J": 0.2514,
+     "top_sliding_loss_J": 0.0003,
+     "roller_exit_rpm": -10.8
+    },
+    {
+     "wheel_rpm": 2000,
+     "v_exit": 4.5088,
+     "spin_rpm": 1388.2,
+     "S": 1.1446,
+     "rpm_drop": 172.2,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.06,
+     "sliding_loss_J": 0.4638,
+     "top_sliding_loss_J": 0.0003,
+     "roller_exit_rpm": -143.8
+    },
+    {
+     "wheel_rpm": 2500,
+     "v_exit": 4.9449,
+     "spin_rpm": 1550.2,
+     "S": 1.1655,
+     "rpm_drop": 190.7,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 1.467,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.94,
+     "sliding_loss_J": 0.7303,
+     "top_sliding_loss_J": 0.0003,
+     "roller_exit_rpm": -196.4
+    },
+    {
+     "wheel_rpm": 3000,
+     "v_exit": 4.9449,
+     "spin_rpm": 1550.2,
+     "S": 1.1655,
+     "rpm_drop": 190.7,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 4.032,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.94,
+     "sliding_loss_J": 1.0027,
+     "top_sliding_loss_J": 0.0003,
+     "roller_exit_rpm": -196.4
+    },
+    {
+     "wheel_rpm": 3500,
+     "v_exit": 4.9449,
+     "spin_rpm": 1550.2,
+     "S": 1.1655,
+     "rpm_drop": 190.7,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 6.598,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.94,
+     "sliding_loss_J": 1.275,
+     "top_sliding_loss_J": 0.0003,
+     "roller_exit_rpm": -196.4
+    },
+    {
+     "wheel_rpm": 4000,
+     "v_exit": 4.9449,
+     "spin_rpm": 1550.2,
+     "S": 1.1655,
+     "rpm_drop": 190.7,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 9.163,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.94,
+     "sliding_loss_J": 1.5474,
+     "top_sliding_loss_J": 0.0003,
+     "roller_exit_rpm": -196.4
+    },
+    {
+     "wheel_rpm": 4500,
+     "v_exit": 4.9449,
+     "spin_rpm": 1550.2,
+     "S": 1.1655,
+     "rpm_drop": 190.7,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 11.729,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.94,
+     "sliding_loss_J": 1.8198,
+     "top_sliding_loss_J": 0.0003,
+     "roller_exit_rpm": -196.4
+    },
+    {
+     "wheel_rpm": 5000,
+     "v_exit": 4.9449,
+     "spin_rpm": 1550.2,
+     "S": 1.1655,
+     "rpm_drop": 190.7,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 14.295,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.94,
+     "sliding_loss_J": 2.0922,
+     "top_sliding_loss_J": 0.0003,
+     "roller_exit_rpm": -196.4
+    },
+    {
+     "wheel_rpm": 5500,
+     "v_exit": 4.9449,
+     "spin_rpm": 1550.2,
+     "S": 1.1655,
+     "rpm_drop": 190.7,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 16.86,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.94,
+     "sliding_loss_J": 2.3646,
+     "top_sliding_loss_J": 0.0003,
+     "roller_exit_rpm": -196.4
+    },
+    {
+     "wheel_rpm": 6000,
+     "v_exit": 4.9449,
+     "spin_rpm": 1550.2,
+     "S": 1.1655,
+     "rpm_drop": 190.7,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 19.426,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 15.94,
+     "sliding_loss_J": 2.6369,
+     "top_sliding_loss_J": 0.0003,
+     "roller_exit_rpm": -196.4
+    }
+   ]
+  },
+  "roller_nominal_rest": {
+   "note": "48 mm roller I=1e-5 from rest, mu_top 0.8",
+   "points": [
+    {
+     "wheel_rpm": 1000,
+     "v_exit": 2.4387,
+     "spin_rpm": 638.7,
+     "S": 0.9737,
+     "rpm_drop": 88.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 19.78,
+     "sliding_loss_J": 0.1042,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": 78.7
+    },
+    {
+     "wheel_rpm": 1500,
+     "v_exit": 3.5164,
+     "spin_rpm": 1001.7,
+     "S": 1.059,
+     "rpm_drop": 129.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 17.1,
+     "sliding_loss_J": 0.2527,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": 0.9
+    },
+    {
+     "wheel_rpm": 2000,
+     "v_exit": 4.6047,
+     "spin_rpm": 1359.8,
+     "S": 1.0978,
+     "rpm_drop": 173.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 16.18,
+     "sliding_loss_J": 0.4662,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -65.9
+    },
+    {
+     "wheel_rpm": 2500,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 1.569,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 0.7325,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9
+    },
+    {
+     "wheel_rpm": 3000,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 4.135,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 1.0038,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9
+    },
+    {
+     "wheel_rpm": 3500,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 6.701,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 1.275,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9
+    },
+    {
+     "wheel_rpm": 4000,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 9.266,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 1.5462,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9
+    },
+    {
+     "wheel_rpm": 4500,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 11.832,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 1.8175,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9
+    },
+    {
+     "wheel_rpm": 5000,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 14.398,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 2.0887,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9
+    },
+    {
+     "wheel_rpm": 5500,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 16.963,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 2.36,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9
+    },
+    {
+     "wheel_rpm": 6000,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 19.529,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 2.6312,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9
+    }
+   ]
+  },
+  "roller_heavy_rest": {
+   "note": "48 mm roller + flywheel I=2e-4 from rest",
+   "points": [
+    {
+     "wheel_rpm": 1000,
+     "v_exit": 2.3489,
+     "spin_rpm": 664.9,
+     "S": 1.0523,
+     "rpm_drop": 87.7,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 20.2,
+     "sliding_loss_J": 0.1041,
+     "top_sliding_loss_J": 0.0011,
+     "roller_exit_rpm": 6.5
+    },
+    {
+     "wheel_rpm": 1500,
+     "v_exit": 3.5154,
+     "spin_rpm": 1002.0,
+     "S": 1.0596,
+     "rpm_drop": 129.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 17.25,
+     "sliding_loss_J": 0.2527,
+     "top_sliding_loss_J": 0.0011,
+     "roller_exit_rpm": 0.1
+    },
+    {
+     "wheel_rpm": 2000,
+     "v_exit": 4.68,
+     "spin_rpm": 1337.7,
+     "S": 1.0626,
+     "rpm_drop": 173.4,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.28,
+     "sliding_loss_J": 0.4668,
+     "top_sliding_loss_J": 0.0011,
+     "roller_exit_rpm": -5.1
+    },
+    {
+     "wheel_rpm": 2500,
+     "v_exit": 5.1047,
+     "spin_rpm": 1460.0,
+     "S": 1.0633,
+     "rpm_drop": 189.4,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 1.629,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.18,
+     "sliding_loss_J": 0.7331,
+     "top_sliding_loss_J": 0.0011,
+     "roller_exit_rpm": -6.9
+    },
+    {
+     "wheel_rpm": 3000,
+     "v_exit": 5.1047,
+     "spin_rpm": 1460.0,
+     "S": 1.0633,
+     "rpm_drop": 189.4,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 4.195,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.18,
+     "sliding_loss_J": 1.0037,
+     "top_sliding_loss_J": 0.0011,
+     "roller_exit_rpm": -6.9
+    },
+    {
+     "wheel_rpm": 3500,
+     "v_exit": 5.1047,
+     "spin_rpm": 1460.0,
+     "S": 1.0633,
+     "rpm_drop": 189.4,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 6.761,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.18,
+     "sliding_loss_J": 1.2744,
+     "top_sliding_loss_J": 0.0011,
+     "roller_exit_rpm": -6.9
+    },
+    {
+     "wheel_rpm": 4000,
+     "v_exit": 5.1047,
+     "spin_rpm": 1460.0,
+     "S": 1.0633,
+     "rpm_drop": 189.4,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 9.326,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.18,
+     "sliding_loss_J": 1.545,
+     "top_sliding_loss_J": 0.0011,
+     "roller_exit_rpm": -6.9
+    },
+    {
+     "wheel_rpm": 4500,
+     "v_exit": 5.1047,
+     "spin_rpm": 1460.0,
+     "S": 1.0633,
+     "rpm_drop": 189.4,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 11.892,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.18,
+     "sliding_loss_J": 1.8157,
+     "top_sliding_loss_J": 0.0011,
+     "roller_exit_rpm": -6.9
+    },
+    {
+     "wheel_rpm": 5000,
+     "v_exit": 5.1047,
+     "spin_rpm": 1460.0,
+     "S": 1.0633,
+     "rpm_drop": 189.4,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 14.458,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.18,
+     "sliding_loss_J": 2.0863,
+     "top_sliding_loss_J": 0.0011,
+     "roller_exit_rpm": -6.9
+    },
+    {
+     "wheel_rpm": 5500,
+     "v_exit": 5.1047,
+     "spin_rpm": 1460.0,
+     "S": 1.0633,
+     "rpm_drop": 189.4,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 17.023,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.18,
+     "sliding_loss_J": 2.3569,
+     "top_sliding_loss_J": 0.0011,
+     "roller_exit_rpm": -6.9
+    },
+    {
+     "wheel_rpm": 6000,
+     "v_exit": 5.1047,
+     "spin_rpm": 1460.0,
+     "S": 1.0633,
+     "rpm_drop": 189.4,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 19.589,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.18,
+     "sliding_loss_J": 2.6276,
+     "top_sliding_loss_J": 0.0011,
+     "roller_exit_rpm": -6.9
+    }
+   ]
+  },
+  "roller_nominal_steady": {
+   "note": "I=1e-5, 4th shot of a 0.5 s-interval burst (roller pre-spun by previous shots)",
+   "points": [
+    {
+     "wheel_rpm": 1000,
+     "v_exit": 2.4387,
+     "spin_rpm": 638.7,
+     "S": 0.9737,
+     "rpm_drop": 88.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 19.78,
+     "sliding_loss_J": 0.1042,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": 78.7,
+     "S_by_shot": [
+      0.974,
+      0.974,
+      0.974,
+      0.974
+     ],
+     "v_by_shot": [
+      2.439,
+      2.439,
+      2.439,
+      2.439
+     ]
+    },
+    {
+     "wheel_rpm": 1500,
+     "v_exit": 3.5164,
+     "spin_rpm": 1001.7,
+     "S": 1.059,
+     "rpm_drop": 129.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 0.0,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 17.1,
+     "sliding_loss_J": 0.2527,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": 0.9,
+     "S_by_shot": [
+      1.059,
+      1.059,
+      1.059,
+      1.059
+     ],
+     "v_by_shot": [
+      3.516,
+      3.516,
+      3.516,
+      3.516
+     ]
+    },
+    {
+     "wheel_rpm": 2000,
+     "v_exit": 4.6047,
+     "spin_rpm": 1359.8,
+     "S": 1.0978,
+     "rpm_drop": 173.0,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": -0.0,
+     "slip_top_exit": 0.0,
+     "contact_time_ms": 16.18,
+     "sliding_loss_J": 0.4662,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -65.9,
+     "S_by_shot": [
+      1.098,
+      1.098,
+      1.098,
+      1.098
+     ],
+     "v_by_shot": [
+      4.605,
+      4.605,
+      4.605,
+      4.605
+     ]
+    },
+    {
+     "wheel_rpm": 2500,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 1.569,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 0.7325,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9,
+     "S_by_shot": [
+      1.107,
+      1.107,
+      1.107,
+      1.107
+     ],
+     "v_by_shot": [
+      5.029,
+      5.029,
+      5.029,
+      5.029
+     ]
+    },
+    {
+     "wheel_rpm": 3000,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 4.135,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 1.0038,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9,
+     "S_by_shot": [
+      1.107,
+      1.107,
+      1.107,
+      1.107
+     ],
+     "v_by_shot": [
+      5.029,
+      5.029,
+      5.029,
+      5.029
+     ]
+    },
+    {
+     "wheel_rpm": 3500,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 6.701,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 1.275,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9,
+     "S_by_shot": [
+      1.107,
+      1.107,
+      1.107,
+      1.107
+     ],
+     "v_by_shot": [
+      5.029,
+      5.029,
+      5.029,
+      5.029
+     ]
+    },
+    {
+     "wheel_rpm": 4000,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 9.266,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 1.5462,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9,
+     "S_by_shot": [
+      1.107,
+      1.107,
+      1.107,
+      1.107
+     ],
+     "v_by_shot": [
+      5.029,
+      5.029,
+      5.029,
+      5.029
+     ]
+    },
+    {
+     "wheel_rpm": 4500,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 11.832,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 1.8175,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9,
+     "S_by_shot": [
+      1.107,
+      1.107,
+      1.107,
+      1.107
+     ],
+     "v_by_shot": [
+      5.029,
+      5.029,
+      5.029,
+      5.029
+     ]
+    },
+    {
+     "wheel_rpm": 5000,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 14.398,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 2.0887,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9,
+     "S_by_shot": [
+      1.107,
+      1.107,
+      1.107,
+      1.107
+     ],
+     "v_by_shot": [
+      5.029,
+      5.029,
+      5.029,
+      5.029
+     ]
+    },
+    {
+     "wheel_rpm": 5500,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 16.963,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 2.36,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9,
+     "S_by_shot": [
+      1.107,
+      1.107,
+      1.107,
+      1.107
+     ],
+     "v_by_shot": [
+      5.029,
+      5.029,
+      5.029,
+      5.029
+     ]
+    },
+    {
+     "wheel_rpm": 6000,
+     "v_exit": 5.0293,
+     "spin_rpm": 1498.0,
+     "S": 1.1073,
+     "rpm_drop": 189.9,
+     "exited": true,
+     "lost_wheel_contact": false,
+     "slip_wheel_exit": 19.529,
+     "slip_top_exit": -0.0,
+     "contact_time_ms": 16.07,
+     "sliding_loss_J": 2.6312,
+     "top_sliding_loss_J": 0.0007,
+     "roller_exit_rpm": -89.9,
+     "S_by_shot": [
+      1.107,
+      1.107,
+      1.107,
+      1.107
+     ],
+     "v_by_shot": [
+      5.029,
+      5.029,
+      5.029,
+      5.029
+     ]
+    }
+   ]
+  }
+ },
+ "recovery_hood_nominal": {
+  "note": "derived: time for a goBILDA 5203 1:1 (6000 rpm, 0.144 N m @12 V, confirmed) at full voltage to restore the hood_nominal rpm_drop, I_w 2.65e-4, no current limit, no controller lag; inf = setpoint above the loaded free speed",
+  "points": [
+   {
+    "wheel_rpm": 1000,
+    "voltage_frac": 1.0,
+    "recovery_s": 0.029
+   },
+   {
+    "wheel_rpm": 1000,
+    "voltage_frac": 0.958,
+    "recovery_s": 0.031
+   },
+   {
+    "wheel_rpm": 1500,
+    "voltage_frac": 1.0,
+    "recovery_s": 0.039
+   },
+   {
+    "wheel_rpm": 1500,
+    "voltage_frac": 0.958,
+    "recovery_s": 0.041
+   },
+   {
+    "wheel_rpm": 2000,
+    "voltage_frac": 1.0,
+    "recovery_s": 0.054
+   },
+   {
+    "wheel_rpm": 2000,
+    "voltage_frac": 0.958,
+    "recovery_s": 0.058
+   },
+   {
+    "wheel_rpm": 2500,
+    "voltage_frac": 1.0,
+    "recovery_s": 0.074
+   },
+   {
+    "wheel_rpm": 2500,
+    "voltage_frac": 0.958,
+    "recovery_s": 0.08
+   },
+   {
+    "wheel_rpm": 3000,
+    "voltage_frac": 1.0,
+    "recovery_s": 0.101
+   },
+   {
+    "wheel_rpm": 3000,
+    "voltage_frac": 0.958,
+    "recovery_s": 0.109
+   },
+   {
+    "wheel_rpm": 3500,
+    "voltage_frac": 1.0,
+    "recovery_s": 0.138
+   },
+   {
+    "wheel_rpm": 3500,
+    "voltage_frac": 0.958,
+    "recovery_s": 0.152
+   },
+   {
+    "wheel_rpm": 4000,
+    "voltage_frac": 1.0,
+    "recovery_s": 0.183
+   },
+   {
+    "wheel_rpm": 4000,
+    "voltage_frac": 0.958,
+    "recovery_s": 0.207
+   },
+   {
+    "wheel_rpm": 4500,
+    "voltage_frac": 1.0,
+    "recovery_s": 0.238
+   },
+   {
+    "wheel_rpm": 4500,
+    "voltage_frac": 0.958,
+    "recovery_s": 0.281
+   },
+   {
+    "wheel_rpm": 5000,
+    "voltage_frac": 1.0,
+    "recovery_s": 0.342
+   },
+   {
+    "wheel_rpm": 5000,
+    "voltage_frac": 0.958,
+    "recovery_s": 0.436
+   },
+   {
+    "wheel_rpm": 5500,
+    "voltage_frac": 1.0,
+    "recovery_s": 0.605
+   },
+   {
+    "wheel_rpm": 5500,
+    "voltage_frac": 0.958,
+    "recovery_s": 1.0
+   },
+   {
+    "wheel_rpm": 6000,
+    "voltage_frac": 1.0,
+    "recovery_s": null
+   },
+   {
+    "wheel_rpm": 6000,
+    "voltage_frac": 0.958,
+    "recovery_s": null
+   }
+  ]
+ },
+ "motor_assist_bounds": {
+  "note": "hood_nominal; Brettle assumes coast; real velocity control lies between",
+  "points": [
+   {
+    "wheel_rpm": 2000,
+    "v_coast": 4.64,
+    "v_full_voltage": 4.896,
+    "drop_coast": 191.6,
+    "drop_full_voltage": 91.6
+   },
+   {
+    "wheel_rpm": 3000,
+    "v_coast": 6.996,
+    "v_full_voltage": 7.153,
+    "drop_coast": 273.1,
+    "drop_full_voltage": 212.0
+   },
+   {
+    "wheel_rpm": 4000,
+    "v_coast": 8.909,
+    "v_full_voltage": 8.909,
+    "drop_coast": 343.6,
+    "drop_full_voltage": 299.7
+   }
+  ]
+ },
+ "reachable_S_summary": {
+  "wheel_rpm": 3000.0,
+  "hood": {
+   "S_min": 1.029,
+   "S_max": 1.274,
+   "v_min": 3.178,
+   "v_max": 7.054,
+   "n_cases": 405,
+   "box": "kI 0.55-0.667, mu_hood 0.05-1.0, wrap 45-150 deg, delta 2-8 mm, k_n 1.5-10 N/mm, mu_w 0.8, c_rr 0.02, v_in 0.5"
+  },
+  "roller": {
+   "S_min": 1.06,
+   "S_max": 1.242,
+   "v_min": 4.856,
+   "v_max": 7.087,
+   "n_cases": 216,
+   "box": "passive: I_t 1e-6..2e-4, R_t 12.5-50 mm, bearing 0..3e-3 N m, delta 4/8 mm, mu_top 0.8, k_n 4 N/mm; shots 1-3 of a 0.5 s burst (rest, then pre-spun)"
+  },
+  "roller_hypothetical_forward_prespin": {
+   "note": "NOT achievable by a passive roller in this model (the ball drags it backward); shows that S<1 needs the top surface moving forward",
+   "points": [
+    {
+     "omega0_rad_s": 100.0,
+     "S": 0.627,
+     "v_exit": 5.365
+    },
+    {
+     "omega0_rad_s": 200.0,
+     "S": 0.262,
+     "v_exit": 5.93
+    },
+    {
+     "omega0_rad_s": 400.0,
+     "S": 0.0,
+     "v_exit": 6.781
+    }
+   ]
+  },
+  "roller_fast_feed": {
+   "note": "light roller, ball fed with forward speed v_in and zero spin",
+   "points": [
+    {
+     "v_in": 0.5,
+     "S": 1.166,
+     "v_exit": 4.947,
+     "roller_exit_rad_s": -20.6
+    },
+    {
+     "v_in": 2.0,
+     "S": 0.921,
+     "v_exit": 5.214,
+     "roller_exit_rad_s": 28.4
+    },
+    {
+     "v_in": 4.0,
+     "S": 0.674,
+     "v_exit": 6.008,
+     "roller_exit_rad_s": 91.2
+    }
+   ]
+  },
+  "hood_fast_feed_short_slick": {
+   "note": "S<1 from a fixed hood needs the ball to ENTER already moving (pre-accelerated, no spin) and leave before hood friction rolls it up (short wrap, low mu); not a recommended design, shows the limit",
+   "points": [
+    {
+     "wrap_deg": 20.0,
+     "mu_hood": 0.05,
+     "v_in": 3.0,
+     "S": 0.777,
+     "v_exit": 5.536
+    },
+    {
+     "wrap_deg": 20.0,
+     "mu_hood": 0.05,
+     "v_in": 5.0,
+     "S": 0.417,
+     "v_exit": 6.523
+    },
+    {
+     "wrap_deg": 20.0,
+     "mu_hood": 0.1,
+     "v_in": 3.0,
+     "S": 0.897,
+     "v_exit": 5.362
+    },
+    {
+     "wrap_deg": 20.0,
+     "mu_hood": 0.1,
+     "v_in": 5.0,
+     "S": 0.489,
+     "v_exit": 6.357
+    },
+    {
+     "wrap_deg": 45.0,
+     "mu_hood": 0.05,
+     "v_in": 3.0,
+     "S": 1.009,
+     "v_exit": 7.076
+    },
+    {
+     "wrap_deg": 45.0,
+     "mu_hood": 0.05,
+     "v_in": 5.0,
+     "S": 0.643,
+     "v_exit": 7.632
+    },
+    {
+     "wrap_deg": 45.0,
+     "mu_hood": 0.1,
+     "v_in": 3.0,
+     "S": 1.06,
+     "v_exit": 7.133
+    },
+    {
+     "wrap_deg": 45.0,
+     "mu_hood": 0.1,
+     "v_in": 5.0,
+     "S": 0.796,
+     "v_exit": 7.348
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POLLEN Measure</title>
+<meta name="description" content="Track a slow-motion side video of a POLLEN shot by hand and fit drag (Cd) and spin lift (Cl) with the no-spin twin test. Runs in the browser; files never leave the page.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script>window.addEventListener("error", function (e) { document.documentElement.setAttribute("data-js-error", String(e.message || e)); });</script>
+<style>
+  /* same theme tokens as viz/explorer/page.html (the explorer is dark only) */
+  :root {
+    color-scheme: dark;
+    --bg: #0b1015; --panel: #111921; --panel-2: #16212b; --line: #24323f; --fg: #e3eaf0; --muted: #8d9caa;
+    --pollen: #f4c430; --clean: #38d39f; --hit: #ff6b5a; --twin: #a9b4bf; --cal: #5fb3ff; --level: #c792ea;
+    --display: "Barlow Condensed", "Arial Narrow", sans-serif; --sans: "IBM Plex Sans", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 14px/1.45 var(--sans); }
+  body { overflow-x: hidden; }
+  a { color: var(--cal); }
+  code { font-family: var(--mono); font-size: 12.5px; background: var(--panel-2); padding: 1px 5px; border-radius: 4px; word-break: break-all; }
+  header { padding: 16px 20px 10px; border-bottom: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: baseline; }
+  h1 { font: 700 26px/1.1 var(--display); letter-spacing: .02em; margin: 0; text-transform: uppercase; }
+  h1 span { color: var(--pollen); }
+  header a.back { font: 600 14px/1.2 var(--sans); color: var(--pollen); }
+  header p { margin: 0; color: var(--muted); max-width: 72ch; }
+  h2 { font: 600 17px/1.2 var(--display); letter-spacing: .04em; text-transform: uppercase; margin: 0 0 8px; color: var(--fg); }
+  h3 { font: 600 16px/1.25 var(--display); letter-spacing: .03em; margin: 0 0 8px; display: flex; align-items: center; gap: 8px; }
+  .wrap { padding: 14px 20px 40px; max-width: 1480px; margin: 0 auto; }
+  .top { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 16px; align-items: start; }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .side { display: grid; gap: 12px; }
+  .stage { position: relative; }
+  #cv { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 8px; background: #05080b; cursor: crosshair; touch-action: manipulation; }
+  #loupe { position: absolute; top: 8px; right: 8px; width: 150px; height: 150px; border: 1px solid var(--line); border-radius: 8px; pointer-events: none; display: none; }
+  #hud { font: 12.5px/1.4 var(--mono); color: var(--muted); margin: 8px 0 6px; min-height: 18px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .bar + .bar { margin-top: 8px; }
+  #fslider { flex: 1 1 90px; min-width: 60px; accent-color: var(--pollen); }
+  button, select, input, textarea { font: inherit; color: var(--fg); }
+  button { background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px; padding: 6px 11px; cursor: pointer; min-height: 32px; }
+  button:hover:not(:disabled) { border-color: var(--muted); }
+  button:disabled { opacity: .45; cursor: default; }
+  button.primary { background: var(--pollen); color: #111; border-color: var(--pollen); font-weight: 600; }
+  button.primary:disabled { background: var(--panel-2); color: var(--fg); border-color: var(--line); }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; border-radius: 0; background: transparent; }
+  .seg button + button { border-left: 1px solid var(--line); }
+  .seg button[aria-pressed="true"] { background: var(--panel-2); box-shadow: inset 0 -2px 0 var(--pollen); }
+  input[type=number], input[type=text], select { background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 5px 7px; min-height: 32px; width: 100%; }
+  label.f { display: grid; gap: 3px; font-size: 12.5px; color: var(--muted); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .o { font: 12px/1.4 var(--mono); color: var(--muted); margin-top: 6px; }
+  .chk { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; }
+  .file { display: block; width: 100%; font-size: 13px; color: var(--muted); }
+  .file::file-selector-button { background: var(--panel-2); color: var(--fg); border: 1px solid var(--line); border-radius: 7px; padding: 6px 10px; margin-right: 8px; cursor: pointer; }
+  #status { font-size: 13px; color: var(--muted); margin-top: 8px; min-height: 20px; }
+  .keys { font-size: 12.5px; color: var(--muted); margin: 6px 0 0; }
+  kbd { font: 11.5px var(--mono); background: var(--panel-2); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
+  .low { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; margin-top: 16px; align-items: start; }
+  #chart { width: 100%; display: block; }
+  #chart .grid { stroke: var(--line); stroke-width: 1; }
+  #chart .ax { fill: var(--muted); font: 11px var(--mono); }
+  #chart .dl { fill: var(--fg); font: 12px var(--sans); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 50%; flex: none; }
+  .ln { display: inline-block; width: 22px; border-top: 2px solid; }
+  .ln.d { border-top-style: dashed; }
+  .rblock + .rblock { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .tbl { overflow-x: auto; }
+  table.res { border-collapse: collapse; width: 100%; font-size: 13px; }
+  table.res th { text-align: left; font-weight: 500; color: var(--muted); border-bottom: 1px solid var(--line); padding: 4px 8px 4px 0; white-space: nowrap; }
+  table.res td { padding: 5px 8px 5px 0; border-bottom: 1px solid #1a2631; font-variant-numeric: tabular-nums; }
+  table.res td:nth-child(n+2):nth-child(-n+4) { font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+  .lab { font: 11px var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+  .hint { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
+  .twin { font-size: 13px; margin: 10px 0 0; padding: 8px 10px; border-left: 3px solid var(--twin); background: var(--panel-2); border-radius: 0 6px 6px 0; }
+  .ok { color: var(--clean); font-size: 13px; margin: 8px 0 0; }
+  ul.flags { margin: 8px 0 0; padding-left: 18px; color: var(--hit); font-size: 13px; }
+  textarea#csv { width: 100%; min-height: 180px; background: #070b0f; border: 1px solid var(--line); border-radius: 8px; padding: 8px; font: 12px/1.4 var(--mono); resize: vertical; }
+  #tip { position: fixed; display: none; pointer-events: none; background: var(--panel-2); border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; font: 12px/1.4 var(--mono); z-index: 5; }
+  .note { font-size: 12.5px; color: var(--muted); margin: 14px 0 0; }
+  @media (max-width: 980px) {
+    .top, .low { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 560px) {
+    table.res th:nth-child(4), table.res td:nth-child(4) { display: none; }
+    header, .wrap { padding-left: 16px; padding-right: 16px; }
+    #loupe { width: 96px; height: 96px; }
+    .grid2 { grid-template-columns: 1fr; }
+    .hide-s { display: none; }
+  }
+</style>
+</head>
+<body>
+<div id="measure-app">
+<header>
+  <h1>POLLEN <span>Measure</span></h1>
+  <a class="back" href="../explorer/index.html" id="explorer-link">&larr; Shot explorer</a>
+  <p>Track a slow-motion side video by hand, then fit drag from a no-spin shot (A) and spin lift from a backspin shot with the same settings (B). Files stay in this page; nothing is uploaded. Protocol: <code>docs/MEASURE.md</code>.</p>
+</header>
+<div class="wrap">
+  <div class="top">
+    <section class="panel" aria-label="Video">
+      <div class="bar">
+        <div class="seg" id="shot-seg" role="group" aria-label="Shot">
+          <button data-v="A" aria-pressed="true">A · no spin</button><button data-v="B" aria-pressed="false">B · backspin</button>
+        </div>
+        <div class="seg" id="mode-seg" role="group" aria-label="Click mode">
+          <button data-v="track" aria-pressed="true">Track ball</button><button data-v="cal" aria-pressed="false">Scale</button><button data-v="level" aria-pressed="false">Level</button>
+        </div>
+        <button id="demo">Load demo</button>
+      </div>
+      <div class="stage" style="margin-top:10px">
+        <canvas id="cv" aria-label="Video frame: click the ball centre"></canvas>
+        <canvas id="loupe" aria-hidden="true"></canvas>
+      </div>
+      <div id="hud"></div>
+      <div class="bar">
+        <button id="prev10" title="Back 10 frames (Shift+Left)">«10</button>
+        <button id="prev" title="Back (Left)">‹</button>
+        <input id="fslider" type="range" min="0" max="0" value="0" aria-label="Frame">
+        <button id="next" title="Forward (Right)">›</button>
+        <button id="next10" title="Forward 10 frames (Shift+Right)">10»</button>
+      </div>
+      <div class="bar">
+        <label class="chk">Step <input id="stepn" type="number" min="1" value="1" style="width:64px"> frames</label>
+        <label class="chk"><input id="loupe-on" type="checkbox" checked> Loupe (<kbd>Z</kbd>)</label>
+        <button id="delpt">Delete point</button>
+        <button id="clear">Clear shot</button>
+      </div>
+      <p class="keys"><kbd>←</kbd> <kbd>→</kbd> step · <kbd>Shift</kbd> ×10 · <kbd>Backspace</kbd> delete this frame's point · a click moves on by the step. <span id="npts"></span></p>
+      <div id="status" role="status"></div>
+    </section>
+
+    <div class="side">
+      <section class="panel" aria-label="Source">
+        <h2>1 · Source for this shot</h2>
+        <input id="file" class="file" type="file" accept="video/*,image/*" multiple aria-label="Video or image sequence">
+        <div class="grid2" style="margin-top:8px">
+          <label class="f">Capture rate (fps)<input id="fps" type="number" min="1" step="any" value="240"></label>
+          <label class="f">File play rate (fps)<input id="ffps" type="number" min="1" step="any" value="240"></label>
+        </div>
+        <p class="o">Phone slow motion often saves 240 fps capture as a 30 fps file: then capture 240, file 30. Times use the capture rate.</p>
+      </section>
+      <section class="panel" aria-label="Scale">
+        <h2>2 · Scale and level</h2>
+        <label class="f">Known length (mm): a bar of 1 m or more<input id="calmm" type="number" min="1" step="any" value="1000"></label>
+        <div class="o" id="cal-o"></div>
+        <div class="o" id="level-o"></div>
+        <p class="o">Press Scale, click both ends. Put the bar in the flight plane: the scale is the largest error (1 % off moves Cd by about 4 % and Cl by about 19 %, derived). The ball (71 mm) is too short to scale from. Level is optional (two points on a level line).</p>
+      </section>
+      <section class="panel" aria-label="Ball, air and spin">
+        <h2>3 · Ball, air, spin</h2>
+        <div class="grid2">
+          <label class="f">Ball mass (g)<input id="mass" type="number" step="any" value="24.95"></label>
+          <label class="f">Ball diameter (mm)<input id="diam" type="number" step="any" value="71"></label>
+          <label class="f">Air density (kg/m³)<input id="rho" type="number" step="any" value="1.204"></label>
+          <label class="f">Spin decay k (1/s, ASSUMED)<input id="kdec" type="number" step="any" value="0.03"></label>
+        </div>
+        <label class="f" style="margin-top:8px">Wheel rpm (tachometer, this shot)<input id="wrpm" type="text" inputmode="decimal" placeholder="optional"></label>
+        <div class="o" id="wheel-o"></div>
+        <div id="spin-row" style="display:none">
+          <div class="grid2" style="margin-top:8px">
+            <label class="f">Ball rpm (from video)<input id="brpm" type="text" inputmode="decimal" placeholder="e.g. 2400"></label>
+            <label class="f">or frames per turn<input id="fpt" type="number" min="0" step="any" placeholder="mark on ball"></label>
+          </div>
+        </div>
+      </section>
+      <section class="panel" aria-label="Fit">
+        <h2>4 · Fit</h2>
+        <div class="grid2">
+          <label class="f" style="grid-column:1 / -1">Spin for shot B<select id="spinsrc">
+            <option value="rpm">Ball rpm from video (user)</option>
+            <option value="ideal" selected>S0 = 1.0 ideal hood (ASSUMED)</option>
+            <option value="fit">Fit S0 (usually not separable)</option>
+          </select></label>
+          <label class="f" style="grid-column:1 / -1">Lift model<select id="liftm">
+            <option value="single" selected>One Cl over this shot</option>
+            <option value="linear">Cl = c1·S</option>
+            <option value="capped">Cl = min(c1·S, Cl_max)</option>
+          </select></label>
+          <label class="f" style="grid-column:1 / -1">Length scale<select id="scalesrc">
+            <option value="clicked" selected>Clicked scale bar (its click error is carried)</option>
+            <option value="gravity">Gravity check from shot A (fits the scale)</option>
+          </select></label>
+          <label class="f">Bootstrap refits<input id="nboot" type="number" min="0" max="400" value="100"></label>
+        </div>
+        <div class="bar" style="margin-top:10px">
+          <button id="fitA" class="primary" disabled>Fit A: drag</button>
+          <button id="fitB" class="primary" disabled>Fit B: lift</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="low">
+    <section class="panel" aria-label="Results">
+      <h2>Results</h2>
+      <div id="results" class="tbl"></div>
+      <p class="note">Labels: <b>derived</b> = fitted to your video; <b>user</b> = typed in or measured by you; <b>ASSUMED</b> = a default you have not measured; the twin path is PREDICTED. One shot pair is one measurement, not a repeatability result: repeat it (docs/MEASURE.md).</p>
+    </section>
+    <section class="panel" aria-label="Path">
+      <h2>Tracked path (side view, metres)</h2>
+      <svg id="chart" role="img" aria-label="Tracked ball positions with fitted paths"></svg>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--twin)"></i>A no spin: points + fit</span>
+        <span><i class="sw" style="background:var(--pollen)"></i>B backspin: points + fit</span>
+        <span><i class="ln d" style="border-color:var(--twin)"></i>B's no-spin twin (PREDICTED)</span>
+      </div>
+      <h2 style="margin-top:16px">Track data (CSV)</h2>
+      <textarea id="csv" spellcheck="false" aria-label="Track CSV"></textarea>
+      <div class="bar" style="margin-top:8px">
+        <button id="copy">Copy</button>
+        <button id="import" title="Read points, scale and settings back from the text box">Load from text</button>
+        <span class="o" id="copy-o" style="margin:0"></span>
+      </div>
+      <p class="o">Fit offline with <code>python -B -m src.fit_aero track.csv --boot 200</code> (same equations).</p>
+    </section>
+  </div>
+</div>
+<div id="tip"></div>
+</div>
+<script src="../explorer/physics.js"></script>
+<script src="measure.js"></script>
+</body>
+</html>
