@@ -448,6 +448,9 @@ a, .kitlink a { color: var(--link, #1f5f99); }
         <div class="row"><label>Steady draft <span class="lab">user</span></label>
           <div class="xy x3"><label>Along the shot (m/s) <input id="rwa" type="number" step="0.05" min="-2" max="2"></label><label>Sideways (m/s) <input id="rws" type="number" step="0.05" min="-2" max="2"></label><label>Upward (m/s) <input id="rwu" type="number" step="0.05" min="-2" max="2"></label></div>
           <p class="hint">Air moving in the hall, for example from vents. + means toward the HIVE / to the left of the shot / upward. A 0.3 m/s tail draft moves the hood angle by about half a degree (PREDICTED). A sideways draft switches the solve to full 3D flight (slower).</p></div>
+        <div class="row"><label>Hood range <span class="lab">user</span></label>
+          <div class="xy"><label>Max hood angle (° from horizontal) <input id="rthx" type="number" step="0.5" min="30" max="89.5"></label></div>
+          <p class="hint">The steepest angle your hood can reach. The solver only searches angles up to this. Default 86° (4° from vertical): the top of the build range suggested by the model; the backspin sweet spot is about 76 to 80° (PREDICTED). 89.5 = no limit. The Side view and Field map are precomputed and do not use it.</p></div>
         <div class="row"><label>Robot moving <span class="lab">user</span></label>
           <label class="tog"><input type="checkbox" id="rmv"> Shoot while the robot moves</label>
           <div class="xy"><label>Toward the goal (m/s) <input id="rmva" type="number" step="0.1" min="-3" max="3"></label><label>Sideways (m/s, + = left) <input id="rmvc" type="number" step="0.1" min="-3" max="3"></label>
@@ -3805,7 +3808,7 @@ function fieldInit() {
 // far / unfavourable side x < 0, near / favourable side x > 0, up-cell gate at (+0.401, 0).
 const R = { on: false, ready: false, x: -1.0, y: 0.2, heading: 0, travel: "360", h: 0.737, S: 1.0, vu: 0.42, aero: "nominal",
             tC: 20, altM: 0, rh: 0, drag: "const", sd: 0, wA: 0, wU: 0, wS: 0,
-            mvOn: false, mvA: 0, mvC: 0, mvW: 0, d0: 0, lead: true, clTab: "", clRev: 0, gyro: false, sv: 1.5, sth: 0.40, spsi: 0.50, best: null, phi: "", robL: 18 * 0.0254, robW: 18 * 0.0254, robFo: 0, robLo: 0,
+            thMax: 86, mvOn: false, mvA: 0, mvC: 0, mvW: 0, d0: 0, lead: true, clTab: "", clRev: 0, gyro: false, sv: 1.5, sth: 0.40, spsi: 0.50, best: null, phi: "", robL: 18 * 0.0254, robW: 18 * 0.0254, robFo: 0, robLo: 0,
             dMot: "gobilda", dIw: 2.65e-4, dV: 12, droopTest: "pending",   // flywheel droop readout (Advanced): motor CONFIRMED datasheet, inertia ASSUMED, battery user
             heat: false, twin: true, slow: true, pick: null, sel: null, res: null, resKey: "", solving: false, progress: 0,
             pose: null, shot: null, anim: null, meta: null, winGeom: null, heatMD: null, heatLayer: null, err: null };
@@ -3827,7 +3830,7 @@ function rPose() { R.pose = PS().pose(R.x, R.y, R.meta, { robot: rRobot(true) })
 const TRAVEL = [["360", "360°"], ["180", "±180°"], ["90", "±90°"], ["45", "±45°"], ["0", "fixed"]];
 const PS = () => window.PollenSolver;
 const wrap180 = a => { a = ((a + 180) % 360 + 360) % 360 - 180; return a === -180 ? 180 : a; };
-const rKey = () => [R.x.toFixed(4), R.y.toFixed(4), R.h.toFixed(4), R.S, R.aero, R.tC, R.altM, R.rh, R.drag, R.sd, R.wA, R.wU, R.wS, R.mvOn, R.mvA, R.mvC, R.mvW, R.d0, R.lead, R.clTab, R.clRev, R.gyro, R.phi, R.robL, R.robW, R.robFo, R.robLo].join("|");
+const rKey = () => [R.x.toFixed(4), R.y.toFixed(4), R.h.toFixed(4), R.S, R.aero, R.tC, R.altM, R.rh, R.drag, R.sd, R.wA, R.wU, R.wS, R.mvOn, R.mvA, R.mvC, R.mvW, R.d0, R.lead, R.clTab, R.clRev, R.gyro, R.phi, R.robL, R.robW, R.robFo, R.robLo, R.thMax].join("|");
 // launch scatter (ASSUMED, Advanced): only the hit chance and the best-chance search use it, so it is not in rKey
 const rSig = () => ({ sv: R.sv / 100, sth: R.sth, spsi: R.spsi });
 const rBKey = () => rKey() + "|" + [R.sv, R.sth, R.spsi].join(",");
@@ -3852,7 +3855,7 @@ function rClTab(t) {
 }
 function rQuery() {
   const q = { x: R.x, y: R.y, h: R.h, S: R.S, vu: R.vu, params: rCase().params, air: { tC: R.tC, altM: R.altM, rh: R.rh / 100 },
-              drag: { model: R.drag, spin: R.sd }, wind: { along: R.wA, up: R.wU, side: R.wS }, robot: rRobot(false) };
+              drag: { model: R.drag, spin: R.sd }, wind: { along: R.wA, up: R.wU, side: R.wS }, robot: rRobot(false), thRange: [15, R.thMax] };
   if (R.mvOn) q.move = { along: R.mvA, across: R.mvC, wz: R.mvW, d0: R.d0, lead: R.lead };
   const tab = rClTab(R.clTab);
   if (tab || R.clRev || R.gyro) q.lift = { table: tab, rev: R.clRev, gyro: R.gyro };
@@ -4632,7 +4635,7 @@ function rSyncInputs() {
   }
   sel.value = R.aero;
   $("rdrag").value = R.drag;
-  [["rtc", "tC"], ["ralt", "altM"], ["rrh", "rh"], ["rwa", "wA"], ["rwu", "wU"], ["rws", "wS"], ["rmva", "mvA"], ["rmvc", "mvC"], ["rmvw", "mvW"], ["rd0", "d0"],
+  [["rtc", "tC"], ["ralt", "altM"], ["rrh", "rh"], ["rwa", "wA"], ["rwu", "wU"], ["rws", "wS"], ["rmva", "mvA"], ["rmvc", "mvC"], ["rmvw", "mvW"], ["rd0", "d0"], ["rthx", "thMax"],
    ["rclt", "clTab"], ["rclr", "clRev"], ["rphi", "phi"], ["rsv", "sv"], ["rsth", "sth"], ["rspsi", "spsi"], ["rdiw", "dIw"], ["rdv", "dV"]].forEach(([id, k]) => { if (document.activeElement !== $(id)) $(id).value = R[k]; });
   $("rmv").checked = R.mvOn; $("rlead").checked = R.lead; $("rgyro").checked = R.gyro; $("rdmot").value = R.dMot;
   $("rclt").setAttribute("aria-invalid", String(!!R.clTab.trim() && !rClTab(R.clTab)));
@@ -4661,7 +4664,7 @@ function robotInit() {
   rseg($("rsd-seg"), [[0, "none"], [0.08, "small +0.08"], [0.18, "large +0.18"]], () => R.sd, v => { R.sd = +v; }, "opt");
   $("rdrag").addEventListener("change", e => { R.drag = e.target.value; rChanged("opt"); });
   [["rtc", "tC", -10, 45], ["ralt", "altM", -100, 3500], ["rrh", "rh", 0, 100], ["rwa", "wA", -2, 2], ["rwu", "wU", -2, 2], ["rws", "wS", -2, 2],
-   ["rmva", "mvA", -3, 3], ["rmvc", "mvC", -3, 3], ["rmvw", "mvW", -360, 360], ["rd0", "d0", -10, 10], ["rclr", "clRev", 0, 0.1]].forEach(([id, k, lo, hi]) =>
+   ["rmva", "mvA", -3, 3], ["rmvc", "mvC", -3, 3], ["rmvw", "mvW", -360, 360], ["rd0", "d0", -10, 10], ["rthx", "thMax", 30, 89.5], ["rclr", "clRev", 0, 0.1]].forEach(([id, k, lo, hi]) =>
     $(id).addEventListener("change", e => { const v = parseFloat(e.target.value); if (isFinite(v)) { R[k] = Math.max(lo, Math.min(hi, v)); rChanged("opt"); } }));
   ["rmva", "rmvc", "rmvw", "rd0"].forEach(id => $(id).addEventListener("change", () => { if (!R.mvOn) { R.mvOn = true; rChanged("opt"); } }));
   $("rmv").addEventListener("change", e => { R.mvOn = e.target.checked; rChanged("opt"); });
@@ -4750,9 +4753,10 @@ function robotInit() {
   { const sc = (HASHQ.get("scatter") || "").split(",").filter(Boolean).map(Number);   // #robot?scatter=speed %,angle deg,aim deg
     if (sc.length === 3 && sc.every(v => isFinite(v) && v >= 0)) Object.assign(R, { sv: Math.min(10, sc[0]), sth: Math.min(5, sc[1]), spsi: Math.min(5, sc[2]) }); }
   if (HASHQ.get("gyro") === "1") R.gyro = true;
+  { const hx = parseFloat(HASHQ.get("hoodmax")); if (isFinite(hx)) R.thMax = Math.max(30, Math.min(89.5, hx)); }   // #robot?hoodmax=deg
   rClamp(); rPose();
   R0 = { x: R.x, y: R.y, heading: R.heading, travel: R.travel, h: R.h, S: R.S, vu: R.vu, aero: R.aero, heat: R.heat, twin: R.twin, slow: R.slow,
-         tC: R.tC, altM: R.altM, rh: R.rh, drag: R.drag, sd: R.sd, wA: R.wA, wU: R.wU, wS: R.wS, mvOn: R.mvOn, mvA: R.mvA, mvC: R.mvC, mvW: R.mvW,
+         tC: R.tC, altM: R.altM, rh: R.rh, drag: R.drag, sd: R.sd, wA: R.wA, wU: R.wU, wS: R.wS, thMax: R.thMax, mvOn: R.mvOn, mvA: R.mvA, mvC: R.mvC, mvW: R.mvW,
          d0: R.d0, lead: R.lead, clTab: R.clTab, clRev: R.clRev, gyro: R.gyro, sv: R.sv, sth: R.sth, spsi: R.spsi, phi: R.phi, robL: R.robL, robW: R.robW, robFo: R.robFo, robLo: R.robLo,
          dMot: R.dMot, dIw: R.dIw, dV: R.dV };
   R.ready = true;
