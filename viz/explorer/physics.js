@@ -555,12 +555,15 @@
   // spin vector w(t) = w0 exp(-k t), Magnus q Cl |v_rel|^2 unit(w x v_rel), S = |w| R / |v_rel| (default) or, with
   // p.s_perp (gyro-correct, as src/flight.py), S_perp = |w x v_rel| R / |v_rel|^2 (equal for pure backspin).
   // p.wind3 = [x, y, z] m/s in the frame of the call. z up, gravity along -z.
+  // p.knuck = [cs, cn]: knuckle side force q |v_rel|^2 (cs e_side + cn e_n), e_side = horizontal left of v_rel, e_n = e_side x
+  // v_rel / |v_rel| (the across-flight direction in the vertical plane); coefficients held over the flight (one draw per shot).
   function makeAcc3(p, w0) {
     const R = p.radius, q = 0.5 * p.rho * Math.PI * R * R / p.mass, g = p.g || 9.80665, nu = p.nu || 1.5e-5;
     const w3 = p.wind3 || [0, 0, 0], wx0 = +w3[0] || 0, wy0 = +w3[1] || 0, wz0 = +w3[2] || 0;
     const dcd = +p.dcd_spin || 0, ssat = p.s_sat !== undefined ? p.s_sat : S_SAT, k = p.k || 0;
     const aw = Math.sqrt(w0[0] * w0[0] + w0[1] * w0[1] + w0[2] * w0[2]), spin = aw > 0 && p.rho > 0;
     const lift = spin && liftOn(p), sperp = !!p.s_perp, ie = 1 / (1 + (+p.eps_mass || 0));
+    const kn = p.knuck, kS = kn ? +kn[0] || 0 : 0, kN = kn ? +kn[1] || 0 : 0, knk = (kS !== 0 || kN !== 0) && p.rho > 0;
     return function (t, vx, vy, vz, out) {
       const ux = vx - wx0, uy = vy - wy0, uz = vz - wz0, sp2 = ux * ux + uy * uy + uz * uz, sp = Math.sqrt(sp2);
       const re = sp * (2 * R) / nu;
@@ -575,6 +578,11 @@
       if (lift) {
         const cm = Math.sqrt(cx * cx + cy * cy + cz * cz);
         if (cm > 0) { const f = q * clOf(p, S, re) * sp2 / cm; ax += f * cx; ay += f * cy; az += f * cz; }
+      }
+      if (knk && sp > 0) {
+        const uh = Math.sqrt(ux * ux + uy * uy) + 1e-12, sx = -uy / uh, sy = ux / uh;
+        const nx = sy * uz / sp, ny = -sx * uz / sp, nz = (sx * uy - sy * ux) / sp, f = q * sp2;
+        ax += f * (kS * sx + kN * nx); ay += f * (kS * sy + kN * ny); az += f * kN * nz;
       }
       if (ie !== 1) { ax *= ie; ay *= ie; az *= ie; }
       out[0] = ax; out[1] = ay; out[2] = az;
