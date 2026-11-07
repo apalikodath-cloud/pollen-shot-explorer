@@ -465,7 +465,9 @@ a, .kitlink a { color: var(--link, #1f5f99); }
           <p class="hint">Only the part of the spin that is across the ball's path makes lift. On: the 3D flight uses that part (S_perp). It changes nothing for pure backspin; it matters when the robot moves or turns, so the spin axis is tilted to the path. Only the 3D path uses it (robot moving, sideways draft, and the chance it goes in). Off by default.</p></div>
         <div class="row"><label>Side forces <span class="lab">ASSUMED</span></label>
           <div class="xy x3"><label>Spin-axis tilt (°, + = curves left) <input id="rtilt" type="number" step="0.5" min="-10" max="10"></label><label>Tilt scatter (°, 1σ) <input id="rstilt" type="number" step="0.5" min="0" max="10"></label><label>Knuckle force Cs (1σ) <input id="rck" type="number" step="0.005" min="0" max="0.2"></label></div>
-          <p class="hint"><b>Spin-axis tilt</b> (the sideways curve): if the ball leaves the wheel with its spin axis not level, part of the backspin lift pushes sideways. A steady tilt (for example a hood or wheel that is not square) moves every shot the same way; it re-solves the window with the 3D flight. Default 0° (ASSUMED square). <b>Tilt scatter</b>: shot-to-shot wobble of that axis, used for the chance it goes in. Default 2° (ASSUMED, not measured). On these steep shots the effect is small: 3° of tilt moves the ball about 7 mm at the cell (PREDICTED, default spot). <b>Knuckle force</b>: a ball with little or no spin gets a sideways push from its holes that depends on how they face the air, so it wanders left/right or up/down at random. Our CFD of a non-spinning POLLEN gives a steady side-force coefficient of 0.02 to 0.05 depending on hole orientation (PREDICTED), so the default is Cs 0.03 per direction (derived; hole orientation ASSUMED random). It fades once the ball spins: ×1/(1 + (S/0.05)²) (ASSUMED), so it mostly hits the no-spin twin (S 1: 0.25 % of it). Both feed only the chance it goes in. 0 turns a source off.</p></div>
+          <div class="xy x3"><label><input id="runst" type="checkbox"> CFD force wobble (shedding + knuckle switching)</label><label>Shot spacing for the wake (s, 0 = off) <input id="rwgap" type="number" step="0.05" min="0" max="2"></label><span class="hint" id="rcfdx-st"></span></div>
+          <p class="hint"><b>Spin-axis tilt</b> (the sideways curve): if the ball leaves the wheel with its spin axis not level, part of the backspin lift pushes sideways. A steady tilt (for example a hood or wheel that is not square) moves every shot the same way; it re-solves the window with the 3D flight. Default 0° (ASSUMED square). <b>Tilt scatter</b>: shot-to-shot wobble of that axis, used for the chance it goes in. Default 2° (ASSUMED, not measured). On these steep shots the effect is small: 3° of tilt moves the ball about 7 mm at the cell (PREDICTED, default spot). <b>Knuckle force</b>: a ball with little or no spin gets a sideways push from its holes that depends on how they face the air, so it wanders left/right or up/down at random. Our CFD of a non-spinning POLLEN gives a steady side-force coefficient of 0.02 to 0.05 depending on hole orientation (PREDICTED), so the default is Cs 0.03 per direction (derived; hole orientation ASSUMED random). It fades once the ball spins: ×1/(1 + (S/0.05)²) (ASSUMED), so it mostly hits the no-spin twin (S 1: 0.25 % of it). Both feed only the chance it goes in. 0 turns a source off.</p>
+          <p class="hint"><b>CFD force wobble</b> (on by default): the side and lift force of a real POLLEN is not steady. Our CFD (PM-012, PREDICTED) records it over time: a fast buzz from the vortices it sheds (about 20 Hz at 7 m/s, side and lift coefficient about ±0.02 at no spin, ±0.05 to 0.08 at S 2) and a slow drift, which at low spin is the knuckle push changing direction during the flight. Each simulated shot replays one CFD force record from a random moment (and, at no spin, a random roll about the flight line, since nothing fixes the pattern then), so it feeds the chance it goes in. The fast buzz averages out (it moves the ball about 0.02 mm); the slow drift moves it a few mm. Hole orientation ASSUMED random among the runs we have. <b>Shot spacing</b>: a second ball fired this many seconds after the first flies through the first ball's wake on the same path (same path and speed ASSUMED). The wake moves along with the ball, so the second ball meets less air and goes a bit farther; this re-solves the window for that second ball. The wake comes from a CFD run with the field around the ball saved (PREDICTED up to the end of the CFD box, a fitted power-law decay beyond it, ASSUMED). 0 = off (the first ball, or shots far apart). Left out: the air the flywheel drags along near the exit; it moves with the ball for only about 1 cm and changes the shot by well under 1 mm (estimate).</p></div>
         <div class="row"><label>Shot scatter <span class="lab">ASSUMED</span></label>
           <div class="xy x3"><label>Speed (%, 1σ) <input id="rsv" type="number" step="0.1" min="0" max="10"></label><label>Hood angle (°, 1σ) <input id="rsth" type="number" step="0.05" min="0" max="5"></label><label>Aim (°, 1σ) <input id="rspsi" type="number" step="0.05" min="0" max="5"></label></div>
           <p class="hint">How much one shot differs from the next with the same setting: exit speed, hood (launch) angle and aim left/right, as one standard deviation. Used for the chance it goes in and to find the best-chance setting. Not measured on the robot: defaults 1.5 %, 0.40°, 0.50° are guesses. Measure your shooter's spread (for example, film 20 shots) and enter it here. 0 turns that source off. Changing these does not re-solve the window; only the chance search runs again.</p></div>
@@ -669,8 +671,8 @@ a, .kitlink a { color: var(--link, #1f5f99); }
   <footer>
     <details class="about"><summary><b>About this model.</b> PREDICTED by a computer model; no POLLEN drag, spin lift, bounce or grip has been measured. Test on a real robot before a match.</summary>
     <p><b>What this is.</b> Five views of one PREDICTED model (Team 207 Critical Mass). <b>Robot</b> (the default): put a 0.457 m robot anywhere on the field at any heading, give it a turret, set the release height, backspin and grip, and the page solves the clean-entry window for that exact spot live in your browser (a background worker runs the same flight model), then gives the minimum wheel rpm, the minimum hood angle and the most forgiving shot, each beside its no-spin twin. <b>Side view</b>: one shot up close, straight down the HIVE tipping plane, from the original model grid (<code>src/shooter_spec.py</code>: 111 speeds × 261 angles × 24 distances × 5 heights per case). <b>Field map</b>: the precomputed windows for every 0.05 m grid position (<code>data/field</code>). <b>CFD</b>: our own GPU flow simulation of POLLEN, with its drag, backspin lift and spin-down torque coefficients (PREDICTED). <b>3D flow</b>: the Robot tab's current shot flown in 3D, with the CFD flow around the backspin ball and its no-spin twin, blended from the CFD cases nearest the ball's speed and spin at each moment (hole orientation ASSUMED). Air resistance is included in the Robot, Side view and Field map flights: quadratic drag (Cd), Magnus spin lift capped at a maximum, and spin decay during the flight. Those coefficients are ASSUMED literature values, not POLLEN measurements. The HIVE section is from the official field CAD; tilt 30° is confirmed.</p>
-    <p><b>What the model includes.</b> Flight: quadratic drag, Magnus spin lift with a cap and spin decay, RK4 with a 2 ms step. Robot view: the shot flies along the bearing to the cell from the robot's exact spot (whole-field oblique model), and the up cell is 3D (side walls, pentagon roof, lips). The live solver reports two kinds of minimum: <b>knife edge</b> (the lowest clean shot found, a grazing one) and <b>with room for error</b> (still clean if speed and angle drift by the ASSUMED tolerance), each beside the no-spin twin. Options in Advanced settings: venue air (temperature, altitude, humidity; default 20 °C, sea level, dry = 1.204 kg/m³, derived), drag that changes with speed (reference or what-if, ASSUMED), extra drag from backspin (ASSUMED), a steady draft along, across or up the shot (user), a moving robot (speed toward the goal and sideways, turn rate, exit-angle offset d0; user / ASSUMED), a spin-lift table and reverse lift (ASSUMED), side forces (a tilted spin axis, steady or shot-to-shot, and the knuckle force on a low-spin holed ball; ASSUMED, the knuckle size derived from our PREDICTED no-spin CFD), air carried with the ball (effective mass, ASSUMED), and a flag on any answer that needs more than the PREDICTED 8.9 m/s grip limit.</p>
-    <p><b>Not modelled yet</b> (largest first, from the research ranking; each needs a measurement): the real spin-lift level of POLLEN (Cl); its real drag level (Cd); grip and slip at the wheel (v/u, ball squeeze); the hood angle not being the exit angle; the real size of the knuckle force and of the spin-axis tilt (options in Advanced, both guesses until filmed); a knuckle force that switches direction during the flight (the model holds one random push per shot); balls and NECTAR already in the cell, bounce (COR) and the HIVE tipping mid-volley; bounces after entry; the air carried inside the ball (effective mass: an ASSUMED option only); flywheel droop and battery voltage at launch (the answer shows a PREDICTED per-shot droop and recovery readout, but every shot is still solved at the set wheel speed; an encoder log is needed). Robot motion and sideways drafts are options (Advanced), not measurements. Left out on purpose: a freely spinning ball does not wobble its axis in flight (the air puts almost no tipping torque on a round ball, so the gyro tilt is set at the wheel, not during the flight), and air buoyancy cancels for a holed ball (the air inside lifts what it weighs). The "chance it goes in" line is a model probability under ASSUMED launch scatter, not a measured repeatability.</p>
+    <p><b>What the model includes.</b> Flight: quadratic drag, Magnus spin lift with a cap and spin decay, RK4 with a 2 ms step. Robot view: the shot flies along the bearing to the cell from the robot's exact spot (whole-field oblique model), and the up cell is 3D (side walls, pentagon roof, lips). The live solver reports two kinds of minimum: <b>knife edge</b> (the lowest clean shot found, a grazing one) and <b>with room for error</b> (still clean if speed and angle drift by the ASSUMED tolerance), each beside the no-spin twin. Options in Advanced settings: venue air (temperature, altitude, humidity; default 20 °C, sea level, dry = 1.204 kg/m³, derived), drag that changes with speed (reference or what-if, ASSUMED), extra drag from backspin (ASSUMED), a steady draft along, across or up the shot (user), a moving robot (speed toward the goal and sideways, turn rate, exit-angle offset d0; user / ASSUMED), a spin-lift table and reverse lift (ASSUMED), side forces (a tilted spin axis, steady or shot-to-shot, and the knuckle force on a low-spin holed ball; ASSUMED, the knuckle size derived from our PREDICTED no-spin CFD), the CFD force wobble (shedding buzz and the knuckle push switching during the flight, replayed from our CFD force records, PREDICTED; on by default), a second ball flying through the first one's wake (shot spacing; CFD wake PREDICTED near the ball, decay beyond ASSUMED), air carried with the ball (effective mass, ASSUMED), and a flag on any answer that needs more than the PREDICTED 8.9 m/s grip limit.</p>
+    <p><b>Not modelled yet</b> (largest first, from the research ranking; each needs a measurement): the real spin-lift level of POLLEN (Cl); its real drag level (Cd); grip and slip at the wheel (v/u, ball squeeze); the hood angle not being the exit angle; the real size of the knuckle force and of the spin-axis tilt (options in Advanced, both guesses until filmed); balls and NECTAR already in the cell, bounce (COR) and the HIVE tipping mid-volley; bounces after entry; the air carried inside the ball (effective mass: an ASSUMED option only); flywheel droop and battery voltage at launch (the answer shows a PREDICTED per-shot droop and recovery readout, but every shot is still solved at the set wheel speed; an encoder log is needed). Robot motion and sideways drafts are options (Advanced), not measurements. Left out on purpose: the air the flywheel drags along near the exit (it travels with the ball for only about 1 cm; well under 1 mm at the cell, estimate); a freely spinning ball does not wobble its axis in flight (the air puts almost no tipping torque on a round ball, so the gyro tilt is set at the wheel, not during the flight), and air buoyancy cancels for a holed ball (the air inside lifts what it weighs). The "chance it goes in" line is a model probability under ASSUMED launch scatter, not a measured repeatability.</p>
     <p><b>What it is not.</b> No POLLEN drag, spin lift, bounce or launcher grip has been measured. The air cases are literature ranges (pickleball and smooth-sphere data), not POLLEN facts. A shot that touches the HIVE stops here; a bounce can still score (see docs/05). The second HIVE and the A-frame legs are drawn for context only. One clean simulated shot says nothing about repeatability: the tolerance shown is how far speed and angle can drift and still go in. In the Robot view the release point is the robot centre at your height (an offset can be set; the turned 18 × 18 in chassis must stay inside the walls and off the A-frame base) and the turret is assumed to aim exactly (ASSUMED). The Side view and the Field map are precomputed with the same 3D cell (side walls, pentagon roof) at 1.204 kg/m³ (derived); the Side view is a straight shot down the tipping plane only.</p>
     </details>
     <details class="more labels"><summary>What the labels mean</summary><p><b>CONFIRMED</b> is from an official field or component source. <b>USER</b> is a setting you chose. <b>ASSUMED</b> is an engineering estimate. <b>DERIVED</b> is computed from the model inputs. <b>PREDICTED</b> is a model result, not a measurement.</p></details>
@@ -1262,6 +1264,23 @@ a, .kitlink a { color: var(--link, #1f5f99); }
   // p.wind3 = [x, y, z] m/s in the frame of the call. z up, gravity along -z.
   // p.knuck = [cs, cn]: knuckle side force q |v_rel|^2 (cs e_side + cn e_n), e_side = horizontal left of v_rel, e_n = e_side x
   // v_rel / |v_rel| (the across-flight direction in the vertical plane); coefficients held over the flight (one draw per shot).
+  // p.unst = { dt, cy, cl, t0, c, s }: CFD force record (PM-012, PREDICTED): side / lift coefficients about the run mean,
+  // one value every dt s of flight (record step in D/u times D / launch speed), read from t0 s on (wraps around), turned by
+  // the roll angle (c, s = its cos, sin) in the (e_side, e_n) plane: the shedding buzz and the slow drift of the force
+  // (knuckle switching at low spin), q |v_rel|^2 (cs e_side + cn e_n).
+  // p.wk = { age, D, x, ud, un, pw }: wake of the previous ball on the same path (PM-012, PREDICTED inside the CFD box,
+  // power law x^-pw beyond it, ASSUMED). The air here was passed by ball 1 age s ago, x = age |v| / D diameters behind it;
+  // it moves with ud |v| along the flight and un |v| along e_n (straight-path mapping, ball 1 as fast as this one: ASSUMED).
+  function wakeAt(wk, x, out) {
+    const X = wk.x, n = X.length;
+    if (x <= X[0]) { out[0] = wk.ud[0]; out[1] = wk.un[0]; return out; }
+    if (x >= X[n - 1]) { const f = Math.pow(x / X[n - 1], -wk.pw); out[0] = wk.ud[n - 1] * f; out[1] = wk.un[n - 1] * f; return out; }
+    let lo = 0, hi = n - 1;
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (X[m] <= x) lo = m; else hi = m; }
+    const a = (x - X[lo]) / (X[hi] - X[lo]);
+    out[0] = wk.ud[lo] + a * (wk.ud[hi] - wk.ud[lo]); out[1] = wk.un[lo] + a * (wk.un[hi] - wk.un[lo]);
+    return out;
+  }
   function makeAcc3(p, w0) {
     const R = p.radius, q = 0.5 * p.rho * Math.PI * R * R / p.mass, g = p.g || 9.80665, nu = p.nu || 1.5e-5;
     const w3 = p.wind3 || [0, 0, 0], wx0 = +w3[0] || 0, wy0 = +w3[1] || 0, wz0 = +w3[2] || 0;
@@ -1269,8 +1288,18 @@ a, .kitlink a { color: var(--link, #1f5f99); }
     const aw = Math.sqrt(w0[0] * w0[0] + w0[1] * w0[1] + w0[2] * w0[2]), spin = aw > 0 && p.rho > 0;
     const lift = spin && liftOn(p), sperp = !!p.s_perp, ie = 1 / (1 + (+p.eps_mass || 0));
     const kn = p.knuck, kS = kn ? +kn[0] || 0 : 0, kN = kn ? +kn[1] || 0 : 0, knk = (kS !== 0 || kN !== 0) && p.rho > 0;
+    const un = p.unst && p.rho > 0 && p.unst.cy && p.unst.cy.length > 1 ? p.unst : null, unN = un ? un.cy.length : 0;
+    const wk = p.wk && p.wk.age > 0 && p.rho > 0 ? p.wk : null, wa = [0, 0], side = knk || !!un;
     return function (t, vx, vy, vz, out) {
-      const ux = vx - wx0, uy = vy - wy0, uz = vz - wz0, sp2 = ux * ux + uy * uy + uz * uz, sp = Math.sqrt(sp2);
+      let ux = vx - wx0, uy = vy - wy0, uz = vz - wz0, sp2 = ux * ux + uy * uy + uz * uz, sp = Math.sqrt(sp2);
+      if (wk && sp > 0) {   // previous ball's wake: the air moves with it, so the air speed past this ball drops
+        wakeAt(wk, wk.age * sp / wk.D, wa);
+        // e_n = e_side x e_v points down for a forward shot, so the CFD un (+ = the lift side, up for backspin) is -e_n
+        const uh = Math.sqrt(ux * ux + uy * uy) + 1e-12, sx = -uy / uh, sy = ux / uh, m = 1 - wa[0], e = wa[1] * sp;
+        const nx = sy * uz / sp, ny = -sx * uz / sp, nz = (sx * uy - sy * ux) / sp;
+        ux = ux * m + e * nx; uy = uy * m + e * ny; uz = uz * m + e * nz;
+        sp2 = ux * ux + uy * uy + uz * uz; sp = Math.sqrt(sp2);
+      }
       const re = sp * (2 * R) / nu;
       let cde = cdBase(p, re), S = 0, cx = 0, cy = 0, cz = 0;
       if (spin) {
@@ -1284,10 +1313,17 @@ a, .kitlink a { color: var(--link, #1f5f99); }
         const cm = Math.sqrt(cx * cx + cy * cy + cz * cz);
         if (cm > 0) { const f = q * clOf(p, S, re) * sp2 / cm; ax += f * cx; ay += f * cy; az += f * cz; }
       }
-      if (knk && sp > 0) {
+      if (side && sp > 0) {
         const uh = Math.sqrt(ux * ux + uy * uy) + 1e-12, sx = -uy / uh, sy = ux / uh;
         const nx = sy * uz / sp, ny = -sx * uz / sp, nz = (sx * uy - sy * ux) / sp, f = q * sp2;
-        ax += f * (kS * sx + kN * nx); ay += f * (kS * sy + kN * ny); az += f * kN * nz;
+        let cS = kS, cN = kN;
+        if (un) {
+          let r = (t + un.t0) / un.dt % unN; if (r < 0) r += unN;
+          const i = Math.floor(r), j = i + 1 < unN ? i + 1 : 0, a = r - i;
+          const yv = un.cy[i] + a * (un.cy[j] - un.cy[i]), lv = un.cl[i] + a * (un.cl[j] - un.cl[i]);
+          cS += un.c * yv - un.s * lv; cN += un.s * yv + un.c * lv;
+        }
+        ax += f * (cS * sx + cN * nx); ay += f * (cS * sy + cN * ny); az += f * cN * nz;
       }
       if (ie !== 1) { ax *= ie; ay *= ie; az *= ie; }
       out[0] = ax; out[1] = ay; out[2] = az;
@@ -1815,26 +1851,76 @@ a, .kitlink a { color: var(--link, #1f5f99); }
     out.lead = deg(Math.atan2(ey * F.ux - ex * F.uy, ex * F.ux + ey * F.uy));
     return out;
   }
-  function params3(p, F) {
-    const w = p.wind || [0, 0], al = +w[0] || 0, up = +w[1] || 0, sd = F.side || 0;
-    if (!al && !up && !sd) return p;
-    return Object.assign({}, p, { wind3: [al * F.ux + sd * F.nx, al * F.uy + sd * F.ny, up] });
+  function params3(p, F, S) {
+    const w = p.wind || [0, 0], al = +w[0] || 0, up = +w[1] || 0, sd = F.side || 0, wk = F.wake ? wakeFor(F.wake, S) : null;
+    if (!al && !up && !sd && !wk) return p;
+    const o = Object.assign({}, p);
+    if (al || up || sd) o.wind3 = [al * F.ux + sd * F.nx, al * F.uy + sd * F.ny, up];
+    if (wk) o.wk = wk;
+    return o;
+  }
+  // ---- CFD extras (PM-012, PREDICTED): q.cfd = { unst: data/unsteady.json, wake: data/wake.json } from export_unsteady.py
+  // the CFD run(s) nearest in spin ratio |S| (every hole orientation run at that S)
+  function nearestRuns(runs, S) {
+    let best = Infinity;
+    for (const r of runs) best = Math.min(best, Math.abs(r.S - Math.abs(S)));
+    return runs.filter(function (r) { return Math.abs(Math.abs(r.S - Math.abs(S)) - best) < 1e-9; });
+  }
+  // wake profile of the previous ball for this spin: { age, D, x, ud, un, pw } (physics.js p.wk); runs averaged when several
+  function wakeFor(W, S) {
+    const key = "S" + Math.abs(S);
+    if (W._c && W._c[key]) return W._c[key];
+    const rs = nearestRuns(W.runs, S);
+    if (!rs.length) return null;
+    const r = rs[0], k = rs.length, avg = function (nm) { return r[nm].map(function (_, i) { return rs.reduce(function (a, b) { return a + b[nm][i]; }, 0) / k; }); };
+    const o = { age: W.age, D: W.D, x: Float64Array.from(r.x), ud: Float64Array.from(avg("ud")), un: Float64Array.from(avg("un")),
+                pw: rs.reduce(function (a, b) { return a + b.pw; }, 0) / k, S: r.S, xMax: r.x[r.x.length - 1] };
+    if (!W._c) Object.defineProperty(W, "_c", { value: {}, enumerable: false });
+    return (W._c[key] = o);
+  }
+  // force records for this spin (Float64Array copies, cached on the data object)
+  function unstRuns(U, S) {
+    const key = "S" + Math.abs(S);
+    if (U._c && U._c[key]) return U._c[key];
+    const o = { dtau: U.dtau, runs: nearestRuns(U.runs, S).map(function (r) { return { S: r.S, name: r.name, cy: Float64Array.from(r.cy), cl: Float64Array.from(r.cl) }; }) };
+    if (!U._c) Object.defineProperty(U, "_c", { value: {}, enumerable: false });
+    return (U._c[key] = o);
+  }
+  // one shot's record (physics.js p.unst) from three uniforms: which run, where in it, and (no spin only: no axis
+  // ties the pattern to the flight) the roll about the flight direction
+  function unstShot(ur, u0, u1, u2, v, S, R, k) {
+    const r = ur.runs[Math.min(ur.runs.length - 1, Math.floor(u0 * ur.runs.length))], dt = ur.dtau * 2 * R / Math.max(v, 0.5);
+    const a = S === 0 ? 2 * Math.PI * u2 : 0;
+    return { dt: dt, cy: r.cy, cl: r.cl, t0: u1 * r.cy.length * dt, c: k * Math.cos(a), s: k * Math.sin(a) };
+  }
+  function uniforms(seed, n) {
+    let a = seed >>> 0;
+    const o = new Float64Array(n);
+    for (let i = 0; i < n; i++) {
+      a = (a + 0x6D2B79F5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      o[i] = ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+    return o;
   }
   // fastShot on the 3D path: same out contract (out[0] minClear, out[1] entry angle, out[2] code, out[3] gate
   // distance; code 5 = the lead cannot cancel the sideways robot speed). Classifies on the 3D cell on the fly.
   // dTilt (rad) = spin-axis tilt scatter; kn = [cs, cn] knuckle side-force coefficients of this shot (physics.js p.knuck)
-  function fastShot3D(F, v, thDeg, S, p, pr, cell, h, zStop, out, dPsi, dTilt, kn) {
+  // un = this shot's CFD force record (physics.js p.unst; null = none)
+  function fastShot3D(F, v, thDeg, S, p, pr, cell, h, zStop, out, dPsi, dTilt, kn, un) {
     const L = launch3(F, v, thDeg, S, p.radius, dPsi || 0, {}, dTilt);
     out[3] = Infinity;
     if (!L) { out[0] = -Infinity; out[1] = NaN; out[2] = 5; return 0; }
-    let p3 = params3(p, F);
-    if (kn) p3 = Object.assign({}, p3, { knuck: kn });
+    let p3 = params3(p, F, S);
+    if (kn || un) { p3 = Object.assign({}, p3); if (kn) p3.knuck = kn; if (un) p3.unst = un; }
     const acc = P.makeAcc3(p3, L.w0), Rb = p.radius, g = p.g || 9.80665, dt = 2e-3;
     const nT = Math.ceil(3.0 / dt) + 1;
     const m = Rb + 0.2, bx0 = pr.bx0 - m, bx1 = pr.bx1 + m, bz0 = pr.bz0 - m, bz1 = pr.bz1 + m;
     const q = 0.5 * p.rho * Math.PI * Rb * Rb / p.mass, vb = v + F.vr, vmax2 = vb * vb + 2 * g * Math.max(0, -zStop);
     const liftAny = S !== 0 && p.rho > 0 && P.liftOn(p);
-    const xExitOK = (!liftAny || (S > 0 && P.liftNonNeg(p) && q * P.clMaxOf(p) * vmax2 < g)) && !p3.wind3 && !kn;
+    const xExitOK = (!liftAny || (S > 0 && P.liftNonNeg(p) && q * P.clMaxOf(p) * vmax2 < g)) && !p3.wind3 && !kn && !un && !p3.wk;
     const gx0 = pr.g0x, gz0 = pr.g0z, gdx = pr.g1x - pr.g0x, gdz = pr.g1z - pr.g0z, gden = gdx * gdx + gdz * gdz;
     const a1 = [0, 0, 0], a2 = [0, 0, 0], a3 = [0, 0, 0], a4 = [0, 0, 0], hh = dt / 2, zs = zStop + h;
     let x = L.x0[0], y = L.x0[1], z = h, vx = L.v0[0], vy = L.v0[1], vz = L.v0[2], t = 0;
@@ -1881,7 +1967,7 @@ a, .kitlink a { color: var(--link, #1f5f99); }
   function path3D(F, v, thDeg, S, p, h, zStop, dPsi) {
     const L = launch3(F, v, thDeg, S, p.radius, dPsi || 0, {});
     if (!L) return null;
-    const path = P.integrate3D([L.x0[0], L.x0[1], h], L.v0, L.w0, params3(p, F), 2e-3, 3.0, zStop + h);
+    const path = P.integrate3D([L.x0[0], L.x0[1], h], L.v0, L.w0, params3(p, F, S), 2e-3, 3.0, zStop + h);
     path.launch = L;
     return path;
   }
@@ -1932,10 +2018,13 @@ a, .kitlink a { color: var(--link, #1f5f99); }
     return sec._cells[key] || (sec._cells[key] = P.buildCell3D(sec, { ridge: ridge, wallT: wallT }));
   }
 
+  // second ball through the first one's wake (q.wakeGap s apart, same path); needs the CFD wake data
+  function wakeOn(q) { return +q.wakeGap > 0 && !!(q.cfd && q.cfd.wake && q.cfd.wake.runs && q.cfd.wake.runs.length); }
   // q.sideWalls (default true): 3D cell model (side walls, pentagon roof along the real path);
   // false = the PM-005/PM-009 section model at s_eff(psi) (the exported masks).
   function context(q, force3D) {
-    const mv = moveFor(q), tilt = +q.tilt || 0, use3 = mv.any || !!force3D || (tilt !== 0 && (q.S || 0) !== 0);
+    const mv = moveFor(q), tilt = +q.tilt || 0, wkOn = wakeOn(q);
+    const use3 = mv.any || !!force3D || (tilt !== 0 && (q.S || 0) !== 0) || wkOn;
     const sideWalls = q.sideWalls !== false || use3;      // the 3D path needs the 3D cell
     const ps = pose(q.x, q.y, q.meta, { sideWalls: sideWalls, robot: q.robot });
     let sec = sectionFor(ps.side, sideWalls ? 0 : ps.psi, q.meta);
@@ -1945,8 +2034,9 @@ a, .kitlink a { color: var(--link, #1f5f99); }
     const c3 = sideWalls ? { cell: cellFor(sec, q), aimX: ps.Lh - ps.d, tp: Math.tan(rad(ps.psi)) } : null;
     const F = use3 && ps.ok ? frameFor(ps, mv, q) : null;
     if (F) F.tilt = rad(tilt);
+    if (F && wkOn) F.wake = { age: +q.wakeGap, D: 2 * ((q.params && q.params.radius) || R_BALL), runs: q.cfd.wake.runs };
     return { ps: ps, sec: sec, pr: pr, cps: cps, zStop: zStopFor(q.h, pr), c3: c3, sideWalls: sideWalls, F: F,
-             forced3D: use3 && q.sideWalls === false };
+             forced3D: use3 && q.sideWalls === false, cfd: q.cfd || null };
   }
 
   // the model's reference classifier on a physics.js integrateOblique path
@@ -1989,7 +2079,7 @@ a, .kitlink a { color: var(--link, #1f5f99); }
     }
     // apex bound (lift <= q*clmax*v^2 while rising): skip v whose apex cannot reach the inside polygon
     const qq = 0.5 * p.rho * Math.PI * p.radius * p.radius / p.mass, g = p.g || 9.80665;
-    const dzNeed = pr.izMin - h, wnd = p.wind || [0, 0], windy = +wnd[0] !== 0 || +wnd[1] !== 0 || !!(ctx.F && ctx.F.side);
+    const dzNeed = pr.izMin - h, wnd = p.wind || [0, 0], windy = +wnd[0] !== 0 || +wnd[1] !== 0 || !!(ctx.F && (ctx.F.side || ctx.F.wake));
     const ieM = 1 / (1 + (+p.eps_mass || 0));
     let count = 0;
     const gate = new Float32Array(N).fill(Infinity), rowDone = new Uint8Array(nTh);
@@ -2363,6 +2453,13 @@ a, .kitlink a { color: var(--link, #1f5f99); }
       ", ASSUMED); acceleration = (F/m + g) / (1 + eps)");
     if (+q.tilt && q.S) n.push("spin axis tilted " + (+q.tilt) + " deg about the exit direction (" + (+q.tilt > 0 ? "curves left" : "curves right") +
       "; ASSUMED): part of the Magnus force pushes sideways; 3D flight on the 3D cell");
+    if (+q.wakeGap > 0) {
+      if (wakeOn(q)) {
+        const wk = wakeFor({ age: +q.wakeGap, D: 2 * R_BALL, runs: q.cfd.wake.runs }, q.S || 0);
+        n.push("second ball " + (+q.wakeGap) + " s behind the first, through its wake on the same path (CFD wake of a ball at S " + wk.S +
+          " PREDICTED to " + wk.xMax.toFixed(1) + " D behind it, power law x^-" + wk.pw.toFixed(2) + " beyond (ASSUMED); same path, same speed ASSUMED); 3D flight on the 3D cell");
+      } else n.push("shot spacing " + (+q.wakeGap) + " s ignored: the CFD wake runs are not finished yet");
+    }
     if (p.s_perp) n.push("gyro-correct spin ratio S_perp = |w x v| R / v^2 on the 3D path (no change for pure backspin)");
     const mv = moveFor(q);
     if (q.move) n.push("robot moving (user): " + mv.along + " m/s toward the goal, " + mv.across + " m/s sideways" +
@@ -2431,12 +2528,19 @@ a, .kitlink a { color: var(--link, #1f5f99); }
   // knuckleFactor(S); both 0 here (the Python twin has neither), the page passes its own ASSUMED / derived values.
   // Their draws come from a second stream P.normals(seed + 101, 3 n) (z_tilt, z_side, z_n), so with both 0 every count is
   // the same as before.
-  const HC_SIG = { sv: 0.015, sth: 0.40, spsi: 0.50, stilt: 0, ck: 0 };
+  const HC_SIG = { sv: 0.015, sth: 0.40, spsi: 0.50, stilt: 0, ck: 0, unst: 0 };
   // knuckle force fades once the ball turns: 1 / (1 + (S / 0.05)^2) (ASSUMED; S 0.05 = about two turns in a 1.3 s flight at
   // 7 m/s), so it acts on the no-spin twin and is about 0.25 % of itself at S 1
   const KN_S = 0.05;
   function knuckleFactor(S) { const r = S / KN_S; return 1 / (1 + r * r); }
-  function hcExtra(sig, seed, n) { return sig.stilt || sig.ck ? P.normals(seed, 3 * n) : null; }
+  // sig.unst = 1 adds the CFD force record (shedding buzz, slow drift, knuckle switching at low spin) to every shot: needs
+  // q.cfd.unst; its draws are three uniforms per shot from uniforms(seed + 7, 3 n) (run, start, roll), hung on Zx as Zx.u
+  function hcExtra(sig, seed, n) {
+    if (!(sig.stilt || sig.ck || sig.unst)) return null;
+    const z = P.normals(seed, 3 * n);
+    if (sig.unst) z.u = uniforms(seed + 7, 3 * n);
+    return z;
+  }
   const HC_NOTE = "model probability under ASSUMED launch scatter (not a measured repeatability)";
   function hcSig(o) { return Object.assign({}, HC_SIG, (o && o.sig) || {}); }
   // the aero sets of this spin: Cl low / nominal / high from meta.cases (S != 0); a user Cl(S) table replaces the
@@ -2456,11 +2560,13 @@ a, .kitlink a { color: var(--link, #1f5f99); }
   // clean 3D shots among draws i0..i1-1 of Z (z_v, z_theta, z_psi per shot) and Zx (z_tilt, z_side, z_n; null = none)
   function mcCount(ctx, h, S, p, v, theta, Z, sig, i0, i1, out, Zx) {
     const cell = ctx.c3.cell, st = Zx && S !== 0 ? rad(sig.stilt || 0) : 0, ck = Zx ? (sig.ck || 0) * knuckleFactor(S) : 0;
+    const ur = Zx && Zx.u && sig.unst && ctx.cfd && ctx.cfd.unst ? unstRuns(ctx.cfd.unst, S) : null, U = ur && ur.runs.length ? Zx.u : null;
     let k = 0;
     for (let i = i0; i < i1; i++) {
       const vi = v * (1 + sig.sv * Z[3 * i]), ti = theta + sig.sth * Z[3 * i + 1], dp = rad(sig.spsi * Z[3 * i + 2]);
       const dt = st ? st * Zx[3 * i] : 0, kn = ck ? [ck * Zx[3 * i + 1], ck * Zx[3 * i + 2]] : null;
-      if (fastShot3D(ctx.F, vi, ti, S, p, ctx.pr, cell, h, ctx.zStop, out, dp, dt, kn) === 1) k++;
+      const un = U ? unstShot(ur, U[3 * i], U[3 * i + 1], U[3 * i + 2], vi, S, p.radius, sig.unst) : null;
+      if (fastShot3D(ctx.F, vi, ti, S, p, ctx.pr, cell, h, ctx.zStop, out, dp, dt, kn, un) === 1) k++;
     }
     return k;
   }
@@ -2469,6 +2575,7 @@ a, .kitlink a { color: var(--link, #1f5f99); }
     return HC_NOTE + "; scatter: speed " + (sig.sv * 100).toFixed(1) + " % , angle " + sig.sth + " deg, heading " +
            sig.spsi + " deg (1 sigma, ASSUMED; robustness.py ERR_SETS nominal by default)" +
            (sig.stilt ? ", spin-axis tilt " + sig.stilt + " deg (ASSUMED)" : "") +
+           (sig.unst ? ", CFD force wobble (shedding buzz and slow drift of the side and lift force, PM-012 records PREDICTED)" : "") +
            (sig.ck ? ", knuckle side force Cs " + sig.ck + " per direction x 1/(1+(S/" + KN_S + ")^2) (from PREDICTED S 0 CFD; hole orientation ASSUMED random)" : "") +
            "; Wilson 95 % interval";
   }
@@ -2604,12 +2711,13 @@ a, .kitlink a { color: var(--link, #1f5f99); }
     const mean = rows.reduce(function (a, r) { return a + r.p; }, 0) / rows.length;
     // stage 4: one scatter source at a time, on the nominal set (or the Cl table / the only set)
     const ib = Math.max(0, rows.findIndex(function (r) { return r.name === "nominal" || r.name === "Cl_table"; }));
-    const z5 = { sv: 0, sth: 0, spsi: 0, stilt: 0, ck: 0 }, one = function (k) { const s = Object.assign({}, z5); s[k] = sig[k]; return s; };
+    const z5 = { sv: 0, sth: 0, spsi: 0, stilt: 0, ck: 0, unst: 0 }, one = function (k) { const s = Object.assign({}, z5); s[k] = sig[k]; return s; };
     const parts = o.breakdown === false ? [] : [["speed", one("sv")], ["angle", one("sth")], ["heading", one("spsi")]]
-      .concat(sig.stilt && S !== 0 ? [["axis tilt", one("stilt")]] : [], sig.ck ? [["knuckle", one("ck")]] : []).map(function (ps) {
+      .concat(sig.stilt && S !== 0 ? [["axis tilt", one("stilt")]] : [], sig.ck ? [["knuckle", one("ck")]] : [],
+              sig.unst && ctx.cfd && ctx.cfd.unst ? [["CFD wobble", one("unst")]] : []).map(function (ps) {
       return Object.assign({ source: ps[0], sig: ps[1] }, hcRow(mcCount(ctx, h, S, sets[ib].p, w.v, w.theta, Z, ps[1], 0, n, out, Zx), n));
     });
-    const act = parts.filter(function (r) { return r.sig.sv || r.sig.sth || r.sig.spsi || r.sig.stilt || r.sig.ck; });
+    const act = parts.filter(function (r) { return r.sig.sv || r.sig.sth || r.sig.spsi || r.sig.stilt || r.sig.ck || r.sig.unst; });
     const dom = act.length ? act.reduce(function (a, b) { return b.p < a.p ? b : a; }) : null;
     return { ok: true, isTwin: isTwin, S: S, v: w.v, theta: w.theta, rpm: rpm(w.v, q.vu), ballSpinRpm: ballSpinRpm(w.v, S),
              from: w.from, gripLimited: w.v > P.HOOD_V_MAX + 1e-9, inCap: cd.inCap, n: n, seed: seed, sig: sig,
@@ -2737,7 +2845,7 @@ a, .kitlink a { color: var(--link, #1f5f99); }
     ballSpinRpm: ballSpinRpm, droopReadout: droopReadout, DROOP: DROOP, labels: LABELS, tol: TOL,
     _fastShot: fastShot, _prepSection: prepSection, _zStopFor: zStopFor, _context: context,
     _classifyCtx: classifyCtx, _cellFor: cellFor, effParams: effParams, _flagGrip: flagGrip,
-    hitChance: hitChance, bestChance: bestChance, BC: BC, _bcCandidates: bcCandidates, HC_SIG: HC_SIG, HC_NOTE: HC_NOTE, knuckleFactor: knuckleFactor, _moveFor: moveFor, _frameFor: frameFor, _launch3: launch3,
+    hitChance: hitChance, bestChance: bestChance, BC: BC, _bcCandidates: bcCandidates, HC_SIG: HC_SIG, HC_NOTE: HC_NOTE, knuckleFactor: knuckleFactor, _wakeFor: wakeFor, _unstRuns: unstRuns, _uniforms: uniforms, _moveFor: moveFor, _frameFor: frameFor, _launch3: launch3,
     _fastShot3D: fastShot3D, _path3D: path3D, _params3: params3, _moveSens: moveSens, twinParams: twinParams,
     // one fused shot under a context (either model)
     _shotCtx: function (ctx, v, th, S, p, h, out) {
@@ -3472,7 +3580,20 @@ const heatCol = t => `hsl(158,65%,${(12 + 38 * t).toFixed(1)}%)`;
 const FC = { key: "", res: new Map(), blocks: [], ws: [], job: [], done: 0, legal: 0, paintT: 0, B: 6, err: "" };   // err: workers unavailable (no retry)
 const FC_BC = { n1: 32, n2: 128, n: 300, k1: 10, k2: 3, breakdown: false };
 const fcOn = () => F.on && (F.metric === "chance" || F.metric === "chance0");
-const fcKeyNow = () => [F.ih, F.S, F.aero, st.vu, R.sv, R.sth, R.spsi, R.stilt, R.ck].join("|");
+const fcKeyNow = () => [F.ih, F.S, F.aero, st.vu, R.sv, R.sth, R.spsi, R.stilt, R.ck, R.unst && CFDX.unst ? 1 : 0].join("|");
+// CFD extras (PM-012, PREDICTED; export_unsteady.py): force records for the force wobble, wake profiles for the shot spacing.
+// Loaded once; the solver workers get them in one message (they are too big to send with every job).
+const CFDX = { unst: null, wake: null, done: false };
+const cfdxMsg = () => ({ cfd: { unst: CFDX.unst, wake: CFDX.wake } });
+(async () => {
+  const get = async u => { try { const r = await fetch(u, { cache: "no-cache" }); return r.ok ? await r.json() : null; } catch (_) { return null; } };
+  const [u, w] = await Promise.all([get("data/unsteady.json"), get("data/wake.json")]);
+  CFDX.unst = u && u.runs && u.runs.length ? u : null; CFDX.wake = w && w.runs && w.runs.length ? w : null; CFDX.done = true;
+  RW.ws.concat(FC.ws).forEach(wk => { if (wk) try { wk.postMessage(cfdxMsg()); } catch (_) { /* ignore */ } });
+  rCfdxStatus();
+  if (R.ready && CFDX.wake && R.wakeGap > 0) rChanged("opt");
+  else if (R.ready && CFDX.unst && R.unst) { F.fcKey = ""; rScatterChanged(); }
+})();
 // precomputed field data built on the 3D cell (format 2, cell_model cell3d) checks the side walls itself
 const fWalls = () => !!(F.FI && F.FI.cell_model === "cell3d");
 const fMeta = () => { const FI = F.FI; return { grid: FI.grid, sections: FI.sections, frame: FI.frame, field_grid: FI.field_grid, cases: FI.cases.map(c => ({ S: c.S, var: c.var, params: c.params })) }; };
@@ -3503,7 +3624,7 @@ function fcEnsure(MD) {   // (re)start the pool for the current settings; result
     for (let k = 0; k < n; k++) {
       const w = new Worker(rWorkerUrl()), wi = k;
       w.onmessage = e => fcDone(e.data, wi); w.onerror = e => { if (e.preventDefault) e.preventDefault(); fcFail("worker-error"); };
-      w.postMessage({ meta: fMeta() }); FC.ws.push(w); FC.job.push(null);
+      w.postMessage({ meta: fMeta() }); if (CFDX.done) w.postMessage(cfdxMsg()); FC.ws.push(w); FC.job.push(null);
     }
   } catch (e) { fcFail("no-worker"); return; }   // no main-thread fallback: too slow for the whole field
   FC.ws.forEach((w, wi) => fcPump(wi));
@@ -3847,7 +3968,7 @@ function fieldInit() {
 // far / unfavourable side x < 0, near / favourable side x > 0, up-cell gate at (+0.401, 0).
 const R = { on: false, ready: false, x: -1.0, y: 0.2, heading: 0, travel: "360", h: 0.737, S: 1.0, vu: 0.42, aero: "nominal",
             tC: 20, altM: 0, rh: 0, drag: "const", sd: 0, wA: 0, wU: 0, wS: 0,
-            thMax: 86, mvOn: false, mvA: 0, mvC: 0, mvW: 0, d0: 0, lead: true, clTab: "", clRev: 0, gyro: false, tilt: 0, sv: 1.5, sth: 0.40, spsi: 0.50, stilt: 2, ck: 0.03, best: null, phi: "", robL: 18 * 0.0254, robW: 18 * 0.0254, robFo: 0, robLo: 0,
+            thMax: 86, mvOn: false, mvA: 0, mvC: 0, mvW: 0, d0: 0, lead: true, clTab: "", clRev: 0, gyro: false, tilt: 0, sv: 1.5, sth: 0.40, spsi: 0.50, stilt: 2, ck: 0.03, unst: 1, wakeGap: 0, best: null, phi: "", robL: 18 * 0.0254, robW: 18 * 0.0254, robFo: 0, robLo: 0,
             dMot: "gobilda", dIw: 2.65e-4, dV: 12, droopTest: "pending",   // flywheel droop readout (Advanced): motor CONFIRMED datasheet, inertia ASSUMED, battery user
             heat: false, twin: true, slow: true, pick: null, sel: null, res: null, resKey: "", solving: false, progress: 0,
             pose: null, shot: null, anim: null, meta: null, winGeom: null, heatMD: null, heatLayer: null, err: null };
@@ -3869,10 +3990,10 @@ function rPose() { R.pose = PS().pose(R.x, R.y, R.meta, { robot: rRobot(true) })
 const TRAVEL = [["360", "360°"], ["180", "±180°"], ["90", "±90°"], ["45", "±45°"], ["0", "fixed"]];
 const PS = () => window.PollenSolver;
 const wrap180 = a => { a = ((a + 180) % 360 + 360) % 360 - 180; return a === -180 ? 180 : a; };
-const rKey = () => [R.x.toFixed(4), R.y.toFixed(4), R.h.toFixed(4), R.S, R.aero, R.tC, R.altM, R.rh, R.drag, R.sd, R.wA, R.wU, R.wS, R.mvOn, R.mvA, R.mvC, R.mvW, R.d0, R.lead, R.clTab, R.clRev, R.gyro, R.phi, R.robL, R.robW, R.robFo, R.robLo, R.thMax, R.tilt].join("|");
+const rKey = () => [R.x.toFixed(4), R.y.toFixed(4), R.h.toFixed(4), R.S, R.aero, R.tC, R.altM, R.rh, R.drag, R.sd, R.wA, R.wU, R.wS, R.mvOn, R.mvA, R.mvC, R.mvW, R.d0, R.lead, R.clTab, R.clRev, R.gyro, R.phi, R.robL, R.robW, R.robFo, R.robLo, R.thMax, R.tilt, R.wakeGap, CFDX.wake ? 1 : 0].join("|");
 // launch scatter (ASSUMED, Advanced): only the hit chance and the best-chance search use it, so it is not in rKey
-const rSig = () => ({ sv: R.sv / 100, sth: R.sth, spsi: R.spsi, stilt: R.stilt, ck: R.ck });
-const rBKey = () => rKey() + "|" + [R.sv, R.sth, R.spsi, R.stilt, R.ck].join(",");
+const rSig = () => ({ sv: R.sv / 100, sth: R.sth, spsi: R.spsi, stilt: R.stilt, ck: R.ck, unst: R.unst && CFDX.unst ? 1 : 0 });
+const rBKey = () => rKey() + "|" + [R.sv, R.sth, R.spsi, R.stilt, R.ck, R.unst && CFDX.unst ? 1 : 0].join(",");
 const rCase = () => fCase(R.S, R.aero) || fCase(R.S, "nominal");
 const rpmOf = v => v / R.vu / (Math.PI * WHEEL_D) * 60;
 const vOfRpm = r => r / 60 * Math.PI * WHEEL_D * R.vu;
@@ -3900,6 +4021,7 @@ function rQuery() {
   if (tab || R.clRev || R.gyro) q.lift = { table: tab, rev: R.clRev, gyro: R.gyro };
   if (R.phi !== "" && isFinite(+R.phi)) q.effMass = { phi: +R.phi };
   if (R.tilt) q.tilt = R.tilt;
+  if (R.wakeGap > 0) q.wakeGap = R.wakeGap;
   return q;
 }
 function rClamp() {   // release point inside the bare walls; the chassis is checked by the footprint (pose status "illegal")
@@ -3924,20 +4046,20 @@ function rTurret() {   // yaw the turret needs, relative to the chassis front (+
 const RW = { ws: [null, null], url: null, busy: [false, false], id: 0, bid: 0, key: "", bkey: "", timer: 0, fallback: false,
              parts: {}, prog: {}, twinSep: true };
 function rWorkerMain() {   // runs inside each worker: its source is appended to the inlined physics.js + solver.js
-  var META = null, LAST = {};
+  var META = null, CFD = null, LAST = {};
   function err(x) { return String(x && x.message || x); }
   function strip(r) { [r && r.grid, r && r.twin && r.twin.grid].forEach(function (g) { if (g) { delete g.evaluated; delete g.rowEvaluated; } }); return r; }
   self.onmessage = function (e) {
     var m = e.data, Sv = self.PollenSolver;
-    if (m.meta) { META = m.meta; return; }
+    if (m.meta || m.cfd) { if (m.meta) META = m.meta; if (m.cfd) CFD = m.cfd; return; }
     if (m.hcKey) {   // chance it goes in at one setting
-      try { m.hc.q.meta = META; self.postMessage({ hcKey: m.hcKey, hc: Sv.hitChance(m.hc.q, m.hc.v, m.hc.theta, m.hc.opts) }); }
+      try { m.hc.q.meta = META; m.hc.q.cfd = CFD; self.postMessage({ hcKey: m.hcKey, hc: Sv.hitChance(m.hc.q, m.hc.v, m.hc.theta, m.hc.opts) }); }
       catch (x) { self.postMessage({ hcKey: m.hcKey, hcError: err(x) }); }
       return;
     }
     if (m.fcKey) {   // field-map chance layer: one spot, best chance with backspin and for the no-spin twin (small search)
       try {
-        var q = m.q; q.meta = META;
+        var q = m.q; q.meta = META; q.cfd = CFD;
         var one = function (part) {
           var r = Sv.solve(q, null, { part: part }), b = Sv.bestChance(q, r, m.bc);
           return b.ok ? { p: b.mean, v: b.v, theta: b.theta, n: b.n, count: r.count, gripLimited: b.gripLimited }
@@ -3957,7 +4079,7 @@ function rWorkerMain() {   // runs inside each worker: its source is appended to
       return;
     }
     try {
-      var qq = m.q; qq.meta = META;
+      var qq = m.q; qq.meta = META; qq.cfd = CFD;
       var r = strip(Sv.solve(qq, function (p) { self.postMessage({ id: m.id, part: m.part, progress: p }); }, { part: m.part }));
       LAST[m.part] = { key: m.key, q: qq, res: r };
       self.postMessage({ id: m.id, part: m.part, res: r });
@@ -3980,7 +4102,7 @@ function rWorker(i) {
   const w = new Worker(rWorkerUrl());
   w.onmessage = e => rOnMsg(e.data);
   w.onerror = e => { if (e.preventDefault) e.preventDefault(); rKill(); RW.fallback = true; rSolveNow(); };
-  w.postMessage({ meta: R.meta });
+  w.postMessage({ meta: R.meta }); if (CFDX.done) w.postMessage(cfdxMsg());
   RW.ws[i] = w; return w;
 }
 function rKill() { RW.ws.forEach((w, i) => { if (w) w.terminate(); RW.ws[i] = null; }); RW.busy = [false, false]; HC.pending = {}; }
@@ -4006,7 +4128,7 @@ function rSolveNow() {
   setTimeout(() => {   // main-thread fallback: blocks the page for a few seconds
     if (id !== RW.id) return;
     let r;
-    try { r = PS().solve(Object.assign(q, { meta: R.meta })); rOnMsg({ id, part: "main", res: r }); }
+    try { r = PS().solve(Object.assign(q, { meta: R.meta }, cfdxMsg())); rOnMsg({ id, part: "main", res: r }); }
     catch (e) { rOnMsg({ id, part: "main", error: String(e.message || e) }); return; }
     setTimeout(() => {
       if (id !== RW.id) return;
@@ -4075,7 +4197,7 @@ function rHcGet(v, theta, twinAt) {   // result, or null after asking for it (th
   const w = RW.ws[1] || RW.ws[0];
   if (!RW.fallback && w) { try { w.postMessage({ hcKey: key, hc: job }); return null; } catch (e) { /* main thread below */ } }
   setTimeout(() => {
-    try { rHcDone({ hcKey: key, hc: PS().hitChance(Object.assign(job.q, { meta: R.meta }), v, theta, job.opts) }); }
+    try { rHcDone({ hcKey: key, hc: PS().hitChance(Object.assign(job.q, { meta: R.meta }, cfdxMsg()), v, theta, job.opts) }); }
     catch (e) { rHcDone({ hcKey: key, hcError: String(e.message || e) }); }
   }, 30);
   return null;
@@ -4087,8 +4209,8 @@ function rHcDone(m) {
   if (R.on && R.ready) { rRender(); rTest(); }
 }
 const HC_NAMES = { Cl_low: "low lift", Cl_high: "high lift", nominal: "nominal air", given: "your air", Cl_table: "your Cl table", "no-spin twin": "no-spin twin" };
-const SRC_NAMES = { speed: "exit speed", angle: "hood angle", heading: "aim (left / right)", "axis tilt": "spin-axis tilt", knuckle: "knuckle side force" };
-const sideTxt = s => (s.stilt ? `, spin-axis tilt ${s.stilt}°` : "") + (s.ck ? `, knuckle force Cs ${s.ck} (fades with spin)` : "");
+const SRC_NAMES = { speed: "exit speed", angle: "hood angle", heading: "aim (left / right)", "axis tilt": "spin-axis tilt", knuckle: "knuckle side force", "CFD wobble": "CFD force wobble" };
+const sideTxt = s => (s.stilt ? `, spin-axis tilt ${s.stilt}°` : "") + (s.ck ? `, knuckle force Cs ${s.ck} (fades with spin)` : "") + (s.unst ? ", CFD force wobble (PREDICTED)" : "");
 const pc = p => (p * 100).toFixed(p < 0.1 ? 1 : 0) + "%";
 function rHcText(h, withTwin) {   // one "chance it goes in" line with the twin
   if (!h) return `Chance it goes in: <small>working it out (${HC.n} simulated shots per air set)…</small>`;
@@ -4150,7 +4272,7 @@ function rShotUpdate() {
   if (!sel && res.minRpm) sel = { v: res.minRpm.v, theta: res.minRpm.theta, src: "minRpm" };
   if (!sel) return;
   R.sel = sel;
-  const s = PS().shot(Object.assign(rQuery(), { meta: R.meta }), sel.v, sel.theta);
+  const s = PS().shot(Object.assign(rQuery(), { meta: R.meta }, cfdxMsg()), sel.v, sel.theta);
   s.end = rEnd(s.path, s.cls); s.twin.end = rEnd(s.twin.path, s.twin.cls);
   R.shot = s;
 }
@@ -4677,7 +4799,8 @@ function rSyncInputs() {
   sel.value = R.aero;
   $("rdrag").value = R.drag;
   [["rtc", "tC"], ["ralt", "altM"], ["rrh", "rh"], ["rwa", "wA"], ["rwu", "wU"], ["rws", "wS"], ["rmva", "mvA"], ["rmvc", "mvC"], ["rmvw", "mvW"], ["rd0", "d0"], ["rthx", "thMax"],
-   ["rclt", "clTab"], ["rclr", "clRev"], ["rphi", "phi"], ["rsv", "sv"], ["rsth", "sth"], ["rspsi", "spsi"], ["rtilt", "tilt"], ["rstilt", "stilt"], ["rck", "ck"], ["rdiw", "dIw"], ["rdv", "dV"]].forEach(([id, k]) => { if (document.activeElement !== $(id)) $(id).value = R[k]; });
+   ["rclt", "clTab"], ["rclr", "clRev"], ["rphi", "phi"], ["rsv", "sv"], ["rsth", "sth"], ["rspsi", "spsi"], ["rtilt", "tilt"], ["rstilt", "stilt"], ["rck", "ck"], ["rwgap", "wakeGap"], ["rdiw", "dIw"], ["rdv", "dV"]].forEach(([id, k]) => { if (document.activeElement !== $(id)) $(id).value = R[k]; });
+  $("runst").checked = !!R.unst; rCfdxStatus();
   $("rmv").checked = R.mvOn; $("rlead").checked = R.lead; $("rgyro").checked = R.gyro; $("rdmot").value = R.dMot;
   $("rclt").setAttribute("aria-invalid", String(!!R.clTab.trim() && !rClTab(R.clTab)));
   $("rclt-h").dataset.bad = R.clTab.trim() && !rClTab(R.clTab) ? "1" : "";
@@ -4690,6 +4813,12 @@ function rSyncInputs() {
   $("rc-exp").checked = Math.abs(R.robL - 24 * 0.0254) < 1e-9 && Math.abs(R.robW - 18 * 0.0254) < 1e-9;
   document.querySelectorAll(".c-blue").forEach(c => { c.checked = MAPV.blue; });
   $("rh").value = R.h; $("rh-o").textContent = `${R.h.toFixed(3)} m · ${inch(R.h)}`;
+}
+function rCfdxStatus() {   // what the CFD extras have to work with
+  const el = $("rcfdx-st"); if (!el) return;
+  el.textContent = !CFDX.done ? "loading CFD data…" :
+    (CFDX.unst ? `force wobble: ${CFDX.unst.runs.length} CFD force records` : "force wobble: CFD records missing (off)") + " · " +
+    (CFDX.wake ? `wake: ${CFDX.wake.runs.length} CFD wake runs` : "wake: CFD wake runs not finished yet (spacing ignored)");
 }
 function robotInit() {
   const FI = F.FI, GG = FI.grid;
@@ -4714,6 +4843,8 @@ function robotInit() {
   $("rgyro").addEventListener("change", e => { R.gyro = e.target.checked; rChanged("opt"); });
   [["rsv", "sv", 0, 10], ["rsth", "sth", 0, 5], ["rspsi", "spsi", 0, 5], ["rstilt", "stilt", 0, 10], ["rck", "ck", 0, 0.2]].forEach(([id, k, lo, hi]) =>   // scatter: only the chance search runs again
     $(id).addEventListener("change", e => { const v = parseFloat(e.target.value); if (!isFinite(v)) return; const nv = Math.max(lo, Math.min(hi, v)); if (nv !== R[k]) { R[k] = nv; F.fcKey = ""; rScatterChanged(); } }));
+  $("runst").addEventListener("change", e => { R.unst = e.target.checked ? 1 : 0; F.fcKey = ""; rScatterChanged(); });
+  $("rwgap").addEventListener("change", e => { const v = parseFloat(e.target.value); if (isFinite(v)) { R.wakeGap = Math.max(0, Math.min(2, v)); rChanged("opt"); } });
   $("rphi").addEventListener("change", e => { const t = e.target.value.trim(), v = parseFloat(t); R.phi = t === "" || !isFinite(v) ? "" : String(Math.max(0, Math.min(1, v))); rChanged("opt"); });
   // flywheel droop readout inputs: only the readout changes, no re-solve
   $("rdmot").addEventListener("change", e => { R.dMot = e.target.value; rChanged("droop"); });
@@ -4796,11 +4927,13 @@ function robotInit() {
   if (HASHQ.get("gyro") === "1") R.gyro = true;
   { const hx = parseFloat(HASHQ.get("hoodmax")); if (isFinite(hx)) R.thMax = Math.max(30, Math.min(89.5, hx)); }   // #robot?hoodmax=deg
   { const sf = (HASHQ.get("side") || "").split(",").filter(Boolean).map(Number);   // #robot?side=tilt deg,tilt scatter deg,knuckle Cs
-    if (sf.length === 3 && sf.every(isFinite)) Object.assign(R, { tilt: Math.max(-10, Math.min(10, sf[0])), stilt: Math.max(0, Math.min(10, sf[1])), ck: Math.max(0, Math.min(0.2, sf[2])) }); }
+    if (sf.length >= 3 && sf.every(isFinite)) Object.assign(R, { tilt: Math.max(-10, Math.min(10, sf[0])), stilt: Math.max(0, Math.min(10, sf[1])), ck: Math.max(0, Math.min(0.2, sf[2])) });
+    if (sf.length >= 4 && sf.every(isFinite)) R.unst = sf[3] ? 1 : 0;   // side=...,CFD wobble 0/1[,shot spacing s]
+    if (sf.length >= 5 && sf.every(isFinite)) R.wakeGap = Math.max(0, Math.min(2, sf[4])); }
   rClamp(); rPose();
   R0 = { x: R.x, y: R.y, heading: R.heading, travel: R.travel, h: R.h, S: R.S, vu: R.vu, aero: R.aero, heat: R.heat, twin: R.twin, slow: R.slow,
          tC: R.tC, altM: R.altM, rh: R.rh, drag: R.drag, sd: R.sd, wA: R.wA, wU: R.wU, wS: R.wS, thMax: R.thMax, mvOn: R.mvOn, mvA: R.mvA, mvC: R.mvC, mvW: R.mvW,
-         d0: R.d0, lead: R.lead, clTab: R.clTab, clRev: R.clRev, gyro: R.gyro, tilt: R.tilt, sv: R.sv, sth: R.sth, spsi: R.spsi, stilt: R.stilt, ck: R.ck, phi: R.phi, robL: R.robL, robW: R.robW, robFo: R.robFo, robLo: R.robLo,
+         d0: R.d0, lead: R.lead, clTab: R.clTab, clRev: R.clRev, gyro: R.gyro, tilt: R.tilt, sv: R.sv, sth: R.sth, spsi: R.spsi, stilt: R.stilt, ck: R.ck, unst: R.unst, wakeGap: R.wakeGap, phi: R.phi, robL: R.robL, robW: R.robW, robFo: R.robFo, robLo: R.robLo,
          dMot: R.dMot, dIw: R.dIw, dV: R.dV };
   R.ready = true;
 }

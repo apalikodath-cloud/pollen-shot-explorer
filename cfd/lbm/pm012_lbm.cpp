@@ -72,6 +72,10 @@ typedef cl_int(CLAPI* P_EnqueueReadBuffer)(cl_command_queue, cl_mem, cl_bool, si
 typedef cl_int(CLAPI* P_EnqueueWriteBuffer)(cl_command_queue, cl_mem, cl_bool, size_t, size_t, const void*, cl_uint, const cl_event*, cl_event*);
 typedef cl_int(CLAPI* P_Finish)(cl_command_queue);
 typedef cl_int(CLAPI* P_ReleaseMemObject)(cl_mem);
+typedef cl_int(CLAPI* P_WaitForEvents)(cl_uint, const cl_event*);
+typedef cl_int(CLAPI* P_GetEventProfilingInfo)(cl_event, cl_uint, size_t, void*, size_t*);
+typedef cl_int(CLAPI* P_ReleaseEvent)(cl_event);
+typedef cl_int(CLAPI* P_GetKernelInfo)(cl_kernel, cl_uint, size_t, void*, size_t*);
 
 static struct {
 	P_GetPlatformIDs GetPlatformIDs; P_GetDeviceIDs GetDeviceIDs; P_GetDeviceInfo GetDeviceInfo; P_CreateContext CreateContext;
@@ -79,6 +83,7 @@ static struct {
 	P_BuildProgram BuildProgram; P_GetProgramBuildInfo GetProgramBuildInfo; P_CreateKernel CreateKernel; P_SetKernelArg SetKernelArg;
 	P_EnqueueNDRangeKernel EnqueueNDRangeKernel; P_EnqueueReadBuffer EnqueueReadBuffer; P_EnqueueWriteBuffer EnqueueWriteBuffer;
 	P_Finish Finish; P_ReleaseMemObject ReleaseMemObject;
+	P_WaitForEvents WaitForEvents; P_GetEventProfilingInfo GetEventProfilingInfo; P_ReleaseEvent ReleaseEvent; P_GetKernelInfo GetKernelInfo;
 } cl;
 
 [[noreturn]] static void die(const char* fmt, ...) {
@@ -94,6 +99,7 @@ static void load_opencl() {
 	GETP(GetPlatformIDs); GETP(GetDeviceIDs); GETP(GetDeviceInfo); GETP(CreateContext); GETP(CreateCommandQueue);
 	GETP(CreateBuffer); GETP(CreateProgramWithSource); GETP(BuildProgram); GETP(GetProgramBuildInfo); GETP(CreateKernel);
 	GETP(SetKernelArg); GETP(EnqueueNDRangeKernel); GETP(EnqueueReadBuffer); GETP(EnqueueWriteBuffer); GETP(Finish); GETP(ReleaseMemObject);
+	GETP(WaitForEvents); GETP(GetEventProfilingInfo); GETP(ReleaseEvent); GETP(GetKernelInfo);
 #undef GETP
 }
 
@@ -120,6 +126,7 @@ static void usage() {
 		"  stl=<path> Dmm=71.12 (outer diameter mapped to D)   rx,ry,rz=<deg> static orientation (about x, then y, then z)\n"
 		"  ref=4 occupancy voxels per cell   revox=<steps> geometry update interval of a spinning STL (default: wall moves <= 0.1 cell)\n"
 		"  svol=22312.36 STL enclosed volume in mm^3 (check)   pert=1e-3 initial noise (fraction of u)   wg=128 work-group size\n"
+		"  prof=0 1 = per-kernel GPU time from OpenCL events, written as # prof lines to the csv (adds a host wait every 256 launches)\n"
 		"  favg=1 each CSV row averages the force over every step since the previous row (0: instantaneous sample)\n"
 		"  bulk=<omega> relaxation rate of the bulk (trace) part of the stress, regularized only (default: same as shear)\n"
 		"  csn=<Cs> Smagorinsky constant of the wall cells (default Cs)   taun=<tau> lower bound of tau in the wall cells\n"
@@ -306,7 +313,7 @@ int main(int argc, char** argv) {
 	}
 	static const char* known[] = { "body", "D", "Re", "u", "S", "Lx", "Ly", "Lz", "xc", "T", "every", "out", "cl", "prec", "coll", "Cs",
 		"outlet", "stl", "Dmm", "rx", "ry", "rz", "ref", "revox", "svol", "pert", "wg", "uw", "nu", "platform", "device", "favg", "bulk", "csn",
-		"taun", "lv", "fb", "gb", "plan", "seed", "holes", "wall_mm", "hole_mm", "wall", "pball", "dump", "dumpstride", "dumpbox" };
+		"taun", "lv", "fb", "gb", "plan", "seed", "holes", "wall_mm", "hole_mm", "wall", "pball", "dump", "dumpstride", "dumpbox", "prof" };
 	for (const auto& kv : g_arg) {
 		bool ok = false;
 		for (const char* k : known) ok = ok || kv.first == k;
@@ -345,6 +352,7 @@ int main(int argc, char** argv) {
 	const double pert = stokes ? 0.0 : arg_d("pert", 1e-3);
 	const int wg = (int)arg_d("wg", 128.0);
 	if (wg < 32 || wg > 1024 || (wg & (wg - 1))) die("wg must be a power of two in 32..1024");
+	const bool prof = arg_d("prof", 0.0) != 0.0; // per-kernel GPU time from OpenCL events (adds a host wait every 256 launches)
 	if (D0 < 8.0 || D > 1600.0 || u < 0.0 || u > 0.15 || nu <= 0.0) die("D, u or nu out of range (coarsest level needs D/2^(lv-1) >= 8)");
 	auto triple = [&](const char* k, const double def[3], double v[3]) {
 		const std::string s = arg_s(k, "");
@@ -581,7 +589,7 @@ int main(int argc, char** argv) {
 	cl_int err = 0;
 	cl_context ctx = cl.CreateContext(props, 1, &dev, nullptr, nullptr, &err);
 	if (err != CL_SUCCESS) die("clCreateContext failed: %d", (int)err);
-	cl_command_queue q = cl.CreateCommandQueue(ctx, dev, 0, &err);
+	cl_command_queue q = cl.CreateCommandQueue(ctx, dev, prof ? 2 /* CL_QUEUE_PROFILING_ENABLE */ : 0, &err);
 	if (err != CL_SUCCESS) die("clCreateCommandQueue failed: %d", (int)err);
 
 	std::string src;
@@ -688,9 +696,36 @@ int main(int argc, char** argv) {
 	else { const uint8_t z16[16] = { 0 }; CK(cl.EnqueueWriteBuffer(q, occb, CL_TRUE, 0, 16, z16, 0, nullptr, nullptr)); }
 
 	const size_t lwg = (size_t)wg;
+	// prof=1: every launch gets an event; events are drained in batches of 256 and the device time (END - START) is
+	// summed per (kernel name, work size). Work size tells the levels apart (each level has its own cell count).
+	struct ProfAcc { double ns = 0.0; unsigned long long calls = 0; };
+	std::map<std::pair<std::string, size_t>, ProfAcc> prof_acc;
+	std::vector<std::pair<std::pair<cl_kernel, size_t>, cl_event>> prof_ev;
+	auto prof_drain = [&]() {
+		if (prof_ev.empty()) return;
+		std::vector<cl_event> evs;
+		for (auto& e : prof_ev) evs.push_back(e.second);
+		CK(cl.WaitForEvents((cl_uint)evs.size(), evs.data()));
+		for (auto& e : prof_ev) {
+			cl_ulong t0 = 0, t1 = 0;
+			CK(cl.GetEventProfilingInfo(e.second, 0x1282 /* START */, sizeof(t0), &t0, nullptr));
+			CK(cl.GetEventProfilingInfo(e.second, 0x1283 /* END */, sizeof(t1), &t1, nullptr));
+			char nm[128] = "";
+			CK(cl.GetKernelInfo(e.first.first, 0x1190 /* CL_KERNEL_FUNCTION_NAME */, sizeof(nm) - 1, nm, nullptr));
+			ProfAcc& a = prof_acc[{ std::string(nm), e.first.second }];
+			a.ns += (double)(t1 - t0);
+			a.calls++;
+			CK(cl.ReleaseEvent(e.second));
+		}
+		prof_ev.clear();
+	};
 	auto launch = [&](cl_kernel k, size_t n) {
 		const size_t g = ((n + lwg - 1) / lwg) * lwg;
-		CK(cl.EnqueueNDRangeKernel(q, k, 1, nullptr, &g, &lwg, 0, nullptr, nullptr));
+		if (!prof) { CK(cl.EnqueueNDRangeKernel(q, k, 1, nullptr, &g, &lwg, 0, nullptr, nullptr)); return; }
+		cl_event ev = nullptr;
+		CK(cl.EnqueueNDRangeKernel(q, k, 1, nullptr, &g, &lwg, 0, nullptr, &ev));
+		prof_ev.push_back({ { k, n }, ev });
+		if (prof_ev.size() >= 256) prof_drain();
 	};
 	for (int l = 0; l < L; l++) {
 		Level& c = lv[l];
@@ -1158,6 +1193,19 @@ int main(int argc, char** argv) {
 			printf("masstest: mass %.12g -> %.12g, relative change %.3e (largest over the samples %.3e)\n", mass0, m, m / mass0 - 1.0,
 				std::max(dmax, std::fabs(m / mass0 - 1.0)));
 		}
+	}
+	if (prof) {
+		prof_drain();
+		double tot = 0.0;
+		for (auto& kv : prof_acc) tot += kv.second.ns;
+		for (auto& kv : prof_acc) {
+			const ProfAcc& a = kv.second;
+			fprintf(fo, "# prof kernel=%s n=%zu calls=%llu gpu_ms=%.6g ms_per_call=%.6g share=%.4f wall_share=%.4f\n", kv.first.first.c_str(),
+				kv.first.second, a.calls, a.ns * 1e-6, a.ns * 1e-6 / (double)a.calls, a.ns / tot, a.ns * 1e-9 / secs);
+			printf("prof %-16s n=%10zu calls=%8llu gpu %9.1f ms  %8.3f ms/call  %5.1f %%\n", kv.first.first.c_str(), kv.first.second, a.calls,
+				a.ns * 1e-6, a.ns * 1e-6 / (double)a.calls, 100.0 * a.ns / tot);
+		}
+		fprintf(fo, "# prof total_gpu_s=%.6g wall_s=%.6g\n", tot * 1e-9, secs);
 	}
 	fclose(fo);
 	printf("PM-012 done: %.1f s, %.0f MLUPs, wrote %s\n", secs, mlups, out.c_str());

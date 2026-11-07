@@ -557,6 +557,23 @@
   // p.wind3 = [x, y, z] m/s in the frame of the call. z up, gravity along -z.
   // p.knuck = [cs, cn]: knuckle side force q |v_rel|^2 (cs e_side + cn e_n), e_side = horizontal left of v_rel, e_n = e_side x
   // v_rel / |v_rel| (the across-flight direction in the vertical plane); coefficients held over the flight (one draw per shot).
+  // p.unst = { dt, cy, cl, t0, c, s }: CFD force record (PM-012, PREDICTED): side / lift coefficients about the run mean,
+  // one value every dt s of flight (record step in D/u times D / launch speed), read from t0 s on (wraps around), turned by
+  // the roll angle (c, s = its cos, sin) in the (e_side, e_n) plane: the shedding buzz and the slow drift of the force
+  // (knuckle switching at low spin), q |v_rel|^2 (cs e_side + cn e_n).
+  // p.wk = { age, D, x, ud, un, pw }: wake of the previous ball on the same path (PM-012, PREDICTED inside the CFD box,
+  // power law x^-pw beyond it, ASSUMED). The air here was passed by ball 1 age s ago, x = age |v| / D diameters behind it;
+  // it moves with ud |v| along the flight and un |v| along e_n (straight-path mapping, ball 1 as fast as this one: ASSUMED).
+  function wakeAt(wk, x, out) {
+    const X = wk.x, n = X.length;
+    if (x <= X[0]) { out[0] = wk.ud[0]; out[1] = wk.un[0]; return out; }
+    if (x >= X[n - 1]) { const f = Math.pow(x / X[n - 1], -wk.pw); out[0] = wk.ud[n - 1] * f; out[1] = wk.un[n - 1] * f; return out; }
+    let lo = 0, hi = n - 1;
+    while (hi - lo > 1) { const m = (lo + hi) >> 1; if (X[m] <= x) lo = m; else hi = m; }
+    const a = (x - X[lo]) / (X[hi] - X[lo]);
+    out[0] = wk.ud[lo] + a * (wk.ud[hi] - wk.ud[lo]); out[1] = wk.un[lo] + a * (wk.un[hi] - wk.un[lo]);
+    return out;
+  }
   function makeAcc3(p, w0) {
     const R = p.radius, q = 0.5 * p.rho * Math.PI * R * R / p.mass, g = p.g || 9.80665, nu = p.nu || 1.5e-5;
     const w3 = p.wind3 || [0, 0, 0], wx0 = +w3[0] || 0, wy0 = +w3[1] || 0, wz0 = +w3[2] || 0;
@@ -564,8 +581,18 @@
     const aw = Math.sqrt(w0[0] * w0[0] + w0[1] * w0[1] + w0[2] * w0[2]), spin = aw > 0 && p.rho > 0;
     const lift = spin && liftOn(p), sperp = !!p.s_perp, ie = 1 / (1 + (+p.eps_mass || 0));
     const kn = p.knuck, kS = kn ? +kn[0] || 0 : 0, kN = kn ? +kn[1] || 0 : 0, knk = (kS !== 0 || kN !== 0) && p.rho > 0;
+    const un = p.unst && p.rho > 0 && p.unst.cy && p.unst.cy.length > 1 ? p.unst : null, unN = un ? un.cy.length : 0;
+    const wk = p.wk && p.wk.age > 0 && p.rho > 0 ? p.wk : null, wa = [0, 0], side = knk || !!un;
     return function (t, vx, vy, vz, out) {
-      const ux = vx - wx0, uy = vy - wy0, uz = vz - wz0, sp2 = ux * ux + uy * uy + uz * uz, sp = Math.sqrt(sp2);
+      let ux = vx - wx0, uy = vy - wy0, uz = vz - wz0, sp2 = ux * ux + uy * uy + uz * uz, sp = Math.sqrt(sp2);
+      if (wk && sp > 0) {   // previous ball's wake: the air moves with it, so the air speed past this ball drops
+        wakeAt(wk, wk.age * sp / wk.D, wa);
+        // e_n = e_side x e_v points down for a forward shot, so the CFD un (+ = the lift side, up for backspin) is -e_n
+        const uh = Math.sqrt(ux * ux + uy * uy) + 1e-12, sx = -uy / uh, sy = ux / uh, m = 1 - wa[0], e = wa[1] * sp;
+        const nx = sy * uz / sp, ny = -sx * uz / sp, nz = (sx * uy - sy * ux) / sp;
+        ux = ux * m + e * nx; uy = uy * m + e * ny; uz = uz * m + e * nz;
+        sp2 = ux * ux + uy * uy + uz * uz; sp = Math.sqrt(sp2);
+      }
       const re = sp * (2 * R) / nu;
       let cde = cdBase(p, re), S = 0, cx = 0, cy = 0, cz = 0;
       if (spin) {
@@ -579,10 +606,17 @@
         const cm = Math.sqrt(cx * cx + cy * cy + cz * cz);
         if (cm > 0) { const f = q * clOf(p, S, re) * sp2 / cm; ax += f * cx; ay += f * cy; az += f * cz; }
       }
-      if (knk && sp > 0) {
+      if (side && sp > 0) {
         const uh = Math.sqrt(ux * ux + uy * uy) + 1e-12, sx = -uy / uh, sy = ux / uh;
         const nx = sy * uz / sp, ny = -sx * uz / sp, nz = (sx * uy - sy * ux) / sp, f = q * sp2;
-        ax += f * (kS * sx + kN * nx); ay += f * (kS * sy + kN * ny); az += f * kN * nz;
+        let cS = kS, cN = kN;
+        if (un) {
+          let r = (t + un.t0) / un.dt % unN; if (r < 0) r += unN;
+          const i = Math.floor(r), j = i + 1 < unN ? i + 1 : 0, a = r - i;
+          const yv = un.cy[i] + a * (un.cy[j] - un.cy[i]), lv = un.cl[i] + a * (un.cl[j] - un.cl[i]);
+          cS += un.c * yv - un.s * lv; cN += un.s * yv + un.c * lv;
+        }
+        ax += f * (cS * sx + cN * nx); ay += f * (cS * sy + cN * ny); az += f * cN * nz;
       }
       if (ie !== 1) { ax *= ie; ay *= ie; az *= ie; }
       out[0] = ax; out[1] = ay; out[2] = az;

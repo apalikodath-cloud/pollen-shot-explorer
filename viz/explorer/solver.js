@@ -426,26 +426,76 @@
     out.lead = deg(Math.atan2(ey * F.ux - ex * F.uy, ex * F.ux + ey * F.uy));
     return out;
   }
-  function params3(p, F) {
-    const w = p.wind || [0, 0], al = +w[0] || 0, up = +w[1] || 0, sd = F.side || 0;
-    if (!al && !up && !sd) return p;
-    return Object.assign({}, p, { wind3: [al * F.ux + sd * F.nx, al * F.uy + sd * F.ny, up] });
+  function params3(p, F, S) {
+    const w = p.wind || [0, 0], al = +w[0] || 0, up = +w[1] || 0, sd = F.side || 0, wk = F.wake ? wakeFor(F.wake, S) : null;
+    if (!al && !up && !sd && !wk) return p;
+    const o = Object.assign({}, p);
+    if (al || up || sd) o.wind3 = [al * F.ux + sd * F.nx, al * F.uy + sd * F.ny, up];
+    if (wk) o.wk = wk;
+    return o;
+  }
+  // ---- CFD extras (PM-012, PREDICTED): q.cfd = { unst: data/unsteady.json, wake: data/wake.json } from export_unsteady.py
+  // the CFD run(s) nearest in spin ratio |S| (every hole orientation run at that S)
+  function nearestRuns(runs, S) {
+    let best = Infinity;
+    for (const r of runs) best = Math.min(best, Math.abs(r.S - Math.abs(S)));
+    return runs.filter(function (r) { return Math.abs(Math.abs(r.S - Math.abs(S)) - best) < 1e-9; });
+  }
+  // wake profile of the previous ball for this spin: { age, D, x, ud, un, pw } (physics.js p.wk); runs averaged when several
+  function wakeFor(W, S) {
+    const key = "S" + Math.abs(S);
+    if (W._c && W._c[key]) return W._c[key];
+    const rs = nearestRuns(W.runs, S);
+    if (!rs.length) return null;
+    const r = rs[0], k = rs.length, avg = function (nm) { return r[nm].map(function (_, i) { return rs.reduce(function (a, b) { return a + b[nm][i]; }, 0) / k; }); };
+    const o = { age: W.age, D: W.D, x: Float64Array.from(r.x), ud: Float64Array.from(avg("ud")), un: Float64Array.from(avg("un")),
+                pw: rs.reduce(function (a, b) { return a + b.pw; }, 0) / k, S: r.S, xMax: r.x[r.x.length - 1] };
+    if (!W._c) Object.defineProperty(W, "_c", { value: {}, enumerable: false });
+    return (W._c[key] = o);
+  }
+  // force records for this spin (Float64Array copies, cached on the data object)
+  function unstRuns(U, S) {
+    const key = "S" + Math.abs(S);
+    if (U._c && U._c[key]) return U._c[key];
+    const o = { dtau: U.dtau, runs: nearestRuns(U.runs, S).map(function (r) { return { S: r.S, name: r.name, cy: Float64Array.from(r.cy), cl: Float64Array.from(r.cl) }; }) };
+    if (!U._c) Object.defineProperty(U, "_c", { value: {}, enumerable: false });
+    return (U._c[key] = o);
+  }
+  // one shot's record (physics.js p.unst) from three uniforms: which run, where in it, and (no spin only: no axis
+  // ties the pattern to the flight) the roll about the flight direction
+  function unstShot(ur, u0, u1, u2, v, S, R, k) {
+    const r = ur.runs[Math.min(ur.runs.length - 1, Math.floor(u0 * ur.runs.length))], dt = ur.dtau * 2 * R / Math.max(v, 0.5);
+    const a = S === 0 ? 2 * Math.PI * u2 : 0;
+    return { dt: dt, cy: r.cy, cl: r.cl, t0: u1 * r.cy.length * dt, c: k * Math.cos(a), s: k * Math.sin(a) };
+  }
+  function uniforms(seed, n) {
+    let a = seed >>> 0;
+    const o = new Float64Array(n);
+    for (let i = 0; i < n; i++) {
+      a = (a + 0x6D2B79F5) >>> 0;
+      let t = a;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      o[i] = ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+    return o;
   }
   // fastShot on the 3D path: same out contract (out[0] minClear, out[1] entry angle, out[2] code, out[3] gate
   // distance; code 5 = the lead cannot cancel the sideways robot speed). Classifies on the 3D cell on the fly.
   // dTilt (rad) = spin-axis tilt scatter; kn = [cs, cn] knuckle side-force coefficients of this shot (physics.js p.knuck)
-  function fastShot3D(F, v, thDeg, S, p, pr, cell, h, zStop, out, dPsi, dTilt, kn) {
+  // un = this shot's CFD force record (physics.js p.unst; null = none)
+  function fastShot3D(F, v, thDeg, S, p, pr, cell, h, zStop, out, dPsi, dTilt, kn, un) {
     const L = launch3(F, v, thDeg, S, p.radius, dPsi || 0, {}, dTilt);
     out[3] = Infinity;
     if (!L) { out[0] = -Infinity; out[1] = NaN; out[2] = 5; return 0; }
-    let p3 = params3(p, F);
-    if (kn) p3 = Object.assign({}, p3, { knuck: kn });
+    let p3 = params3(p, F, S);
+    if (kn || un) { p3 = Object.assign({}, p3); if (kn) p3.knuck = kn; if (un) p3.unst = un; }
     const acc = P.makeAcc3(p3, L.w0), Rb = p.radius, g = p.g || 9.80665, dt = 2e-3;
     const nT = Math.ceil(3.0 / dt) + 1;
     const m = Rb + 0.2, bx0 = pr.bx0 - m, bx1 = pr.bx1 + m, bz0 = pr.bz0 - m, bz1 = pr.bz1 + m;
     const q = 0.5 * p.rho * Math.PI * Rb * Rb / p.mass, vb = v + F.vr, vmax2 = vb * vb + 2 * g * Math.max(0, -zStop);
     const liftAny = S !== 0 && p.rho > 0 && P.liftOn(p);
-    const xExitOK = (!liftAny || (S > 0 && P.liftNonNeg(p) && q * P.clMaxOf(p) * vmax2 < g)) && !p3.wind3 && !kn;
+    const xExitOK = (!liftAny || (S > 0 && P.liftNonNeg(p) && q * P.clMaxOf(p) * vmax2 < g)) && !p3.wind3 && !kn && !un && !p3.wk;
     const gx0 = pr.g0x, gz0 = pr.g0z, gdx = pr.g1x - pr.g0x, gdz = pr.g1z - pr.g0z, gden = gdx * gdx + gdz * gdz;
     const a1 = [0, 0, 0], a2 = [0, 0, 0], a3 = [0, 0, 0], a4 = [0, 0, 0], hh = dt / 2, zs = zStop + h;
     let x = L.x0[0], y = L.x0[1], z = h, vx = L.v0[0], vy = L.v0[1], vz = L.v0[2], t = 0;
@@ -492,7 +542,7 @@
   function path3D(F, v, thDeg, S, p, h, zStop, dPsi) {
     const L = launch3(F, v, thDeg, S, p.radius, dPsi || 0, {});
     if (!L) return null;
-    const path = P.integrate3D([L.x0[0], L.x0[1], h], L.v0, L.w0, params3(p, F), 2e-3, 3.0, zStop + h);
+    const path = P.integrate3D([L.x0[0], L.x0[1], h], L.v0, L.w0, params3(p, F, S), 2e-3, 3.0, zStop + h);
     path.launch = L;
     return path;
   }
@@ -543,10 +593,13 @@
     return sec._cells[key] || (sec._cells[key] = P.buildCell3D(sec, { ridge: ridge, wallT: wallT }));
   }
 
+  // second ball through the first one's wake (q.wakeGap s apart, same path); needs the CFD wake data
+  function wakeOn(q) { return +q.wakeGap > 0 && !!(q.cfd && q.cfd.wake && q.cfd.wake.runs && q.cfd.wake.runs.length); }
   // q.sideWalls (default true): 3D cell model (side walls, pentagon roof along the real path);
   // false = the PM-005/PM-009 section model at s_eff(psi) (the exported masks).
   function context(q, force3D) {
-    const mv = moveFor(q), tilt = +q.tilt || 0, use3 = mv.any || !!force3D || (tilt !== 0 && (q.S || 0) !== 0);
+    const mv = moveFor(q), tilt = +q.tilt || 0, wkOn = wakeOn(q);
+    const use3 = mv.any || !!force3D || (tilt !== 0 && (q.S || 0) !== 0) || wkOn;
     const sideWalls = q.sideWalls !== false || use3;      // the 3D path needs the 3D cell
     const ps = pose(q.x, q.y, q.meta, { sideWalls: sideWalls, robot: q.robot });
     let sec = sectionFor(ps.side, sideWalls ? 0 : ps.psi, q.meta);
@@ -556,8 +609,9 @@
     const c3 = sideWalls ? { cell: cellFor(sec, q), aimX: ps.Lh - ps.d, tp: Math.tan(rad(ps.psi)) } : null;
     const F = use3 && ps.ok ? frameFor(ps, mv, q) : null;
     if (F) F.tilt = rad(tilt);
+    if (F && wkOn) F.wake = { age: +q.wakeGap, D: 2 * ((q.params && q.params.radius) || R_BALL), runs: q.cfd.wake.runs };
     return { ps: ps, sec: sec, pr: pr, cps: cps, zStop: zStopFor(q.h, pr), c3: c3, sideWalls: sideWalls, F: F,
-             forced3D: use3 && q.sideWalls === false };
+             forced3D: use3 && q.sideWalls === false, cfd: q.cfd || null };
   }
 
   // the model's reference classifier on a physics.js integrateOblique path
@@ -600,7 +654,7 @@
     }
     // apex bound (lift <= q*clmax*v^2 while rising): skip v whose apex cannot reach the inside polygon
     const qq = 0.5 * p.rho * Math.PI * p.radius * p.radius / p.mass, g = p.g || 9.80665;
-    const dzNeed = pr.izMin - h, wnd = p.wind || [0, 0], windy = +wnd[0] !== 0 || +wnd[1] !== 0 || !!(ctx.F && ctx.F.side);
+    const dzNeed = pr.izMin - h, wnd = p.wind || [0, 0], windy = +wnd[0] !== 0 || +wnd[1] !== 0 || !!(ctx.F && (ctx.F.side || ctx.F.wake));
     const ieM = 1 / (1 + (+p.eps_mass || 0));
     let count = 0;
     const gate = new Float32Array(N).fill(Infinity), rowDone = new Uint8Array(nTh);
@@ -974,6 +1028,13 @@
       ", ASSUMED); acceleration = (F/m + g) / (1 + eps)");
     if (+q.tilt && q.S) n.push("spin axis tilted " + (+q.tilt) + " deg about the exit direction (" + (+q.tilt > 0 ? "curves left" : "curves right") +
       "; ASSUMED): part of the Magnus force pushes sideways; 3D flight on the 3D cell");
+    if (+q.wakeGap > 0) {
+      if (wakeOn(q)) {
+        const wk = wakeFor({ age: +q.wakeGap, D: 2 * R_BALL, runs: q.cfd.wake.runs }, q.S || 0);
+        n.push("second ball " + (+q.wakeGap) + " s behind the first, through its wake on the same path (CFD wake of a ball at S " + wk.S +
+          " PREDICTED to " + wk.xMax.toFixed(1) + " D behind it, power law x^-" + wk.pw.toFixed(2) + " beyond (ASSUMED); same path, same speed ASSUMED); 3D flight on the 3D cell");
+      } else n.push("shot spacing " + (+q.wakeGap) + " s ignored: the CFD wake runs are not finished yet");
+    }
     if (p.s_perp) n.push("gyro-correct spin ratio S_perp = |w x v| R / v^2 on the 3D path (no change for pure backspin)");
     const mv = moveFor(q);
     if (q.move) n.push("robot moving (user): " + mv.along + " m/s toward the goal, " + mv.across + " m/s sideways" +
@@ -1042,12 +1103,19 @@
   // knuckleFactor(S); both 0 here (the Python twin has neither), the page passes its own ASSUMED / derived values.
   // Their draws come from a second stream P.normals(seed + 101, 3 n) (z_tilt, z_side, z_n), so with both 0 every count is
   // the same as before.
-  const HC_SIG = { sv: 0.015, sth: 0.40, spsi: 0.50, stilt: 0, ck: 0 };
+  const HC_SIG = { sv: 0.015, sth: 0.40, spsi: 0.50, stilt: 0, ck: 0, unst: 0 };
   // knuckle force fades once the ball turns: 1 / (1 + (S / 0.05)^2) (ASSUMED; S 0.05 = about two turns in a 1.3 s flight at
   // 7 m/s), so it acts on the no-spin twin and is about 0.25 % of itself at S 1
   const KN_S = 0.05;
   function knuckleFactor(S) { const r = S / KN_S; return 1 / (1 + r * r); }
-  function hcExtra(sig, seed, n) { return sig.stilt || sig.ck ? P.normals(seed, 3 * n) : null; }
+  // sig.unst = 1 adds the CFD force record (shedding buzz, slow drift, knuckle switching at low spin) to every shot: needs
+  // q.cfd.unst; its draws are three uniforms per shot from uniforms(seed + 7, 3 n) (run, start, roll), hung on Zx as Zx.u
+  function hcExtra(sig, seed, n) {
+    if (!(sig.stilt || sig.ck || sig.unst)) return null;
+    const z = P.normals(seed, 3 * n);
+    if (sig.unst) z.u = uniforms(seed + 7, 3 * n);
+    return z;
+  }
   const HC_NOTE = "model probability under ASSUMED launch scatter (not a measured repeatability)";
   function hcSig(o) { return Object.assign({}, HC_SIG, (o && o.sig) || {}); }
   // the aero sets of this spin: Cl low / nominal / high from meta.cases (S != 0); a user Cl(S) table replaces the
@@ -1067,11 +1135,13 @@
   // clean 3D shots among draws i0..i1-1 of Z (z_v, z_theta, z_psi per shot) and Zx (z_tilt, z_side, z_n; null = none)
   function mcCount(ctx, h, S, p, v, theta, Z, sig, i0, i1, out, Zx) {
     const cell = ctx.c3.cell, st = Zx && S !== 0 ? rad(sig.stilt || 0) : 0, ck = Zx ? (sig.ck || 0) * knuckleFactor(S) : 0;
+    const ur = Zx && Zx.u && sig.unst && ctx.cfd && ctx.cfd.unst ? unstRuns(ctx.cfd.unst, S) : null, U = ur && ur.runs.length ? Zx.u : null;
     let k = 0;
     for (let i = i0; i < i1; i++) {
       const vi = v * (1 + sig.sv * Z[3 * i]), ti = theta + sig.sth * Z[3 * i + 1], dp = rad(sig.spsi * Z[3 * i + 2]);
       const dt = st ? st * Zx[3 * i] : 0, kn = ck ? [ck * Zx[3 * i + 1], ck * Zx[3 * i + 2]] : null;
-      if (fastShot3D(ctx.F, vi, ti, S, p, ctx.pr, cell, h, ctx.zStop, out, dp, dt, kn) === 1) k++;
+      const un = U ? unstShot(ur, U[3 * i], U[3 * i + 1], U[3 * i + 2], vi, S, p.radius, sig.unst) : null;
+      if (fastShot3D(ctx.F, vi, ti, S, p, ctx.pr, cell, h, ctx.zStop, out, dp, dt, kn, un) === 1) k++;
     }
     return k;
   }
@@ -1080,6 +1150,7 @@
     return HC_NOTE + "; scatter: speed " + (sig.sv * 100).toFixed(1) + " % , angle " + sig.sth + " deg, heading " +
            sig.spsi + " deg (1 sigma, ASSUMED; robustness.py ERR_SETS nominal by default)" +
            (sig.stilt ? ", spin-axis tilt " + sig.stilt + " deg (ASSUMED)" : "") +
+           (sig.unst ? ", CFD force wobble (shedding buzz and slow drift of the side and lift force, PM-012 records PREDICTED)" : "") +
            (sig.ck ? ", knuckle side force Cs " + sig.ck + " per direction x 1/(1+(S/" + KN_S + ")^2) (from PREDICTED S 0 CFD; hole orientation ASSUMED random)" : "") +
            "; Wilson 95 % interval";
   }
@@ -1215,12 +1286,13 @@
     const mean = rows.reduce(function (a, r) { return a + r.p; }, 0) / rows.length;
     // stage 4: one scatter source at a time, on the nominal set (or the Cl table / the only set)
     const ib = Math.max(0, rows.findIndex(function (r) { return r.name === "nominal" || r.name === "Cl_table"; }));
-    const z5 = { sv: 0, sth: 0, spsi: 0, stilt: 0, ck: 0 }, one = function (k) { const s = Object.assign({}, z5); s[k] = sig[k]; return s; };
+    const z5 = { sv: 0, sth: 0, spsi: 0, stilt: 0, ck: 0, unst: 0 }, one = function (k) { const s = Object.assign({}, z5); s[k] = sig[k]; return s; };
     const parts = o.breakdown === false ? [] : [["speed", one("sv")], ["angle", one("sth")], ["heading", one("spsi")]]
-      .concat(sig.stilt && S !== 0 ? [["axis tilt", one("stilt")]] : [], sig.ck ? [["knuckle", one("ck")]] : []).map(function (ps) {
+      .concat(sig.stilt && S !== 0 ? [["axis tilt", one("stilt")]] : [], sig.ck ? [["knuckle", one("ck")]] : [],
+              sig.unst && ctx.cfd && ctx.cfd.unst ? [["CFD wobble", one("unst")]] : []).map(function (ps) {
       return Object.assign({ source: ps[0], sig: ps[1] }, hcRow(mcCount(ctx, h, S, sets[ib].p, w.v, w.theta, Z, ps[1], 0, n, out, Zx), n));
     });
-    const act = parts.filter(function (r) { return r.sig.sv || r.sig.sth || r.sig.spsi || r.sig.stilt || r.sig.ck; });
+    const act = parts.filter(function (r) { return r.sig.sv || r.sig.sth || r.sig.spsi || r.sig.stilt || r.sig.ck || r.sig.unst; });
     const dom = act.length ? act.reduce(function (a, b) { return b.p < a.p ? b : a; }) : null;
     return { ok: true, isTwin: isTwin, S: S, v: w.v, theta: w.theta, rpm: rpm(w.v, q.vu), ballSpinRpm: ballSpinRpm(w.v, S),
              from: w.from, gripLimited: w.v > P.HOOD_V_MAX + 1e-9, inCap: cd.inCap, n: n, seed: seed, sig: sig,
@@ -1348,7 +1420,7 @@
     ballSpinRpm: ballSpinRpm, droopReadout: droopReadout, DROOP: DROOP, labels: LABELS, tol: TOL,
     _fastShot: fastShot, _prepSection: prepSection, _zStopFor: zStopFor, _context: context,
     _classifyCtx: classifyCtx, _cellFor: cellFor, effParams: effParams, _flagGrip: flagGrip,
-    hitChance: hitChance, bestChance: bestChance, BC: BC, _bcCandidates: bcCandidates, HC_SIG: HC_SIG, HC_NOTE: HC_NOTE, knuckleFactor: knuckleFactor, _moveFor: moveFor, _frameFor: frameFor, _launch3: launch3,
+    hitChance: hitChance, bestChance: bestChance, BC: BC, _bcCandidates: bcCandidates, HC_SIG: HC_SIG, HC_NOTE: HC_NOTE, knuckleFactor: knuckleFactor, _wakeFor: wakeFor, _unstRuns: unstRuns, _uniforms: uniforms, _moveFor: moveFor, _frameFor: frameFor, _launch3: launch3,
     _fastShot3D: fastShot3D, _path3D: path3D, _params3: params3, _moveSens: moveSens, twinParams: twinParams,
     // one fused shot under a context (either model)
     _shotCtx: function (ctx, v, th, S, p, h, out) {

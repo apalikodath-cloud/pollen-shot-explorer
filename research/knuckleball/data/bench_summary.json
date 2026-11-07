@@ -1,0 +1,489 @@
+{
+ "bench_d128": {
+  "kernels": {
+   "body_force": {
+    "gpu_ms": 12440.8,
+    "calls": 3840,
+    "share": 0.11267513789137149
+   },
+   "coalesce": {
+    "gpu_ms": 5017.659,
+    "calls": 2880,
+    "share": 0.045444458532962605
+   },
+   "diag": {
+    "gpu_ms": 307.53,
+    "calls": 74,
+    "share": 0.002785269850470506
+   },
+   "geo_commit": {
+    "gpu_ms": 1.43667,
+    "calls": 1,
+    "share": 1.301178303279505e-05
+   },
+   "geo_q": {
+    "gpu_ms": 8.46131,
+    "calls": 1,
+    "share": 7.663327687862842e-05
+   },
+   "geo_solid": {
+    "gpu_ms": 0.110496,
+    "calls": 1,
+    "share": 1.000751723076087e-06
+   },
+   "init_cells": {
+    "gpu_ms": 24.95693,
+    "calls": 3,
+    "share": 0.00022603253240107595
+   },
+   "stream_collide": {
+    "gpu_ms": 92612.201,
+    "calls": 6720,
+    "share": 0.8387798628784654
+   }
+  },
+  "runtime_s": 110.564,
+  "steps": 3840,
+  "MLUPs": 2942.18,
+  "finest_MLUPs": 6992.27,
+  "total_gpu_s": 110.413
+ },
+ "bench_fp32": {
+  "kernels": {
+   "body_force": {
+    "gpu_ms": 6361.56,
+    "calls": 10240,
+    "share": 0.09286637091017383
+   },
+   "coalesce": {
+    "gpu_ms": 1933.2469999999998,
+    "calls": 7680,
+    "share": 0.028221636353815853
+   },
+   "diag": {
+    "gpu_ms": 192.467,
+    "calls": 366,
+    "share": 0.002809642887903034
+   },
+   "geo_commit": {
+    "gpu_ms": 0.023552,
+    "calls": 1,
+    "share": 3.4381327342293617e-07
+   },
+   "geo_q": {
+    "gpu_ms": 0.746496,
+    "calls": 1,
+    "share": 1.0897385927187845e-05
+   },
+   "geo_solid": {
+    "gpu_ms": 0.026624,
+    "calls": 1,
+    "share": 3.886584829998408e-07
+   },
+   "init_cells": {
+    "gpu_ms": 5.752827999999999,
+    "calls": 3,
+    "share": 8.398007074215023e-05
+   },
+   "stream_collide": {
+    "gpu_ms": 60008.473000000005,
+    "calls": 17920,
+    "share": 0.8760066888265066
+   }
+  },
+  "runtime_s": 68.9276,
+  "steps": 10240,
+  "MLUPs": 1573.15,
+  "finest_MLUPs": 3738.68,
+  "total_gpu_s": 68.5023
+ },
+ "bench_hbb": {
+  "kernels": {
+   "body_force": {
+    "gpu_ms": 5754.9,
+    "calls": 10240,
+    "share": 0.14101552545429594
+   },
+   "coalesce": {
+    "gpu_ms": 3245.043,
+    "calls": 7680,
+    "share": 0.07951509909238821
+   },
+   "diag": {
+    "gpu_ms": 217.534,
+    "calls": 366,
+    "share": 0.005330356967831729
+   },
+   "geo_commit": {
+    "gpu_ms": 0.023552,
+    "calls": 1,
+    "share": 5.771077960519867e-07
+   },
+   "geo_solid": {
+    "gpu_ms": 0.027648,
+    "calls": 1,
+    "share": 6.774743692784192e-07
+   },
+   "init_cells": {
+    "gpu_ms": 2.980196,
+    "calls": 3,
+    "share": 7.302540528884795e-05
+   },
+   "stream_collide": {
+    "gpu_ms": 31589.95,
+    "calls": 17920,
+    "share": 0.774066169407798
+   }
+  },
+  "runtime_s": 41.249,
+  "steps": 10240,
+  "MLUPs": 2628.75,
+  "finest_MLUPs": 6247.37,
+  "total_gpu_s": 40.8104
+ },
+ "bench_lv1": {
+  "kernels": {
+   "body_force": {
+    "gpu_ms": 6245.61,
+    "calls": 10240,
+    "share": 0.07633913511135014
+   },
+   "diag": {
+    "gpu_ms": 215.496,
+    "calls": 394,
+    "share": 0.0026339746253697415
+   },
+   "geo_commit": {
+    "gpu_ms": 0.021504,
+    "calls": 1,
+    "share": 2.628401007162588e-07
+   },
+   "geo_q": {
+    "gpu_ms": 0.699392,
+    "calls": 1,
+    "share": 8.548561370914514e-06
+   },
+   "geo_solid": {
+    "gpu_ms": 0.029312,
+    "calls": 1,
+    "share": 3.582760896668052e-07
+   },
+   "init_cells": {
+    "gpu_ms": 6.21261,
+    "calls": 1,
+    "share": 7.593578116214828e-05
+   },
+   "stream_collide": {
+    "gpu_ms": 75345.9,
+    "calls": 10240,
+    "share": 0.9209414036717433
+   }
+  },
+  "runtime_s": 82.1827,
+  "steps": 10240,
+  "MLUPs": 3135.67,
+  "finest_MLUPs": 3135.67,
+  "total_gpu_s": 81.814
+ },
+ "bench_noprof": {
+  "kernels": {},
+  "runtime_s": 41.3288,
+  "steps": 10240,
+  "MLUPs": 2623.67,
+  "finest_MLUPs": 6235.31
+ },
+ "bench_reg": {
+  "kernels": {
+   "body_force": {
+    "gpu_ms": 6247.89,
+    "calls": 10240,
+    "share": 0.1504554922760165
+   },
+   "coalesce": {
+    "gpu_ms": 3293.2349999999997,
+    "calls": 7680,
+    "share": 0.0793044200691125
+   },
+   "diag": {
+    "gpu_ms": 204.837,
+    "calls": 366,
+    "share": 0.004932681540702925
+   },
+   "geo_commit": {
+    "gpu_ms": 0.023552,
+    "calls": 1,
+    "share": 5.671559124896151e-07
+   },
+   "geo_q": {
+    "gpu_ms": 1.62918,
+    "calls": 1,
+    "share": 3.923229744861715e-05
+   },
+   "geo_solid": {
+    "gpu_ms": 0.03296,
+    "calls": 1,
+    "share": 7.937100405764994e-07
+   },
+   "init_cells": {
+    "gpu_ms": 3.1050259999999996,
+    "calls": 3,
+    "share": 7.477215753795768e-05
+   },
+   "stream_collide": {
+    "gpu_ms": 31775.717,
+    "calls": 17920,
+    "share": 0.7651913115721287
+   }
+  },
+  "runtime_s": 41.9533,
+  "steps": 10240,
+  "MLUPs": 2584.62,
+  "finest_MLUPs": 6142.5,
+  "total_gpu_s": 41.5265
+ },
+ "bench_spin": {
+  "kernels": {
+   "body_force": {
+    "gpu_ms": 6155.54,
+    "calls": 10240,
+    "share": 0.1419468651058109
+   },
+   "coalesce": {
+    "gpu_ms": 3212.0139999999997,
+    "calls": 7680,
+    "share": 0.0740691016508667
+   },
+   "diag": {
+    "gpu_ms": 212.698,
+    "calls": 366,
+    "share": 0.0049048197744269014
+   },
+   "geo_commit": {
+    "gpu_ms": 57.095,
+    "calls": 2561,
+    "share": 0.001316611745389726
+   },
+   "geo_q": {
+    "gpu_ms": 2138.11,
+    "calls": 2561,
+    "share": 0.04930485574805547
+   },
+   "geo_solid": {
+    "gpu_ms": 64.059,
+    "calls": 2561,
+    "share": 0.0014772017128981598
+   },
+   "init_cells": {
+    "gpu_ms": 4.892674,
+    "calls": 3,
+    "share": 0.00011282515202317072
+   },
+   "stream_collide": {
+    "gpu_ms": 31520.708,
+    "calls": 17920,
+    "share": 0.7268681036132743
+   }
+  },
+  "runtime_s": 44.4799,
+  "steps": 10240,
+  "MLUPs": 2437.81,
+  "finest_MLUPs": 5793.59,
+  "total_gpu_s": 43.3651
+ },
+ "bench_wg128": {
+  "kernels": {
+   "body_force": {
+    "gpu_ms": 6206.63,
+    "calls": 10240,
+    "share": 0.14917811347057483
+   },
+   "coalesce": {
+    "gpu_ms": 3187.304,
+    "calls": 7680,
+    "share": 0.07660775618608118
+   },
+   "diag": {
+    "gpu_ms": 219.728,
+    "calls": 366,
+    "share": 0.005281224838062276
+   },
+   "geo_commit": {
+    "gpu_ms": 0.021504,
+    "calls": 1,
+    "share": 5.168547427623752e-07
+   },
+   "geo_q": {
+    "gpu_ms": 0.70144,
+    "calls": 1,
+    "share": 1.6859309466296524e-05
+   },
+   "geo_solid": {
+    "gpu_ms": 0.02624,
+    "calls": 1,
+    "share": 6.306858468231364e-07
+   },
+   "init_cells": {
+    "gpu_ms": 9.068859999999999,
+    "calls": 3,
+    "share": 0.00021797262381175565
+   },
+   "stream_collide": {
+    "gpu_ms": 31982.056,
+    "calls": 17920,
+    "share": 0.7686977923591833
+   }
+  },
+  "runtime_s": 42.0403,
+  "steps": 10240,
+  "MLUPs": 2579.27,
+  "finest_MLUPs": 6129.78,
+  "total_gpu_s": 41.6055
+ },
+ "bench_wg256": {
+  "kernels": {
+   "body_force": {
+    "gpu_ms": 6564.8,
+    "calls": 10240,
+    "share": 0.15684513072418546
+   },
+   "coalesce": {
+    "gpu_ms": 3332.399,
+    "calls": 7680,
+    "share": 0.07961713331406058
+   },
+   "diag": {
+    "gpu_ms": 234.751,
+    "calls": 366,
+    "share": 0.005608632598500071
+   },
+   "geo_commit": {
+    "gpu_ms": 0.023552,
+    "calls": 1,
+    "share": 5.627005421057787e-07
+   },
+   "geo_q": {
+    "gpu_ms": 4.93373,
+    "calls": 1,
+    "share": 0.00011787587235069394
+   },
+   "geo_solid": {
+    "gpu_ms": 0.028352,
+    "calls": 1,
+    "share": 6.773813591110325e-07
+   },
+   "init_cells": {
+    "gpu_ms": 5.098496,
+    "calls": 3,
+    "share": 0.00012181243474542054
+   },
+   "stream_collide": {
+    "gpu_ms": 31713.257,
+    "calls": 17920,
+    "share": 0.7576879630536635
+   }
+  },
+  "runtime_s": 42.2597,
+  "steps": 10240,
+  "MLUPs": 2565.88,
+  "finest_MLUPs": 6097.96,
+  "total_gpu_s": 41.8553
+ },
+ "bench_wg512": {
+  "kernels": {
+   "body_force": {
+    "gpu_ms": 6992.35,
+    "calls": 10240,
+    "share": 0.1603128603820996
+   },
+   "coalesce": {
+    "gpu_ms": 3079.884,
+    "calls": 7680,
+    "share": 0.0706121709704266
+   },
+   "diag": {
+    "gpu_ms": 271.625,
+    "calls": 366,
+    "share": 0.006227517315535951
+   },
+   "geo_commit": {
+    "gpu_ms": 0.0256,
+    "calls": 1,
+    "share": 5.869284612157215e-07
+   },
+   "geo_q": {
+    "gpu_ms": 0.792576,
+    "calls": 1,
+    "share": 1.8171305159238732e-05
+   },
+   "geo_solid": {
+    "gpu_ms": 0.03008,
+    "calls": 1,
+    "share": 6.896409419284726e-07
+   },
+   "init_cells": {
+    "gpu_ms": 2.952194,
+    "calls": 3,
+    "share": 6.768463600118303e-05
+   },
+   "stream_collide": {
+    "gpu_ms": 33269.273,
+    "calls": 17920,
+    "share": 0.7627610627990526
+   }
+  },
+  "runtime_s": 44.0108,
+  "steps": 10240,
+  "MLUPs": 2463.79,
+  "finest_MLUPs": 5855.34,
+  "total_gpu_s": 43.6169
+ },
+ "bench_wg64": {
+  "kernels": {
+   "body_force": {
+    "gpu_ms": 6940.52,
+    "calls": 10240,
+    "share": 0.16475659867207584
+   },
+   "coalesce": {
+    "gpu_ms": 3418.717,
+    "calls": 7680,
+    "share": 0.08115475277679526
+   },
+   "diag": {
+    "gpu_ms": 208.405,
+    "calls": 366,
+    "share": 0.004947194006537546
+   },
+   "geo_commit": {
+    "gpu_ms": 0.032768,
+    "calls": 1,
+    "share": 7.77858751979186e-07
+   },
+   "geo_q": {
+    "gpu_ms": 0.807936,
+    "calls": 1,
+    "share": 1.917907985348681e-05
+   },
+   "geo_solid": {
+    "gpu_ms": 0.032768,
+    "calls": 1,
+    "share": 7.77858751979186e-07
+   },
+   "init_cells": {
+    "gpu_ms": 2.940928,
+    "calls": 3,
+    "share": 6.981282299013195e-05
+   },
+   "stream_collide": {
+    "gpu_ms": 31554.447,
+    "calls": 17920,
+    "share": 0.7490509876346855
+   }
+  },
+  "runtime_s": 42.6105,
+  "steps": 10240,
+  "MLUPs": 2544.75,
+  "finest_MLUPs": 6047.76,
+  "total_gpu_s": 42.1259
+ }
+}
