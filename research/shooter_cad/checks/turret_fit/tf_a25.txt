@@ -1,0 +1,56 @@
+TF counted 53 of 58 solids, unnamed 0
+TF box -229.5 172.8 -125.7 101.7 -142 94.6
+TF h 172.8 175.9 177.8 178.3 177.4 175.2 171.8 167 160.9 153.7 145.2 135.7 125.2 113.7 101.3 88.2 87.5 95 101.7 116.1 129.6 142.1 153.5 163.8 172.8 180.5 190.2 201.7 211.6 219.9 226.6 231.5 234.7 236.1 235.7 233.5 229.5 233.5 235.7 236.1 234.7 231.5 226.6 219.9 211.6 201.7 190.2 182.7 178.4 172.7 165.7 157.4 147.9 137.3 125.7 129.3 141.3 152.2 161.9 170.4 177.6 183.4 187.9 190.9 192.5 192.6 191.2 188.4 184.2 178.5 177.8 175.9
+0 Hood + feed tongue (printed): |-64.6 91.3 -40 40 -119.6 -74.1
+1 Counter-roller REV ION Grip 2i|101.5 152.3 -6.3 6.4 -84.6 -33.8
+2 Counter shaft 1/2in hex (lengt|119.6 134.2 -64.4 49.4 -65.8 -52.5
+3 Head side plate +Z (drive side|-57.3 166.9 -46.3 -40 -129.6 94.6
+4 Counter carrier +Z (drive side|101.6 152.2 -46.3 -40 -83 -35.4
+5 Counter bearing 1/2in hex x 1.|112.6 141.2 -46.3 -40 -73.5 -44.9
+6 Head pivot bearing 30x42 +Z (d|-21 21 -46.3 -40 -21 21
+7 Radial adjuster push screw +Z |147.6 172.8 -45.2 -41.2 -73.2 -58.6
+8 Radial adjuster pull/lock scre|140.8 166.1 -45.2 -41.2 -87.7 -73.1
+9 Head side plate -Z (pivots abo|-57.3 166.9 40 46.4 -129.6 89.1
+10 Counter carrier -Z (radial-onl|101.6 152.2 40 46.4 -83 -35.4
+11 Counter bearing 1/2in hex x 1.|112.6 141.2 40 46.4 -73.5 -44.9
+12 Head pivot bearing 30x42 -Z (T|-21 21 40 46.4 -21 21
+13 Radial adjuster push screw -Z |147.6 172.8 41.2 45.2 -73.2 -58.6
+14 Radial adjuster pull/lock scre|140.8 166.1 41.2 45.2 -87.7 -73.1
+15 Counter-roller guard (head-mou|108.2 164.3 -40 40 -96.6 -24
+16 ENVELOPE counter-roller motor |115.7 153.7 -116.3 -46.3 -2.3 35.7
+17 ENVELOPE counter pulley/belt (|111.9 141.9 -60.3 -48.3 -74.2 -44.2
+18 Angle gear sector, pitch R 100|-91.8 -24.1 40 46.4 12.5 90.4
+19 Main flywheel goBILDA 96mm Hog|-48 48 -16 16 -48 48
+20 Main shaft (interface TBD)|-4 4 -85.7 60.7 -4 4
+21 Frame side plate +Z (drive sid|-229.5 45 -55.7 -49.4 -142 80
+22 Main shaft bearing +Z (drive s|-11 11 -55.7 -49.4 -11 11
+23 Pivot hub +Z (drive side) (fix|-15 15 -49.4 -40 -15 15
+24 Frame side plate -Z (fixed, mo|-229.5 45 49.4 55.7 -142 80
+25 Main shaft bearing -Z (TBD)|-11 11 49.4 55.7 -11 11
+26 Pivot hub -Z (fixed, coaxial w|-15 15 40 49.4 -15 15
+27 Hard stop alpha  5 deg (on fra|-75.7 -55.9 -49.4 -40 30.4 50.2
+28 Hard stop alpha  25 deg (on fr|-23.7 -7 -49.4 -40 65.3 85.9
+29 ENVELOPE angle encoder allowan|-28 28 -48.3 -47.3 -28 28
+30 Main-wheel guard (fixed, mount|-57 36.6 -21 21 -19.5 57
+31 ENVELOPE main motor (TBD)|-139 -101 -125.7 -55.7 26 64
+32 ENVELOPE main pulley/belt (TBD|-20 20 -70.7 -58.7 -20 20
+33 Angle pinion, pitch R 20 (teet|-123.7 -84.2 40 46.4 40.2 79.8
+34 Angle drive shaft 8 mm (TBD): |-107.9 -99.9 40 63.7 56 64
+35 Angle shaft bearing 8x16 in fr|-111.9 -95.9 49.4 55.7 52 68
+36 Servo coupler, angle servo (se|-110.9 -96.9 57.7 63.7 53 67
+37 ENVELOPE angle servo, standard|-123.6 -66.9 63.7 101.7 32.8 77.2
+38 Servo standoffs (4) to frame p|-121 -116 55.7 71.7 60.2 65.2
+39 Servo standoffs (4) to frame p|-116 -111 55.7 71.7 68.8 73.8
+40 Servo standoffs (4) to frame p|-79.5 -74.5 55.7 71.7 36.2 41.2
+41 Servo standoffs (4) to frame p|-74.5 -69.5 55.7 71.7 44.8 49.8
+42 Feed floor (printed, fixed): r|-219.5 -5.9 -49.4 49.4 -136 -23.4
+43 Crest gate flap (printed, TBD)|-146.4 -132.4 -16 16 -62.1 22.9
+44 Gate shaft 8 mm (TBD), through|-143.4 -135.4 -55.7 63.7 11.9 19.9
+45 Gate shaft bearing 8x16 in fra|-147.4 -131.4 -55.7 -49.4 7.9 23.9
+46 Gate shaft bearing 8x16 in fra|-147.4 -131.4 49.4 55.7 7.9 23.9
+47 Servo coupler, gate servo (ser|-146.4 -132.4 57.7 63.7 8.9 22.9
+48 ENVELOPE gate servo, standard |-176.4 -122.4 63.7 101.7 5.9 25.9
+49 Servo standoffs (4) to frame p|-127.9 -122.9 55.7 71.7 18.4 23.4
+50 Servo standoffs (4) to frame p|-127.9 -122.9 55.7 71.7 8.4 13.4
+51 Servo standoffs (4) to frame p|-175.9 -170.9 55.7 71.7 18.4 23.4
+52 Servo standoffs (4) to frame p|-175.9 -170.9 55.7 71.7 8.4 13.4

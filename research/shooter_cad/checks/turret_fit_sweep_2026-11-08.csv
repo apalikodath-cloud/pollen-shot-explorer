@@ -1,0 +1,367 @@
+# Head A (Concept A) on the 19705 Ri3D robot turret: box-model sweep over the turret angle, run 2026-11-08
+# Tool: checks/turret_fit/sweep_csv.py (box model, see turret_fit.md section 9). Mount: turret axis at head point x -95, y 0 (95 mm behind the main axle F, on the centre line); frame plate bottoms (head z -142) on the turret plate (no adapter); back trimmed (frame x >= -190, feed floor x >= -175).
+# Units mm and degrees. psi = direction the head shoots in robot coordinates (0 = +X toward the rear arms, 90 = +Y, 180 = over the intake). turret_deg = psi - 180 = the Revolute 1 angle in the Onshape fit assembly.
+# in_travel = 1 inside the usable run psi 79..281 (turret -101..+101).
+# clearance_mm = smallest plan gap from any head part (alpha 5, 15 and 25) to the rear arms or the side-plate peaks at overlapping heights; 0 = overlap. arm_only_mm = the same for the arms alone. Robot arm and side-plate positions are measured from views, +-3 mm. Part names are cut to 30 characters.
+# expanded_margin_mm = smallest of (609.6 - X span, 457.2 - Y span) of robot (intake out, X -336.8..138.4, Y +-164) plus head, worst alpha. start_margin_mm = smallest of (457.2 - X span, 457.2 - Y span) with the intake folded (X -232..138.4) and the head at alpha 15; plan only (the head is too tall for the start, see turret_fit.md section 5).
+psi_deg,turret_deg,in_travel,clearance_mm,clearance_pair,arm_only_mm,arm_only_pair,expanded_margin_mm,expanded_worst_alpha,expanded_X_mm,expanded_Y_mm,start_margin_mm,start_X_mm,start_Y_mm
+0,-180,0,9.3,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,9.3,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,46.1,5,563.5,328.0,2.4,454.8,328.0
+1,-179,0,11.2,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,11.2,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,45.4,5,564.2,328.0,1.7,455.5,328.0
+2,-178,0,11.0,Main shaft (interface TBD) (alpha 5) vs arm-Y,11.0,Main shaft (interface TBD) (alpha 5) vs arm-Y,44.7,5,564.9,328.0,1.0,456.2,328.0
+3,-177,0,9.6,Main shaft (interface TBD) (alpha 5) vs arm-Y,9.6,Main shaft (interface TBD) (alpha 5) vs arm-Y,44.2,5,565.4,328.0,0.5,456.7,328.0
+4,-176,0,8.3,Main shaft (interface TBD) (alpha 5) vs arm-Y,8.3,Main shaft (interface TBD) (alpha 5) vs arm-Y,43.7,5,565.9,328.0,-0.0,457.2,328.0
+5,-175,0,7.6,Main shaft (interface TBD) (alpha 5) vs arm-Y,7.6,Main shaft (interface TBD) (alpha 5) vs arm-Y,43.3,5,566.3,328.0,-0.4,457.6,328.0
+6,-174,0,7.5,Main shaft (interface TBD) (alpha 5) vs arm-Y,7.5,Main shaft (interface TBD) (alpha 5) vs arm-Y,43.0,5,566.6,328.0,-0.8,458.0,328.0
+7,-173,0,7.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",7.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",42.7,5,566.9,328.0,-1.0,458.2,328.0
+8,-172,0,5.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",5.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",42.6,5,567.0,328.0,-1.2,458.4,328.0
+9,-171,0,3.1,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",3.1,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",42.5,5,567.1,328.0,-1.2,458.4,328.0
+10,-170,0,0.8,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",0.8,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",42.6,5,567.0,328.0,-1.2,458.4,328.0
+11,-169,0,0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",42.7,5,566.9,328.0,-1.1,458.3,328.0
+12,-168,0,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm+Y,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm+Y,42.9,5,566.7,328.0,-0.9,458.1,328.0
+13,-167,0,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm+Y,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm+Y,43.2,5,566.4,328.0,-0.6,457.8,328.0
+14,-166,0,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm+Y,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm+Y,43.6,5,566.0,328.0,-0.3,457.5,328.0
+15,-165,0,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm+Y,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm+Y,44.0,5,565.6,328.0,0.2,457.0,328.0
+16,-164,0,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm+Y,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm+Y,44.6,5,565.0,328.0,0.7,456.5,328.0
+17,-163,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,45.2,5,564.4,328.0,1.3,455.9,328.0
+18,-162,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,45.9,5,563.7,328.0,2.0,455.2,328.0
+19,-161,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,46.7,5,562.9,328.0,2.8,454.4,328.0
+20,-160,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,47.6,5,562.0,328.0,3.7,453.5,328.0
+21,-159,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,48.6,5,561.0,328.0,4.7,452.5,328.0
+22,-158,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,49.7,5,559.9,328.0,5.7,451.5,328.0
+23,-157,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,50.8,5,558.8,328.0,6.8,450.4,328.0
+24,-156,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,52.1,5,557.5,328.0,8.0,449.2,328.0
+25,-155,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,52.8,25,556.8,328.0,9.3,447.9,328.0
+26,-154,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,52.8,25,556.8,328.0,9.7,447.5,328.0
+27,-153,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,52.9,25,556.7,328.0,9.8,447.4,330.2
+28,-152,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,53.1,25,556.5,329.6,10.0,447.2,334.1
+29,-151,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,53.4,25,556.2,333.4,10.2,447.0,338.0
+30,-150,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,53.8,25,555.8,337.0,10.5,446.7,341.8
+31,-149,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,54.3,25,555.3,340.7,10.9,446.3,345.6
+32,-148,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,54.8,25,554.8,344.2,11.4,445.8,349.3
+33,-147,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,55.4,25,554.2,347.8,12.0,445.2,352.9
+34,-146,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,56.1,25,553.5,351.2,12.7,444.5,356.5
+35,-145,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,56.9,25,552.7,354.6,13.4,443.8,360.1
+36,-144,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,57.8,25,551.8,358.0,14.2,443.0,363.6
+37,-143,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,58.7,25,550.9,361.3,15.1,442.1,367.0
+38,-142,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,59.8,25,549.8,364.5,16.1,441.1,370.3
+39,-141,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,60.9,25,548.7,367.7,17.2,440.0,373.6
+40,-140,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,62.1,25,547.5,370.8,18.3,438.9,376.9
+41,-139,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,63.3,25,546.3,373.8,19.5,437.7,380.0
+42,-138,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,64.7,25,544.9,376.8,20.8,436.4,383.1
+43,-137,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,66.1,25,543.5,379.7,22.2,435.0,386.2
+44,-136,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,65.3,5,532.0,391.9,23.6,433.6,389.1
+45,-135,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,62.4,5,530.5,394.8,25.2,432.0,392.0
+46,-134,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,59.5,5,529.0,397.7,26.8,430.4,394.9
+47,-133,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,56.7,5,527.5,400.5,28.5,428.7,397.6
+48,-132,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,54.0,5,525.8,403.2,30.2,427.0,400.3
+49,-131,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,51.3,5,524.1,405.9,32.1,425.1,402.9
+50,-130,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,48.7,5,522.3,408.5,34.0,423.2,405.5
+51,-129,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,46.2,5,520.4,411.0,36.0,421.2,407.9
+52,-128,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,43.8,5,518.5,413.4,38.1,419.1,410.3
+53,-127,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,41.4,5,516.5,415.8,40.2,417.0,412.7
+54,-126,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,39.1,5,514.4,418.1,42.3,414.8,414.9
+55,-125,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,36.9,5,512.2,420.3,40.1,412.5,417.1
+56,-124,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,34.8,5,510.0,422.4,38.0,410.2,419.2
+57,-123,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,32.7,5,507.7,424.5,36.0,407.7,421.2
+58,-122,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,30.8,5,505.3,426.4,34.1,405.2,423.1
+59,-121,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,28.9,5,502.9,428.3,32.2,402.7,425.0
+60,-120,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,27.1,5,500.4,430.1,30.5,400.0,426.7
+61,-119,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,25.3,5,497.8,431.9,28.8,397.3,428.4
+62,-118,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,23.7,5,495.2,433.5,27.1,394.6,430.1
+63,-117,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm+Y,22.1,5,492.5,435.1,25.6,391.7,431.6
+64,-116,0,0.0,Head side plate +Z (drive side (alpha 5) vs arm+Y,0.0,Head side plate +Z (drive side (alpha 5) vs arm+Y,20.6,5,489.7,436.6,24.2,388.8,433.0
+65,-115,0,0.0,Head side plate +Z (drive side (alpha 5) vs arm+Y,0.0,Head side plate +Z (drive side (alpha 5) vs arm+Y,19.2,5,486.9,438.0,22.8,385.9,434.4
+66,-114,0,0.0,Head side plate +Z (drive side (alpha 5) vs arm+Y,0.0,Head side plate +Z (drive side (alpha 5) vs arm+Y,17.9,5,484.0,439.3,21.5,382.8,435.7
+67,-113,0,0.0,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,0.0,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,16.7,5,481.1,440.5,20.3,379.7,436.9
+68,-112,0,0.0,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,0.0,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,15.5,5,478.1,441.7,19.2,376.6,438.0
+69,-111,0,0.0,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,0.0,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,14.5,5,475.2,442.7,18.1,373.4,439.1
+70,-110,0,0.0,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,0.0,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,13.5,5,475.2,443.7,17.2,370.4,440.0
+71,-109,0,0.0,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,0.0,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,12.6,5,475.2,444.6,16.3,370.4,440.9
+72,-108,0,0.0,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,0.3,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,11.8,5,475.2,445.4,15.5,370.4,441.7
+73,-107,0,0.0,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,2.4,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,11.1,5,475.2,446.1,14.8,370.4,442.4
+74,-106,0,0.0,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,4.5,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,10.4,5,475.2,446.8,14.2,370.4,443.0
+75,-105,0,0.0,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,6.6,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,9.9,5,475.2,447.3,13.7,370.4,443.5
+76,-104,0,0.0,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,7.5,Main shaft (interface TBD) (alpha 5) vs arm+Y,9.4,5,475.2,447.8,13.2,370.4,444.0
+77,-103,0,0.0,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,7.7,Main shaft (interface TBD) (alpha 5) vs arm+Y,9.0,5,475.2,448.2,12.8,370.4,444.4
+78,-102,0,0.0,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,8.6,Main shaft (interface TBD) (alpha 5) vs arm+Y,8.7,5,475.2,448.5,12.6,370.4,444.6
+79,-101,1,0.9,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,9.9,Main shaft (interface TBD) (alpha 5) vs arm+Y,8.5,5,475.2,448.7,12.4,370.4,444.8
+80,-100,1,2.9,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,11.4,Main shaft (interface TBD) (alpha 5) vs arm+Y,8.4,5,475.2,448.8,12.3,370.4,444.9
+81,-99,1,4.9,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,12.8,Main shaft (interface TBD) (alpha 5) vs arm+Y,8.4,5,475.2,448.8,12.2,370.4,445.0
+82,-98,1,6.9,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,14.3,Main shaft (interface TBD) (alpha 5) vs arm+Y,8.4,5,475.2,448.8,12.3,370.4,444.9
+83,-97,1,8.9,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,15.8,Main shaft (interface TBD) (alpha 5) vs arm+Y,8.6,5,475.2,448.6,12.5,370.4,444.7
+84,-96,1,10.8,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,17.4,Main shaft (interface TBD) (alpha 5) vs arm+Y,8.8,5,475.2,448.4,12.7,370.4,444.5
+85,-95,1,12.8,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,18.9,Main shaft (interface TBD) (alpha 5) vs arm+Y,9.1,5,475.2,448.1,13.0,370.4,444.2
+86,-94,1,14.7,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,20.6,Main shaft (interface TBD) (alpha 5) vs arm+Y,9.5,5,475.2,447.7,13.4,370.4,443.8
+87,-93,1,16.6,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,22.2,Main shaft (interface TBD) (alpha 5) vs arm+Y,10.0,5,475.2,447.2,13.9,370.4,443.3
+88,-92,1,18.5,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,23.8,Main shaft (interface TBD) (alpha 5) vs arm+Y,10.6,5,475.2,446.6,14.5,370.4,442.7
+89,-91,1,20.3,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,25.5,Main shaft (interface TBD) (alpha 5) vs arm+Y,11.3,5,475.2,445.9,15.2,370.4,442.0
+90,-90,1,22.1,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,27.2,Main shaft (interface TBD) (alpha 5) vs arm+Y,12.0,5,475.2,445.2,15.9,370.4,441.3
+91,-89,1,21.3,Frame side plate +Z (drive sid (alpha 5) vs sideplate-Y,28.9,Main shaft (interface TBD) (alpha 5) vs arm+Y,11.3,5,475.2,445.9,15.2,370.4,442.0
+92,-88,1,20.1,Frame side plate +Z (drive sid (alpha 5) vs sideplate-Y,30.5,Main shaft (interface TBD) (alpha 5) vs arm+Y,10.6,5,475.2,446.6,14.5,370.4,442.7
+93,-87,1,19.0,Frame side plate +Z (drive sid (alpha 5) vs sideplate-Y,30.5,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,10.0,5,475.2,447.2,13.9,370.4,443.3
+94,-86,1,18.1,Frame side plate +Z (drive sid (alpha 5) vs sideplate-Y,28.9,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,9.5,5,475.2,447.7,13.4,370.4,443.8
+95,-85,1,17.4,Frame side plate +Z (drive sid (alpha 5) vs sideplate-Y,27.3,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,9.1,5,475.2,448.1,13.0,370.4,444.2
+96,-84,1,16.9,Frame side plate +Z (drive sid (alpha 5) vs sideplate-Y,25.7,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,8.8,5,475.2,448.4,12.7,370.4,444.5
+97,-83,1,16.6,Frame side plate +Z (drive sid (alpha 5) vs sideplate-Y,24.2,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,8.6,5,475.2,448.6,12.5,370.4,444.7
+98,-82,1,16.6,Frame side plate +Z (drive sid (alpha 5) vs sideplate-Y,22.7,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,8.4,5,475.2,448.8,12.3,370.4,444.9
+99,-81,1,16.9,Frame side plate +Z (drive sid (alpha 5) vs sideplate-Y,21.2,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,8.4,5,475.2,448.8,12.2,370.4,445.0
+100,-80,1,17.4,Frame side plate +Z (drive sid (alpha 5) vs sideplate-Y,19.7,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,8.4,5,475.2,448.8,12.3,370.4,444.9
+101,-79,1,18.1,Frame side plate +Z (drive sid (alpha 5) vs sideplate-Y,18.2,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,8.5,5,475.2,448.7,12.4,370.4,444.8
+102,-78,1,16.8,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,16.8,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,8.7,5,475.2,448.5,12.6,370.4,444.6
+103,-77,1,15.4,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,15.4,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,9.0,5,475.2,448.2,12.8,370.4,444.4
+104,-76,1,14.1,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,14.1,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,9.4,5,475.2,447.8,13.2,370.4,444.0
+105,-75,1,12.9,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,12.9,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,9.9,5,475.2,447.3,13.7,370.4,443.5
+106,-74,1,12.0,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,12.0,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,10.4,5,475.2,446.8,14.2,370.4,443.0
+107,-73,1,11.4,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,11.4,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,11.1,5,475.2,446.1,14.8,370.4,442.4
+108,-72,1,11.1,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,11.1,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,11.8,5,475.2,445.4,15.5,370.4,441.7
+109,-71,1,11.2,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,11.2,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,12.6,5,475.2,444.6,16.3,370.4,440.9
+110,-70,1,11.6,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,11.6,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,13.5,5,475.2,443.7,17.2,370.4,440.0
+111,-69,1,12.3,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,12.3,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,14.5,5,475.2,442.7,18.1,370.4,439.1
+112,-68,1,13.3,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,13.3,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,15.5,5,475.2,441.7,19.2,370.4,438.0
+113,-67,1,14.2,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,14.2,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,16.7,5,475.2,440.5,20.3,370.4,436.9
+114,-66,1,15.1,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,15.1,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,17.9,5,475.2,439.3,21.5,370.4,435.7
+115,-65,1,16.0,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,16.0,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,18.7,25,475.2,438.5,22.8,370.4,434.4
+116,-64,1,17.0,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,17.0,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,18.7,25,475.2,438.5,23.2,370.4,434.0
+117,-63,1,18.2,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,18.2,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,18.8,25,475.2,438.4,23.3,370.4,433.9
+118,-62,1,19.5,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,19.5,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,19.0,25,475.2,438.2,23.4,370.4,433.8
+119,-61,1,20.9,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,20.9,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,19.3,25,475.2,437.9,23.7,370.4,433.5
+120,-60,1,22.4,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,22.4,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,19.7,25,475.2,437.5,24.0,370.7,433.2
+121,-59,1,21.5,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,21.5,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,20.1,25,475.2,437.1,24.4,374.5,432.8
+122,-58,1,20.1,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,20.1,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,20.7,25,475.2,436.5,24.9,378.2,432.3
+123,-57,1,18.9,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,18.9,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,21.3,25,475.2,435.9,25.5,381.9,431.7
+124,-56,1,17.8,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,17.8,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,22.0,25,475.2,435.2,26.1,385.5,431.1
+125,-55,1,17.1,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,17.1,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,22.8,25,475.2,434.4,26.9,389.0,430.3
+126,-54,1,16.6,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,16.6,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,23.6,25,475.2,433.6,27.7,392.5,429.5
+127,-53,1,16.5,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,16.5,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,24.6,25,475.2,432.6,28.6,395.9,428.6
+128,-52,1,16.3,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,16.3,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,25.6,25,475.2,431.6,29.6,399.3,427.6
+129,-51,1,16.1,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,16.1,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,26.7,25,475.2,430.5,30.6,402.6,426.6
+130,-50,1,15.9,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,15.9,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,27.9,25,475.2,429.3,31.8,405.8,425.4
+131,-49,1,15.6,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,15.6,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,29.2,25,475.2,428.0,33.0,409.0,424.2
+132,-48,1,15.3,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,15.3,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,30.6,25,475.2,426.6,34.3,412.1,422.9
+133,-47,1,14.9,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,14.9,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,32.0,25,475.2,425.2,35.7,415.1,421.5
+134,-46,1,14.5,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,14.5,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,33.5,25,475.2,423.7,37.1,418.1,420.1
+135,-45,1,14.1,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,14.1,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,35.1,25,475.2,422.1,36.2,421.0,418.6
+136,-44,1,13.6,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,13.6,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,36.8,25,475.2,420.4,33.4,423.8,416.9
+137,-43,1,13.1,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,13.1,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,38.5,25,475.2,418.7,30.6,426.6,415.3
+138,-42,1,12.5,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,12.5,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,40.4,25,475.2,416.8,27.9,429.3,413.5
+139,-41,1,11.9,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,11.9,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,42.3,25,475.2,414.9,25.3,431.9,411.7
+140,-40,1,11.2,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,11.2,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,44.2,25,475.2,413.0,22.8,434.4,409.7
+141,-39,1,10.5,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,10.5,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,46.3,25,475.2,410.9,20.3,436.9,407.7
+142,-38,1,9.8,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,9.8,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,48.4,25,475.2,408.8,17.9,439.3,405.7
+143,-37,1,9.2,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,9.2,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,50.6,25,475.2,406.6,15.6,441.6,403.5
+144,-36,1,9.2,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,9.2,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,52.9,25,475.2,404.3,13.4,443.8,401.3
+145,-35,1,9.8,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,9.8,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,55.3,25,475.2,401.9,11.2,446.0,399.0
+146,-34,1,10.9,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,10.9,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,57.7,25,475.2,399.5,9.1,448.1,396.7
+147,-33,1,12.3,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,12.3,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,60.2,25,475.2,397.0,7.1,450.1,394.3
+148,-32,1,13.8,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,13.8,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,62.8,25,475.2,394.4,5.1,452.1,391.8
+149,-31,1,15.3,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,15.3,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,65.4,25,475.2,391.8,3.3,453.9,389.2
+150,-30,1,16.8,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,16.8,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,68.1,25,475.2,389.1,1.5,455.7,386.6
+151,-29,1,18.3,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,18.3,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,70.9,25,475.2,386.3,-0.2,457.4,383.9
+152,-28,1,19.8,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,19.8,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,73.8,25,475.2,383.4,-1.8,459.0,381.1
+153,-27,1,19.8,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",21.4,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,76.7,25,475.2,380.5,-3.3,460.5,378.3
+154,-26,1,18.8,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",23.1,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,79.6,25,475.2,377.6,-4.8,462.0,375.4
+155,-25,1,17.9,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",24.7,ENVELOPE main motor (TBD) (alpha 5) vs arm+Y,82.7,25,475.2,374.5,-6.2,463.4,372.4
+156,-24,1,17.2,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",24.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",85.8,25,475.2,371.4,-7.4,464.6,369.4
+157,-23,1,16.8,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",22.9,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",89.0,25,475.2,368.2,-8.7,465.9,366.3
+158,-22,1,16.6,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",21.5,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",92.2,25,475.2,365.0,-9.8,467.0,363.1
+159,-21,1,16.7,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",20.1,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",95.5,25,475.2,361.7,-10.8,468.0,359.9
+160,-20,1,17.0,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",18.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",98.9,25,475.2,358.3,-11.8,469.0,356.6
+161,-19,1,17.5,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",17.5,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",102.3,25,475.2,354.9,-12.6,469.8,353.3
+162,-18,1,16.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",16.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",105.7,25,475.2,351.5,-13.4,470.6,349.9
+163,-17,1,15.5,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",15.5,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",109.3,25,475.2,347.9,-14.1,471.3,346.5
+164,-16,1,14.6,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",14.6,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",112.9,25,475.2,344.3,-14.8,472.0,343.0
+165,-15,1,13.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",13.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",116.5,25,475.2,340.7,-15.3,472.5,339.4
+166,-14,1,12.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",12.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",120.2,25,475.2,337.0,-15.7,472.9,335.8
+167,-13,1,11.8,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",11.8,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",123.9,25,475.2,333.3,-16.1,473.3,332.1
+168,-12,1,11.3,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",11.3,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",127.7,25,475.2,329.5,-16.4,473.6,328.4
+169,-11,1,11.1,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",11.1,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",129.2,5,477.6,328.0,-16.6,473.8,328.0
+170,-10,1,11.2,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",11.2,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",129.2,5,477.7,328.0,-16.7,473.9,328.0
+171,-9,1,11.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",11.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",129.2,5,477.7,328.0,-16.7,473.9,328.0
+172,-8,1,12.5,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",12.5,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",129.2,5,477.7,328.0,-16.6,473.8,328.0
+173,-7,1,13.6,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",13.6,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",129.2,5,477.5,328.0,-16.5,473.7,328.0
+174,-6,1,14.9,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",14.9,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",129.2,5,477.3,328.0,-16.2,473.4,328.0
+175,-5,1,16.3,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",16.3,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",129.2,5,477.0,328.0,-15.9,473.1,328.0
+176,-4,1,17.8,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",17.8,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",129.2,5,476.6,328.0,-15.5,472.7,328.0
+177,-3,1,19.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",19.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",129.2,5,476.1,328.0,-15.0,472.2,328.0
+178,-2,1,21.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",21.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",129.2,5,475.5,328.0,-14.4,471.6,328.0
+179,-1,1,22.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",22.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",129.2,5,475.2,328.0,-13.8,471.0,328.0
+180,0,1,24.3,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",24.3,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",129.2,5,475.2,328.0,-13.0,470.2,328.0
+181,1,1,22.7,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,22.7,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,129.2,5,475.2,328.0,-13.8,471.0,328.0
+182,2,1,21.0,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,21.0,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,129.2,5,475.5,328.0,-14.4,471.6,328.0
+183,3,1,19.4,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,19.4,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,129.2,5,476.1,328.0,-15.0,472.2,328.0
+184,4,1,17.8,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,17.8,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,129.2,5,476.6,328.0,-15.5,472.7,328.0
+185,5,1,16.3,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,16.3,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,129.2,5,477.0,328.0,-15.9,473.1,328.0
+186,6,1,14.9,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,14.9,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,129.2,5,477.3,328.0,-16.2,473.4,328.0
+187,7,1,13.6,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,13.6,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,129.2,5,477.5,328.0,-16.5,473.7,328.0
+188,8,1,12.5,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,12.5,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,129.2,5,477.7,328.0,-16.6,473.8,328.0
+189,9,1,11.7,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,11.7,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,129.2,5,477.7,328.0,-16.7,473.9,328.0
+190,10,1,11.2,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,11.2,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,129.2,5,477.7,328.0,-16.7,473.9,328.0
+191,11,1,11.1,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,11.1,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,129.2,5,477.6,328.0,-16.6,473.8,328.0
+192,12,1,11.3,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,11.3,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,129.2,5,477.4,328.0,-16.4,473.6,328.0
+193,13,1,11.8,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,11.8,Frame side plate +Z (drive sid (alpha 5) vs arm+Y,129.2,5,477.1,328.0,-16.1,473.3,328.0
+194,14,1,11.0,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",11.0,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",129.2,5,476.7,328.0,-15.7,472.9,328.0
+195,15,1,10.0,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",10.0,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",129.2,5,476.3,328.0,-15.3,472.5,328.0
+196,16,1,9.5,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",9.5,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",129.2,5,475.7,328.0,-14.8,472.0,328.0
+197,17,1,9.5,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",9.5,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",129.2,5,475.2,328.0,-14.1,471.3,328.0
+198,18,1,10.2,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",10.2,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",129.2,5,475.2,328.0,-13.4,470.6,328.0
+199,19,1,11.3,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",11.3,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",129.2,5,475.2,328.0,-12.6,469.8,328.0
+200,20,1,12.6,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",12.6,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",129.2,5,475.2,328.0,-11.8,469.0,328.0
+201,21,1,14.0,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",14.0,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",129.2,5,475.2,328.0,-10.8,468.0,328.0
+202,22,1,15.4,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",15.4,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",129.2,5,475.2,328.0,-9.8,467.0,328.0
+203,23,1,16.7,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",16.7,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",129.2,5,475.2,328.0,-8.7,465.9,328.0
+204,24,1,17.2,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,18.0,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",129.2,5,475.2,328.0,-7.4,464.6,328.0
+205,25,1,17.9,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,19.2,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",129.2,5,475.2,328.0,-6.2,463.4,328.0
+206,26,1,18.8,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,20.4,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",129.2,5,475.2,328.0,-5.8,463.0,328.0
+207,27,1,19.8,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,21.6,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",125.3,5,475.2,331.9,-5.7,462.9,330.2
+208,28,1,20.7,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,22.7,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",121.3,5,475.2,335.9,-5.5,462.7,334.1
+209,29,1,21.6,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,23.8,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",117.3,5,475.2,339.9,-5.3,462.5,338.0
+210,30,1,22.5,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,24.8,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",113.5,5,475.2,343.7,-4.9,462.1,341.8
+211,31,1,23.5,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,25.9,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",109.6,5,475.2,347.6,-4.5,461.7,345.6
+212,32,1,24.7,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,26.8,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",105.9,5,475.2,351.3,-4.0,461.2,349.3
+213,33,1,26.0,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,27.8,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",102.1,5,475.2,355.1,-3.5,460.7,352.9
+214,34,1,27.4,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,28.7,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",98.5,5,475.2,358.7,-2.8,460.0,356.5
+215,35,1,28.8,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,29.5,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",94.9,5,475.2,362.3,-2.1,459.3,360.1
+216,36,1,30.3,Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y,30.3,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",91.3,5,475.2,365.9,-1.3,458.5,363.6
+217,37,1,31.1,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",31.1,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",87.9,5,475.2,369.3,-0.4,457.6,367.0
+218,38,1,31.8,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",31.8,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",84.5,5,475.2,372.7,0.6,456.6,370.3
+219,39,1,32.5,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",32.5,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",81.1,5,475.2,376.1,1.7,455.5,373.6
+220,40,1,33.2,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",33.2,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",77.8,5,475.2,379.4,2.8,454.4,376.9
+221,41,1,33.8,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",33.8,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",74.6,5,475.2,382.6,4.0,453.2,380.0
+222,42,1,34.4,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",34.4,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",71.5,5,475.2,385.7,5.3,451.9,383.1
+223,43,1,34.9,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",34.9,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",68.4,5,475.2,388.8,6.7,450.5,386.2
+224,44,1,35.4,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",35.4,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",65.3,5,475.2,391.9,8.2,449.0,389.1
+225,45,1,36.0,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",36.0,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",62.4,5,475.2,394.8,9.7,447.5,392.0
+226,46,1,36.7,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",36.7,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",59.5,5,475.2,397.7,11.3,445.9,394.9
+227,47,1,37.4,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",37.4,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",56.7,5,475.2,400.5,13.0,444.2,397.6
+228,48,1,38.3,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",38.3,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",54.0,5,475.2,403.2,14.8,442.4,400.3
+229,49,1,39.3,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",39.3,"ENVELOPE gate servo, standard (alpha 5) vs arm-Y",51.3,5,475.2,405.9,16.6,440.6,402.9
+230,50,1,39.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",39.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",48.7,5,475.2,408.5,18.5,438.7,405.5
+231,51,1,37.3,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",37.3,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",46.2,5,475.2,411.0,20.5,436.7,407.9
+232,52,1,35.6,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",35.6,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",43.8,5,475.2,413.4,22.6,434.6,410.3
+233,53,1,33.9,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",33.9,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",41.4,5,475.2,415.8,24.7,432.5,412.7
+234,54,1,32.2,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",32.2,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",39.1,5,475.2,418.1,26.9,430.3,414.9
+235,55,1,30.5,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",30.5,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",36.9,5,475.2,420.3,29.2,428.0,417.1
+236,56,1,28.9,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",28.9,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",34.8,5,475.2,422.4,31.6,425.6,419.2
+237,57,1,27.2,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",27.2,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",32.7,5,475.2,424.5,34.0,423.2,421.2
+238,58,1,25.6,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",25.6,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",30.8,5,475.2,426.4,34.1,420.7,423.1
+239,59,1,24.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",24.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",28.9,5,475.2,428.3,32.2,418.1,425.0
+240,60,1,22.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",22.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",27.1,5,475.2,430.1,30.5,415.5,426.7
+241,61,1,20.9,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",20.9,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",25.3,5,475.2,431.9,28.8,412.8,428.4
+242,62,1,19.5,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",19.5,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",23.7,5,475.2,433.5,27.1,410.0,430.1
+243,63,1,18.2,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",18.2,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",22.1,5,475.2,435.1,25.6,407.2,431.6
+244,64,1,17.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",17.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",20.6,5,475.2,436.6,24.2,404.3,433.0
+245,65,1,16.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",16.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",19.2,5,475.2,438.0,22.8,401.3,434.4
+246,66,1,15.1,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",15.1,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",17.9,5,475.2,439.3,21.5,398.3,435.7
+247,67,1,14.2,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",14.2,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",16.7,5,475.2,440.5,20.3,395.2,436.9
+248,68,1,13.3,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",13.3,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",15.5,5,475.2,441.7,19.2,392.1,438.0
+249,69,1,12.3,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",12.3,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",14.5,5,475.2,442.7,18.1,388.8,439.1
+250,70,1,11.6,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",11.6,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",13.5,5,475.2,443.7,17.2,385.6,440.0
+251,71,1,11.2,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",11.2,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",12.6,5,475.2,444.6,16.3,382.2,440.9
+252,72,1,11.1,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",11.1,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",11.8,5,475.2,445.4,15.5,378.9,441.7
+253,73,1,11.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",11.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",11.1,5,475.2,446.1,14.8,375.4,442.4
+254,74,1,12.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",12.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",10.4,5,475.2,446.8,14.2,371.9,443.0
+255,75,1,12.9,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",12.9,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",9.9,5,475.2,447.3,13.7,370.4,443.5
+256,76,1,14.1,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",14.1,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",9.4,5,475.2,447.8,13.2,370.4,444.0
+257,77,1,15.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",15.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",9.0,5,475.2,448.2,12.8,370.4,444.4
+258,78,1,16.8,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",16.8,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",8.7,5,475.2,448.5,12.6,370.4,444.6
+259,79,1,18.1,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate+Y",18.2,"Frame side plate -Z (fixed, mo (alpha 5) vs arm+Y",8.5,5,475.2,448.7,12.4,370.4,444.8
+260,80,1,17.3,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",17.3,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",8.4,5,475.2,448.8,12.3,370.4,444.9
+261,81,1,15.5,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",15.5,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",8.4,5,475.2,448.8,12.2,370.4,445.0
+262,82,1,13.8,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",13.8,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",8.4,5,475.2,448.8,12.3,370.4,444.9
+263,83,1,12.2,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",12.2,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",8.6,5,475.2,448.6,12.5,370.4,444.7
+264,84,1,10.8,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",10.8,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",8.8,5,475.2,448.4,12.7,370.4,444.5
+265,85,1,9.9,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",9.9,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",9.1,5,475.2,448.1,13.0,370.4,444.2
+266,86,1,9.5,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",9.5,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",9.5,5,475.2,447.7,13.4,370.4,443.8
+267,87,1,9.6,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",9.6,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",10.0,5,475.2,447.2,13.9,370.4,443.3
+268,88,1,10.3,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",10.3,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",10.6,5,475.2,446.6,14.5,370.4,442.7
+269,89,1,11.4,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",11.4,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",11.3,5,475.2,445.9,15.2,370.4,442.0
+270,90,1,12.8,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",12.8,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",12.0,5,475.2,445.2,15.9,370.4,441.3
+271,91,1,14.2,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",14.2,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",11.3,5,475.2,445.9,15.2,370.4,442.0
+272,92,1,15.5,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",15.5,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",10.6,5,475.2,446.6,14.5,370.4,442.7
+273,93,1,16.6,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",16.9,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",10.0,5,475.2,447.2,13.9,370.4,443.3
+274,94,1,14.7,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",18.1,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",9.5,5,475.2,447.7,13.4,370.4,443.8
+275,95,1,12.8,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",19.4,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",9.1,5,475.2,448.1,13.0,370.4,444.2
+276,96,1,10.8,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",20.6,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",8.8,5,475.2,448.4,12.7,370.4,444.5
+277,97,1,8.9,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",21.7,"ENVELOPE gate servo, standard (alpha 5) vs arm+Y",8.6,5,475.2,448.6,12.5,370.4,444.7
+278,98,1,6.9,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",20.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",8.4,5,475.2,448.8,12.3,370.4,444.9
+279,99,1,4.9,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",18.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",8.4,5,475.2,448.8,12.2,370.4,445.0
+280,100,1,2.9,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",16.8,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",8.4,5,475.2,448.8,12.3,370.4,444.9
+281,101,1,0.9,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",14.8,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",8.5,5,475.2,448.7,12.4,370.4,444.8
+282,102,0,0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",12.8,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",8.7,5,475.2,448.5,12.6,370.4,444.6
+283,103,0,0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",10.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",9.0,5,475.2,448.2,12.8,370.4,444.4
+284,104,0,0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",8.7,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",9.4,5,475.2,447.8,13.2,370.4,444.0
+285,105,0,0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",6.6,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",9.9,5,475.2,447.3,13.7,370.4,443.5
+286,106,0,0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",4.5,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",10.4,5,475.2,446.8,14.2,370.4,443.0
+287,107,0,0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",2.4,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",11.1,5,475.2,446.1,14.8,370.4,442.4
+288,108,0,0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y",0.3,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",11.8,5,475.2,445.4,15.5,370.4,441.7
+289,109,0,0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",12.6,5,475.2,444.6,16.3,370.4,440.9
+290,110,0,0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",13.5,5,475.2,443.7,17.2,370.4,440.0
+291,111,0,0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",14.5,5,475.2,442.7,18.1,370.4,439.1
+292,112,0,0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",15.5,5,475.2,441.7,19.2,370.4,438.0
+293,113,0,0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",0.0,"Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y",16.7,5,475.2,440.5,20.3,370.4,436.9
+294,114,0,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm-Y,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm-Y,17.9,5,475.2,439.3,21.5,370.4,435.7
+295,115,0,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm-Y,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm-Y,18.7,25,475.2,438.5,22.8,370.4,434.4
+296,116,0,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm-Y,0.0,Head side plate -Z (pivots abo (alpha 5) vs arm-Y,18.7,25,475.2,438.5,23.2,370.4,434.0
+297,117,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,18.8,25,475.2,438.4,23.3,370.4,433.9
+298,118,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,19.0,25,475.2,438.2,23.4,370.4,433.8
+299,119,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,19.3,25,475.2,437.9,23.7,370.4,433.5
+300,120,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,19.7,25,475.2,437.5,24.0,370.4,433.2
+301,121,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,20.1,25,475.2,437.1,24.4,370.4,432.8
+302,122,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,20.7,25,475.2,436.5,24.9,370.4,432.3
+303,123,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,21.3,25,475.2,435.9,25.5,370.4,431.7
+304,124,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,22.0,25,475.2,435.2,26.1,370.4,431.1
+305,125,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,22.8,25,475.2,434.4,26.9,373.5,430.3
+306,126,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,23.6,25,476.2,433.6,27.7,377.0,429.5
+307,127,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,24.6,25,479.5,432.6,28.6,380.4,428.6
+308,128,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,25.6,25,482.8,431.6,29.6,383.8,427.6
+309,129,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,26.7,25,485.9,430.5,30.6,387.1,426.6
+310,130,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,27.9,25,489.0,429.3,31.8,390.3,425.4
+311,131,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,29.2,25,492.1,428.0,33.0,393.5,424.2
+312,132,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,30.6,25,495.0,426.6,34.3,396.6,422.9
+313,133,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,32.0,25,498.0,425.2,35.7,399.6,421.5
+314,134,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,33.5,25,500.8,423.7,37.1,402.6,420.1
+315,135,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,35.1,25,503.6,422.1,38.6,405.5,418.6
+316,136,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,36.8,25,506.3,420.4,40.3,408.3,416.9
+317,137,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,38.5,25,508.9,418.7,41.9,411.1,415.3
+318,138,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,40.4,25,511.5,416.8,43.4,413.8,413.5
+319,139,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,42.3,25,514.0,414.9,40.8,416.4,411.7
+320,140,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,44.2,25,516.5,413.0,38.3,418.9,409.7
+321,141,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,46.3,25,518.8,410.9,35.8,421.4,407.7
+322,142,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,48.4,25,521.1,408.8,33.4,423.8,405.7
+323,143,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,50.6,25,523.3,406.6,31.1,426.1,403.5
+324,144,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,52.9,25,525.5,404.3,28.8,428.4,401.3
+325,145,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,55.3,25,527.6,401.9,26.7,430.5,399.0
+326,146,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,57.7,25,529.6,399.5,24.6,432.6,396.7
+327,147,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,60.2,25,531.5,397.0,22.6,434.6,394.3
+328,148,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,62.8,25,533.3,394.4,20.6,436.6,391.8
+329,149,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,63.0,5,546.6,384.6,18.8,438.4,389.2
+330,150,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,61.2,5,548.4,382.1,17.0,440.2,386.6
+331,151,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,59.5,5,550.1,379.6,15.3,441.9,383.9
+332,152,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,57.8,5,551.8,376.9,13.7,443.5,381.1
+333,153,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,56.3,5,553.3,374.2,12.1,445.1,378.3
+334,154,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,54.8,5,554.8,371.5,10.7,446.5,375.4
+335,155,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,53.4,5,556.2,368.6,9.3,447.9,372.4
+336,156,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,52.1,5,557.5,365.7,8.0,449.2,369.4
+337,157,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,50.8,5,558.8,362.8,6.8,450.4,366.3
+338,158,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,49.7,5,559.9,359.8,5.7,451.5,363.1
+339,159,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,48.6,5,561.0,356.7,4.7,452.5,359.9
+340,160,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,47.6,5,562.0,353.6,3.7,453.5,356.6
+341,161,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,46.7,5,562.9,350.4,2.8,454.4,353.3
+342,162,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,45.9,5,563.7,347.2,2.0,455.2,349.9
+343,163,0,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,0.0,Hood + feed tongue (printed): (alpha 5) vs arm-Y,45.2,5,564.4,343.9,1.3,455.9,346.5
+344,164,0,0.0,Head side plate +Z (drive side (alpha 5) vs arm-Y,0.0,Head side plate +Z (drive side (alpha 5) vs arm-Y,44.6,5,565.0,340.5,0.7,456.5,343.0
+345,165,0,0.0,Head side plate +Z (drive side (alpha 5) vs arm-Y,0.0,Head side plate +Z (drive side (alpha 5) vs arm-Y,44.0,5,565.6,337.1,0.2,457.0,339.4
+346,166,0,0.0,Head side plate +Z (drive side (alpha 5) vs arm-Y,0.0,Head side plate +Z (drive side (alpha 5) vs arm-Y,43.6,5,566.0,333.6,-0.3,457.5,335.8
+347,167,0,0.0,Head side plate +Z (drive side (alpha 5) vs arm-Y,0.0,Head side plate +Z (drive side (alpha 5) vs arm-Y,43.2,5,566.4,330.1,-0.6,457.8,332.1
+348,168,0,0.0,Head side plate +Z (drive side (alpha 5) vs arm-Y,0.0,Head side plate +Z (drive side (alpha 5) vs arm-Y,42.9,5,566.7,328.0,-0.9,458.1,328.4
+349,169,0,0.0,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,0.0,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,42.7,5,566.9,328.0,-1.1,458.3,328.0
+350,170,0,0.8,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,0.8,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,42.6,5,567.0,328.0,-1.2,458.4,328.0
+351,171,0,3.1,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,3.1,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,42.5,5,567.1,328.0,-1.2,458.4,328.0
+352,172,0,5.4,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,5.4,Frame side plate +Z (drive sid (alpha 5) vs arm-Y,42.6,5,567.0,328.0,-1.2,458.4,328.0
+353,173,0,4.3,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,4.3,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,42.7,5,566.9,328.0,-1.0,458.2,328.0
+354,174,0,3.2,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,3.2,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,43.0,5,566.6,328.0,-0.8,458.0,328.0
+355,175,0,2.0,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,2.0,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,43.3,5,566.3,328.0,-0.4,457.6,328.0
+356,176,0,1.6,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,1.6,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,43.7,5,565.9,328.0,-0.0,457.2,328.0
+357,177,0,3.4,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,3.4,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,44.2,5,565.4,328.0,0.5,456.7,328.0
+358,178,0,5.3,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,5.3,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,44.7,5,564.9,328.0,1.0,456.2,328.0
+359,179,0,7.3,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,7.3,ENVELOPE main pulley/belt (TBD (alpha 5) vs arm-Y,45.4,5,564.2,328.0,1.7,455.5,328.0

@@ -1,0 +1,48 @@
+# Head A (Concept A) clearance sweep, 38 configurations, run 2026-11-07 via the FeatureScript eval in checks/eval_clearance.fs
+# Units mm. Unlisted configuration inputs are at their defaults (alpha 15 deg, D_ball 71.12, delta_nip 4.5, ctr_shore 45).
+# dSwA = REF ball sweep (feed entry to hood end) to counter-roller, minimum distance
+# dHood = hood to counter-roller, minimum distance
+# dCor = REF exit corridor (D_max envelope) to the nearest real part (always the main flywheel)
+# ovM / ovC = ball radial overlap with main wheel / counter-roller at the nip line (negative = gap, ball not gripped)
+# sM / sC = distance along the exit line from the nip to where the ball leaves main wheel / counter-roller (-1 = never touches)
+# bad = clashes between real (non-REF) parts other than ABUT; abutStop = ABUT contacts with a hard stop; corHits = real parts inside the exit corridor
+# Row 32 failed in the first pass (sqrt of a negative in the check script, not in the model); rerun with the guarded script.
+row,config,dSwA,dHood,dCor,ovM,ovC,sM,sC,bad,abutStop,corHits
+1,alpha 5,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,1,0
+2,alpha 6,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+3,alpha 7,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+4,alpha 8,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+5,alpha 9,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+6,alpha 10,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+7,alpha 11,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+8,alpha 12,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+9,alpha 13,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+10,alpha 14,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+11,alpha 15,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+12,alpha 16,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+13,alpha 17,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+14,alpha 18,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+15,alpha 19,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+16,alpha 20,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+17,alpha 21,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+18,alpha 22,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+19,alpha 23,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+20,alpha 24,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0
+21,alpha 25,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,1,0
+22,D_ball 68.58 alpha 5,5.491,14.545,0.29,0.98,0.98,12.662,10.772,0,1,0
+23,D_ball 68.58 alpha 15,5.491,14.545,0.29,0.98,0.98,12.662,10.772,0,0,0
+24,D_ball 68.58 alpha 25,5.491,14.545,0.29,0.98,0.98,12.662,10.772,0,1,0
+25,D_ball 73.66 alpha 5,2.951,14.545,0.29,3.52,3.52,24.183,20.633,0,1,0
+26,D_ball 73.66 alpha 15,2.951,14.545,0.29,3.52,3.52,24.183,20.633,0,0,0
+27,D_ball 73.66 alpha 25,2.951,14.545,0.29,3.52,3.52,24.183,20.633,0,1,0
+28,delta_nip 2,6.588,16.132,0.235,1,1,12.889,10.996,0,0,0
+29,delta_nip 3,5.64,15.486,0.259,1.5,1.5,15.762,13.44,0,0,0
+30,delta_nip 6,2.806,13.639,0.319,3,3,22.189,18.888,0,0,0
+31,delta_nip 6 D_ball 73.66,1.536,13.639,0.319,4.27,4.27,26.575,22.654,0,0,0
+32,delta_nip 2 D_ball 68.58,7.858,16.132,0.235,-0.27,-0.27,-1,-1,0,0,0
+33,delta_nip 3 D_ball 68.58,6.91,15.486,0.259,0.23,0.23,6.148,5.235,0,0,0
+34,delta_nip 2 D_ball 73.66 alpha 5,5.318,16.132,0.235,2.27,2.27,19.493,16.654,0,1,0
+35,delta_nip 2 D_ball 73.66 alpha 25,5.318,16.132,0.235,2.27,2.27,19.493,16.654,0,1,0
+36,delta_nip 6 D_ball 73.66 alpha 5,1.536,13.639,0.319,4.27,4.27,26.575,22.654,0,1,0
+37,delta_nip 6 D_ball 73.66 alpha 25,1.536,13.639,0.319,4.27,4.27,26.575,22.654,0,1,0
+38,ctr_shore 60,4.221,14.545,0.29,2.25,2.25,19.26,16.409,0,0,0

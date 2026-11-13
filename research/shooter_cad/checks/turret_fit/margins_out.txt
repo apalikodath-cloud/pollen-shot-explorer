@@ -1,0 +1,58 @@
+
+######## mount a = (-95.0, 0), back trimmed (frame x >= -190.0, feed floor x >= -175.0)
+usable run around 180: psi 79..281 (202 deg = +-101 about over-the-intake)
+   min arm clearance inside the run: 0.9 mm at psi 281 (Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y)
+   psi   79: arm clearance     0.9 (Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y); expanded margin    8.5 (5, 475.2, 448.7)
+   psi   84: arm clearance    10.8 (Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y); expanded margin    8.8 (5, 475.2, 448.4)
+   psi   90: arm clearance    22.1 (Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y); expanded margin   12.0 (5, 475.2, 445.2)
+   psi  135: arm clearance    14.1 (ENVELOPE main motor (TBD) (alpha 5) vs arm+Y); expanded margin   35.1 (25, 475.2, 422.1)
+   psi  180: arm clearance    24.3 (Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y); expanded margin  129.2 (5, 475.2, 328.0)
+   psi  225: arm clearance    36.0 (ENVELOPE gate servo, standard (alpha 5) vs arm-Y); expanded margin   62.4 (5, 475.2, 394.8)
+   psi  270: arm clearance    12.8 (ENVELOPE gate servo, standard (alpha 5) vs arm+Y); expanded margin   12.0 (5, 475.2, 445.2)
+   psi  276: arm clearance    10.8 (Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y); expanded margin    8.8 (5, 475.2, 448.4)
+   psi  281: arm clearance     0.9 (Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y); expanded margin    8.5 (5, 475.2, 448.7)
+   psi  282: arm clearance     0.0 (Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y); expanded margin    8.7 (5, 475.2, 448.5)
+   psi   78: arm clearance     0.0 (Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y); expanded margin    8.7 (5, 475.2, 448.5)
+   min expanded margin inside the run: 8.4 at psi 81 (5, 475.2, 448.8)
+   other usable psi (outside the main run): [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359]
+   start park psi 90 (alpha 15, intake folded): margin, X span, Y span, extents = (15.9, 370.4, 441.3, (-156.2, 71.2, -95.0, 277.3))
+   start park psi 270 (alpha 15, intake folded): margin, X span, Y span, extents = (15.9, 370.4, 441.3, (-180.2, 47.2, -277.3, 95.0))
+   start park psi 180 (alpha 15, intake folded): margin, X span, Y span, extents = (-13.0, 470.2, 328.0, (-331.8, 40.5, -101.7, 125.7))
+   start park psi 0 (alpha 15, intake folded): margin, X span, Y span, extents = (2.4, 454.8, 328.0, (-149.5, 222.8, -125.7, 101.7))
+
+######## mount a = (-90.0, 0), back trimmed (frame x >= -190.0, feed floor x >= -175.0)
+usable run around 180: psi 79..281 (202 deg = +-101 about over-the-intake)
+   min arm clearance inside the run: 0.9 mm at psi 281 (Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y)
+   psi   79: arm clearance     0.9 (Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y); expanded margin   13.5 (5, 475.2, 443.7)
+   psi   84: arm clearance    10.8 (Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y); expanded margin   13.8 (5, 475.2, 443.4)
+   psi   90: arm clearance    22.1 (Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y); expanded margin   17.0 (5, 475.2, 440.2)
+   psi  135: arm clearance    14.1 (ENVELOPE main motor (TBD) (alpha 5) vs arm+Y); expanded margin   38.6 (25, 475.2, 418.6)
+   psi  180: arm clearance    24.3 (Frame side plate -Z (fixed, mo (alpha 5) vs arm-Y); expanded margin  129.2 (5, 475.2, 328.0)
+   psi  225: arm clearance    36.6 (Feed floor (printed, fixed): r (alpha 5) vs arm+Y); expanded margin   65.9 (5, 475.2, 391.3)
+   psi  270: arm clearance    12.8 (ENVELOPE gate servo, standard (alpha 5) vs arm+Y); expanded margin   17.0 (5, 475.2, 440.2)
+   psi  276: arm clearance    10.8 (Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y); expanded margin   13.8 (5, 475.2, 443.4)
+   psi  281: arm clearance     0.9 (Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y); expanded margin   13.5 (5, 475.2, 443.7)
+   psi  282: arm clearance     0.0 (Frame side plate -Z (fixed, mo (alpha 5) vs sideplate-Y); expanded margin   13.6 (5, 475.2, 443.6)
+   psi   78: arm clearance     0.0 (Frame side plate +Z (drive sid (alpha 5) vs sideplate+Y); expanded margin   13.6 (5, 475.2, 443.6)
+   min expanded margin inside the run: 13.3 at psi 81 (5, 475.2, 443.9)
+   other usable psi (outside the main run): [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359]
+   start park psi 90 (alpha 15, intake folded): margin, X span, Y span, extents = (20.9, 370.4, 436.3, (-156.2, 71.2, -100.0, 272.3))
+   start park psi 270 (alpha 15, intake folded): margin, X span, Y span, extents = (20.9, 370.4, 436.3, (-180.2, 47.2, -272.3, 100.0))
+   start park psi 180 (alpha 15, intake folded): margin, X span, Y span, extents = (-8.0, 465.2, 328.0, (-326.8, 45.5, -101.7, 125.7))
+   start park psi 0 (alpha 15, intake folded): margin, X span, Y span, extents = (7.4, 449.8, 328.0, (-154.5, 217.8, -125.7, 101.7))
+
+feed points (head x, z): rails meet T (-69.6, -99.3), chute start Pce (-102.3, -76.4), crest centre (-131.0, -117.4), crest top (-131.0, -67.4), ramp-stub end Pcs (-148.1, -70.4), ramp-stub start Prs (-204.5, -90.9); Rrail 121.28
+head zmin (trimmed, all alpha): -142.0
+a_x -95.0: chute rail-edge line at head z -81.5 = robot Z 298.7 (60.5 above the plate top); crest top 36.0 mm uphill of the axis; chute meets the rails 25.4 mm downhill
+   D_min: ball centred on the axis column resting on the chute rails: centre head z -41.5 = robot Z 338.7 (100.5 above the plate top), ball bottom 66.2 above the plate top
+   D_nom: ball centred on the axis column resting on the chute rails: centre head z -39.9 = robot Z 340.3 (102.1 above the plate top), ball bottom 66.6 above the plate top
+   D_max: ball centred on the axis column resting on the chute rails: centre head z -38.3 = robot Z 341.9 (103.7 above the plate top), ball bottom 66.9 above the plate top
+a_x -90.0: chute rail-edge line at head z -85.0 = robot Z 295.2 (57.0 above the plate top); crest top 41.0 mm uphill of the axis; chute meets the rails 20.4 mm downhill
+   D_min: ball centred on the axis column resting on the chute rails: centre head z -45.0 = robot Z 335.2 (97.0 above the plate top), ball bottom 62.7 above the plate top
+   D_nom: ball centred on the axis column resting on the chute rails: centre head z -43.4 = robot Z 336.8 (98.6 above the plate top), ball bottom 63.1 above the plate top
+   D_max: ball centred on the axis column resting on the chute rails: centre head z -41.8 = robot Z 338.4 (100.2 above the plate top), ball bottom 63.4 above the plate top
+
+height: start top limit Z 451.2, expanded top limit Z 730.5999999999999, room above plate 213.0
+   alpha 5: head top Z 467.9 -> over start by 16.7; expanded margin 262.7
+   alpha 15: head top Z 466.9 -> over start by 15.7; expanded margin 263.7
+   alpha 25: head top Z 474.8 -> over start by 23.6; expanded margin 255.8

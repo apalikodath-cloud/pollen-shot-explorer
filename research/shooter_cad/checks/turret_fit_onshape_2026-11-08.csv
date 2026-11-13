@@ -1,0 +1,14 @@
+# Head A (Concept A) on the 19705 Ri3D robot turret: Onshape interference detection in the fit assembly "Bot fit (Ri3D turret)" of the POLLEN shooter document, run by hand 2026-11-08
+# Tool: Onshape assembly interference detection (exact geometry). Selection: every visible instance (the robot's items except its own hidden shooter "shooter <1>", plus the 58 Head A instances). Hidden instances are checked too; left in, the robot's hidden shooter gave about 96 false hits.
+# turret_deg = Revolute 1 angle (0 = shooting over the intake, -90 = toward +Y, +90 = toward -Y); psi_deg = turret_deg + 180, as in turret_fit_sweep_2026-11-08.csv. alpha_deg and ramp_stub_cfg = Head A configuration of all 58 head instances.
+# interference_rows = rows in the result list. robot_robot = both instances from the robot (overlaps inside the imported robot, not examined). head_head = both from the head; head_head_with_REF = of those, rows with at least one REF body (ball envelopes, exit corridor, nip ball: intended overlaps); head_head_REF_REF = rows with two REF bodies. head_robot = one head and one robot instance (a clash).
+row,turret_deg,psi_deg,alpha_deg,ramp_stub_cfg,instances_checked,robot_instances,head_instances,interference_rows,robot_robot,head_head,head_head_with_REF,head_head_REF_REF,head_robot
+1,0,180,15,15,246,188,58,650,634,16,16,7,0
+2,-101,79,15,15,246,188,58,650,634,16,16,7,0
+3,101,281,15,15,246,188,58,650,634,16,16,7,0
+4,0,180,25,15,246,188,58,650,634,16,16,7,0
+5,-101,79,25,15,246,188,58,650,634,16,16,7,0
+6,101,281,25,15,246,188,58,650,634,16,16,7,0
+7,0,180,5,15,246,188,58,650,634,16,16,7,0
+8,-101,79,5,15,246,188,58,650,634,16,16,7,0
+9,101,281,5,15,246,188,58,650,634,16,16,7,0
